@@ -20,33 +20,32 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>25f2bfac8fca</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_proxy_fields_7fa3bd/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/namespaces/ns_com__SI_Namespace_proxy_fields_7fa3bd/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_proxy_fields_7fa3bd" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>&lt;SI-Namespace&gt;::proxy::fields</code> gehört zum Modul <code>com</code> der Adaptive Platform im Release R25-11. Er fasst die generierten Proxy-Feldklassen (<code>&lt;Field&gt;</code>) zusammen, die aus den Feldern der jeweiligen Service-Schnittstelle (<code>ServiceInterface</code>) in der Rolle eines Felds hervorgehen. Innerhalb der Kommunikationsarchitektur dient dieser Namespace dazu, die clientseitige Interaktion mit Dienstattributen zu kapseln und den Zugriff auf deren Eigenschaften zu strukturieren.</p>
+<h4>上下文</h4>
+<p>命名空间 <code>&lt;SI-Namespace&gt;::proxy::fields</code> 属于 Adaptive Platform 在版本 R25-11 中的模块 <code>com</code>。它汇总了生成的代理字段类（<code>&lt;Field&gt;</code>），这些类源自各服务接口（<code>ServiceInterface</code>）中作为字段角色的字段。在通信架构内，该命名空间用于封装客户端与服务属性的交互，并对访问其特性的方式进行结构化。</p>
 
-<p>Ein Proxy-Feld bildet dabei die Schnittstelle zwischen der Client-Anwendung und der Kommunikationsinfrastruktur, um auf Datenfelder eines entfernten oder lokalen Service-Skeletts zuzugreifen. Für jedes im <code>ServiceInterface</code> definierte Feld existiert eine spezifische Instanzklasse innerhalb dieses Namensraums.</p>
+<p>代理字段构成了客户端应用程序与通信基础设施之间的接口，用于访问远程或本地服务骨架（Service Skeleton）的数据字段。对于在 <code>ServiceInterface</code> 中定义的每个字段，该命名空间内都存在一个特定的实例类。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Proxy-Feldklassen innerhalb von <code>&lt;SI-Namespace&gt;::proxy::fields</code> sind direkt an den Lebenszyklus der übergeordneten Proxy-Instanz gebunden. Sie entstehen bei der Erzeugung des Service-Proxys und bleiben für dessen gesamte Betriebsdauer bestehen. Eine eigenständige Instanziierung außerhalb des Proxy-Kontexts ist im Architekturmodell üblicherweise nicht vorgesehen.</p>
+<h4>生命周期</h4>
+<p><code>&lt;SI-Namespace&gt;::proxy::fields</code> 内的代理字段类直接绑定到上层代理实例的生命周期。它们在创建服务代理时生成，并在其整个运行期间保持存在。在架构模型中，通常不提供在代理上下文之外进行独立实例化的方式。</p>
 
-<p>Zerstört die Anwendung die Proxy-Instanz, werden auch die zugehörigen Feldrepräsentanten freigegeben. Nebenläufige Zugriffe auf Felder richten sich nach der Thread-Sicherheit der zugrundeliegenden Proxy-Implementierung und erfordern seitens der Anwendung eine koordinierte Aufrufreihenfolge bei asynchronen Operationen.</p>
+<p>如果应用程序销毁了代理实例，相关的字段代表对象也会被释放。对字段的并发访问取决于底层代理实现的线程安全性，并且在执行异步操作时需要应用程序端协调调用顺序。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Ein typischer Nutzungspfad eines Felds über <code>&lt;Field&gt;</code> gliedert sich in folgende Phasen:</p>
+<h4>使用路径</h4>
+<p>通过 <code>&lt;Field&gt;</code> 使用字段的典型路径分为以下几个阶段：</p>
 <ol>
-<li><strong>Bereitstellung:</strong> Zugriff auf das gewünschte Feld über die initialisierte Proxy-Instanz des Services.</li>
-<li><strong>Abonnement / Benachrichtigung:</strong> Sofern das Feld Ereignisse bei Wertänderungen unterstützt, registriert der Client einen Empfänger oder abonniert Aktualisierungen.</li>
-<li><strong>Abfrage oder Modifikation:</strong> Ausführen von Lese- oder Schreibzugriffen auf den aktuellen Feldwert über die entsprechenden Zugriffsmethoden des generierten Feldobjekts.</li>
-<li><strong>Abschluss:</strong> Beenden von Abonnements vor dem Herunterfahren oder Zerstören der Proxy-Instanz.</li>
+<li><strong>提供：</strong>通过初始化的服务代理实例访问所需字段。</li>
+<li><strong>订阅/通知：</strong>只要字段支持值变更时的事件，客户端就会注册接收器或订阅更新。</li>
+<li><strong>查询或修改：</strong>通过生成的字段对象相应的访问方法，对当前字段值执行读访问或写访问。</li>
+<li><strong>结束：</strong>在关闭或销毁代理实例之前终止订阅。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Beim Zugriff auf Instanzen der Klasse <code>&lt;Field&gt;</code> können Fehler vor allem dann auftreten, wenn die zugrundeliegende Kommunikationsverbindung nicht etabliert ist oder während der Übertragung abbricht. Vorbedingungen für Interaktionen mit den Feldobjekten sind ein gültiger Zustand der Proxy-Instanz sowie eine aktive Service-Bindung. Schlägt eine Lese- oder Schreibanfrage fehl, meldet die Kommunikationsschicht diesen Zustand an den Aufrufer zurück.</p>
+<h4>错误场景</h4>
+<p>访问类 <code>&lt;Field&gt;</code> 的实例时，如果底层通信连接未建立或在传输过程中断开，则尤其可能发生错误。与字段对象交互的前提条件是代理实例处于有效状态以及存在活动的服务器绑定。如果读或写请求失败，通信层会将该状态反馈给调用者。</p>
 <!-- annahmen: 1) Die Feldklassen sind fest an den Lebenszyklus des übergeordneten Service-Proxys gebunden – Begründung: Der Payload belegt nur die Existenz von '<Field>' als Service proxy Field class im Kontext eines ServiceInterface, spezifische Lifecycle-Records fehlen im Payload. 2) Die Interaktion folgt dem Schema Bereitstellung, optionales Abonnement, Abfrage/Modifikation – Begründung: Typisches Verhaltensmuster von Service-Feldern im AUTOSAR-Adaptive-Umfeld, da konkrete SWS-Anforderungen im Payload nicht aufgeführt sind. 3) Fehlerzustände resultieren primär aus Kommunikationsunterbrechungen oder ungültigem Proxy-Zustand – Begründung: Standardmodell der ereignis- und methodenbasierten Feldkommunikation mangels expliziter Fehlerbelege im Payload. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11 für das Modul com. Spezifische Anforderungsbelege ([SWS_...]) und Dokumentstellen waren im Eingabe-Payload nicht enthalten.</p>
+<p class="ai-note">本指南基于模块 com 的 R25-11 版本的结构元数据。输入有效负载中未包含具体的需求凭证（[SWS_...]）和文档出处。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_proxy_fields_7fa3bd" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -286,30 +285,29 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="25f2bfac8fcac97b7478eea15fa073c5ced0d80a10a10ff6b770ee2fcdd33417" data-trace-output="a50e4ae407812f825406e65ee76620c3e4c5d82ef8811bad6017952b078f059c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; gehört zum Modul &lt;code&gt;com&lt;/code&gt; der Adaptive Platform im Release R25-11. Er fasst die generierten Proxy-Feldklassen (&lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;) zusammen, die aus den Feldern der jeweiligen Service-Schnittstelle (&lt;code&gt;ServiceInterface&lt;/code&gt;) in der Rolle eines Felds hervorgehen. Innerhalb der Kommunikationsarchitektur dient dieser Namespace dazu, die clientseitige Interaktion mit Dienstattributen zu kapseln und den Zugriff auf deren Eigenschaften zu strukturieren.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;命名空间 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; 属于 Adaptive Platform 在版本 R25-11 中的模块 &lt;code&gt;com&lt;/code&gt;。它汇总了生成的代理字段类（&lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;），这些类源自各服务接口（&lt;code&gt;ServiceInterface&lt;/code&gt;）中作为字段角色的字段。在通信架构内，该命名空间用于封装客户端与服务属性的交互，并对访问其特性的方式进行结构化。&lt;/p&gt;
 
-&lt;p&gt;Ein Proxy-Feld bildet dabei die Schnittstelle zwischen der Client-Anwendung und der Kommunikationsinfrastruktur, um auf Datenfelder eines entfernten oder lokalen Service-Skeletts zuzugreifen. Für jedes im &lt;code&gt;ServiceInterface&lt;/code&gt; definierte Feld existiert eine spezifische Instanzklasse innerhalb dieses Namensraums.&lt;/p&gt;
+&lt;p&gt;代理字段构成了客户端应用程序与通信基础设施之间的接口，用于访问远程或本地服务骨架（Service Skeleton）的数据字段。对于在 &lt;code&gt;ServiceInterface&lt;/code&gt; 中定义的每个字段，该命名空间内都存在一个特定的实例类。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Proxy-Feldklassen innerhalb von &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; sind direkt an den Lebenszyklus der übergeordneten Proxy-Instanz gebunden. Sie entstehen bei der Erzeugung des Service-Proxys und bleiben für dessen gesamte Betriebsdauer bestehen. Eine eigenständige Instanziierung außerhalb des Proxy-Kontexts ist im Architekturmodell üblicherweise nicht vorgesehen.&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; 内的代理字段类直接绑定到上层代理实例的生命周期。它们在创建服务代理时生成，并在其整个运行期间保持存在。在架构模型中，通常不提供在代理上下文之外进行独立实例化的方式。&lt;/p&gt;
 
-&lt;p&gt;Zerstört die Anwendung die Proxy-Instanz, werden auch die zugehörigen Feldrepräsentanten freigegeben. Nebenläufige Zugriffe auf Felder richten sich nach der Thread-Sicherheit der zugrundeliegenden Proxy-Implementierung und erfordern seitens der Anwendung eine koordinierte Aufrufreihenfolge bei asynchronen Operationen.&lt;/p&gt;
+&lt;p&gt;如果应用程序销毁了代理实例，相关的字段代表对象也会被释放。对字段的并发访问取决于底层代理实现的线程安全性，并且在执行异步操作时需要应用程序端协调调用顺序。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Ein typischer Nutzungspfad eines Felds über &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; gliedert sich in folgende Phasen:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;通过 &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; 使用字段的典型路径分为以下几个阶段：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellung:&lt;/strong&gt; Zugriff auf das gewünschte Feld über die initialisierte Proxy-Instanz des Services.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abonnement / Benachrichtigung:&lt;/strong&gt; Sofern das Feld Ereignisse bei Wertänderungen unterstützt, registriert der Client einen Empfänger oder abonniert Aktualisierungen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage oder Modifikation:&lt;/strong&gt; Ausführen von Lese- oder Schreibzugriffen auf den aktuellen Feldwert über die entsprechenden Zugriffsmethoden des generierten Feldobjekts.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abschluss:&lt;/strong&gt; Beenden von Abonnements vor dem Herunterfahren oder Zerstören der Proxy-Instanz.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;提供：&lt;/strong&gt;通过初始化的服务代理实例访问所需字段。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;订阅/通知：&lt;/strong&gt;只要字段支持值变更时的事件，客户端就会注册接收器或订阅更新。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;查询或修改：&lt;/strong&gt;通过生成的字段对象相应的访问方法，对当前字段值执行读访问或写访问。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;结束：&lt;/strong&gt;在关闭或销毁代理实例之前终止订阅。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Beim Zugriff auf Instanzen der Klasse &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; können Fehler vor allem dann auftreten, wenn die zugrundeliegende Kommunikationsverbindung nicht etabliert ist oder während der Übertragung abbricht. Vorbedingungen für Interaktionen mit den Feldobjekten sind ein gültiger Zustand der Proxy-Instanz sowie eine aktive Service-Bindung. Schlägt eine Lese- oder Schreibanfrage fehl, meldet die Kommunikationsschicht diesen Zustand an den Aufrufer zurück.&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;访问类 &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; 的实例时，如果底层通信连接未建立或在传输过程中断开，则尤其可能发生错误。与字段对象交互的前提条件是代理实例处于有效状态以及存在活动的服务器绑定。如果读或写请求失败，通信层会将该状态反馈给调用者。&lt;/p&gt;
 &lt;!-- annahmen: 1) Die Feldklassen sind fest an den Lebenszyklus des übergeordneten Service-Proxys gebunden – Begründung: Der Payload belegt nur die Existenz von '&lt;Field&gt;' als Service proxy Field class im Kontext eines ServiceInterface, spezifische Lifecycle-Records fehlen im Payload. 2) Die Interaktion folgt dem Schema Bereitstellung, optionales Abonnement, Abfrage/Modifikation – Begründung: Typisches Verhaltensmuster von Service-Feldern im AUTOSAR-Adaptive-Umfeld, da konkrete SWS-Anforderungen im Payload nicht aufgeführt sind. 3) Fehlerzustände resultieren primär aus Kommunikationsunterbrechungen oder ungültigem Proxy-Zustand – Begründung: Standardmodell der ereignis- und methodenbasierten Feldkommunikation mangels expliziter Fehlerbelege im Payload. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11 für das Modul com. Spezifische Anforderungsbelege ([SWS_...]) und Dokumentstellen waren im Eingabe-Payload nicht enthalten.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于模块 com 的 R25-11 版本的结构元数据。输入有效负载中未包含具体的需求凭证（[SWS_...]）和文档出处。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

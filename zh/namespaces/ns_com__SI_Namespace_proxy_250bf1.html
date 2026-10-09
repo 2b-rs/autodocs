@@ -20,53 +20,52 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>c45b35af67f2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_proxy_250bf1/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/namespaces/ns_com__SI_Namespace_proxy_250bf1/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_proxy_250bf1" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Der Namespace <code>&lt;SI-Namespace&gt;::proxy</code> kapselt die clientseitigen Schnittstellen und Kommunikationsartefakte eines definierten Service Interface (<code>&lt;SI&gt;</code>) innerhalb des Funktionsclusters Communication Management (<code>com</code>) der AUTOSAR Adaptive Platform. Im Zentrum dieses Namespace steht die generierte Proxy-Klasse <code>&lt;SI&gt;Proxy</code>. Sie dient anwendungsinternen Software-Komponenten als Stellvertreter (Proxy-Muster), um Dienstleistungen einer bereitgestellten Service-Instanz in Anspruch zu nehmen.
+命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 封装了 AUTOSAR Adaptive Platform 的 Communication Management (<code>com</code>) 功能集群内已定义服务接口 (<code>&lt;SI&gt;</code>) 的客户端接口和通信工件。该命名空间的核心是生成的代理类 <code>&lt;SI&gt;Proxy</code>。它用作应用程序内部软件组件的代表（代理模式），以使用所提供的服务实例的服务。
 </p>
 <p>
-Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Schnittstellen für Methodenaufrufe, Event-Abonnements und Feldzugriffe. Anwendungskomponenten interagieren direkt mit <code>&lt;SI&gt;Proxy</code>, ohne Details über die zugrundeliegende Interprozess- oder Netzwerkkommunikation kennen zu müssen. Das Kommunikationsmanagement transformiert diese Aufrufe in anbindungsspezifische Protokolle. Vermutlich fungiert <code>&lt;SI&gt;Proxy</code> als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform.
+该命名空间的首要职责在于为方法调用、事件订阅和字段访问提供类型安全的接口。应用程序组件直接与 <code>&lt;SI&gt;Proxy</code> 交互，而无需了解底层进程间通信或网络通信的细节。通信管理将这些调用转换为连接专用的协议。推测 <code>&lt;SI&gt;Proxy</code> 充当服务接口的域专用接口与平台通用运行时机制之间的直接桥梁。
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>生命周期</h4>
 <p>
-Der Lebenszyklus von Instanzen im Namespace <code>&lt;SI-Namespace&gt;::proxy</code> ist eng an die Verfügbarkeit korrespondierender Service-Instanzen auf Plattformebene gekoppelt. Typischerweise durchläuft ein Proxy folgende Phasen:
+命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 中实例的生命周期与平台层面上对应服务实例的可用性紧密耦合。代理通常经历以下阶段：
 </p>
 <ul>
-<li><strong>Auffinden und Handle-Auflösung:</strong> Vor der Konstruktion einer Instanz von <code>&lt;SI&gt;Proxy</code> ermittelt die Anwendung über Mechanismen des Service Discovery ein gültiges Dienst-Handle (<code>HandleType</code>).</li>
-<li><strong>Instanziierung:</strong> Mit der Übergabe eines spezifischen Handles an den Konstruktor wird das Proxy-Objekt gebunden. Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein, sodass eine Zerstörung oder Ungültigkeit der Service-Verbindung den Proxy unbrauchbar macht.</li>
-<li><strong>Betrieb und Ereignisverwaltung:</strong> Während der Betriebsphase verwaltet der Proxy aktive Subskriptionen, Puffer für empfangene Event-Daten sowie asynchrone Zukunftsobjekte für Methodenrückgaben.</li>
-<li><strong>Freigabe und Zerstörung:</strong> Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Zerstörung des Proxy-Objekts werden alle bestehenden Abonnements und Kanalbindungen bereinigt, um Ressourcenlecks zu verhindern.</li>
+<li><strong>查找与句柄解析：</strong>在构造 <code>&lt;SI&gt;Proxy</code> 的实例之前，应用程序通过 Service Discovery 的机制确定有效的服务句柄 (<code>HandleType</code>)。</li>
+<li><strong>实例化：</strong>通过将特定句柄传递给构造函数，代理对象被绑定。代理实例的生命周期推测与底层服务句柄的有效性耦合，因此服务连接的销毁或失效会导致代理不可用。</li>
+<li><strong>运行与事件管理：</strong>在运行阶段，代理管理活动订阅、用于接收事件数据的缓冲区以及用于方法返回的异步期物（future）对象。</li>
+<li><strong>释放与销毁：</strong>在脱离作用域或显式销毁代理对象时，所有现有订阅和通道绑定均会被清理，以防止资源泄漏。</li>
 </ul>
 <p>
-Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Methodenaufrufe oder Event-Abfragen über <code>&lt;SI&gt;Proxy</code> potenziell nebenläufig aus unterschiedlichen Threads einer Anwendung erfolgen können, sofern das zugrundeliegende Anwendungsdesign dies vorsieht.
+关于并发需要注意，只要底层应用程序设计有此规划，通过 <code>&lt;SI&gt;Proxy</code> 进行的方法调用或事件查询可能会从应用程序的不同线程并发发生。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>使用路径</h4>
 <p>
-Der typische Nutzungspfad für Komponenten, die auf den Namespace <code>&lt;SI-Namespace&gt;::proxy</code> zugreifen, folgt einem standardisierten Ablauf zur Diensteinbindung:
+访问命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 的组件的典型使用路径遵循标准化的服务集成流程：
 </p>
 <ol>
-<li><strong>Dienstsuche initiieren:</strong> Die Anwendung startet eine synchrone oder asynchrone Suche nach Instanzen des Service Interface <code>&lt;SI&gt;</code> über die entsprechenden Schnittstellen der Plattform.</li>
-<li><strong>Handle-Auswahl:</strong> Nach erfolgreicher Entdeckung wählt die Konsumentenseite ein passendes Instanz-Handle aus der Trefferliste aus.</li>
-<li><strong>Proxy-Erzeugung:</strong> Die Anwendung instanziiert <code>&lt;SI&gt;Proxy</code> unter Verwendung des gewählten Handles.</li>
-<li><strong>Event-Subskription und Feld-Registrierung:</strong> Für asynchrone Ereignisse abonniert der Client die gewünschten Events über die Sub-Objekte des Proxys. Gegebenenfalls werden Callbacks oder Polling-Strategien registriert.</li>
-<li><strong>Dienstaufruf:</strong> Der Client initiiert Methodenaufrufe über den Proxy, welche asynchron Zukunftsobjekte zurückliefern, oder greift auf Felder lesend bzw. schreibend zu.</li>
-<li><strong>Bereinigung:</strong> Nach Abschluss der Interaktionen werden Abonnements beendet und der Proxy zerstört.</li>
+<li><strong>启动服务搜索：</strong>应用程序通过平台的相应接口启动对服务接口 <code>&lt;SI&gt;</code> 实例的同步或异步搜索。</li>
+<li><strong>选择句柄：</strong>成功发现后，使用者方从匹配列表中选择合适的实例句柄。</li>
+<li><strong>创建代理：</strong>应用程序使用所选句柄实例化 <code>&lt;SI&gt;Proxy</code>。</li>
+<li><strong>事件订阅与字段注册：</strong>对于异步事件，客户端通过代理的子对象订阅所需事件。在适当时注册回调或轮询策略。</li>
+<li><strong>服务调用：</strong>客户端通过代理发起异步返回期物对象的方法调用，或对字段进行读写访问。</li>
+<li><strong>清理：</strong>交互完成后，终止订阅并销毁代理。</li>
 </ol>
 <p>
-Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben, da Methodenaufrufe ohne gebundene Service-Instanz semantisch ungültig sind.
+解释：典型使用路径很可能强制要求句柄查找、代理实例化以及后续通信处理的严格顺序，因为未绑定服务实例的方法调用在语义上是无效的。
 </p>
 <!-- annahmen:
 1) Vermutlich fungiert <SI>Proxy als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform. – Begründung: Der Payload enthält ausschließlich den Klassennamen ohne detaillierte Architekturbeschreibung.
 2) Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein. – Begründung: Der Payload enthält keine Spezifikationsanforderungen zur Handle-Lebensdauer.
 3) Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben. – Begründung: Ablaufdetails fehlen im Payload.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11. Da im Payload keine Spezifikations-Records oder Dokumentstellen hinterlegt sind, wurden funktionale Zusammenhänge neutral anhand der architekturellen Rolle von Service-Interface-Proxies abgeleitet.</p>
+<p class="ai-note">本指南基于 R25-11 版本的可用元数据。由于有效负载中未包含规范记录或文档出处，因此功能关联是根据服务接口代理（Service Interface Proxy）的架构角色中立地推导出来的。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_proxy_250bf1" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -320,50 +319,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="c45b35af67f2780069a8e137cc3559c43776878f655dca887d03a5f4aaa241b6" data-trace-output="a5d895c4cf9d89f81827b3cee2c0f8869e01edd608a3fa8008e9decb51cf22b5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; kapselt die clientseitigen Schnittstellen und Kommunikationsartefakte eines definierten Service Interface (&lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt;) innerhalb des Funktionsclusters Communication Management (&lt;code&gt;com&lt;/code&gt;) der AUTOSAR Adaptive Platform. Im Zentrum dieses Namespace steht die generierte Proxy-Klasse &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;. Sie dient anwendungsinternen Software-Komponenten als Stellvertreter (Proxy-Muster), um Dienstleistungen einer bereitgestellten Service-Instanz in Anspruch zu nehmen.
+命名空间 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; 封装了 AUTOSAR Adaptive Platform 的 Communication Management (&lt;code&gt;com&lt;/code&gt;) 功能集群内已定义服务接口 (&lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt;) 的客户端接口和通信工件。该命名空间的核心是生成的代理类 &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;。它用作应用程序内部软件组件的代表（代理模式），以使用所提供的服务实例的服务。
 &lt;/p&gt;
 &lt;p&gt;
-Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Schnittstellen für Methodenaufrufe, Event-Abonnements und Feldzugriffe. Anwendungskomponenten interagieren direkt mit &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;, ohne Details über die zugrundeliegende Interprozess- oder Netzwerkkommunikation kennen zu müssen. Das Kommunikationsmanagement transformiert diese Aufrufe in anbindungsspezifische Protokolle. Vermutlich fungiert &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform.
+该命名空间的首要职责在于为方法调用、事件订阅和字段访问提供类型安全的接口。应用程序组件直接与 &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; 交互，而无需了解底层进程间通信或网络通信的细节。通信管理将这些调用转换为连接专用的协议。推测 &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; 充当服务接口的域专用接口与平台通用运行时机制之间的直接桥梁。
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus von Instanzen im Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; ist eng an die Verfügbarkeit korrespondierender Service-Instanzen auf Plattformebene gekoppelt. Typischerweise durchläuft ein Proxy folgende Phasen:
+命名空间 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; 中实例的生命周期与平台层面上对应服务实例的可用性紧密耦合。代理通常经历以下阶段：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Auffinden und Handle-Auflösung:&lt;/strong&gt; Vor der Konstruktion einer Instanz von &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; ermittelt die Anwendung über Mechanismen des Service Discovery ein gültiges Dienst-Handle (&lt;code&gt;HandleType&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Mit der Übergabe eines spezifischen Handles an den Konstruktor wird das Proxy-Objekt gebunden. Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein, sodass eine Zerstörung oder Ungültigkeit der Service-Verbindung den Proxy unbrauchbar macht.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Betrieb und Ereignisverwaltung:&lt;/strong&gt; Während der Betriebsphase verwaltet der Proxy aktive Subskriptionen, Puffer für empfangene Event-Daten sowie asynchrone Zukunftsobjekte für Methodenrückgaben.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Freigabe und Zerstörung:&lt;/strong&gt; Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Zerstörung des Proxy-Objekts werden alle bestehenden Abonnements und Kanalbindungen bereinigt, um Ressourcenlecks zu verhindern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;查找与句柄解析：&lt;/strong&gt;在构造 &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; 的实例之前，应用程序通过 Service Discovery 的机制确定有效的服务句柄 (&lt;code&gt;HandleType&lt;/code&gt;)。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;实例化：&lt;/strong&gt;通过将特定句柄传递给构造函数，代理对象被绑定。代理实例的生命周期推测与底层服务句柄的有效性耦合，因此服务连接的销毁或失效会导致代理不可用。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;运行与事件管理：&lt;/strong&gt;在运行阶段，代理管理活动订阅、用于接收事件数据的缓冲区以及用于方法返回的异步期物（future）对象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;释放与销毁：&lt;/strong&gt;在脱离作用域或显式销毁代理对象时，所有现有订阅和通道绑定均会被清理，以防止资源泄漏。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Methodenaufrufe oder Event-Abfragen über &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; potenziell nebenläufig aus unterschiedlichen Threads einer Anwendung erfolgen können, sofern das zugrundeliegende Anwendungsdesign dies vorsieht.
+关于并发需要注意，只要底层应用程序设计有此规划，通过 &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; 进行的方法调用或事件查询可能会从应用程序的不同线程并发发生。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad für Komponenten, die auf den Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; zugreifen, folgt einem standardisierten Ablauf zur Diensteinbindung:
+访问命名空间 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; 的组件的典型使用路径遵循标准化的服务集成流程：
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Dienstsuche initiieren:&lt;/strong&gt; Die Anwendung startet eine synchrone oder asynchrone Suche nach Instanzen des Service Interface &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; über die entsprechenden Schnittstellen der Plattform.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Handle-Auswahl:&lt;/strong&gt; Nach erfolgreicher Entdeckung wählt die Konsumentenseite ein passendes Instanz-Handle aus der Trefferliste aus.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Proxy-Erzeugung:&lt;/strong&gt; Die Anwendung instanziiert &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; unter Verwendung des gewählten Handles.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Event-Subskription und Feld-Registrierung:&lt;/strong&gt; Für asynchrone Ereignisse abonniert der Client die gewünschten Events über die Sub-Objekte des Proxys. Gegebenenfalls werden Callbacks oder Polling-Strategien registriert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienstaufruf:&lt;/strong&gt; Der Client initiiert Methodenaufrufe über den Proxy, welche asynchron Zukunftsobjekte zurückliefern, oder greift auf Felder lesend bzw. schreibend zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereinigung:&lt;/strong&gt; Nach Abschluss der Interaktionen werden Abonnements beendet und der Proxy zerstört.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;启动服务搜索：&lt;/strong&gt;应用程序通过平台的相应接口启动对服务接口 &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; 实例的同步或异步搜索。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;选择句柄：&lt;/strong&gt;成功发现后，使用者方从匹配列表中选择合适的实例句柄。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;创建代理：&lt;/strong&gt;应用程序使用所选句柄实例化 &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;事件订阅与字段注册：&lt;/strong&gt;对于异步事件，客户端通过代理的子对象订阅所需事件。在适当时注册回调或轮询策略。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;服务调用：&lt;/strong&gt;客户端通过代理发起异步返回期物对象的方法调用，或对字段进行读写访问。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;清理：&lt;/strong&gt;交互完成后，终止订阅并销毁代理。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben, da Methodenaufrufe ohne gebundene Service-Instanz semantisch ungültig sind.
+解释：典型使用路径很可能强制要求句柄查找、代理实例化以及后续通信处理的严格顺序，因为未绑定服务实例的方法调用在语义上是无效的。
 &lt;/p&gt;
 &lt;!-- annahmen:
 1) Vermutlich fungiert &lt;SI&gt;Proxy als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform. – Begründung: Der Payload enthält ausschließlich den Klassennamen ohne detaillierte Architekturbeschreibung.
 2) Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein. – Begründung: Der Payload enthält keine Spezifikationsanforderungen zur Handle-Lebensdauer.
 3) Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben. – Begründung: Ablaufdetails fehlen im Payload.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11. Da im Payload keine Spezifikations-Records oder Dokumentstellen hinterlegt sind, wurden funktionale Zusammenhänge neutral anhand der architekturellen Rolle von Service-Interface-Proxies abgeleitet.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 R25-11 版本的可用元数据。由于有效负载中未包含规范记录或文档出处，因此功能关联是根据服务接口代理（Service Interface Proxy）的架构角色中立地推导出来的。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

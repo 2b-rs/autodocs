@@ -20,29 +20,28 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>e1d25af99427</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_skeleton_fields_6fe063/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/namespaces/ns_com__SI_Namespace_skeleton_fields_6fe063/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>&lt;SI-Namespace&gt;::skeleton::fields</code> ist Bestandteil des Moduls <code>com</code> in der AUTOSAR Adaptive Platform (Release R25-11). Er kapselt die serverseitigen Repräsentationen für alle Felder, die in einem Service-Interface modelliert sind. Für jedes im jeweiligen <code>ServiceInterface</code> in der Rolle als Feld definierte Element wird eine spezifische Skeleton-Feldklasse <code>&lt;Field&gt;</code> bereitgestellt. Diese Klassen dienen als Schnittstelle zwischen der konkreten Service-Implementierung (Skeleton) und der Kommunikationsinfrastruktur, um Datenwerte bereitzustellen, Aktualisierungen an Abonnenten zu melden und optionale Lese- oder Schreibanfragen zu handhaben.</p>
+<h4>上下文</h4>
+<p>命名空间 <code>&lt;SI-Namespace&gt;::skeleton::fields</code> 是 AUTOSAR Adaptive Platform（Release R25-11）中模块 <code>com</code> 的组成部分。它封装了服务接口中建模的所有字段的服务器端表示。为相应 <code>ServiceInterface</code> 中作为字段角色定义的每个元素提供了一个专用的 Skeleton 字段类 <code>&lt;Field&gt;</code>。这些类用作具体服务实现（Skeleton）与通信基础设施之间的接口，以提供数据值、向订阅者报告更新并处理可选的读取或写入请求。</p>
 
-<h4>Lebenszyklus und Besitzverhältnisse</h4>
-<p>Die Instanzen der Skeleton-Feldklassen <code>&lt;Field&gt;</code> sind fest an den Lebenszyklus des übergeordneten Service-Skeletons gebunden. Sie werden bei der Instanziierung der Service-Skeleton-Klasse erzeugt und verbleiben in deren Besitz. Solange die Service-Instanz aktiv angeboten wird, verwalten die Feldinstanzen den aktuellen Zustand des modellierten Feldes sowie die Registrierungen für Benachrichtigungen oder Zugriffs-Handler. Mit der Zerstörung des Service-Skeletons enden auch die Lebensdauer und Gültigkeit der zugehörigen Feldinstanzen.</p>
+<h4>生命周期与所有权关系</h4>
+<p>Skeleton 字段类 <code>&lt;Field&gt;</code> 的实例牢固绑定到上级服务 Skeleton 的生命周期。它们在服务 Skeleton 类实例化时创建并由其持有。只要服务实例处于活动提供状态，字段实例就管理建模字段的当前状态以及通知注册或访问处理程序。随着服务 Skeleton 的销毁，关联字段实例的生命周期和有效性也随之终止。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Die typische Interaktion mit Elementen aus <code>&lt;SI-Namespace&gt;::skeleton::fields</code> erfolgt innerhalb der Service-Implementierung:</p>
+<h4>使用路径</h4>
+<p>与来自 <code>&lt;SI-Namespace&gt;::skeleton::fields</code> 的元素的典型交互发生在服务实现内部：</p>
 <ol>
-<li><strong>Bereitstellung:</strong> Das Skeleton instanziiert die generierten Feldobjekte <code>&lt;Field&gt;</code> als Teil seiner Member-Struktur.</li>
-<li><strong>Initialisierung:</strong> Das Skeleton setzt den Initialwert des Feldes bzw. registriert gegebenenfalls Handler für Zugriffe (Get/Set), sofern das Feld diese Operationen unterstützt.</li>
-<li><strong>Aktualisierung:</strong> Ändert sich der interne Zustand im Service, aktualisiert das Skeleton den Feldwert über die Klasse <code>&lt;Field&gt;</code>, wodurch registrierte Abonnenten auf Proxy-Seite über die Kommunikationsschicht benachrichtigt werden können.</li>
+<li><strong>提供：</strong>Skeleton 实例化生成的字段对象 <code>&lt;Field&gt;</code>，作为其成员结构的一部分。</li>
+<li><strong>初始化：</strong>Skeleton 设置字段的初始值，或者在字段支持这些操作的情况下适时注册用于访问（Get/Set）的处理程序。</li>
+<li><strong>更新：</strong>如果服务中的内部状态发生更改，Skeleton 会通过类 <code>&lt;Field&gt;</code> 更新字段值，从而可以通过通信层通知代理端的已注册订阅者。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlerszenarien betreffen primär den Lebenszyklus und ungültige Aufrufe während Übergangsphasen. Ein Zugriff auf ein Feld vor der vollständigen Initialisierung des Skeletons oder nach Beginn des Herunterfahrens der Service-Instanz führt zu undefiniertem Verhalten oder Kommunikationsfehlern. Zudem müssen Zugriffs-Handler sicherstellen, dass Anfragen konsistent beantwortet und Fehlerzustände der Anwendungslogik ordnungsgemäß an die Kommunikationsschicht übermittelt werden.</p>
+<h4>错误场景</h4>
+<p>错误场景主要涉及生命周期以及过渡阶段的无效调用。在 Skeleton 完全初始化之前或服务实例开始关闭之后访问字段会导致未定义行为或通信错误。此外，访问处理程序必须确保一致地应答请求，并将应用程序逻辑的错误状态正常传输给通信层。</p>
 
 <!-- annahmen: 1) Die Feldklassen <Field> sind Member des jeweiligen Service-Skeletons und teilen dessen Lebenszyklus. – Begründung: Der Payload belegt <Field> als "Service skeleton Field class, one for each Field defined in the ServiceInterface in the role field." 2) Das Feld unterstützt Wertaktualisierungen sowie optionale Get/Set-Operationen. – Begründung: Typische AUTOSAR-Adaptive-Feldsemantik für Service-Interfaces. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11. Weiterführende normative Anforderungen liegen für diesen Namespace im aktuellen Datenbestand nicht vor.</p>
+<p class="ai-note">本指南基于 Release R25-11 的结构元数据。当前数据集中不存在关于此命名空间的进一步规范性要求。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_skeleton_fields_6fe063" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -282,26 +281,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="e1d25af99427509cd8d40c014e3c1247d3e5e029559e940fd6eb247b5e615d2b" data-trace-output="52b08989c4647bcf14e167d50e1938a4aef77a967cad5d85e714afc1e94c003c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;com&lt;/code&gt; in der AUTOSAR Adaptive Platform (Release R25-11). Er kapselt die serverseitigen Repräsentationen für alle Felder, die in einem Service-Interface modelliert sind. Für jedes im jeweiligen &lt;code&gt;ServiceInterface&lt;/code&gt; in der Rolle als Feld definierte Element wird eine spezifische Skeleton-Feldklasse &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; bereitgestellt. Diese Klassen dienen als Schnittstelle zwischen der konkreten Service-Implementierung (Skeleton) und der Kommunikationsinfrastruktur, um Datenwerte bereitzustellen, Aktualisierungen an Abonnenten zu melden und optionale Lese- oder Schreibanfragen zu handhaben.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;命名空间 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; 是 AUTOSAR Adaptive Platform（Release R25-11）中模块 &lt;code&gt;com&lt;/code&gt; 的组成部分。它封装了服务接口中建模的所有字段的服务器端表示。为相应 &lt;code&gt;ServiceInterface&lt;/code&gt; 中作为字段角色定义的每个元素提供了一个专用的 Skeleton 字段类 &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;。这些类用作具体服务实现（Skeleton）与通信基础设施之间的接口，以提供数据值、向订阅者报告更新并处理可选的读取或写入请求。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus und Besitzverhältnisse&lt;/h4&gt;
-&lt;p&gt;Die Instanzen der Skeleton-Feldklassen &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; sind fest an den Lebenszyklus des übergeordneten Service-Skeletons gebunden. Sie werden bei der Instanziierung der Service-Skeleton-Klasse erzeugt und verbleiben in deren Besitz. Solange die Service-Instanz aktiv angeboten wird, verwalten die Feldinstanzen den aktuellen Zustand des modellierten Feldes sowie die Registrierungen für Benachrichtigungen oder Zugriffs-Handler. Mit der Zerstörung des Service-Skeletons enden auch die Lebensdauer und Gültigkeit der zugehörigen Feldinstanzen.&lt;/p&gt;
+&lt;h4&gt;生命周期与所有权关系&lt;/h4&gt;
+&lt;p&gt;Skeleton 字段类 &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; 的实例牢固绑定到上级服务 Skeleton 的生命周期。它们在服务 Skeleton 类实例化时创建并由其持有。只要服务实例处于活动提供状态，字段实例就管理建模字段的当前状态以及通知注册或访问处理程序。随着服务 Skeleton 的销毁，关联字段实例的生命周期和有效性也随之终止。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die typische Interaktion mit Elementen aus &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; erfolgt innerhalb der Service-Implementierung:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;与来自 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; 的元素的典型交互发生在服务实现内部：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellung:&lt;/strong&gt; Das Skeleton instanziiert die generierten Feldobjekte &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; als Teil seiner Member-Struktur.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Das Skeleton setzt den Initialwert des Feldes bzw. registriert gegebenenfalls Handler für Zugriffe (Get/Set), sofern das Feld diese Operationen unterstützt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Aktualisierung:&lt;/strong&gt; Ändert sich der interne Zustand im Service, aktualisiert das Skeleton den Feldwert über die Klasse &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;, wodurch registrierte Abonnenten auf Proxy-Seite über die Kommunikationsschicht benachrichtigt werden können.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;提供：&lt;/strong&gt;Skeleton 实例化生成的字段对象 &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;，作为其成员结构的一部分。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;初始化：&lt;/strong&gt;Skeleton 设置字段的初始值，或者在字段支持这些操作的情况下适时注册用于访问（Get/Set）的处理程序。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;更新：&lt;/strong&gt;如果服务中的内部状态发生更改，Skeleton 会通过类 &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; 更新字段值，从而可以通过通信层通知代理端的已注册订阅者。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlerszenarien betreffen primär den Lebenszyklus und ungültige Aufrufe während Übergangsphasen. Ein Zugriff auf ein Feld vor der vollständigen Initialisierung des Skeletons oder nach Beginn des Herunterfahrens der Service-Instanz führt zu undefiniertem Verhalten oder Kommunikationsfehlern. Zudem müssen Zugriffs-Handler sicherstellen, dass Anfragen konsistent beantwortet und Fehlerzustände der Anwendungslogik ordnungsgemäß an die Kommunikationsschicht übermittelt werden.&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;错误场景主要涉及生命周期以及过渡阶段的无效调用。在 Skeleton 完全初始化之前或服务实例开始关闭之后访问字段会导致未定义行为或通信错误。此外，访问处理程序必须确保一致地应答请求，并将应用程序逻辑的错误状态正常传输给通信层。&lt;/p&gt;
 
 &lt;!-- annahmen: 1) Die Feldklassen &lt;Field&gt; sind Member des jeweiligen Service-Skeletons und teilen dessen Lebenszyklus. – Begründung: Der Payload belegt &lt;Field&gt; als "Service skeleton Field class, one for each Field defined in the ServiceInterface in the role field." 2) Das Feld unterstützt Wertaktualisierungen sowie optionale Get/Set-Operationen. – Begründung: Typische AUTOSAR-Adaptive-Feldsemantik für Service-Interfaces. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11. Weiterführende normative Anforderungen liegen für diesen Namespace im aktuellen Datenbestand nicht vor.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 Release R25-11 的结构元数据。当前数据集中不存在关于此命名空间的进一步规范性要求。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

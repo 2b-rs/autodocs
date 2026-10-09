@@ -21,53 +21,52 @@
   <span class="ai-badge-label">GENERADO POR IA</span>
   <span class="ai-review-state">no revisado</span>
   <span class="ai-trace-meta">Modelo: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperatura: nicht steuerbar · Prompt: <code>d66ea0eb10b9</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_phm_apext_phm_c44d23/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedencia: perfil, hash de prompt, hash de salida, ejecuciones, revisión">Procedencia</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/es/namespaces/ns_phm_apext_phm_c44d23/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedencia: perfil, hash de prompt, hash de salida, ejecuciones, revisión">Procedencia</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_phm_apext_phm_c44d23" data-view-mode="editor" title="Abrir editor de curación y expediente" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curar</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Nota editorial:</strong> Esta guía técnica se encuentra actualmente en proceso de traducción. A continuación se muestra la versión de referencia original.</div>
-  <h4>Kontext</h4>
+  <h4>Contexto</h4>
   <p>
-    Der Namespace <code>apext::phm</code> gehört zur AUTOSAR Adaptive Platform und ist dem Funktionsbereich des Platform Health Management (<code>phm</code>) im Release R25-11 zugeordnet. Der Namensraum dient als Container für plattformspezifische Erweiterungen (Platform Extensions), die funktionale Schnittstellen an der Grenze zwischen standardisierten Plattformdiensten und hardwarenaher Funktionalität definieren.
+    El namespace <code>apext::phm</code> pertenece a la AUTOSAR Adaptive Platform y está asignado al área funcional del Platform Health Management (<code>phm</code>) en la versión R25-11. El espacio de nombres sirve como contenedor para extensiones de plataforma (Platform Extensions) que definen interfaces funcionales en el límite entre los servicios de plataforma estandarizados y la funcionalidad cercana al hardware.
   </p>
   <p>
-    Das zentrale im Datenbestand belegte Element dieses Namespace ist die Klasse <code>WatchdogInterface</code>. Diese Klasse ist explizit als Schnittstelle zu einem Hardware-Watchdog (<em>interface to hardware watchdog</em>) ausgewiesen. Obwohl das Konstrukt im Programmcode als Interface identifizierbar ist, wird es formell als Plattformerweiterung (<em>PlatformExtension</em>) geführt. Interpretation: Die Schnittstelle <code>WatchdogInterface</code> dürfte als hardwarenahes Bindeglied zwischen den übergeordneten Überwachungsmechanismen des Platform Health Management und einer physischen Hardware-Watchdog-Einheit agieren, um im Fehlerfall das Gesamtsystem in einen sicheren Zustand zu überführen.
+    El elemento central documentado en los datos para este namespace es la clase <code>WatchdogInterface</code>. Esta clase se designa explícitamente como interfaz a un watchdog de hardware (<em>interface to hardware watchdog</em>). Aunque el constructo es identificable en el código de programa como una interfaz, formalmente se clasifica como una extensión de plataforma (<em>PlatformExtension</em>). Interpretación: es de prever que la interfaz <code>WatchdogInterface</code> actúe como nexo cercano al hardware entre los mecanismos de supervisión de nivel superior del Platform Health Management y una unidad física de watchdog de hardware, con el fin de llevar el sistema completo a un estado seguro en caso de fallo.
   </p>
   <p>
-    Im architektonischen Zusammenspiel grenzt sich <code>apext::phm</code> von den rein standardisierten Schnittstellen der Adaptive Platform ab. Da Hardware-Watchdogs in automobilen Steuergeräten herstellerspezifische Register, SPI-Protokolle oder diskrete Ansteuerleitungen besitzen, kapselt dieser Namespace die hardwareabhängige Interaktion. Interpretation: Als deklarierte Plattformerweiterung (<em>PlatformExtension</em>) dürfte die konkrete Implementierung von <code>WatchdogInterface</code> durch den jeweiligen Plattform- oder Hardwareintegrator bereitgestellt werden, während das Kernmodul <code>phm</code> auf die einheitlich definierte Schnittstelle zugreift.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Der Lebenszyklus der in <code>apext::phm</code> bereitgestellten Komponenten ist eng mit den Betriebsphasen der zugrunde liegenden Hardware-Überwachung verknüpft. Im Datenbestand sind keine isolierten Zustandsmaschinen oder eigenständigen Initialisierungsfunktionen für den Namespace hinterlegt.
-  </p>
-  <p>
-    Interpretation: Der Lebenszyklus einer Instanz von <code>WatchdogInterface</code> dürfte typischerweise an die globale Initialisierungs- und Überwachungsroutine des Gesamtsystems gekoppelt sein. Dies bedeutet, dass die Schnittstelle bereits in einer frühen Bootphase der Adaptive Platform instanziiert und konfiguriert werden muss, bevor sicherheitskritische Überwachungsfunktionen des <code>phm</code> aktiv getriggert werden.
-  </p>
-  <p>
-    Hinsichtlich Besitzverhältnissen und Nebenläufigkeit gilt, dass ein Hardware-Watchdog gewöhnlich eine exklusive Ressource des Zielsteuergeräts darstellt. Eine Implementierung von <code>WatchdogInterface</code> muss daher sicherstellen, dass Zugriffe thread-sicher erfolgen oder von einer zentralen Koordinationsinstanz innerhalb des <code>phm</code> sequenziell gesteuert werden, um Race Conditions bei der zyklischen Triggerung oder Reinitialisierung des Watchdogs auszuschließen. Die Zerstörung bzw. das Beenden der Schnittstelle erfolgt erst bei einem kontrollierten Herunterfahren oder Neustart des Steuergeräts.
+    En la interacción arquitectónica, <code>apext::phm</code> se diferencia de las interfaces puramente estandarizadas de la Adaptive Platform. Dado que los watchdogs de hardware en las unidades de control electrónico de automoción poseen registros específicos del fabricante, protocolos SPI o líneas de control discretas, este namespace encapsula la interacción dependiente del hardware. Interpretación: al ser una extensión de plataforma declarada (<em>PlatformExtension</em>), es de prever que la implementación concreta de <code>WatchdogInterface</code> sea proporcionada por el integrador correspondiente de la plataforma o del hardware, mientras que el módulo central <code>phm</code> accede a la interfaz definida de manera uniforme.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>Ciclo de vida</h4>
   <p>
-    Der reguläre Nutzungspfad der Schnittstelle in <code>apext::phm</code> gliedert sich in eine Bereitstellungsphase und eine zyklische Betriebsphase. Da im vorliegenden Datenbestand keine feingranularen Methodenbezeichner deklariert sind, ergibt sich der Pfad aus der funktionalen Rolle von <code>WatchdogInterface</code> als Hardware-Watchdog-Schnittstelle.
+    El ciclo de vida de los componentes proporcionados en <code>apext::phm</code> está estrechamente vinculado a las fases operativas de la supervisión de hardware subyacente. En el conjunto de datos no se recogen máquinas de estados aisladas ni funciones de inicialización independientes para el namespace.
   </p>
   <p>
-    In der Bereitstellungsphase wird die plattformspezifische Realisierung von <code>WatchdogInterface</code> instanziiert. Das System prüft die Verfügbarkeit der Hardware-Einheit und richtet Zeitfenster sowie Schwellenwerte für die externe Überwachung ein. Sobald die Initialisierung abgeschlossen ist, übernimmt das Platform Health Management die Steuerung.
+    Interpretación: es de prever que el ciclo de vida de una instancia de <code>WatchdogInterface</code> esté acoplado típicamente a la rutina global de inicialización y supervisión del sistema en su conjunto. Esto significa que la interfaz debe instanciarse y configurarse ya en una fase temprana de arranque (boot) de la Adaptive Platform, antes de que se disparen activamente las funciones de supervisión críticas para la seguridad de <code>phm</code>.
   </p>
   <p>
-    Im laufenden Betrieb erfolgt die zyklische Bedienung des Watchdogs. Das Platform Health Management überwacht interne Prozesse, Alive-Zustände und logische Programmabläufe. Sofern alle geprüften Kriterien erfüllt sind, veranlasst das System über <code>WatchdogInterface</code> das rechtzeitige Zurücksetzen (Triggering bzw. Servicing) des Hardware-Watchdogs. Bleibt dieses Signal aus oder meldet die Überwachung einen kritischen Fehlerzustand, unterbleibt die Bedienung, wodurch der Hardware-Watchdog die vorgesehene Fehlerreaktion (etwa einen Hardware-Reset) auslöst.
+    En cuanto a las relaciones de propiedad y a la concurrencia, un watchdog de hardware representa habitualmente un recurso exclusivo de la unidad de control de destino. Por consiguiente, una implementación de <code>WatchdogInterface</code> debe garantizar que los accesos se realicen de forma segura para subprocesos o sean controlados secuencialmente por una instancia de coordinación central dentro de <code>phm</code>, con el fin de descartar condiciones de carrera (race conditions) durante el disparo cíclico o la reinicialización del watchdog. La destrucción o terminación de la interfaz no se produce hasta que tiene lugar un apagado controlado o un reinicio de la unidad de control.
   </p>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>Ruta de uso</h4>
   <p>
-    Im Kontext der Hardware-Watchdog-Anbindung über <code>apext::phm</code> sind Fehlerzustände primär an die Hardwarekommunikation und das Einhalten definierter Zeitfenster gebunden. Kann die Hardware nicht ordnungsgemäß über <code>WatchdogInterface</code> angesprochen werden – beispielsweise infolge eines Busfehlers, fehlerhafter Registerzugriffe oder ungültiger Hardwarekonfigurationen –, muss dieser Zustand unmittelbar detektiert werden.
+    La ruta de uso regular de la interfaz en <code>apext::phm</code> se divide en una fase de provisión y una fase operativa cíclica. Dado que en el presente conjunto de datos no se declaran identificadores de métodos de grano fino, la ruta se deduce del rol funcional de <code>WatchdogInterface</code> como interfaz de watchdog de hardware.
   </p>
   <p>
-    Fehlerszenarien umfassen zudem Timeouts bei der zyklischen Triggerung. Kann eine Vorbedingung für die Aktualisierung des Watchdogs nicht erfüllt werden, etwa weil das <code>phm</code> eine verletzte Frist bei einer überwachten Applikation feststellt, verhindert die Schnittstellenarchitektur ein fälschliches Weitertakten des Watchdogs. Spezifische Fehlercodes oder Exception-Typen sind im vorliegenden Spezifikationsauszug nicht separat aufgeführt; robuste Implementierungen müssen jedoch sicherstellen, dass Aufruffehler nicht zum unbemerkten Ausfall der Sicherheitsarchitektur führen.
+    En la fase de provisión se instancia la realización específica de plataforma de <code>WatchdogInterface</code>. El sistema comprueba la disponibilidad de la unidad de hardware y configura ventanas temporales, así como valores de umbral para la supervisión externa. Tan pronto como concluye la inicialización, el Platform Health Management asume el control.
+  </p>
+  <p>
+    Durante el funcionamiento en curso se produce la atención cíclica del watchdog. El Platform Health Management supervisa los procesos internos, los estados de actividad (alive) y las secuencias lógicas del programa. Siempre que se cumplan todos los criterios verificados, el sistema solicita a través de <code>WatchdogInterface</code> el restablecimiento a tiempo (triggering o servicing) del watchdog de hardware. Si esta señal no se emite o la supervisión notifica un estado de error crítico, se omite dicha atención, con lo cual el watchdog de hardware desencadena la reacción de error prevista (como un reinicio por hardware).
+  </p>
+
+  <h4>Escenarios de error</h4>
+  <p>
+    En el contexto de la conexión del watchdog de hardware a través de <code>apext::phm</code>, los estados de error están ligados primordialmente a la comunicación con el hardware y al cumplimiento de ventanas temporales definidas. Si el hardware no se puede direccionar correctamente a través de <code>WatchdogInterface</code> —por ejemplo a consecuencia de un fallo de bus, accesos defectuosos a registros o configuraciones de hardware no válidas—, dicho estado debe detectarse inmediatamente.
+  </p>
+  <p>
+    Los escenarios de error comprenden asimismo tiempos de espera agotados (timeouts) en el disparo cíclico. Si una precondición para la actualización del watchdog no se puede satisfacer, por ejemplo porque el <code>phm</code> detecta un plazo incumplido en una aplicación supervisada, la arquitectura de la interfaz impide un refresco erróneo del watchdog. En el presente extracto de la especificación no se detallan por separado códigos de error específicos ni tipos de excepción; no obstante, las implementaciones robustas deben garantizar que los errores de llamada no provoquen un fallo inadvertido de la arquitectura de seguridad.
   </p>
 
   <!-- annahmen: 1) Anbindung an physische Hardware – Begründung: Die Klasse WatchdogInterface ist laut Payload als Schnittstelle zu einem Hardware-Watchdog ausgewiesen. 2) Bereitstellung durch Plattformintegrator – Begründung: Die Kennzeichnung als Platform Extension unter apext verweist auf plattformspezifische Erweiterungen. 3) Koppelung an PHM-Lebenszyklus – Begründung: Der Namespace gehört zum Modul phm (Platform Health Management), spezifische Lebenszyklusmethoden sind im Payload jedoch nicht detailliert. -->
-  <p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten des AUTOSAR-Releases R25-11 für den Namespace apext::phm.</p>
+  <p class="ai-note">Esta guía se basa en los datos de especificación de la versión R25-11 de AUTOSAR para el namespace apext::phm.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_phm_apext_phm_c44d23" title="Discutir con IA">💬 Discutir con IA</button>
@@ -307,50 +306,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="d66ea0eb10b9fb7f4d24fc1e21d2c2224310474ab09e4ff2fb1017371d14e7a7" data-trace-output="667cf0371fc6f000b82f5b6f4213a7815b8db02ce8ad2ce3f8521bea0a2255e9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Nota editorial:&lt;/strong&gt; Esta guía técnica se encuentra actualmente en proceso de traducción. A continuación se muestra la versión de referencia original.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;Contexto&lt;/h4&gt;
   &lt;p&gt;
-    Der Namespace &lt;code&gt;apext::phm&lt;/code&gt; gehört zur AUTOSAR Adaptive Platform und ist dem Funktionsbereich des Platform Health Management (&lt;code&gt;phm&lt;/code&gt;) im Release R25-11 zugeordnet. Der Namensraum dient als Container für plattformspezifische Erweiterungen (Platform Extensions), die funktionale Schnittstellen an der Grenze zwischen standardisierten Plattformdiensten und hardwarenaher Funktionalität definieren.
+    El namespace &lt;code&gt;apext::phm&lt;/code&gt; pertenece a la AUTOSAR Adaptive Platform y está asignado al área funcional del Platform Health Management (&lt;code&gt;phm&lt;/code&gt;) en la versión R25-11. El espacio de nombres sirve como contenedor para extensiones de plataforma (Platform Extensions) que definen interfaces funcionales en el límite entre los servicios de plataforma estandarizados y la funcionalidad cercana al hardware.
   &lt;/p&gt;
   &lt;p&gt;
-    Das zentrale im Datenbestand belegte Element dieses Namespace ist die Klasse &lt;code&gt;WatchdogInterface&lt;/code&gt;. Diese Klasse ist explizit als Schnittstelle zu einem Hardware-Watchdog (&lt;em&gt;interface to hardware watchdog&lt;/em&gt;) ausgewiesen. Obwohl das Konstrukt im Programmcode als Interface identifizierbar ist, wird es formell als Plattformerweiterung (&lt;em&gt;PlatformExtension&lt;/em&gt;) geführt. Interpretation: Die Schnittstelle &lt;code&gt;WatchdogInterface&lt;/code&gt; dürfte als hardwarenahes Bindeglied zwischen den übergeordneten Überwachungsmechanismen des Platform Health Management und einer physischen Hardware-Watchdog-Einheit agieren, um im Fehlerfall das Gesamtsystem in einen sicheren Zustand zu überführen.
+    El elemento central documentado en los datos para este namespace es la clase &lt;code&gt;WatchdogInterface&lt;/code&gt;. Esta clase se designa explícitamente como interfaz a un watchdog de hardware (&lt;em&gt;interface to hardware watchdog&lt;/em&gt;). Aunque el constructo es identificable en el código de programa como una interfaz, formalmente se clasifica como una extensión de plataforma (&lt;em&gt;PlatformExtension&lt;/em&gt;). Interpretación: es de prever que la interfaz &lt;code&gt;WatchdogInterface&lt;/code&gt; actúe como nexo cercano al hardware entre los mecanismos de supervisión de nivel superior del Platform Health Management y una unidad física de watchdog de hardware, con el fin de llevar el sistema completo a un estado seguro en caso de fallo.
   &lt;/p&gt;
   &lt;p&gt;
-    Im architektonischen Zusammenspiel grenzt sich &lt;code&gt;apext::phm&lt;/code&gt; von den rein standardisierten Schnittstellen der Adaptive Platform ab. Da Hardware-Watchdogs in automobilen Steuergeräten herstellerspezifische Register, SPI-Protokolle oder diskrete Ansteuerleitungen besitzen, kapselt dieser Namespace die hardwareabhängige Interaktion. Interpretation: Als deklarierte Plattformerweiterung (&lt;em&gt;PlatformExtension&lt;/em&gt;) dürfte die konkrete Implementierung von &lt;code&gt;WatchdogInterface&lt;/code&gt; durch den jeweiligen Plattform- oder Hardwareintegrator bereitgestellt werden, während das Kernmodul &lt;code&gt;phm&lt;/code&gt; auf die einheitlich definierte Schnittstelle zugreift.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Der Lebenszyklus der in &lt;code&gt;apext::phm&lt;/code&gt; bereitgestellten Komponenten ist eng mit den Betriebsphasen der zugrunde liegenden Hardware-Überwachung verknüpft. Im Datenbestand sind keine isolierten Zustandsmaschinen oder eigenständigen Initialisierungsfunktionen für den Namespace hinterlegt.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Interpretation: Der Lebenszyklus einer Instanz von &lt;code&gt;WatchdogInterface&lt;/code&gt; dürfte typischerweise an die globale Initialisierungs- und Überwachungsroutine des Gesamtsystems gekoppelt sein. Dies bedeutet, dass die Schnittstelle bereits in einer frühen Bootphase der Adaptive Platform instanziiert und konfiguriert werden muss, bevor sicherheitskritische Überwachungsfunktionen des &lt;code&gt;phm&lt;/code&gt; aktiv getriggert werden.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Hinsichtlich Besitzverhältnissen und Nebenläufigkeit gilt, dass ein Hardware-Watchdog gewöhnlich eine exklusive Ressource des Zielsteuergeräts darstellt. Eine Implementierung von &lt;code&gt;WatchdogInterface&lt;/code&gt; muss daher sicherstellen, dass Zugriffe thread-sicher erfolgen oder von einer zentralen Koordinationsinstanz innerhalb des &lt;code&gt;phm&lt;/code&gt; sequenziell gesteuert werden, um Race Conditions bei der zyklischen Triggerung oder Reinitialisierung des Watchdogs auszuschließen. Die Zerstörung bzw. das Beenden der Schnittstelle erfolgt erst bei einem kontrollierten Herunterfahren oder Neustart des Steuergeräts.
+    En la interacción arquitectónica, &lt;code&gt;apext::phm&lt;/code&gt; se diferencia de las interfaces puramente estandarizadas de la Adaptive Platform. Dado que los watchdogs de hardware en las unidades de control electrónico de automoción poseen registros específicos del fabricante, protocolos SPI o líneas de control discretas, este namespace encapsula la interacción dependiente del hardware. Interpretación: al ser una extensión de plataforma declarada (&lt;em&gt;PlatformExtension&lt;/em&gt;), es de prever que la implementación concreta de &lt;code&gt;WatchdogInterface&lt;/code&gt; sea proporcionada por el integrador correspondiente de la plataforma o del hardware, mientras que el módulo central &lt;code&gt;phm&lt;/code&gt; accede a la interfaz definida de manera uniforme.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;Ciclo de vida&lt;/h4&gt;
   &lt;p&gt;
-    Der reguläre Nutzungspfad der Schnittstelle in &lt;code&gt;apext::phm&lt;/code&gt; gliedert sich in eine Bereitstellungsphase und eine zyklische Betriebsphase. Da im vorliegenden Datenbestand keine feingranularen Methodenbezeichner deklariert sind, ergibt sich der Pfad aus der funktionalen Rolle von &lt;code&gt;WatchdogInterface&lt;/code&gt; als Hardware-Watchdog-Schnittstelle.
+    El ciclo de vida de los componentes proporcionados en &lt;code&gt;apext::phm&lt;/code&gt; está estrechamente vinculado a las fases operativas de la supervisión de hardware subyacente. En el conjunto de datos no se recogen máquinas de estados aisladas ni funciones de inicialización independientes para el namespace.
   &lt;/p&gt;
   &lt;p&gt;
-    In der Bereitstellungsphase wird die plattformspezifische Realisierung von &lt;code&gt;WatchdogInterface&lt;/code&gt; instanziiert. Das System prüft die Verfügbarkeit der Hardware-Einheit und richtet Zeitfenster sowie Schwellenwerte für die externe Überwachung ein. Sobald die Initialisierung abgeschlossen ist, übernimmt das Platform Health Management die Steuerung.
+    Interpretación: es de prever que el ciclo de vida de una instancia de &lt;code&gt;WatchdogInterface&lt;/code&gt; esté acoplado típicamente a la rutina global de inicialización y supervisión del sistema en su conjunto. Esto significa que la interfaz debe instanciarse y configurarse ya en una fase temprana de arranque (boot) de la Adaptive Platform, antes de que se disparen activamente las funciones de supervisión críticas para la seguridad de &lt;code&gt;phm&lt;/code&gt;.
   &lt;/p&gt;
   &lt;p&gt;
-    Im laufenden Betrieb erfolgt die zyklische Bedienung des Watchdogs. Das Platform Health Management überwacht interne Prozesse, Alive-Zustände und logische Programmabläufe. Sofern alle geprüften Kriterien erfüllt sind, veranlasst das System über &lt;code&gt;WatchdogInterface&lt;/code&gt; das rechtzeitige Zurücksetzen (Triggering bzw. Servicing) des Hardware-Watchdogs. Bleibt dieses Signal aus oder meldet die Überwachung einen kritischen Fehlerzustand, unterbleibt die Bedienung, wodurch der Hardware-Watchdog die vorgesehene Fehlerreaktion (etwa einen Hardware-Reset) auslöst.
+    En cuanto a las relaciones de propiedad y a la concurrencia, un watchdog de hardware representa habitualmente un recurso exclusivo de la unidad de control de destino. Por consiguiente, una implementación de &lt;code&gt;WatchdogInterface&lt;/code&gt; debe garantizar que los accesos se realicen de forma segura para subprocesos o sean controlados secuencialmente por una instancia de coordinación central dentro de &lt;code&gt;phm&lt;/code&gt;, con el fin de descartar condiciones de carrera (race conditions) durante el disparo cíclico o la reinicialización del watchdog. La destrucción o terminación de la interfaz no se produce hasta que tiene lugar un apagado controlado o un reinicio de la unidad de control.
   &lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;Ruta de uso&lt;/h4&gt;
   &lt;p&gt;
-    Im Kontext der Hardware-Watchdog-Anbindung über &lt;code&gt;apext::phm&lt;/code&gt; sind Fehlerzustände primär an die Hardwarekommunikation und das Einhalten definierter Zeitfenster gebunden. Kann die Hardware nicht ordnungsgemäß über &lt;code&gt;WatchdogInterface&lt;/code&gt; angesprochen werden – beispielsweise infolge eines Busfehlers, fehlerhafter Registerzugriffe oder ungültiger Hardwarekonfigurationen –, muss dieser Zustand unmittelbar detektiert werden.
+    La ruta de uso regular de la interfaz en &lt;code&gt;apext::phm&lt;/code&gt; se divide en una fase de provisión y una fase operativa cíclica. Dado que en el presente conjunto de datos no se declaran identificadores de métodos de grano fino, la ruta se deduce del rol funcional de &lt;code&gt;WatchdogInterface&lt;/code&gt; como interfaz de watchdog de hardware.
   &lt;/p&gt;
   &lt;p&gt;
-    Fehlerszenarien umfassen zudem Timeouts bei der zyklischen Triggerung. Kann eine Vorbedingung für die Aktualisierung des Watchdogs nicht erfüllt werden, etwa weil das &lt;code&gt;phm&lt;/code&gt; eine verletzte Frist bei einer überwachten Applikation feststellt, verhindert die Schnittstellenarchitektur ein fälschliches Weitertakten des Watchdogs. Spezifische Fehlercodes oder Exception-Typen sind im vorliegenden Spezifikationsauszug nicht separat aufgeführt; robuste Implementierungen müssen jedoch sicherstellen, dass Aufruffehler nicht zum unbemerkten Ausfall der Sicherheitsarchitektur führen.
+    En la fase de provisión se instancia la realización específica de plataforma de &lt;code&gt;WatchdogInterface&lt;/code&gt;. El sistema comprueba la disponibilidad de la unidad de hardware y configura ventanas temporales, así como valores de umbral para la supervisión externa. Tan pronto como concluye la inicialización, el Platform Health Management asume el control.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Durante el funcionamiento en curso se produce la atención cíclica del watchdog. El Platform Health Management supervisa los procesos internos, los estados de actividad (alive) y las secuencias lógicas del programa. Siempre que se cumplan todos los criterios verificados, el sistema solicita a través de &lt;code&gt;WatchdogInterface&lt;/code&gt; el restablecimiento a tiempo (triggering o servicing) del watchdog de hardware. Si esta señal no se emite o la supervisión notifica un estado de error crítico, se omite dicha atención, con lo cual el watchdog de hardware desencadena la reacción de error prevista (como un reinicio por hardware).
+  &lt;/p&gt;
+
+  &lt;h4&gt;Escenarios de error&lt;/h4&gt;
+  &lt;p&gt;
+    En el contexto de la conexión del watchdog de hardware a través de &lt;code&gt;apext::phm&lt;/code&gt;, los estados de error están ligados primordialmente a la comunicación con el hardware y al cumplimiento de ventanas temporales definidas. Si el hardware no se puede direccionar correctamente a través de &lt;code&gt;WatchdogInterface&lt;/code&gt; —por ejemplo a consecuencia de un fallo de bus, accesos defectuosos a registros o configuraciones de hardware no válidas—, dicho estado debe detectarse inmediatamente.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Los escenarios de error comprenden asimismo tiempos de espera agotados (timeouts) en el disparo cíclico. Si una precondición para la actualización del watchdog no se puede satisfacer, por ejemplo porque el &lt;code&gt;phm&lt;/code&gt; detecta un plazo incumplido en una aplicación supervisada, la arquitectura de la interfaz impide un refresco erróneo del watchdog. En el presente extracto de la especificación no se detallan por separado códigos de error específicos ni tipos de excepción; no obstante, las implementaciones robustas deben garantizar que los errores de llamada no provoquen un fallo inadvertido de la arquitectura de seguridad.
   &lt;/p&gt;
 
   &lt;!-- annahmen: 1) Anbindung an physische Hardware – Begründung: Die Klasse WatchdogInterface ist laut Payload als Schnittstelle zu einem Hardware-Watchdog ausgewiesen. 2) Bereitstellung durch Plattformintegrator – Begründung: Die Kennzeichnung als Platform Extension unter apext verweist auf plattformspezifische Erweiterungen. 3) Koppelung an PHM-Lebenszyklus – Begründung: Der Namespace gehört zum Modul phm (Platform Health Management), spezifische Lebenszyklusmethoden sind im Payload jedoch nicht detailliert. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten des AUTOSAR-Releases R25-11 für den Namespace apext::phm.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;Esta guía se basa en los datos de especificación de la versión R25-11 de AUTOSAR para el namespace apext::phm.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

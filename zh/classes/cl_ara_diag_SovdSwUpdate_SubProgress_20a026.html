@@ -24,39 +24,38 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>a356e5dcbbf9</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_diag_SovdSwUpdate_SubProgress_20a026/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_diag_SovdSwUpdate_SubProgress_20a026/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_diag_SovdSwUpdate_SubProgress_20a026" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Datenstruktur <code>ara::diag::SovdSwUpdate::SubProgress</code> ist Teil der Service-Oriented Vehicle Diagnostics (SOVD) innerhalb des Funktionsclusters Diagnostic Management der AUTOSAR Adaptive Platform <a class="spec-record-ref" data-req="SWS_DM_01896" href="../spec/record.html?id=SWS_DM_01896">[SWS_DM_01896]</a>. Sie ist in der Header-Datei <code>ara/diag/sovd_sw_update.h</code> deklariert und dient gemäß <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=748">AUTOSAR_AP_SWS_Diagnostics §8.58.3 „Struct: SubProgress“</a> als standardisierter Datentyp zur Erfassung detaillierter Fortschrittsinformationen von Software-Aktualisierungsvorgängen. Die Definition adressiert die übergeordnete Anforderung RS_Diag_04265 zur Unterstützung strukturierter Aktualisierungsabläufe über SOVD.</p>
+<h4>上下文</h4>
+<p>数据结构 <code>ara::diag::SovdSwUpdate::SubProgress</code> 是 AUTOSAR Adaptive Platform <a class="spec-record-ref" data-req="SWS_DM_01896" href="../spec/record.html?id=SWS_DM_01896">[SWS_DM_01896]</a> 的功能集群 Diagnostic Management 内 Service-Oriented Vehicle Diagnostics (SOVD) 的一部分。它在头文件 <code>ara/diag/sovd_sw_update.h</code> 中声明，并根据 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=748">AUTOSAR_AP_SWS_Diagnostics §8.58.3 “Struct: SubProgress”</a> 用作记录软件更新过程详细进度信息的标准化数据类型。该定义旨在满足上层需求 RS_Diag_04265，以支持通过 SOVD 实现结构化更新流程。</p>
 
-<p>In modernen Fahrzeugarchitekturen besteht ein Software-Update häufig aus mehreren Teilschritten oder umfasst mehrere eigenständige Software-Einheiten. <code>SubProgress</code> übernimmt dabei die Rolle eines feingranularen Status- und Fortschrittsberichts für eine spezifische Entität innerhalb des Gesamtprozesses. Über das Attribut <code>entity</code> vom Typ <code>ara::core::String</code> wird die aktuell bearbeitete Entität identifiziert <a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898">[SWS_DM_01898]</a>. Die Struktur vermittelt als reines Datentransferobjekt zwischen den ausführenden Update-Routinen der Plattform und der Diagnoseschnittstelle, welche die Statusdaten aggregiert und für externe Diagnosetester oder Cloud-Dienste bereitstellt.</p>
+<p>在现代车辆架构中，软件更新通常由多个分步组成，或者包含多个独立的软件单元。<code>SubProgress</code> 在此充当整体流程中特定实体的细粒度状态和进度报告角色。通过类型为 <code>ara::core::String</code> 的属性 <code>entity</code> 标识当前正在处理的实体 <a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898">[SWS_DM_01898]</a>。该结构作为纯数据传输对象，在平台的执行更新例程与诊断接口之间进行传递，诊断接口聚合状态数据并将其提供给外部诊断仪或云服务。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Struktur <code>SubProgress</code> ist als einfacher C++-Verbundtyp deklariert <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=749">AUTOSAR_AP_SWS_Diagnostics §8.58.3 „struct ara::diag::SovdSwUpdate::SubProgress“</a>. Daraus ergeben sich direkte Konsequenzen für Lebenszyklus und Speicherverwaltung:</p>
+<h4>生命周期</h4>
+<p>结构 <code>SubProgress</code> 被声明为简单的 C++ 组合类型 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=749">AUTOSAR_AP_SWS_Diagnostics §8.58.3 “struct ara::diag::SovdSwUpdate::SubProgress”</a>。这对其生命周期和内存管理产生直接影响：</p>
 <ul>
-<li><strong>Erzeugung:</strong> Instanzen von <code>SubProgress</code> werden typischerweise vom zuständigen Update-Handler auf dem Stack oder innerhalb dynamischer Container instanziiert, sobald eine Aktualisierungsphase für eine Entität initiiert wird oder ein Zwischenfortschritt gemeldet werden soll.</li>
-<li><strong>Besitzverhältnisse und Weitergabe:</strong> Als regulärer Werttyp folgt die Struktur den Standard-C++-Kopier- und Verschiebesemantiken. Die erzeugende Komponente besitzt das Objekt zunächst exklusiv und übergibt es per Wert oder konstanter Referenz an die übergeordnete Verwaltungsklasse <code>SovdSwUpdate</code>.</li>
-<li><strong>Zerstörung:</strong> Die Lebensdauer endet automatisch mit dem Verlassen des lokalen Gültigkeitsbereichs oder der Zerstörung des umgebenden Datenbehälters. Dynamisch allozierte Ressourcen, wie der String in <code>entity</code>, werden über die Destruktoren der Standardtypen von <code>ara::core</code> freigegeben.</li>
-<li><strong>Nebenläufigkeit:</strong> <code>SubProgress</code> verfügt über keinerlei interne Sperrmechanismen. Werden Fortschrittsdaten asynchron in separaten Threads erhoben und an Diagnosethreads übermittelt, obliegt die thread-sichere Synchronisation den beteiligten Aufrufern.</li>
+<li><strong>创建：</strong>一旦某个实体的更新阶段启动或需要报告中间进度，负责的更新处理程序通常会在栈上或在动态容器内实例化 <code>SubProgress</code> 的实例。</li>
+<li><strong>所有权与传递：</strong>作为常规值类型，该结构遵循标准 C++ 拷贝和移动语义。创建组件最初独占该对象，并通过值或常量引用将其传递给上层管理类 <code>SovdSwUpdate</code>。</li>
+<li><strong>销毁：</strong>生命周期在离开局部作用域或外围数据容器被销毁时自动结束。动态分配的资源（例如 <code>entity</code> 中的字符串）通过 <code>ara::core</code> 标准类型的析构函数释放。</li>
+<li><strong>并发：</strong><code>SubProgress</code> 不具备任何内部锁定机制。如果进度数据在单独的线程中异步收集并传输到诊断线程，则线程安全同步由参与的调用方负责。</li>
 </ul>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Ablauf zur Nutzung von <code>SubProgress</code> gliedert sich in die Initialisierung, die kontinuierliche Aktualisierung des Fortschritts und den Abschluss der Teilaktualisierung:</p>
+<h4>使用路径</h4>
+<p>使用 <code>SubProgress</code> 的典型流程分为初始化、进度的持续更新以及部分更新的完成：</p>
 <ol>
-<li><strong>Entitätsinitialisierung:</strong> Zu Beginn der Aktualisierung einer Teilkomponente instanziiert der Update-Ablauf eine <code>SubProgress</code>-Struktur und weist dem Feld <code>entity</code> die eindeutige Kennung der Entität zu <a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898">[SWS_DM_01898]</a>.</li>
-<li><strong>Status- und Fortschrittsmeldung:</strong> Während des Vorgangs wird das Feld <code>status</code> mit dem aktuellen Betriebszustand vom Typ <code>SovdUpdateStatus</code> belegt <a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899">[SWS_DM_01899]</a>. Sofern ein quantifizierbarer Fortschritt vorliegt, wird das Attribut <code>progress</code> vom Typ <code>ara::core::Optional&lt;std::uint8_t&gt;</code> mit dem prozentualen Fortschrittswert beschrieben <a class="spec-record-ref" data-req="SWS_DM_01900" href="../spec/record.html?id=SWS_DM_01900">[SWS_DM_01900]</a>. Interpretation: Wenn für eine Operation keine prozentuale Zwischenstufe berechenbar ist, dürfte das optionale Feld unbesetzt bleiben (entsprechend <code>ara::core::nullopt</code>).</li>
-<li><strong>Erfolgreicher Abschluss:</strong> Nach fehlerfreier Übertragung oder Installation wechselt <code>status</code> in den entsprechenden Abschlusszustand <a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899">[SWS_DM_01899]</a>, und <code>progress</code> wird auf den finalen Maximalwert gesetzt.</li>
+<li><strong>实体初始化：</strong>在子组件开始更新时，更新流程实例化一个 <code>SubProgress</code> 结构，并将实体的唯一标识符赋给字段 <code>entity</code> <a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898">[SWS_DM_01898]</a>。</li>
+<li><strong>状态与进度报告：</strong>在此过程中，字段 <code>status</code> 被赋予类型为 <code>SovdUpdateStatus</code> 的当前运行状态 <a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899">[SWS_DM_01899]</a>。只要存在可量化的进度，类型为 <code>ara::core::Optional&lt;std::uint8_t&gt;</code> 的属性 <code>progress</code> 就会被写入百分比进度值 <a class="spec-record-ref" data-req="SWS_DM_01900" href="../spec/record.html?id=SWS_DM_01900">[SWS_DM_01900]</a>。解释：如果无法为某项操作计算百分比中间阶段，则可选字段应保持未占用（对应 <code>ara::core::nullopt</code>）。</li>
+<li><strong>成功完成：</strong>在无差错传输或安装后，<code>status</code> 转换到相应的完成状态 <a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899">[SWS_DM_01899]</a>，且 <code>progress</code> 被设置为最终的最大值。</li>
 </ol>
-<p>Das Diagnosesystem liest diese Felder aus, um übergeordnete SOVD-Fortschrittsobjekte zu befüllen und eine transparente Überwachung einzelner Update-Schritte zu ermöglichen.</p>
+<p>诊断系统读取这些字段以填充上层 SOVD 进度对象，并实现对单个更新步骤的透明监控。</p>
 
-<h4>Fehlerszenarien</h4>
-<p>Die Spezifikation sieht für die Struktur eine explizite Kopplung zwischen dem Ausführungsstatus und aufgetretenen Fehlern vor:</p>
+<h4>错误场景</h4>
+<p>规范为该结构规定了执行状态与所发生错误之间的显式耦合：</p>
 <ul>
-<li><strong>Fehlersignalisierung über den Status:</strong> Schlägt die Aktualisierung einer Entität fehl, wird dies im Attribut <code>status</code> durch den Fehlerstatus indiziert <a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899">[SWS_DM_01899]</a>.</li>
-<li><strong>Detaillierung der Fehlerursache:</strong> Das Mitglied <code>error</code> vom Typ <code>ara::core::ErrorCode</code> spezifiziert den aufgetretenen Fehler genau dann, wenn der Status ein Scheitern signalisiert <a class="spec-record-ref" data-req="SWS_DM_01901" href="../spec/record.html?id=SWS_DM_01901">[SWS_DM_01901]</a> gemäß <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=749">AUTOSAR_AP_SWS_Diagnostics §8.58.3.1.2 „error“</a>. Hierdurch können spezifische protokoll- oder hardwarespezifische Fehlerursachen strukturiert an das Diagnosesystem übermittelt werden.</li>
-<li><strong>Konsistenzanforderungen:</strong> Interpretation: Für Entwickler ergibt sich hieraus die Vorbedingung, dass bei fehlerfreien Zuständen kein relevanter Fehlercode in <code>error</code> ausgewertet werden darf, während im Fehlerfall zwingend ein gültiger <code>ara::core::ErrorCode</code> hinterlegt sein dürfte, um Fehlinterpretationen auf Empfängerseite zu vermeiden.</li>
+<li><strong>通过状态指示错误：</strong>如果实体的更新失败，则会在属性 <code>status</code> 中通过错误状态进行指示 <a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899">[SWS_DM_01899]</a>。</li>
+<li><strong>详细说明错误原因：</strong>当且仅当状态指示失败 <a class="spec-record-ref" data-req="SWS_DM_01901" href="../spec/record.html?id=SWS_DM_01901">[SWS_DM_01901]</a>（根据 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=749">AUTOSAR_AP_SWS_Diagnostics §8.58.3.1.2 “error”</a>）时，类型为 <code>ara::core::ErrorCode</code> 的成员 <code>error</code> 指定所发生的错误。借此，可以将特定的协议或硬件特有错误原因结构化地传输到诊断系统。</li>
+<li><strong>一致性要求：</strong>解释：对于开发人员而言，由此产生的前提条件是：在无错误状态下不得对 <code>error</code> 中的相关错误码进行求值，而在发生错误时则必须存放有效的 <code>ara::core::ErrorCode</code>，以避免接收方产生误解。</li>
 </ul>
 
 <!-- annahmen:
@@ -64,7 +63,7 @@
 2) progress als ara::core::Optional<std::uint8_t> darf unbesetzt bleiben (nullopt) – Begründung: Bei bestimmten Aktualisierungsschritten ist der prozentuale Fortschritt technisch nicht ermittelbar, weshalb der Typ als Optional modelliert wurde.
 3) SubProgress wird als passives Transferobjekt ohne interne Geschäftslogik verwendet – Begründung: Die Spezifikation definiert das Element als struct mit rein öffentlichen Membervariablen ohne Methoden.
 -->
-<p class="ai-note">Dieser Klassen-Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11 (Modul diag) und fasst die Anforderungen an ara::diag::SovdSwUpdate::SubProgress zusammen.</p>
+<p class="ai-note">本类指南基于 AUTOSAR Adaptive Platform Release R25-11 规范（模块 diag），并总结了对 ara::diag::SovdSwUpdate::SubProgress 的要求。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_diag_SovdSwUpdate_SubProgress_20a026" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -638,36 +637,35 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="a356e5dcbbf94d3e167f10428208d665900b7eef2ba1d3e7f8bc845d1f3ee7da" data-trace-output="ea902194f6ddcfe9bc8113b0fcc4cad8ee24942308f8fcbbca142a1c24536576" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Datenstruktur &lt;code&gt;ara::diag::SovdSwUpdate::SubProgress&lt;/code&gt; ist Teil der Service-Oriented Vehicle Diagnostics (SOVD) innerhalb des Funktionsclusters Diagnostic Management der AUTOSAR Adaptive Platform &lt;a class="spec-record-ref" data-req="SWS_DM_01896" href="../spec/record.html?id=SWS_DM_01896"&gt;[SWS_DM_01896]&lt;/a&gt;. Sie ist in der Header-Datei &lt;code&gt;ara/diag/sovd_sw_update.h&lt;/code&gt; deklariert und dient gemäß &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=748"&gt;AUTOSAR_AP_SWS_Diagnostics §8.58.3 „Struct: SubProgress“&lt;/a&gt; als standardisierter Datentyp zur Erfassung detaillierter Fortschrittsinformationen von Software-Aktualisierungsvorgängen. Die Definition adressiert die übergeordnete Anforderung RS_Diag_04265 zur Unterstützung strukturierter Aktualisierungsabläufe über SOVD.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;数据结构 &lt;code&gt;ara::diag::SovdSwUpdate::SubProgress&lt;/code&gt; 是 AUTOSAR Adaptive Platform &lt;a class="spec-record-ref" data-req="SWS_DM_01896" href="../spec/record.html?id=SWS_DM_01896"&gt;[SWS_DM_01896]&lt;/a&gt; 的功能集群 Diagnostic Management 内 Service-Oriented Vehicle Diagnostics (SOVD) 的一部分。它在头文件 &lt;code&gt;ara/diag/sovd_sw_update.h&lt;/code&gt; 中声明，并根据 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=748"&gt;AUTOSAR_AP_SWS_Diagnostics §8.58.3 “Struct: SubProgress”&lt;/a&gt; 用作记录软件更新过程详细进度信息的标准化数据类型。该定义旨在满足上层需求 RS_Diag_04265，以支持通过 SOVD 实现结构化更新流程。&lt;/p&gt;
 
-&lt;p&gt;In modernen Fahrzeugarchitekturen besteht ein Software-Update häufig aus mehreren Teilschritten oder umfasst mehrere eigenständige Software-Einheiten. &lt;code&gt;SubProgress&lt;/code&gt; übernimmt dabei die Rolle eines feingranularen Status- und Fortschrittsberichts für eine spezifische Entität innerhalb des Gesamtprozesses. Über das Attribut &lt;code&gt;entity&lt;/code&gt; vom Typ &lt;code&gt;ara::core::String&lt;/code&gt; wird die aktuell bearbeitete Entität identifiziert &lt;a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898"&gt;[SWS_DM_01898]&lt;/a&gt;. Die Struktur vermittelt als reines Datentransferobjekt zwischen den ausführenden Update-Routinen der Plattform und der Diagnoseschnittstelle, welche die Statusdaten aggregiert und für externe Diagnosetester oder Cloud-Dienste bereitstellt.&lt;/p&gt;
+&lt;p&gt;在现代车辆架构中，软件更新通常由多个分步组成，或者包含多个独立的软件单元。&lt;code&gt;SubProgress&lt;/code&gt; 在此充当整体流程中特定实体的细粒度状态和进度报告角色。通过类型为 &lt;code&gt;ara::core::String&lt;/code&gt; 的属性 &lt;code&gt;entity&lt;/code&gt; 标识当前正在处理的实体 &lt;a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898"&gt;[SWS_DM_01898]&lt;/a&gt;。该结构作为纯数据传输对象，在平台的执行更新例程与诊断接口之间进行传递，诊断接口聚合状态数据并将其提供给外部诊断仪或云服务。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Struktur &lt;code&gt;SubProgress&lt;/code&gt; ist als einfacher C++-Verbundtyp deklariert &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=749"&gt;AUTOSAR_AP_SWS_Diagnostics §8.58.3 „struct ara::diag::SovdSwUpdate::SubProgress“&lt;/a&gt;. Daraus ergeben sich direkte Konsequenzen für Lebenszyklus und Speicherverwaltung:&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;结构 &lt;code&gt;SubProgress&lt;/code&gt; 被声明为简单的 C++ 组合类型 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=749"&gt;AUTOSAR_AP_SWS_Diagnostics §8.58.3 “struct ara::diag::SovdSwUpdate::SubProgress”&lt;/a&gt;。这对其生命周期和内存管理产生直接影响：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Instanzen von &lt;code&gt;SubProgress&lt;/code&gt; werden typischerweise vom zuständigen Update-Handler auf dem Stack oder innerhalb dynamischer Container instanziiert, sobald eine Aktualisierungsphase für eine Entität initiiert wird oder ein Zwischenfortschritt gemeldet werden soll.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Besitzverhältnisse und Weitergabe:&lt;/strong&gt; Als regulärer Werttyp folgt die Struktur den Standard-C++-Kopier- und Verschiebesemantiken. Die erzeugende Komponente besitzt das Objekt zunächst exklusiv und übergibt es per Wert oder konstanter Referenz an die übergeordnete Verwaltungsklasse &lt;code&gt;SovdSwUpdate&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Die Lebensdauer endet automatisch mit dem Verlassen des lokalen Gültigkeitsbereichs oder der Zerstörung des umgebenden Datenbehälters. Dynamisch allozierte Ressourcen, wie der String in &lt;code&gt;entity&lt;/code&gt;, werden über die Destruktoren der Standardtypen von &lt;code&gt;ara::core&lt;/code&gt; freigegeben.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; &lt;code&gt;SubProgress&lt;/code&gt; verfügt über keinerlei interne Sperrmechanismen. Werden Fortschrittsdaten asynchron in separaten Threads erhoben und an Diagnosethreads übermittelt, obliegt die thread-sichere Synchronisation den beteiligten Aufrufern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;创建：&lt;/strong&gt;一旦某个实体的更新阶段启动或需要报告中间进度，负责的更新处理程序通常会在栈上或在动态容器内实例化 &lt;code&gt;SubProgress&lt;/code&gt; 的实例。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;所有权与传递：&lt;/strong&gt;作为常规值类型，该结构遵循标准 C++ 拷贝和移动语义。创建组件最初独占该对象，并通过值或常量引用将其传递给上层管理类 &lt;code&gt;SovdSwUpdate&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;销毁：&lt;/strong&gt;生命周期在离开局部作用域或外围数据容器被销毁时自动结束。动态分配的资源（例如 &lt;code&gt;entity&lt;/code&gt; 中的字符串）通过 &lt;code&gt;ara::core&lt;/code&gt; 标准类型的析构函数释放。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;并发：&lt;/strong&gt;&lt;code&gt;SubProgress&lt;/code&gt; 不具备任何内部锁定机制。如果进度数据在单独的线程中异步收集并传输到诊断线程，则线程安全同步由参与的调用方负责。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Ablauf zur Nutzung von &lt;code&gt;SubProgress&lt;/code&gt; gliedert sich in die Initialisierung, die kontinuierliche Aktualisierung des Fortschritts und den Abschluss der Teilaktualisierung:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;使用 &lt;code&gt;SubProgress&lt;/code&gt; 的典型流程分为初始化、进度的持续更新以及部分更新的完成：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Entitätsinitialisierung:&lt;/strong&gt; Zu Beginn der Aktualisierung einer Teilkomponente instanziiert der Update-Ablauf eine &lt;code&gt;SubProgress&lt;/code&gt;-Struktur und weist dem Feld &lt;code&gt;entity&lt;/code&gt; die eindeutige Kennung der Entität zu &lt;a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898"&gt;[SWS_DM_01898]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Status- und Fortschrittsmeldung:&lt;/strong&gt; Während des Vorgangs wird das Feld &lt;code&gt;status&lt;/code&gt; mit dem aktuellen Betriebszustand vom Typ &lt;code&gt;SovdUpdateStatus&lt;/code&gt; belegt &lt;a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899"&gt;[SWS_DM_01899]&lt;/a&gt;. Sofern ein quantifizierbarer Fortschritt vorliegt, wird das Attribut &lt;code&gt;progress&lt;/code&gt; vom Typ &lt;code&gt;ara::core::Optional&amp;lt;std::uint8_t&amp;gt;&lt;/code&gt; mit dem prozentualen Fortschrittswert beschrieben &lt;a class="spec-record-ref" data-req="SWS_DM_01900" href="../spec/record.html?id=SWS_DM_01900"&gt;[SWS_DM_01900]&lt;/a&gt;. Interpretation: Wenn für eine Operation keine prozentuale Zwischenstufe berechenbar ist, dürfte das optionale Feld unbesetzt bleiben (entsprechend &lt;code&gt;ara::core::nullopt&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erfolgreicher Abschluss:&lt;/strong&gt; Nach fehlerfreier Übertragung oder Installation wechselt &lt;code&gt;status&lt;/code&gt; in den entsprechenden Abschlusszustand &lt;a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899"&gt;[SWS_DM_01899]&lt;/a&gt;, und &lt;code&gt;progress&lt;/code&gt; wird auf den finalen Maximalwert gesetzt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;实体初始化：&lt;/strong&gt;在子组件开始更新时，更新流程实例化一个 &lt;code&gt;SubProgress&lt;/code&gt; 结构，并将实体的唯一标识符赋给字段 &lt;code&gt;entity&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_01898" href="../spec/record.html?id=SWS_DM_01898"&gt;[SWS_DM_01898]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;状态与进度报告：&lt;/strong&gt;在此过程中，字段 &lt;code&gt;status&lt;/code&gt; 被赋予类型为 &lt;code&gt;SovdUpdateStatus&lt;/code&gt; 的当前运行状态 &lt;a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899"&gt;[SWS_DM_01899]&lt;/a&gt;。只要存在可量化的进度，类型为 &lt;code&gt;ara::core::Optional&amp;lt;std::uint8_t&amp;gt;&lt;/code&gt; 的属性 &lt;code&gt;progress&lt;/code&gt; 就会被写入百分比进度值 &lt;a class="spec-record-ref" data-req="SWS_DM_01900" href="../spec/record.html?id=SWS_DM_01900"&gt;[SWS_DM_01900]&lt;/a&gt;。解释：如果无法为某项操作计算百分比中间阶段，则可选字段应保持未占用（对应 &lt;code&gt;ara::core::nullopt&lt;/code&gt;）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;成功完成：&lt;/strong&gt;在无差错传输或安装后，&lt;code&gt;status&lt;/code&gt; 转换到相应的完成状态 &lt;a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899"&gt;[SWS_DM_01899]&lt;/a&gt;，且 &lt;code&gt;progress&lt;/code&gt; 被设置为最终的最大值。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Das Diagnosesystem liest diese Felder aus, um übergeordnete SOVD-Fortschrittsobjekte zu befüllen und eine transparente Überwachung einzelner Update-Schritte zu ermöglichen.&lt;/p&gt;
+&lt;p&gt;诊断系统读取这些字段以填充上层 SOVD 进度对象，并实现对单个更新步骤的透明监控。&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Die Spezifikation sieht für die Struktur eine explizite Kopplung zwischen dem Ausführungsstatus und aufgetretenen Fehlern vor:&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;规范为该结构规定了执行状态与所发生错误之间的显式耦合：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Fehlersignalisierung über den Status:&lt;/strong&gt; Schlägt die Aktualisierung einer Entität fehl, wird dies im Attribut &lt;code&gt;status&lt;/code&gt; durch den Fehlerstatus indiziert &lt;a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899"&gt;[SWS_DM_01899]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Detaillierung der Fehlerursache:&lt;/strong&gt; Das Mitglied &lt;code&gt;error&lt;/code&gt; vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; spezifiziert den aufgetretenen Fehler genau dann, wenn der Status ein Scheitern signalisiert &lt;a class="spec-record-ref" data-req="SWS_DM_01901" href="../spec/record.html?id=SWS_DM_01901"&gt;[SWS_DM_01901]&lt;/a&gt; gemäß &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=749"&gt;AUTOSAR_AP_SWS_Diagnostics §8.58.3.1.2 „error“&lt;/a&gt;. Hierdurch können spezifische protokoll- oder hardwarespezifische Fehlerursachen strukturiert an das Diagnosesystem übermittelt werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konsistenzanforderungen:&lt;/strong&gt; Interpretation: Für Entwickler ergibt sich hieraus die Vorbedingung, dass bei fehlerfreien Zuständen kein relevanter Fehlercode in &lt;code&gt;error&lt;/code&gt; ausgewertet werden darf, während im Fehlerfall zwingend ein gültiger &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; hinterlegt sein dürfte, um Fehlinterpretationen auf Empfängerseite zu vermeiden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;通过状态指示错误：&lt;/strong&gt;如果实体的更新失败，则会在属性 &lt;code&gt;status&lt;/code&gt; 中通过错误状态进行指示 &lt;a class="spec-record-ref" data-req="SWS_DM_01899" href="../spec/record.html?id=SWS_DM_01899"&gt;[SWS_DM_01899]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;详细说明错误原因：&lt;/strong&gt;当且仅当状态指示失败 &lt;a class="spec-record-ref" data-req="SWS_DM_01901" href="../spec/record.html?id=SWS_DM_01901"&gt;[SWS_DM_01901]&lt;/a&gt;（根据 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=749"&gt;AUTOSAR_AP_SWS_Diagnostics §8.58.3.1.2 “error”&lt;/a&gt;）时，类型为 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 的成员 &lt;code&gt;error&lt;/code&gt; 指定所发生的错误。借此，可以将特定的协议或硬件特有错误原因结构化地传输到诊断系统。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;一致性要求：&lt;/strong&gt;解释：对于开发人员而言，由此产生的前提条件是：在无错误状态下不得对 &lt;code&gt;error&lt;/code&gt; 中的相关错误码进行求值，而在发生错误时则必须存放有效的 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;，以避免接收方产生误解。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -675,7 +673,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 2) progress als ara::core::Optional&lt;std::uint8_t&gt; darf unbesetzt bleiben (nullopt) – Begründung: Bei bestimmten Aktualisierungsschritten ist der prozentuale Fortschritt technisch nicht ermittelbar, weshalb der Typ als Optional modelliert wurde.
 3) SubProgress wird als passives Transferobjekt ohne interne Geschäftslogik verwendet – Begründung: Die Spezifikation definiert das Element als struct mit rein öffentlichen Membervariablen ohne Methoden.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11 (Modul diag) und fasst die Anforderungen an ara::diag::SovdSwUpdate::SubProgress zusammen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本类指南基于 AUTOSAR Adaptive Platform Release R25-11 规范（模块 diag），并总结了对 ara::diag::SovdSwUpdate::SubProgress 的要求。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

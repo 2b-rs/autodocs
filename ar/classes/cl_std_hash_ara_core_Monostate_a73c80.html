@@ -24,55 +24,54 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>9e4c595ea8de</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_std_hash_ara_core_Monostate_a73c80/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/classes/cl_std_hash_ara_core_Monostate_a73c80/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_std_hash_ara_core_Monostate_a73c80" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>السياق</h4>
 <p>
-Die Template-Spezialisierung <code>std::hash&lt;ara::core::Monostate&gt;</code> stellt die Hashing-Funktionalität für den Hilfstyp <code>ara::core::Monostate</code> innerhalb des Moduls <code>core</code> der AUTOSAR Adaptive Platform bereit <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. In modernen C++-Architekturen dient das Klassen-Template <code>std::hash</code> als standardisierter Mechanismus zur Berechnung von Streuwerten, die insbesondere für die Platzierung und das Wiederauffinden von Schlüsseln in ungeordneten assoziativen Containern benötigt werden. Die Spezifikation verankert diese Spezialisierung über die Header-Datei <code>ara/core/variant.h</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>, wodurch sie unmittelbar an das Typsystem von <code>ara::core::Variant</code> und die zugehörigen Hilfsklassen gekoppelt ist.
+يوفر تخصيص القالب <code>std::hash&lt;ara::core::Monostate&gt;</code> وظيفة التجزئة (hashing) للنوع المساعد <code>ara::core::Monostate</code> داخل الوحدة <code>core</code> في AUTOSAR Adaptive Platform <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. في بنيات C++ الحديثة، يعمل قالب الفئة <code>std::hash</code> كآلية معيارية لحساب قيم التشتيت، والتي تلزم بشكل خاص لوضع المفاتيح واسترجاعها في الحاويات الترابطية غير المرتبة. وترسخ المواصفة هذا التخصيص عبر ملف الترويسة <code>ara/core/variant.h</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>، مما يربطه مباشرة بنظام الأنواع لـ <code>ara::core::Variant</code> والفئات المساعدة المرتبطة به.
 </p>
 <p>
-Als zentraler Interaktionspartner fungiert der Basistyp <code>ara::core::Monostate</code>, welcher als Argument an den Funktionsaufruf-Operator übergeben wird <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. Darüber hinaus interagiert die Spezialisierung typischerweise mit generischen Datenstrukturen der C++-Standardbibliothek oder der AUTOSAR-Laufzeitumgebung, beispielsweise ungeordneten Hash-Mengen oder Hash-Tabellen (Interpretation: Die Bereitstellung der Spezialisierung dürfte vor allem die nahtlose Einbettung von <code>ara::core::Monostate</code> in generische Hash-basierte Datenstrukturen und die Berechnung zusammengesetzter Hash-Werte für <code>ara::core::Variant</code> ermöglichen).
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Das Funktionsobjekt <code>std::hash&lt;ara::core::Monostate&gt;</code> folgt den üblichen Semantiken von C++-Funktoren. Es kapselt keinen Zustand und besitzt keine persistenten internen Datenfelder, die über die Lebensdauer hinweg verwaltet werden müssten. Instanzen der Struktur können bei Bedarf auf dem Stack oder innerhalb von Container-Instanzen erzeugt und nach Abschluss der Hash-Berechnung ohne Freigabe- oder Bereinigungslogik zerstört werden. Ebenso ist eine direkte Verwendung über temporäre anonyme Objekte gängige Praxis.
-</p>
-<p>
-In Bezug auf die Nebenläufigkeit und Thread-Sicherheit ist die Methode <code>operator()</code> explizit als <code>const</code> sowie <code>noexcept</code> deklariert <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. Da während der Berechnung keine Modifikationen an der Funktor-Instanz oder am übergebenen Argument vorgenommen werden, ist die Ausführung vollständig wiedereintrittsfähig (Interpretation: Das Funktionsobjekt ist zustandslos und gleichzeitige Aufrufe von <code>operator()</code> aus mehreren nebenläufigen Threads dürfen ohne zusätzliche Synchronisationsmaßnahmen parallel ausgeführt werden).
+يعمل النوع الأساسي <code>ara::core::Monostate</code> كطرف تفاعل مركزي، حيث يُمرر كوسيط إلى عامل استدعاء الدالة <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. علاوة على ذلك، يتفاعل التخصيص عادةً مع هياكل البيانات العامة لمكتبة C++ القياسية أو لبيئة تشغيل AUTOSAR، مثل مجموعات التجزئة أو جداول التجزئة غير المرتبة (تفسير: يُرجح أن يتيح توفير التخصيص في المقام الأول التضمين السلس لـ <code>ara::core::Monostate</code> في هياكل البيانات العامة القائمة على التجزئة وحساب قيم التجزئة المركبة لـ <code>ara::core::Variant</code>).
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>دورة الحياة</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in folgende Teilschritte:
+يتبع كائن الدالة <code>std::hash&lt;ara::core::Monostate&gt;</code> دلالات الدوال المعتادة (functors) في C++. فهو لا يغلف أي حالة ولا يمتلك حقول بيانات داخلية مستمرة تتطلب إدارة على مدار فترة البقاء. يمكن إنشاء كائنات البنية عند الحاجة على المكدس أو داخل كائنات الحاويات، وتدميرها بعد اكتمال حساب التجزئة دون الحاجة إلى منطق تحرير أو تنظيف. وبالمثل، يُعد الاستخدام المباشر عبر كائنات مجهولة مؤقتة ممارسة شائعة.
+</p>
+<p>
+فيما يتعلق بالتزامن والأمان للخيوط، تم التصريح صراحةً عن الدالة <code>operator()</code> كـ <code>const</code> بالإضافة إلى <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. ونظرًا لعدم إجراء أي تعديلات على كائن الدالة أو على الوسيط الممرر أثناء الحساب، فإن التنفيذ قابل لإعادة الدخول (reentrant) بالكامل (تفسير: كائن الدالة عديم الحالة ويجوز تنفيذ الاستدعاءات المتزامنة لـ <code>operator()</code> من عدة خيوط متزامنة بالتوازي دون تدابير مزامنة إضافية).
+</p>
+
+<h4>مسار الاستخدام</h4>
+<p>
+ينقسم مسار الاستخدام النموذجي إلى الخطوات الفرعية التالية:
 </p>
 <ul>
-<li><strong>Header-Einbindung:</strong> Die Anwendung oder Bibliothek inkludiert den Header <code>ara/core/variant.h</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>, um die Deklaration von <code>ara::core::Monostate</code> und der entsprechenden Hash-Spezialisierung verfügbar zu machen.</li>
-<li><strong>Objektbereitstellung:</strong> Eine Instanz von <code>ara::core::Monostate</code> liegt vor, beispielsweise als leerer Platzhalterzustand innerhalb einer varianten Datenstruktur.</li>
-<li><strong>Funktor-Instanziierung und Aufruf:</strong> Der Hash-Operator <code>operator()</code> wird mit einer konstanten Referenz auf das Objekt (<code>ara::core::Monostate const &amp;v</code>) aufgerufen <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>.</li>
-<li><strong>Ergebnisverarbeitung:</strong> Der Operator liefert einen Streuwert vom Typ <code>size_t</code> zurück <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>, der unmittelbar zur Adressierung von Hash-Buckets oder zur Hash-Kombination verwendet werden kann.</li>
+<li><strong>تضمين الترويسة:</strong> يُضمّن التطبيق أو المكتبة الترويسة <code>ara/core/variant.h</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a> لإتاحة التصريح عن <code>ara::core::Monostate</code> وعن تخصيص التجزئة المقابل.</li>
+<li><strong>توفير الكائن:</strong> يتوفر كائن من <code>ara::core::Monostate</code>، على سبيل المثال كحالة عنصر نائب فارغ داخل هيكل بيانات متعدد الأشكال (variant).</li>
+<li><strong>إنشاء كائن الدالة واستدعاؤه:</strong> يُستدعى عامل التجزئة <code>operator()</code> باستخدام مرجع ثابت إلى الكائن (<code>ara::core::Monostate const &amp;v</code>) <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>.</li>
+<li><strong>معالجة النتيجة:</strong> يُرجع العامل قيمة تشتيت من النوع <code>size_t</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>، والتي يمكن استخدامها مباشرة لمعالجة حاويات التجزئة (hash buckets) أو لدمج التجزئة.</li>
 </ul>
 <p>
-Da <code>ara::core::Monostate</code> konzeptionell einen Typ mit genau einem diskreten Zustand darstellt, ist das Verhalten der Hash-Funktion besonders deterministisch (Interpretation: Da <code>ara::core::Monostate</code> lediglich einen einzigen Zustand repräsentiert, dürfte der von <code>operator()</code> zurückgegebene Hash-Wert für alle Instanzen ein konstanter und identischer Wert sein).
+نظرًا لأن <code>ara::core::Monostate</code> يمثل مفاهيميًا نوعًا له حالة منفصلة واحدة بالضبط، فإن سلوك دالة التجزئة حتمي للغاية (تفسير: بما أن <code>ara::core::Monostate</code> يمثل حالة واحدة فقط، فمن المرجح أن تكون قيمة التجزئة التي تُرجعها <code>operator()</code> قيمة ثابتة ومطابقة لجميع الكائنات).
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>سيناريوهات الأخطاء</h4>
 <p>
-Hinsichtlich möglicher Fehlerszenarien zeichnet sich <code>std::hash&lt;ara::core::Monostate&gt;</code> durch strikte Fehlerfreiheit und Robustheit aus. Die Signatur von <code>operator()</code> ist mit dem Spezifizierer <code>noexcept</code> versehen und gemäß Spezifikation als ausnahmesicher („exception safe“) klassifiziert <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>.
+فيما يتعلق بسيناريوهات الخطأ المحتملة، تتميز <code>std::hash&lt;ara::core::Monostate&gt;</code> بالخلو التام من الأخطاء والمتانة الصارمة. فبنية توقيع <code>operator()</code> مزودة بالمحدد <code>noexcept</code> ومصنفة وفقًا للمواصفة على أنها آمنة من الاستثناءات (”exception safe“) <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>.
 </p>
 <p>
-Daraus ergeben sich die folgenden Eigenschaften für die Schnittstelle:
+وينتج عن ذلك الخصائص التالية للواجهة:
 </p>
 <ul>
-<li><strong>Keine Ausnahmen:</strong> Der Aufruf garantiert die vollständige Abwesenheit von C++-Exceptions. Weder Allokationsfehler noch funktionale Ausnahmen können während der Ausführung auftreten.</li>
-<li><strong>Keine Fehlercodes:</strong> Die Schnittstelle verwendet keine Rückgabecodes (wie <code>ara::core::Result</code> oder <code>ara::core::ErrorCode</code>), da die Berechnung eines Hash-Wertes für ein gültiges <code>ara::core::Monostate</code>-Objekt stets erfolgreich abschließt.</li>
-<li><strong>Vor- und Nachbedingungen:</strong> Als Vorbedingung genügt die Übergabe einer syntaktisch gültigen Referenz auf eine <code>ara::core::Monostate</code>-Instanz <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. Da der Typ keinen ungültigen inneren Zustand annehmen kann, existieren keine fehlerhaften Eingangsdaten. Als Nachbedingung wird garantiert, dass stets ein reproduzierbarer Wert des Typs <code>size_t</code> geliefert wird <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>.</li>
+<li><strong>غياب الاستثناءات:</strong> يضمن الاستدعاء الغياب التام لاستثناءات C++. فلا يمكن أن تحدث أخطاء تخصيص أو استثناءات وظيفية أثناء التنفيذ.</li>
+<li><strong>عدم وجود رموز أخطاء:</strong> لا تستخدم الواجهة رموز إرجاع (مثل <code>ara::core::Result</code> أو <code>ara::core::ErrorCode</code>)، حيث يكتمل دائمًا حساب قيمة التجزئة لكائن <code>ara::core::Monostate</code> صالح بنجاح.</li>
+<li><strong>الشروط المسبقة واللاحقة:</strong> كشرط مسبق، يكفي تمرير مرجع صالح نحويًا لكائن <code>ara::core::Monostate</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>. ونظرًا لعدم إمكانية اتخاذ النوع لحالة داخلية غير صالحة، فلا توجد بيانات إدخال غير صحيحة. وكشرط لاحق، يُضمن دائمًا تقديم قيمة قابلة للتكرار من النوع <code>size_t</code> <a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671">[SWS_CORE_01671]</a>.</li>
 </ul>
 
 <!-- annahmen: 1) Die Spezialisierung dürfte primär der nahtlosen Einbettung in generische C++-Hash-Container und der Hash-Berechnung für ara::core::Variant dienen – Begründung: Der Header ara/core/variant.h verknüpft Monostate eng mit Variant, wo Monostate typischerweise als leerer Alternativtyp fungiert. 2) Das Funktionsobjekt ist zustandslos und Aufrufe dürfen parallel ohne Synchronisation erfolgen – Begründung: operator() ist const noexcept und std::hash-Spezialisierungen besitzen im C++-Standard üblicherweise keine veränderlichen Member. 3) Der gelieferte Hash-Wert dürfte für alle Instanzen identisch sein – Begründung: ara::core::Monostate repräsentiert als Ein-Zustands-Typ stets denselben Zustand. -->
-<p class="ai-note">Dieser Klassen-Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikation für die Adaptive Platform (Release R25-11) erstellt.</p>
+<p class="ai-note">تم إنشاء دليل الفئة هذا آليًا استنادًا إلى مواصفات AUTOSAR لـ Adaptive Platform (الإصدار R25-11).</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_std_hash_ara_core_Monostate_a73c80" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -392,52 +391,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="9e4c595ea8de4a856e79d6fdd339093bee036df5234429e9201baf93575b5cae" data-trace-output="9b9c4f01fb7616f8a7aea88384248da6858689337a6d1429b61620c124f5d785" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; stellt die Hashing-Funktionalität für den Hilfstyp &lt;code&gt;ara::core::Monostate&lt;/code&gt; innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform bereit &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. In modernen C++-Architekturen dient das Klassen-Template &lt;code&gt;std::hash&lt;/code&gt; als standardisierter Mechanismus zur Berechnung von Streuwerten, die insbesondere für die Platzierung und das Wiederauffinden von Schlüsseln in ungeordneten assoziativen Containern benötigt werden. Die Spezifikation verankert diese Spezialisierung über die Header-Datei &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;, wodurch sie unmittelbar an das Typsystem von &lt;code&gt;ara::core::Variant&lt;/code&gt; und die zugehörigen Hilfsklassen gekoppelt ist.
+يوفر تخصيص القالب &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; وظيفة التجزئة (hashing) للنوع المساعد &lt;code&gt;ara::core::Monostate&lt;/code&gt; داخل الوحدة &lt;code&gt;core&lt;/code&gt; في AUTOSAR Adaptive Platform &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. في بنيات C++ الحديثة، يعمل قالب الفئة &lt;code&gt;std::hash&lt;/code&gt; كآلية معيارية لحساب قيم التشتيت، والتي تلزم بشكل خاص لوضع المفاتيح واسترجاعها في الحاويات الترابطية غير المرتبة. وترسخ المواصفة هذا التخصيص عبر ملف الترويسة &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;، مما يربطه مباشرة بنظام الأنواع لـ &lt;code&gt;ara::core::Variant&lt;/code&gt; والفئات المساعدة المرتبطة به.
 &lt;/p&gt;
 &lt;p&gt;
-Als zentraler Interaktionspartner fungiert der Basistyp &lt;code&gt;ara::core::Monostate&lt;/code&gt;, welcher als Argument an den Funktionsaufruf-Operator übergeben wird &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Darüber hinaus interagiert die Spezialisierung typischerweise mit generischen Datenstrukturen der C++-Standardbibliothek oder der AUTOSAR-Laufzeitumgebung, beispielsweise ungeordneten Hash-Mengen oder Hash-Tabellen (Interpretation: Die Bereitstellung der Spezialisierung dürfte vor allem die nahtlose Einbettung von &lt;code&gt;ara::core::Monostate&lt;/code&gt; in generische Hash-basierte Datenstrukturen und die Berechnung zusammengesetzter Hash-Werte für &lt;code&gt;ara::core::Variant&lt;/code&gt; ermöglichen).
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Das Funktionsobjekt &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; folgt den üblichen Semantiken von C++-Funktoren. Es kapselt keinen Zustand und besitzt keine persistenten internen Datenfelder, die über die Lebensdauer hinweg verwaltet werden müssten. Instanzen der Struktur können bei Bedarf auf dem Stack oder innerhalb von Container-Instanzen erzeugt und nach Abschluss der Hash-Berechnung ohne Freigabe- oder Bereinigungslogik zerstört werden. Ebenso ist eine direkte Verwendung über temporäre anonyme Objekte gängige Praxis.
-&lt;/p&gt;
-&lt;p&gt;
-In Bezug auf die Nebenläufigkeit und Thread-Sicherheit ist die Methode &lt;code&gt;operator()&lt;/code&gt; explizit als &lt;code&gt;const&lt;/code&gt; sowie &lt;code&gt;noexcept&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Da während der Berechnung keine Modifikationen an der Funktor-Instanz oder am übergebenen Argument vorgenommen werden, ist die Ausführung vollständig wiedereintrittsfähig (Interpretation: Das Funktionsobjekt ist zustandslos und gleichzeitige Aufrufe von &lt;code&gt;operator()&lt;/code&gt; aus mehreren nebenläufigen Threads dürfen ohne zusätzliche Synchronisationsmaßnahmen parallel ausgeführt werden).
+يعمل النوع الأساسي &lt;code&gt;ara::core::Monostate&lt;/code&gt; كطرف تفاعل مركزي، حيث يُمرر كوسيط إلى عامل استدعاء الدالة &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. علاوة على ذلك، يتفاعل التخصيص عادةً مع هياكل البيانات العامة لمكتبة C++ القياسية أو لبيئة تشغيل AUTOSAR، مثل مجموعات التجزئة أو جداول التجزئة غير المرتبة (تفسير: يُرجح أن يتيح توفير التخصيص في المقام الأول التضمين السلس لـ &lt;code&gt;ara::core::Monostate&lt;/code&gt; في هياكل البيانات العامة القائمة على التجزئة وحساب قيم التجزئة المركبة لـ &lt;code&gt;ara::core::Variant&lt;/code&gt;).
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;دورة الحياة&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in folgende Teilschritte:
+يتبع كائن الدالة &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; دلالات الدوال المعتادة (functors) في C++. فهو لا يغلف أي حالة ولا يمتلك حقول بيانات داخلية مستمرة تتطلب إدارة على مدار فترة البقاء. يمكن إنشاء كائنات البنية عند الحاجة على المكدس أو داخل كائنات الحاويات، وتدميرها بعد اكتمال حساب التجزئة دون الحاجة إلى منطق تحرير أو تنظيف. وبالمثل، يُعد الاستخدام المباشر عبر كائنات مجهولة مؤقتة ممارسة شائعة.
+&lt;/p&gt;
+&lt;p&gt;
+فيما يتعلق بالتزامن والأمان للخيوط، تم التصريح صراحةً عن الدالة &lt;code&gt;operator()&lt;/code&gt; كـ &lt;code&gt;const&lt;/code&gt; بالإضافة إلى &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. ونظرًا لعدم إجراء أي تعديلات على كائن الدالة أو على الوسيط الممرر أثناء الحساب، فإن التنفيذ قابل لإعادة الدخول (reentrant) بالكامل (تفسير: كائن الدالة عديم الحالة ويجوز تنفيذ الاستدعاءات المتزامنة لـ &lt;code&gt;operator()&lt;/code&gt; من عدة خيوط متزامنة بالتوازي دون تدابير مزامنة إضافية).
+&lt;/p&gt;
+
+&lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
+&lt;p&gt;
+ينقسم مسار الاستخدام النموذجي إلى الخطوات الفرعية التالية:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Header-Einbindung:&lt;/strong&gt; Die Anwendung oder Bibliothek inkludiert den Header &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;, um die Deklaration von &lt;code&gt;ara::core::Monostate&lt;/code&gt; und der entsprechenden Hash-Spezialisierung verfügbar zu machen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Objektbereitstellung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;ara::core::Monostate&lt;/code&gt; liegt vor, beispielsweise als leerer Platzhalterzustand innerhalb einer varianten Datenstruktur.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Funktor-Instanziierung und Aufruf:&lt;/strong&gt; Der Hash-Operator &lt;code&gt;operator()&lt;/code&gt; wird mit einer konstanten Referenz auf das Objekt (&lt;code&gt;ara::core::Monostate const &amp;amp;v&lt;/code&gt;) aufgerufen &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ergebnisverarbeitung:&lt;/strong&gt; Der Operator liefert einen Streuwert vom Typ &lt;code&gt;size_t&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;, der unmittelbar zur Adressierung von Hash-Buckets oder zur Hash-Kombination verwendet werden kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تضمين الترويسة:&lt;/strong&gt; يُضمّن التطبيق أو المكتبة الترويسة &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt; لإتاحة التصريح عن &lt;code&gt;ara::core::Monostate&lt;/code&gt; وعن تخصيص التجزئة المقابل.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;توفير الكائن:&lt;/strong&gt; يتوفر كائن من &lt;code&gt;ara::core::Monostate&lt;/code&gt;، على سبيل المثال كحالة عنصر نائب فارغ داخل هيكل بيانات متعدد الأشكال (variant).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;إنشاء كائن الدالة واستدعاؤه:&lt;/strong&gt; يُستدعى عامل التجزئة &lt;code&gt;operator()&lt;/code&gt; باستخدام مرجع ثابت إلى الكائن (&lt;code&gt;ara::core::Monostate const &amp;amp;v&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;معالجة النتيجة:&lt;/strong&gt; يُرجع العامل قيمة تشتيت من النوع &lt;code&gt;size_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;، والتي يمكن استخدامها مباشرة لمعالجة حاويات التجزئة (hash buckets) أو لدمج التجزئة.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Da &lt;code&gt;ara::core::Monostate&lt;/code&gt; konzeptionell einen Typ mit genau einem diskreten Zustand darstellt, ist das Verhalten der Hash-Funktion besonders deterministisch (Interpretation: Da &lt;code&gt;ara::core::Monostate&lt;/code&gt; lediglich einen einzigen Zustand repräsentiert, dürfte der von &lt;code&gt;operator()&lt;/code&gt; zurückgegebene Hash-Wert für alle Instanzen ein konstanter und identischer Wert sein).
+نظرًا لأن &lt;code&gt;ara::core::Monostate&lt;/code&gt; يمثل مفاهيميًا نوعًا له حالة منفصلة واحدة بالضبط، فإن سلوك دالة التجزئة حتمي للغاية (تفسير: بما أن &lt;code&gt;ara::core::Monostate&lt;/code&gt; يمثل حالة واحدة فقط، فمن المرجح أن تكون قيمة التجزئة التي تُرجعها &lt;code&gt;operator()&lt;/code&gt; قيمة ثابتة ومطابقة لجميع الكائنات).
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;سيناريوهات الأخطاء&lt;/h4&gt;
 &lt;p&gt;
-Hinsichtlich möglicher Fehlerszenarien zeichnet sich &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; durch strikte Fehlerfreiheit und Robustheit aus. Die Signatur von &lt;code&gt;operator()&lt;/code&gt; ist mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; versehen und gemäß Spezifikation als ausnahmesicher („exception safe“) klassifiziert &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.
+فيما يتعلق بسيناريوهات الخطأ المحتملة، تتميز &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; بالخلو التام من الأخطاء والمتانة الصارمة. فبنية توقيع &lt;code&gt;operator()&lt;/code&gt; مزودة بالمحدد &lt;code&gt;noexcept&lt;/code&gt; ومصنفة وفقًا للمواصفة على أنها آمنة من الاستثناءات (”exception safe“) &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-Daraus ergeben sich die folgenden Eigenschaften für die Schnittstelle:
+وينتج عن ذلك الخصائص التالية للواجهة:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Keine Ausnahmen:&lt;/strong&gt; Der Aufruf garantiert die vollständige Abwesenheit von C++-Exceptions. Weder Allokationsfehler noch funktionale Ausnahmen können während der Ausführung auftreten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Keine Fehlercodes:&lt;/strong&gt; Die Schnittstelle verwendet keine Rückgabecodes (wie &lt;code&gt;ara::core::Result&lt;/code&gt; oder &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;), da die Berechnung eines Hash-Wertes für ein gültiges &lt;code&gt;ara::core::Monostate&lt;/code&gt;-Objekt stets erfolgreich abschließt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Vor- und Nachbedingungen:&lt;/strong&gt; Als Vorbedingung genügt die Übergabe einer syntaktisch gültigen Referenz auf eine &lt;code&gt;ara::core::Monostate&lt;/code&gt;-Instanz &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Da der Typ keinen ungültigen inneren Zustand annehmen kann, existieren keine fehlerhaften Eingangsdaten. Als Nachbedingung wird garantiert, dass stets ein reproduzierbarer Wert des Typs &lt;code&gt;size_t&lt;/code&gt; geliefert wird &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;غياب الاستثناءات:&lt;/strong&gt; يضمن الاستدعاء الغياب التام لاستثناءات C++. فلا يمكن أن تحدث أخطاء تخصيص أو استثناءات وظيفية أثناء التنفيذ.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;عدم وجود رموز أخطاء:&lt;/strong&gt; لا تستخدم الواجهة رموز إرجاع (مثل &lt;code&gt;ara::core::Result&lt;/code&gt; أو &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;)، حيث يكتمل دائمًا حساب قيمة التجزئة لكائن &lt;code&gt;ara::core::Monostate&lt;/code&gt; صالح بنجاح.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الشروط المسبقة واللاحقة:&lt;/strong&gt; كشرط مسبق، يكفي تمرير مرجع صالح نحويًا لكائن &lt;code&gt;ara::core::Monostate&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. ونظرًا لعدم إمكانية اتخاذ النوع لحالة داخلية غير صالحة، فلا توجد بيانات إدخال غير صحيحة. وكشرط لاحق، يُضمن دائمًا تقديم قيمة قابلة للتكرار من النوع &lt;code&gt;size_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen: 1) Die Spezialisierung dürfte primär der nahtlosen Einbettung in generische C++-Hash-Container und der Hash-Berechnung für ara::core::Variant dienen – Begründung: Der Header ara/core/variant.h verknüpft Monostate eng mit Variant, wo Monostate typischerweise als leerer Alternativtyp fungiert. 2) Das Funktionsobjekt ist zustandslos und Aufrufe dürfen parallel ohne Synchronisation erfolgen – Begründung: operator() ist const noexcept und std::hash-Spezialisierungen besitzen im C++-Standard üblicherweise keine veränderlichen Member. 3) Der gelieferte Hash-Wert dürfte für alle Instanzen identisch sein – Begründung: ara::core::Monostate repräsentiert als Ein-Zustands-Typ stets denselben Zustand. --&gt;
-&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikation für die Adaptive Platform (Release R25-11) erstellt.&lt;/p&gt;
+&lt;p class="ai-note"&gt;تم إنشاء دليل الفئة هذا آليًا استنادًا إلى مواصفات AUTOSAR لـ Adaptive Platform (الإصدار R25-11).&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

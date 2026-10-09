@@ -24,60 +24,59 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>266ba2cf54aa</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_std_hash_ara_core_String_71fe0f/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/fr/classes/cl_std_hash_ara_core_String_71fe0f/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_std_hash_ara_core_String_71fe0f" data-view-mode="editor" title="Ouvrir l'éditeur de modération et dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Modérer</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Contexte</h4>
 <p>
-Die Template-Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code> stellt die funktionale Anbindung des AUTOSAR-Adaptive-Datentyps <code>ara::core::String</code> an das Hashing-Framework der C++-Standardbibliothek dar. Innerhalb des Moduls <strong>core</strong> im Release <strong>R25-11</strong> der Adaptive Platform übernimmt diese Struktur die Rolle eines standardisierten Funktionsobjekts. Gemäß der Typdefinition ist die Spezialisierung als <code>final</code> deklariert, was eine weitere Ableitung ausschließt.
+La spécialisation de template <code>std::hash&lt;ara::core::String&gt;</code> constitue la liaison fonctionnelle du type de données AUTOSAR Adaptive <code>ara::core::String</code> avec le framework de hachage de la bibliothèque standard C++. Au sein du module <strong>core</strong> dans la version <strong>R25-11</strong> de l'Adaptive Platform, cette structure assume le rôle d'un objet fonction standardisé. Conformément à la définition de type, la spécialisation est déclarée comme <code>final</code>, ce qui exclut toute dérivation ultérieure.
 </p>
 <p>
-Der primäre Einsatzzweck liegt in der Bereitstellung einer deterministischen Abbildung von Zeichenketten auf ganzzahlige Hash-Werte des Typs <code>std::size_t</code>. Hierdurch wird <code>ara::core::String</code> als Schlüsseltyp in unordentlichen assoziativen Containern der Standardbibliothek wie <code>std::unordered_map</code> und <code>std::unordered_set</code> direkt verwendbar, ohne dass Anwendungsentwickler eigene Hash-Funktoren implementieren müssen. An der Interaktion sind im Wesentlichen drei Komponenten beteiligt:
+L'objectif principal d'utilisation réside dans la fourniture d'une correspondance déterministe entre des chaînes de caractères et des valeurs de hachage entières du type <code>std::size_t</code>. De cette manière, <code>ara::core::String</code> devient directement utilisable comme type de clé dans les conteneurs associatifs non ordonnés de la bibliothèque standard tels que <code>std::unordered_map</code> et <code>std::unordered_set</code>, sans que les développeurs d'applications aient à implémenter leurs propres foncteurs de hachage. Trois composants principaux participent à l'interaction&#160;:
 </p>
 <ul>
-<li><strong>Aufrufende Container oder Algorithmen:</strong> Assoziative Datenstrukturen, welche Schlüssel verwalten und zur Zuweisung interner Buckets einen Hash-Wert anfordern.</li>
-<li><strong>Die Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code>:</strong> Das eigentliche Funktionsobjekt, welches den Aufrufoperator für den Schlüsseltyp bereitstellt.</li>
-<li><strong>Der Eingabetyp <code>ara::core::String</code>:</strong> Die zu analysierende Zeichenkette, deren Inhalt als Eingangsdatum für die Berechnung dient.</li>
+<li><strong>Conteneurs ou algorithmes appelants&#160;:</strong> structures de données associatives qui gèrent des clés et demandent une valeur de hachage pour l'attribution des compartiments internes.</li>
+<li><strong>La spécialisation <code>std::hash&lt;ara::core::String&gt;</code>&#160;:</strong> l'objet fonction proprement dit, qui fournit l'opérateur d'appel pour le type de clé.</li>
+<li><strong>Le type d'entrée <code>ara::core::String</code>&#160;:</strong> la chaîne de caractères à analyser, dont le contenu sert de donnée d'entrée pour le calcul.</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
+<h4>Cycle de vie</h4>
 <p>
-Das Funktionsobjekt besitzt keinen veränderlichen Zustand und keine eigenen Ressourcen. Interpretation: Das Instanziieren von <code>std::hash&lt;ara::core::String&gt;</code> erfordert keine dynamische Speicherallokation und besitzt keinen internen Zustand, sodass Instanzen beliebig kopiert, zugewiesen oder als temporäre Werte erzeugt werden können.
+L'objet fonction ne possède aucun état modifiable ni aucune ressource propre. Interprétation&#160;: l'instanciation de <code>std::hash&lt;ara::core::String&gt;</code> ne requiert aucune allocation dynamique de mémoire et ne possède aucun état interne, de sorte que les instances peuvent être copiées, assignées ou créées sous forme de valeurs temporaires à volonté.
 </p>
 <p>
-In der praktischen Anwendung erfolgt die Erzeugung meist implizit durch den umschließenden Container bei dessen Konstruktion. Ebenso kann der Funktor bedarfsweise als flüchtiges temporäres Funktionsobjekt für einzelne Hash-Berechnungen instanziiert und nach Ausführung des Aufrufs unmittelbar wieder zerstört werden. Da keine dynamischen Betriebsmittel allokiert werden, ist der Zerstörungsvorgang trivial und ressourceneffizient.
+Dans l'application pratique, la création s'effectue généralement de manière implicite par le conteneur englobant lors de sa construction. De même, le foncteur peut être instancié au besoin sous la forme d'un objet fonction temporaire éphémère pour des calculs de hachage individuels et immédiatement détruit après l'exécution de l'appel. Aucune ressource système dynamique n'étant allouée, le processus de destruction est trivial et économe en ressources.
 </p>
 <p>
-Hinsichtlich der Nebenläufigkeit und Thread-Sicherheit verhält sich die Spezialisierung unkritisch: Da der Funktor zustandslos ist, können mehrere Threads parallel denselben Funktor oder separate Instanzen aufrufen. Voraussetzung für nebenläufige Aufrufe ist lediglich, dass die als Argument übergebene Instanz von <code>ara::core::String</code> während des Lesezugriffs durch den Hashing-Vorgang nicht parallel von einem anderen Ausführungspfad modifiziert wird.
+En ce qui concerne la concurrence et la sécurité des threads, la spécialisation se comporte de manière non critique&#160;: le foncteur étant sans état, plusieurs threads peuvent appeler en parallèle le même foncteur ou des instances distinctes. La seule précondition pour les appels concurrents est que l'instance de <code>ara::core::String</code> transmise comme argument ne soit pas modifiée en parallèle par un autre chemin d'exécution pendant l'accès en lecture effectué par l'opération de hachage.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Parcours d'utilisation</h4>
 <p>
-Die Verwendung von <code>std::hash&lt;ara::core::String&gt;</code> erfolgt im Regelfall transparent über Standard-Container. Ein typischer Ablauf gestaltet sich wie folgt:
+L'utilisation de <code>std::hash&lt;ara::core::String&gt;</code> s'effectue en règle générale de manière transparente via des conteneurs standard. Un déroulement typique se présente comme suit&#160;:
 </p>
 <ol>
-<li><strong>Container-Deklaration:</strong> Ein Entwickler definiert eine Hashtabelle, beispielsweise <code>std::unordered_map&lt;ara::core::String, ValueType&gt;</code>. Das C++-Typensystem bindet über Argument-Dependent Lookup und Template-Matching automatisch die Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code> als Hash-Template-Argument ein.</li>
-<li><strong>Schlüsselübergabe:</strong> Beim Hinzufügen, Suchen oder Entfernen von Einträgen übergibt die Anwendungslogik eine Instanz von <code>ara::core::String</code> an die Methoden des Containers.</li>
-<li><strong>Berechnung des Hash-Werts:</strong> Der Container wendet den Aufrufoperator des Funktors auf den Schlüssel an. Als Hash-Algorithmus kommt vermutlich eine Implementierung zum Einsatz, die konsistente Hash-Werte über die Laufzeit eines Prozesses hinweg garantiert, wobei die genaue Hash-Streuung implementationsdefiniert sein dürfte.</li>
-<li><strong>Bucket-Indexierung:</strong> Der Container nutzt den zurückgegebenen ganzzahligen Wert zur Ermittlung des internen Speicher-Buckets und führt anschließend bei Bedarf Gleichheitsprüfungen über <code>operator==</code> durch.</li>
+<li><strong>Déclaration du conteneur&#160;:</strong> un développeur définit une table de hachage, par exemple <code>std::unordered_map&lt;ara::core::String, ValueType&gt;</code>. Le système de types C++ intègre automatiquement la spécialisation <code>std::hash&lt;ara::core::String&gt;</code> comme argument de template de hachage via l'Argument-Dependent Lookup et la mise en correspondance de templates.</li>
+<li><strong>Transmission de la clé&#160;:</strong> lors de l'ajout, de la recherche ou de la suppression d'entrées, la logique applicative transmet une instance de <code>ara::core::String</code> aux méthodes du conteneur.</li>
+<li><strong>Calcul de la valeur de hachage&#160;:</strong> le conteneur applique l'opérateur d'appel du foncteur à la clé. L'algorithme de hachage utilisé est probablement une implémentation qui garantit des valeurs de hachage cohérentes pendant toute la durée d'exécution d'un processus, la dispersion exacte du hachage devant être définie par l'implémentation.</li>
+<li><strong>Indexation des compartiments&#160;:</strong> le conteneur utilise la valeur entière renvoyée pour déterminer le compartiment mémoire interne et procède ensuite, si nécessaire, à des contrôles d'égalité via <code>operator==</code>.</li>
 </ol>
 <p>
-Neben der automatisierten Einbindung in Container kann die Spezialisierung auch direkt zur manuellen Berechnung von Hash-Werten aufgerufen werden, beispielsweise zur Verteilung von Zeichenketten auf Worker-Threads oder zur Vorberechnung von Identifikatoren in anwendungsspezifischen Caches.
+En plus de l'intégration automatisée dans des conteneurs, la spécialisation peut également être appelée directement pour le calcul manuel de valeurs de hachage, par exemple pour distribuer des chaînes de caractères sur des threads de travail ou pour précalculer des identifiants dans des caches propres à l'application.
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>Scénarios d'erreur</h4>
 <p>
-Bei der Ausführung von <code>std::hash&lt;ara::core::String&gt;</code> sind die Vorbedingungen und Fehleraspekte an die allgemeinen Spezifikationen von Hash-Funktionen im C++-Standard angelehnt:
+Lors de l'exécution de <code>std::hash&lt;ara::core::String&gt;</code>, les préconditions et les aspects d'erreur s'inspirent des spécifications générales des fonctions de hachage dans la norme C++&#160;:
 </p>
 <ul>
-<li><strong>Gültigkeit der Eingabe:</strong> Vorbedingung jedes Aufrufs ist ein valides, initialisiertes <code>ara::core::String</code>-Objekt. Die Übergabe einer ungültigen Referenz oder eines Objekts mit beschädigtem Speicherbereich führt zu undefiniertem Verhalten.</li>
-<li><strong>Konsistenzgarantie:</strong> Für zwei Zeichenketten, die gemäß ihrem Gleichheitsoperator denselben Inhalt aufweisen, muss der berechnete Hash-Wert innerhalb desselben Programmlaufs identisch sein. Eine Verletzung dieser Eigenschaft würde zu unauffindbaren Schlüsseln in Containern führen.</li>
-<li><strong>Ausnahmeverhalten:</strong> Der Aufrufoperator dürfte als <code>noexcept</code> deklariert sein, analog zu den Anforderungen der C++-Standardbibliothek für Standard-Hash-Funktionen, da das Traversieren bestehender Zeichenketten keine auslösenden Fehlerbedingungen erzeugt.</li>
-<li><strong>Umgang mit Kollisionen:</strong> Eine identische Hash-Rückgabe für unterschiedliche Zeichenketten stellt keinen Fehlerfall des Funktors dar. Assoziative Container lösen derartige Kollisionen eigenständig durch Ausweichstrategien auf. Es werden keine Fehlertypen wie <code>ara::core::ErrorCode</code> zurückgegeben.</li>
+<li><strong>Validité de l'entrée&#160;:</strong> la précondition de chaque appel est un objet <code>ara::core::String</code> valide et initialisé. La transmission d'une référence non valide ou d'un objet dont la zone mémoire est corrompue entraîne un comportement indéfini.</li>
+<li><strong>Garantie de cohérence&#160;:</strong> pour deux chaînes de caractères présentant le même contenu selon leur opérateur d'égalité, la valeur de hachage calculée doit être identique au sein d'une même exécution du programme. Une violation de cette propriété rendrait les clés introuvables dans les conteneurs.</li>
+<li><strong>Comportement vis-à-vis des exceptions&#160;:</strong> l'opérateur d'appel devrait être déclaré comme <code>noexcept</code>, de manière analogue aux exigences de la bibliothèque standard C++ pour les fonctions de hachage standard, puisque le parcours de chaînes de caractères existantes ne génère pas de conditions d'erreur déclenchantes.</li>
+<li><strong>Gestion des collisions&#160;:</strong> un retour de hachage identique pour des chaînes de caractères différentes ne constitue pas un cas d'erreur du foncteur. Les conteneurs associatifs résolvent de telles collisions de manière autonome par des stratégies de repli. Aucun type d'erreur tel que <code>ara::core::ErrorCode</code> n'est renvoyé.</li>
 </ul>
 <!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul core.</p>
+<p class="ai-note">Ce guide repose sur les données de spécification de l'AUTOSAR Adaptive Platform version R25-11 pour le module core.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_std_hash_ara_core_String_71fe0f" title="Discuter avec l'IA">💬 Discuter avec l'IA</button>
@@ -324,57 +323,56 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="266ba2cf54aa896dcbafbc7c353ac2f51ea55b778ce36c3d20d9a0295b5b9b37" data-trace-output="a9f9aa1e9e3e026d2f3f947a108cd02492ef2382e34db3879abacda87d02787d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Contexte&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; stellt die funktionale Anbindung des AUTOSAR-Adaptive-Datentyps &lt;code&gt;ara::core::String&lt;/code&gt; an das Hashing-Framework der C++-Standardbibliothek dar. Innerhalb des Moduls &lt;strong&gt;core&lt;/strong&gt; im Release &lt;strong&gt;R25-11&lt;/strong&gt; der Adaptive Platform übernimmt diese Struktur die Rolle eines standardisierten Funktionsobjekts. Gemäß der Typdefinition ist die Spezialisierung als &lt;code&gt;final&lt;/code&gt; deklariert, was eine weitere Ableitung ausschließt.
+La spécialisation de template &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; constitue la liaison fonctionnelle du type de données AUTOSAR Adaptive &lt;code&gt;ara::core::String&lt;/code&gt; avec le framework de hachage de la bibliothèque standard C++. Au sein du module &lt;strong&gt;core&lt;/strong&gt; dans la version &lt;strong&gt;R25-11&lt;/strong&gt; de l'Adaptive Platform, cette structure assume le rôle d'un objet fonction standardisé. Conformément à la définition de type, la spécialisation est déclarée comme &lt;code&gt;final&lt;/code&gt;, ce qui exclut toute dérivation ultérieure.
 &lt;/p&gt;
 &lt;p&gt;
-Der primäre Einsatzzweck liegt in der Bereitstellung einer deterministischen Abbildung von Zeichenketten auf ganzzahlige Hash-Werte des Typs &lt;code&gt;std::size_t&lt;/code&gt;. Hierdurch wird &lt;code&gt;ara::core::String&lt;/code&gt; als Schlüsseltyp in unordentlichen assoziativen Containern der Standardbibliothek wie &lt;code&gt;std::unordered_map&lt;/code&gt; und &lt;code&gt;std::unordered_set&lt;/code&gt; direkt verwendbar, ohne dass Anwendungsentwickler eigene Hash-Funktoren implementieren müssen. An der Interaktion sind im Wesentlichen drei Komponenten beteiligt:
+L'objectif principal d'utilisation réside dans la fourniture d'une correspondance déterministe entre des chaînes de caractères et des valeurs de hachage entières du type &lt;code&gt;std::size_t&lt;/code&gt;. De cette manière, &lt;code&gt;ara::core::String&lt;/code&gt; devient directement utilisable comme type de clé dans les conteneurs associatifs non ordonnés de la bibliothèque standard tels que &lt;code&gt;std::unordered_map&lt;/code&gt; et &lt;code&gt;std::unordered_set&lt;/code&gt;, sans que les développeurs d'applications aient à implémenter leurs propres foncteurs de hachage. Trois composants principaux participent à l'interaction&amp;#160;:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Aufrufende Container oder Algorithmen:&lt;/strong&gt; Assoziative Datenstrukturen, welche Schlüssel verwalten und zur Zuweisung interner Buckets einen Hash-Wert anfordern.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;:&lt;/strong&gt; Das eigentliche Funktionsobjekt, welches den Aufrufoperator für den Schlüsseltyp bereitstellt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Der Eingabetyp &lt;code&gt;ara::core::String&lt;/code&gt;:&lt;/strong&gt; Die zu analysierende Zeichenkette, deren Inhalt als Eingangsdatum für die Berechnung dient.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Conteneurs ou algorithmes appelants&amp;#160;:&lt;/strong&gt; structures de données associatives qui gèrent des clés et demandent une valeur de hachage pour l'attribution des compartiments internes.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;La spécialisation &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;&amp;#160;:&lt;/strong&gt; l'objet fonction proprement dit, qui fournit l'opérateur d'appel pour le type de clé.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Le type d'entrée &lt;code&gt;ara::core::String&lt;/code&gt;&amp;#160;:&lt;/strong&gt; la chaîne de caractères à analyser, dont le contenu sert de donnée d'entrée pour le calcul.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;Cycle de vie&lt;/h4&gt;
 &lt;p&gt;
-Das Funktionsobjekt besitzt keinen veränderlichen Zustand und keine eigenen Ressourcen. Interpretation: Das Instanziieren von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; erfordert keine dynamische Speicherallokation und besitzt keinen internen Zustand, sodass Instanzen beliebig kopiert, zugewiesen oder als temporäre Werte erzeugt werden können.
+L'objet fonction ne possède aucun état modifiable ni aucune ressource propre. Interprétation&amp;#160;: l'instanciation de &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; ne requiert aucune allocation dynamique de mémoire et ne possède aucun état interne, de sorte que les instances peuvent être copiées, assignées ou créées sous forme de valeurs temporaires à volonté.
 &lt;/p&gt;
 &lt;p&gt;
-In der praktischen Anwendung erfolgt die Erzeugung meist implizit durch den umschließenden Container bei dessen Konstruktion. Ebenso kann der Funktor bedarfsweise als flüchtiges temporäres Funktionsobjekt für einzelne Hash-Berechnungen instanziiert und nach Ausführung des Aufrufs unmittelbar wieder zerstört werden. Da keine dynamischen Betriebsmittel allokiert werden, ist der Zerstörungsvorgang trivial und ressourceneffizient.
+Dans l'application pratique, la création s'effectue généralement de manière implicite par le conteneur englobant lors de sa construction. De même, le foncteur peut être instancié au besoin sous la forme d'un objet fonction temporaire éphémère pour des calculs de hachage individuels et immédiatement détruit après l'exécution de l'appel. Aucune ressource système dynamique n'étant allouée, le processus de destruction est trivial et économe en ressources.
 &lt;/p&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit und Thread-Sicherheit verhält sich die Spezialisierung unkritisch: Da der Funktor zustandslos ist, können mehrere Threads parallel denselben Funktor oder separate Instanzen aufrufen. Voraussetzung für nebenläufige Aufrufe ist lediglich, dass die als Argument übergebene Instanz von &lt;code&gt;ara::core::String&lt;/code&gt; während des Lesezugriffs durch den Hashing-Vorgang nicht parallel von einem anderen Ausführungspfad modifiziert wird.
+En ce qui concerne la concurrence et la sécurité des threads, la spécialisation se comporte de manière non critique&amp;#160;: le foncteur étant sans état, plusieurs threads peuvent appeler en parallèle le même foncteur ou des instances distinctes. La seule précondition pour les appels concurrents est que l'instance de &lt;code&gt;ara::core::String&lt;/code&gt; transmise comme argument ne soit pas modifiée en parallèle par un autre chemin d'exécution pendant l'accès en lecture effectué par l'opération de hachage.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Parcours d'utilisation&lt;/h4&gt;
 &lt;p&gt;
-Die Verwendung von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; erfolgt im Regelfall transparent über Standard-Container. Ein typischer Ablauf gestaltet sich wie folgt:
+L'utilisation de &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; s'effectue en règle générale de manière transparente via des conteneurs standard. Un déroulement typique se présente comme suit&amp;#160;:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Container-Deklaration:&lt;/strong&gt; Ein Entwickler definiert eine Hashtabelle, beispielsweise &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;. Das C++-Typensystem bindet über Argument-Dependent Lookup und Template-Matching automatisch die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; als Hash-Template-Argument ein.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schlüsselübergabe:&lt;/strong&gt; Beim Hinzufügen, Suchen oder Entfernen von Einträgen übergibt die Anwendungslogik eine Instanz von &lt;code&gt;ara::core::String&lt;/code&gt; an die Methoden des Containers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Berechnung des Hash-Werts:&lt;/strong&gt; Der Container wendet den Aufrufoperator des Funktors auf den Schlüssel an. Als Hash-Algorithmus kommt vermutlich eine Implementierung zum Einsatz, die konsistente Hash-Werte über die Laufzeit eines Prozesses hinweg garantiert, wobei die genaue Hash-Streuung implementationsdefiniert sein dürfte.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bucket-Indexierung:&lt;/strong&gt; Der Container nutzt den zurückgegebenen ganzzahligen Wert zur Ermittlung des internen Speicher-Buckets und führt anschließend bei Bedarf Gleichheitsprüfungen über &lt;code&gt;operator==&lt;/code&gt; durch.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Déclaration du conteneur&amp;#160;:&lt;/strong&gt; un développeur définit une table de hachage, par exemple &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;. Le système de types C++ intègre automatiquement la spécialisation &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; comme argument de template de hachage via l'Argument-Dependent Lookup et la mise en correspondance de templates.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Transmission de la clé&amp;#160;:&lt;/strong&gt; lors de l'ajout, de la recherche ou de la suppression d'entrées, la logique applicative transmet une instance de &lt;code&gt;ara::core::String&lt;/code&gt; aux méthodes du conteneur.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Calcul de la valeur de hachage&amp;#160;:&lt;/strong&gt; le conteneur applique l'opérateur d'appel du foncteur à la clé. L'algorithme de hachage utilisé est probablement une implémentation qui garantit des valeurs de hachage cohérentes pendant toute la durée d'exécution d'un processus, la dispersion exacte du hachage devant être définie par l'implémentation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Indexation des compartiments&amp;#160;:&lt;/strong&gt; le conteneur utilise la valeur entière renvoyée pour déterminer le compartiment mémoire interne et procède ensuite, si nécessaire, à des contrôles d'égalité via &lt;code&gt;operator==&lt;/code&gt;.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Neben der automatisierten Einbindung in Container kann die Spezialisierung auch direkt zur manuellen Berechnung von Hash-Werten aufgerufen werden, beispielsweise zur Verteilung von Zeichenketten auf Worker-Threads oder zur Vorberechnung von Identifikatoren in anwendungsspezifischen Caches.
+En plus de l'intégration automatisée dans des conteneurs, la spécialisation peut également être appelée directement pour le calcul manuel de valeurs de hachage, par exemple pour distribuer des chaînes de caractères sur des threads de travail ou pour précalculer des identifiants dans des caches propres à l'application.
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Scénarios d'erreur&lt;/h4&gt;
 &lt;p&gt;
-Bei der Ausführung von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; sind die Vorbedingungen und Fehleraspekte an die allgemeinen Spezifikationen von Hash-Funktionen im C++-Standard angelehnt:
+Lors de l'exécution de &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;, les préconditions et les aspects d'erreur s'inspirent des spécifications générales des fonctions de hachage dans la norme C++&amp;#160;:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeit der Eingabe:&lt;/strong&gt; Vorbedingung jedes Aufrufs ist ein valides, initialisiertes &lt;code&gt;ara::core::String&lt;/code&gt;-Objekt. Die Übergabe einer ungültigen Referenz oder eines Objekts mit beschädigtem Speicherbereich führt zu undefiniertem Verhalten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konsistenzgarantie:&lt;/strong&gt; Für zwei Zeichenketten, die gemäß ihrem Gleichheitsoperator denselben Inhalt aufweisen, muss der berechnete Hash-Wert innerhalb desselben Programmlaufs identisch sein. Eine Verletzung dieser Eigenschaft würde zu unauffindbaren Schlüsseln in Containern führen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausnahmeverhalten:&lt;/strong&gt; Der Aufrufoperator dürfte als &lt;code&gt;noexcept&lt;/code&gt; deklariert sein, analog zu den Anforderungen der C++-Standardbibliothek für Standard-Hash-Funktionen, da das Traversieren bestehender Zeichenketten keine auslösenden Fehlerbedingungen erzeugt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Umgang mit Kollisionen:&lt;/strong&gt; Eine identische Hash-Rückgabe für unterschiedliche Zeichenketten stellt keinen Fehlerfall des Funktors dar. Assoziative Container lösen derartige Kollisionen eigenständig durch Ausweichstrategien auf. Es werden keine Fehlertypen wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; zurückgegeben.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Validité de l'entrée&amp;#160;:&lt;/strong&gt; la précondition de chaque appel est un objet &lt;code&gt;ara::core::String&lt;/code&gt; valide et initialisé. La transmission d'une référence non valide ou d'un objet dont la zone mémoire est corrompue entraîne un comportement indéfini.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Garantie de cohérence&amp;#160;:&lt;/strong&gt; pour deux chaînes de caractères présentant le même contenu selon leur opérateur d'égalité, la valeur de hachage calculée doit être identique au sein d'une même exécution du programme. Une violation de cette propriété rendrait les clés introuvables dans les conteneurs.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Comportement vis-à-vis des exceptions&amp;#160;:&lt;/strong&gt; l'opérateur d'appel devrait être déclaré comme &lt;code&gt;noexcept&lt;/code&gt;, de manière analogue aux exigences de la bibliothèque standard C++ pour les fonctions de hachage standard, puisque le parcours de chaînes de caractères existantes ne génère pas de conditions d'erreur déclenchantes.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Gestion des collisions&amp;#160;:&lt;/strong&gt; un retour de hachage identique pour des chaînes de caractères différentes ne constitue pas un cas d'erreur du foncteur. Les conteneurs associatifs résolvent de telles collisions de manière autonome par des stratégies de repli. Aucun type d'erreur tel que &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; n'est renvoyé.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul core.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Ce guide repose sur les données de spécification de l'AUTOSAR Adaptive Platform version R25-11 pour le module core.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

@@ -24,35 +24,34 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>91e7479ff333</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_SI_Namespace_skeleton_SI_Skeleton_Method_Output_ac8615/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_SI_Namespace_skeleton_SI_Skeleton_Method_Output_ac8615/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_SI_Namespace_skeleton_SI_Skeleton_Method_Output_ac8615" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
-  <p>Die Datenstruktur <code>&lt;SI-Namespace&gt;::skeleton::&lt;SI&gt;Skeleton::&lt;Method&gt;Output</code> ist Bestandteil der C++-Schnittstelle im Modul <code>com</code> der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Rolle besteht darin, die Ausgabeargumente einer definierten Service-Interface-Methode gebündelt zu kapseln (<code>Structure wrapping the out arguments for a method</code>). Bei Methodenaufrufen, die Werte an den Aufrufer zurückliefern, fasst diese Struktur alle definierten Ausgabeparameter in einer gemeinsamen C++-Struktur zusammen.</p>
-  <p>Die wesentlichen Interaktionspartner dieser Struktur sind die konkrete Implementierung des Service-Skeletons auf Anbieterseite sowie die Kommunikationsinfrastruktur der Plattform. Interpretation: Vermutlich dient die Struktur dabei als standardisiertes Trägerobjekt, das von der anwendungsseitigen Service-Implementierung befüllt und an das Kommunikations-Framework übergeben wird, um die enthaltenen Rückgabedaten für den methodenaufrufenden Proxy bereitzustellen und zu serialisieren.</p>
+  <h4>上下文</h4>
+  <p>数据结构 <code>&lt;SI-Namespace&gt;::skeleton::&lt;SI&gt;Skeleton::&lt;Method&gt;Output</code> 是 AUTOSAR Adaptive Platform Release R25-11 中模块 <code>com</code> 的 C++ 接口的一部分。其主要角色是捆绑封装已定义服务接口方法的输出参数（<code>Structure wrapping the out arguments for a method</code>）。在向调用方返回数值的方法调用中，该结构将所有已定义的输出参数汇总在一个共同的 C++ 结构体中。</p>
+  <p>该结构的主要交互伙伴是提供方服务 Skeleton 的具体实现以及平台的通信基础设施。解读：推测该结构在此用作标准化的载体对象，由应用侧的服务实现进行填充并传递给通信框架，以便为调用方法的 Proxy 提供并序列化所包含的返回数据。</p>
 
-  <h4>Lebenszyklus</h4>
-  <p>Die Struktur <code>&lt;Method&gt;Output</code> ist als reines C++-<code>struct</code> deklariert (<code>struct &lt;Method&gt;Output {...};</code>). Dementsprechend unterliegt sie den regulären semantischen Regeln für Datenstrukturen in C++ und weist standardmäßige Wertesemantik auf. Die Erzeugung einer Instanz erfolgt typischerweise auf dem Stack oder dynamisch im lokalen Ausführungskontext der Service-Methode, sobald das anbietende Skeleton die angeforderten Daten ermittelt hat.</p>
-  <p>Hinsichtlich der Besitzverhältnisse liegt das Eigentum an der Instanz zunächst vollständig bei der ausführenden Methode des Skeletons. Nach der Zuweisung aller Ausgabewerte wird die Instanz typischerweise per Kopie oder über Move-Semantik an die Plattformschicht weitergereicht. Die Zerstörung der Instanz erfolgt automatisch beim Verlassen des jeweiligen Gültigkeitsbereichs beziehungsweise nach dem Transfer der enthaltenen Daten.</p>
-  <p>Als Datenstruktur besitzt <code>&lt;Method&gt;Output</code> keine internen Zustände, Zustandsübergänge oder Lebenszyklusphasen; das Objekt ist unmittelbar nach seiner Konstruktion belegbar und nutzbar. Hinsichtlich der Nebenläufigkeit bietet die Struktur keine interne Synchronisation. Da die Instanziierung und Befüllung jedoch pro Methodenaufruf getrennt innerhalb des jeweiligen Worker- oder Service-Threads erfolgt, ist bei ausschließlicher Nutzung thread-lokaler Instanzen keine externe Synchronisation erforderlich.</p>
+  <h4>生命周期</h4>
+  <p>结构 <code>&lt;Method&gt;Output</code> 被声明为纯 C++ <code>struct</code>（<code>struct &lt;Method&gt;Output {...};</code>）。因此，它遵循 C++ 中数据结构的常规语义规则，并表现出标准的值语义。一旦提供服务的 Skeleton 获取了所请求的数据，实例的创建通常在栈上或动态地在服务方法的局部执行上下文中进行。</p>
+  <p>在所有权关系方面，实例的所有权最初完全属于 Skeleton 的执行方法。在分配所有输出值后，实例通常通过拷贝或移动语义传递给平台层。实例的销毁在离开相应作用域或在传输所包含的数据后自动进行。</p>
+  <p>作为数据结构，<code>&lt;Method&gt;Output</code> 没有内部状态、状态转换或生命周期阶段；该对象在构造后可立即赋值和使用。关于并发性，该结构不提供内部同步。但由于实例化和填充是在各个 Worker 线程或服务线程内针对每个方法调用分别进行的，因此在仅使用线程局部实例时无需外部同步。</p>
 
-  <h4>Nutzungspfad</h4>
-  <p>Der typische Ablauf bei der Verwendung von <code>&lt;Method&gt;Output</code> gliedert sich in folgende Schritte:</p>
+  <h4>使用路径</h4>
+  <p>使用 <code>&lt;Method&gt;Output</code> 时的典型流程分为以下步骤：</p>
   <ol>
-    <li><strong>Aufrufbearbeitung:</strong> Das Service-Skeleton empfängt eine eingehende Methodenanforderung und startet die Bearbeitung der anwendungsspezifischen Geschäftslogik.</li>
-    <li><strong>Berechnung der Resultate:</strong> Die geforderten Ausgabewerte werden innerhalb der Service-Implementierung berechnet oder aus internen Zuständen ausgelesen.</li>
-    <li><strong>Instanziierung und Belegung:</strong> Eine Instanz von <code>&lt;Method&gt;Output</code> wird deklariert. Anschließend werden die einzelnen Member-Variablen der Struktur mit den ermittelten Werten belegt.</li>
-    <li><strong>Rückgabe an die Plattform:</strong> Interpretation: Vermutlich wird die vollständig befüllte Struktur entweder synchron als direkter Rückgabewert oder asynchron über einen entsprechenden Zukunftswert an die Laufzeitumgebung zurückgegeben.</li>
-    <li><strong>Bereitstellung:</strong> Die Kommunikationsschicht übernimmt das Objekt, führt die erforderliche Serialisierung der Daten durch und übermittelt die Antwort an den Aufrufer.</li>
+    <li><strong>调用处理：</strong>服务 Skeleton 接收传入的方法请求，并开始处理应用特定的业务逻辑。</li>
+    <li><strong>计算结果：</strong>在服务实现内部计算所需的输出值或从内部状态中读取这些值。</li>
+    <li><strong>实例化与赋值：</strong>声明 <code>&lt;Method&gt;Output</code> 的一个实例。随后用获取的值填充该结构的各个成员变量。</li>
+    <li><strong>返回给平台：</strong>解读：推测完全填充的结构要么同步作为直接返回值，要么异步通过相应的 future 值返回给运行时环境。</li>
+    <li><strong>提供：</strong>通信层接管该对象，执行必需的数据序列化，并将响应传输给调用方。</li>
   </ol>
 
-  <h4>Fehlerszenarien</h4>
-  <p>Da <code>&lt;Method&gt;Output</code> eine reine Datenkapselung ohne eigene Steuerungslogik darstellt, definiert die Struktur selbst keine spezifischen Fehlercodes, Ausnahmen oder Fehlerzustände. Fehlerszenarien manifestieren sich daher primär auf Ebene der Vor- und Nachbedingungen während der Objektbelegung sowie innerhalb der umgebenden Methodenlogik.</p>
-  <p>Als Vorbedingung für die erfolgreiche Weitergabe an die Kommunikationsschicht gilt, dass alle in der Schnittstellendefinition geforderten Member-Felder vor der Rückgabe mit semantisch gültigen Werten initialisiert worden sind. Eine Nachbedingung besteht darin, dass nach Verlassen der Skeleton-Methode ein vollständiger und konsistenter Datensatz für die Übertragung bereitsteht.</p>
-  <p>Interpretation: Schlägt die Ausführung der Methode im Service-Skeleton fehl, dürfte keine unvollständige oder fehlerhafte Instanz von <code>&lt;Method&gt;Output</code> ausgewertet werden; stattdessen erfolgt die Fehlerbehandlung und -signalisierung über übergeordnete Plattformmechanismen zur Fehlerrückgabe, wodurch die Erzeugung oder Auswertung von <code>&lt;Method&gt;Output</code> im Fehlerfall entfällt.</p>
+  <h4>错误场景</h4>
+  <p>由于 <code>&lt;Method&gt;Output</code> 代表没有自身控制逻辑的纯数据封装，因此该结构本身不定义特定的错误码、异常或错误状态。因此，错误场景主要在对象赋值期间的前置和后置条件级别以及在外围方法逻辑内部体现。</p>
+  <p>成功传递给通信层的前置条件是在返回前已使用语义有效的值对接口定义中要求的所有成员字段进行了初始化。后置条件是在离开 Skeleton 方法后，有一个完整且一致的数据集可供传输。</p>
+  <p>解读：如果服务 Skeleton 中方法的执行失败，应当不会评估 <code>&lt;Method&gt;Output</code> 的不完整或错误实例；取而代之的是，通过用于错误返回的上层平台机制进行错误处理和指示，从而在出错时无需创建或评估 <code>&lt;Method&gt;Output</code>。</p>
 
-  <p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsvorgaben für die AUTOSAR Adaptive Platform (Release R25-11, Modul com).</p>
+  <p class="ai-note">本指南基于针对 AUTOSAR Adaptive Platform（Release R25-11，模块 com）的规范要求。</p>
   <!-- annahmen: 1) Die Struktur dient als Trägerobjekt zur Übergabe der Ausgabedaten an das Kommunikations-Framework für die Übermittlung an den Proxy – Begründung: Der Payload beschreibt die Struktur als Wrapper für Out-Argumente, spezifiziert jedoch nicht den konkreten Transportweg der Plattform; 2) Die Rückgabe der befüllten Struktur an die Laufzeitumgebung erfolgt entweder synchron oder asynchron eingebettet in einen Zukunftswert – Begründung: Der Payload enthält keine Methodensignatur, in der Adaptive Platform sind synchrone und asynchrone Rückgabemuster jedoch typisch; 3) Fachliche Methodenfehler werden über übergeordnete Plattformmechanismen propagiert, statt Fehlerzustände in der Struktur selbst abzubilden – Begründung: Die Struktur ist laut Syntax ein reines struct und definiert laut Payload keine Fehlercodes oder Statusflags -->
 
 <div class="ai-commentary-actions">
@@ -270,32 +269,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="91e7479ff333b4e2ed6612f719c8eab8860e477ddf86f8d03b3ff32cccb0f172" data-trace-output="7a25bc2d1cb9e237b41b30994a581e6053a1c1d577f3920aefa65ca711da4184" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
-  &lt;p&gt;Die Datenstruktur &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::&amp;lt;SI&amp;gt;Skeleton::&amp;lt;Method&amp;gt;Output&lt;/code&gt; ist Bestandteil der C++-Schnittstelle im Modul &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Rolle besteht darin, die Ausgabeargumente einer definierten Service-Interface-Methode gebündelt zu kapseln (&lt;code&gt;Structure wrapping the out arguments for a method&lt;/code&gt;). Bei Methodenaufrufen, die Werte an den Aufrufer zurückliefern, fasst diese Struktur alle definierten Ausgabeparameter in einer gemeinsamen C++-Struktur zusammen.&lt;/p&gt;
-  &lt;p&gt;Die wesentlichen Interaktionspartner dieser Struktur sind die konkrete Implementierung des Service-Skeletons auf Anbieterseite sowie die Kommunikationsinfrastruktur der Plattform. Interpretation: Vermutlich dient die Struktur dabei als standardisiertes Trägerobjekt, das von der anwendungsseitigen Service-Implementierung befüllt und an das Kommunikations-Framework übergeben wird, um die enthaltenen Rückgabedaten für den methodenaufrufenden Proxy bereitzustellen und zu serialisieren.&lt;/p&gt;
+  &lt;h4&gt;上下文&lt;/h4&gt;
+  &lt;p&gt;数据结构 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::&amp;lt;SI&amp;gt;Skeleton::&amp;lt;Method&amp;gt;Output&lt;/code&gt; 是 AUTOSAR Adaptive Platform Release R25-11 中模块 &lt;code&gt;com&lt;/code&gt; 的 C++ 接口的一部分。其主要角色是捆绑封装已定义服务接口方法的输出参数（&lt;code&gt;Structure wrapping the out arguments for a method&lt;/code&gt;）。在向调用方返回数值的方法调用中，该结构将所有已定义的输出参数汇总在一个共同的 C++ 结构体中。&lt;/p&gt;
+  &lt;p&gt;该结构的主要交互伙伴是提供方服务 Skeleton 的具体实现以及平台的通信基础设施。解读：推测该结构在此用作标准化的载体对象，由应用侧的服务实现进行填充并传递给通信框架，以便为调用方法的 Proxy 提供并序列化所包含的返回数据。&lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; ist als reines C++-&lt;code&gt;struct&lt;/code&gt; deklariert (&lt;code&gt;struct &amp;lt;Method&amp;gt;Output {...};&lt;/code&gt;). Dementsprechend unterliegt sie den regulären semantischen Regeln für Datenstrukturen in C++ und weist standardmäßige Wertesemantik auf. Die Erzeugung einer Instanz erfolgt typischerweise auf dem Stack oder dynamisch im lokalen Ausführungskontext der Service-Methode, sobald das anbietende Skeleton die angeforderten Daten ermittelt hat.&lt;/p&gt;
-  &lt;p&gt;Hinsichtlich der Besitzverhältnisse liegt das Eigentum an der Instanz zunächst vollständig bei der ausführenden Methode des Skeletons. Nach der Zuweisung aller Ausgabewerte wird die Instanz typischerweise per Kopie oder über Move-Semantik an die Plattformschicht weitergereicht. Die Zerstörung der Instanz erfolgt automatisch beim Verlassen des jeweiligen Gültigkeitsbereichs beziehungsweise nach dem Transfer der enthaltenen Daten.&lt;/p&gt;
-  &lt;p&gt;Als Datenstruktur besitzt &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; keine internen Zustände, Zustandsübergänge oder Lebenszyklusphasen; das Objekt ist unmittelbar nach seiner Konstruktion belegbar und nutzbar. Hinsichtlich der Nebenläufigkeit bietet die Struktur keine interne Synchronisation. Da die Instanziierung und Befüllung jedoch pro Methodenaufruf getrennt innerhalb des jeweiligen Worker- oder Service-Threads erfolgt, ist bei ausschließlicher Nutzung thread-lokaler Instanzen keine externe Synchronisation erforderlich.&lt;/p&gt;
+  &lt;h4&gt;生命周期&lt;/h4&gt;
+  &lt;p&gt;结构 &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; 被声明为纯 C++ &lt;code&gt;struct&lt;/code&gt;（&lt;code&gt;struct &amp;lt;Method&amp;gt;Output {...};&lt;/code&gt;）。因此，它遵循 C++ 中数据结构的常规语义规则，并表现出标准的值语义。一旦提供服务的 Skeleton 获取了所请求的数据，实例的创建通常在栈上或动态地在服务方法的局部执行上下文中进行。&lt;/p&gt;
+  &lt;p&gt;在所有权关系方面，实例的所有权最初完全属于 Skeleton 的执行方法。在分配所有输出值后，实例通常通过拷贝或移动语义传递给平台层。实例的销毁在离开相应作用域或在传输所包含的数据后自动进行。&lt;/p&gt;
+  &lt;p&gt;作为数据结构，&lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; 没有内部状态、状态转换或生命周期阶段；该对象在构造后可立即赋值和使用。关于并发性，该结构不提供内部同步。但由于实例化和填充是在各个 Worker 线程或服务线程内针对每个方法调用分别进行的，因此在仅使用线程局部实例时无需外部同步。&lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-  &lt;p&gt;Der typische Ablauf bei der Verwendung von &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; gliedert sich in folgende Schritte:&lt;/p&gt;
+  &lt;h4&gt;使用路径&lt;/h4&gt;
+  &lt;p&gt;使用 &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; 时的典型流程分为以下步骤：&lt;/p&gt;
   &lt;ol&gt;
-    &lt;li&gt;&lt;strong&gt;Aufrufbearbeitung:&lt;/strong&gt; Das Service-Skeleton empfängt eine eingehende Methodenanforderung und startet die Bearbeitung der anwendungsspezifischen Geschäftslogik.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Berechnung der Resultate:&lt;/strong&gt; Die geforderten Ausgabewerte werden innerhalb der Service-Implementierung berechnet oder aus internen Zuständen ausgelesen.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Instanziierung und Belegung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; wird deklariert. Anschließend werden die einzelnen Member-Variablen der Struktur mit den ermittelten Werten belegt.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Rückgabe an die Plattform:&lt;/strong&gt; Interpretation: Vermutlich wird die vollständig befüllte Struktur entweder synchron als direkter Rückgabewert oder asynchron über einen entsprechenden Zukunftswert an die Laufzeitumgebung zurückgegeben.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Bereitstellung:&lt;/strong&gt; Die Kommunikationsschicht übernimmt das Objekt, führt die erforderliche Serialisierung der Daten durch und übermittelt die Antwort an den Aufrufer.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;调用处理：&lt;/strong&gt;服务 Skeleton 接收传入的方法请求，并开始处理应用特定的业务逻辑。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;计算结果：&lt;/strong&gt;在服务实现内部计算所需的输出值或从内部状态中读取这些值。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;实例化与赋值：&lt;/strong&gt;声明 &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; 的一个实例。随后用获取的值填充该结构的各个成员变量。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;返回给平台：&lt;/strong&gt;解读：推测完全填充的结构要么同步作为直接返回值，要么异步通过相应的 future 值返回给运行时环境。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;提供：&lt;/strong&gt;通信层接管该对象，执行必需的数据序列化，并将响应传输给调用方。&lt;/li&gt;
   &lt;/ol&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-  &lt;p&gt;Da &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; eine reine Datenkapselung ohne eigene Steuerungslogik darstellt, definiert die Struktur selbst keine spezifischen Fehlercodes, Ausnahmen oder Fehlerzustände. Fehlerszenarien manifestieren sich daher primär auf Ebene der Vor- und Nachbedingungen während der Objektbelegung sowie innerhalb der umgebenden Methodenlogik.&lt;/p&gt;
-  &lt;p&gt;Als Vorbedingung für die erfolgreiche Weitergabe an die Kommunikationsschicht gilt, dass alle in der Schnittstellendefinition geforderten Member-Felder vor der Rückgabe mit semantisch gültigen Werten initialisiert worden sind. Eine Nachbedingung besteht darin, dass nach Verlassen der Skeleton-Methode ein vollständiger und konsistenter Datensatz für die Übertragung bereitsteht.&lt;/p&gt;
-  &lt;p&gt;Interpretation: Schlägt die Ausführung der Methode im Service-Skeleton fehl, dürfte keine unvollständige oder fehlerhafte Instanz von &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; ausgewertet werden; stattdessen erfolgt die Fehlerbehandlung und -signalisierung über übergeordnete Plattformmechanismen zur Fehlerrückgabe, wodurch die Erzeugung oder Auswertung von &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; im Fehlerfall entfällt.&lt;/p&gt;
+  &lt;h4&gt;错误场景&lt;/h4&gt;
+  &lt;p&gt;由于 &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; 代表没有自身控制逻辑的纯数据封装，因此该结构本身不定义特定的错误码、异常或错误状态。因此，错误场景主要在对象赋值期间的前置和后置条件级别以及在外围方法逻辑内部体现。&lt;/p&gt;
+  &lt;p&gt;成功传递给通信层的前置条件是在返回前已使用语义有效的值对接口定义中要求的所有成员字段进行了初始化。后置条件是在离开 Skeleton 方法后，有一个完整且一致的数据集可供传输。&lt;/p&gt;
+  &lt;p&gt;解读：如果服务 Skeleton 中方法的执行失败，应当不会评估 &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt; 的不完整或错误实例；取而代之的是，通过用于错误返回的上层平台机制进行错误处理和指示，从而在出错时无需创建或评估 &lt;code&gt;&amp;lt;Method&amp;gt;Output&lt;/code&gt;。&lt;/p&gt;
 
-  &lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsvorgaben für die AUTOSAR Adaptive Platform (Release R25-11, Modul com).&lt;/p&gt;
+  &lt;p class="ai-note"&gt;本指南基于针对 AUTOSAR Adaptive Platform（Release R25-11，模块 com）的规范要求。&lt;/p&gt;
   &lt;!-- annahmen: 1) Die Struktur dient als Trägerobjekt zur Übergabe der Ausgabedaten an das Kommunikations-Framework für die Übermittlung an den Proxy – Begründung: Der Payload beschreibt die Struktur als Wrapper für Out-Argumente, spezifiziert jedoch nicht den konkreten Transportweg der Plattform; 2) Die Rückgabe der befüllten Struktur an die Laufzeitumgebung erfolgt entweder synchron oder asynchron eingebettet in einen Zukunftswert – Begründung: Der Payload enthält keine Methodensignatur, in der Adaptive Platform sind synchrone und asynchrone Rückgabemuster jedoch typisch; 3) Fachliche Methodenfehler werden über übergeordnete Plattformmechanismen propagiert, statt Fehlerzustände in der Struktur selbst abzubilden – Begründung: Die Struktur ist laut Syntax ein reines struct und definiert laut Payload keine Fehlercodes oder Statusflags --&gt;
 
 

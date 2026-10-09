@@ -19,58 +19,57 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>88a6d5669b55</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_rds_RdsException_11291/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ru/classes/cl_ara_rds_RdsException_11291/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_rds_RdsException_11291" data-view-mode="editor" title="Открыть редактор курации и досье" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Курировать</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Контекст</h4>
 <p>
-Die Klasse <code>ara::rds::RdsException</code> repräsentiert den zentralen Ausnahmetyp für das funktionale Cluster des Raw Data Stream (RDS) in der AUTOSAR Adaptive Platform. Sie fungiert als spezialisierter Informationsträger, wenn Fehlerbedingungen innerhalb des Streamings von Rohdaten nicht über lokale Rückgabewerte, sondern über den Ausnahme-Mechanismus von C++ an übergeordnete Aufrufschichten propagiert werden. Gemäß ihrer Vererbungshierarchie leitet <code>RdsException</code> öffentlich von <code>ara::core::Exception</code> ab. Dadurch fügt sie sich nahtlos in das einheitliche Fehlerbehandlungsmodell der Adaptive Platform ein, welches primär auf Werttypen wie <code>ara::core::ErrorCode</code> und <code>ara::core::Result</code> aufbaut, für ausnahmebasierte Kontrollflüsse jedoch kompatible Ausnahmeklassen vorschreibt.
+Класс <code>ara::rds::RdsException</code> представляет собой центральный тип исключений для функционального кластера Raw Data Stream (RDS) в AUTOSAR Adaptive Platform. Он функционирует как специализированный носитель информации в тех случаях, когда условия ошибок при потоковой передаче необработанных данных передаются вышестоящим уровням вызова не через локальные возвращаемые значения, а через механизм исключений C++. Согласно своей иерархии наследования <code>RdsException</code> открыто наследует от <code>ara::core::Exception</code>. Благодаря этому он органично встраивается в единую модель обработки ошибок Adaptive Platform, которая в первую очередь базируется на таких типах-значениях, как <code>ara::core::ErrorCode</code> и <code>ara::core::Result</code>, однако предписывает совместимые классы исключений для потоков управления на основе исключений.
 </p>
 <p>
-Die wesentlichen Interaktionspartner der Klasse umfassen drei Domänen:
+Основные участники взаимодействия с классом охватывают три домена:
 </p>
 <ul>
-<li><strong>RDS-Funktionscluster:</strong> Erzeugt bei schwerwiegenden Protokoll- oder Übertragungsfehlern im Rohdatenstrom entsprechende Fehlerzustände und kapselt diese in einem zugehörigen <code>ara::core::ErrorCode</code>.</li>
-<li><strong>Basisarchitektur (<code>ara::core</code>):</strong> Stellt mit <code>ara::core::Exception</code> die gemeinsame Basisklasse sowie mit <code>ara::core::ErrorCode</code> den zugrundeliegenden Werttyp bereit. Interpretation: Über die Basisfunktionalität von <code>ara::core::Exception</code> dürfte <code>RdsException</code> Methoden zur Inspektion des Fehlercodes bereitstellen.</li>
-<li><strong>Anwendungssoftware:</strong> Fängt die Ausnahme in definierten <code>catch</code>-Blöcken ab, um kontrollierte Wiederanlauf- oder Degradierungsstrategien für den betroffenen Datenstrom einzuleiten.</li>
+<li><strong>Функциональный кластер RDS:</strong> при возникновении критических ошибок протокола или передачи в потоке необработанных данных генерирует соответствующие состояния ошибок и инкапсулирует их в относящийся к ним <code>ara::core::ErrorCode</code>.</li>
+<li><strong>Базовая архитектура (<code>ara::core</code>):</strong> предоставляет с помощью <code>ara::core::Exception</code> общий базовый класс, а с помощью <code>ara::core::ErrorCode</code> — лежащий в основе тип-значение. Интерпретация: через базовую функциональность <code>ara::core::Exception</code> <code>RdsException</code>, вероятно, предоставляет методы для проверки кода ошибки.</li>
+<li><strong>Прикладное программное обеспечение:</strong> перехватывает исключение в определенных блоках <code>catch</code> для реализации контролируемых стратегий повторного запуска или деградации для затронутого потока данных.</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
+<h4>Жизненный цикл</h4>
 <p>
-Der Lebenszyklus einer Instanz von <code>ara::rds::RdsException</code> beginnt deterministisch mit ihrer Initialisierung über den expliziten Konstruktor <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>. Dieser übernimmt als einzigen Parameter einen <code>ara::core::ErrorCode</code> und ist als <code>noexcept</code> deklariert. Die <code>noexcept</code>-Garantie stellt sicher, dass die Konstruktion selbst unter widrigen Laufzeitbedingungen – wie etwa Ressourcenknappheit – garantiert nicht durch weitere Ausnahmen unterbrochen wird.
+Жизненный цикл экземпляра <code>ara::rds::RdsException</code> начинается детерминированно с его инициализации через явный конструктор <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>. Он принимает в качестве единственного параметра <code>ara::core::ErrorCode</code> и объявлен как <code>noexcept</code>. Гарантия <code>noexcept</code> обеспечивает, что конструирование гарантированно не будет прервано дополнительными исключениями даже при неблагоприятных условиях времени выполнения, таких как нехватка ресурсов.
 </p>
 <p>
-Nach der Konstruktion verbleibt das Ausnahmeobjekt in einem unveränderlichen Zustand. Es besitzt den übergebenen Fehlercode und fungiert als reines Wertobjekt. Die Weitergabe erfolgt über den C++-Laufzeitstack im Rahmen einer <code>throw</code>-Anweisung. Der Besitz des Objekts liegt während des Stack-Unwindings bei der C++-Laufzeitumgebung, bis es an der passenden Fangstelle gebunden wird.
+После конструирования объект исключения остается в неизменяемом состоянии. Он содержит переданный код ошибки и функционирует как чистый объект-значение. Передача осуществляется по стеку времени выполнения C++ в рамках инструкции <code>throw</code>. Во время раскрутки стека владение объектом находится у среды выполнения C++, пока он не будет связан в соответствующем месте перехвата.
 </p>
 <p>
-Hinsichtlich der Nebenläufigkeit und des Mehrfadenbetriebs gilt: Da Ausnahmeinstanzen typischerweise thread-lokal instanziiert und als konstante Referenz (<code>const ara::rds::RdsException&amp;</code>) gefangen werden, existiert kein geteilter Zustand zwischen Threads. Vermutlich ist für die Arbeit mit <code>RdsException</code> daher keinerlei explizite Mutex-Synchronisation auf Ebene der Ausnahmeinstanz erforderlich. Die Zerstörung erfolgt automatisch durch die C++-Laufzeit, sobald der abfangende Block verlassen wird.
+Что касается параллелизма и многопоточного режима: поскольку экземпляры исключений обычно создаются локально для потока и перехватываются как константная ссылка (<code>const ara::rds::RdsException&amp;</code>), разделяемое состояние между потоками отсутствует. Предположительно, для работы с <code>RdsException</code> поэтому не требуется никакой явной синхронизации с помощью мьютексов на уровне экземпляра исключения. Уничтожение выполняется автоматически средой выполнения C++, как только происходит выход из блока перехвата.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Путь использования</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Abfolge von Fehlererkennung, Ausnahmeerzeugung, Weiterleitung und Behandlung:
+Типичный сценарий использования подразделяется на последовательность обнаружения ошибки, генерации исключения, пересылки и обработки:
 </p>
 <ol>
-<li><strong>Fehleridentifikation im Datenstrom:</strong> Innerhalb einer RDS-Verarbeitungsroutine schlägt eine Lese-, Schreib- oder Konfigurationsoperation fehl. Der Fehler wird zunächst als <code>ara::core::ErrorCode</code> formuliert, dessen Deklaration im Header <code>ara/rds/rds_error_domain.h</code> verankert ist <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>.</li>
-<li><strong>Instanziierung:</strong> Soll die aufrufende Stelle per Ausnahme benachrichtigt werden, wird die Ausnahme explizit mit dem aufgetretenen Fehlercode erzeugt: <code>RdsException(errorCode)</code> <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>. Vermutlich geschieht dies auch automatisiert, wenn Anwendungen an einem fehlerhaften <code>ara::core::Result</code> die Methode <code>Value()</code> aufrufen.</li>
-<li><strong>Auslösen der Ausnahme:</strong> Die Instanz wird mittels <code>throw</code> in den Kontrollfluss eingespeist, was das Verlassen des aktuellen Kontextes erzwingt.</li>
-<li><strong>Fangen und Auswerten:</strong> Die aufrufende Schicht fängt das Objekt gezielt als <code>ara::rds::RdsException</code> oder polymorph als <code>ara::core::Exception</code> ab und liest den zugrundeliegenden Fehlercode aus, um gezielte Diagnose- und Wiederherstellungsmaßnahmen anzustoßen.</li>
+<li><strong>Идентификация ошибки в потоке данных:</strong> внутри процедуры обработки RDS завершается сбоем операция чтения, записи или конфигурации. Ошибка сначала формируется как <code>ara::core::ErrorCode</code>, объявление которого закреплено в заголовке <code>ara/rds/rds_error_domain.h</code> <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>.</li>
+<li><strong>Инстанцирование:</strong> если вызывающую сторону необходимо уведомить посредством исключения, исключение генерируется явно с возникшим кодом ошибки: <code>RdsException(errorCode)</code> <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>. Предположительно, это также происходит автоматически, когда приложения вызывают метод <code>Value()</code> у ошибочного <code>ara::core::Result</code>.</li>
+<li><strong>Генерация исключения:</strong> экземпляр вводится в поток управления с помощью <code>throw</code>, что приводит к принудительному выходу из текущего контекста.</li>
+<li><strong>Перехват и анализ:</strong> вызывающий уровень адресно перехватывает объект как <code>ara::rds::RdsException</code> или полиморфно как <code>ara::core::Exception</code> и считывает базовый код ошибки для запуска целевых мер по диагностике и восстановлению.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Сценарии ошибок</h4>
 <p>
-Als dedizierte Fehlerklasse besitzt <code>ara::rds::RdsException</code> selbst keine komplexen Fehlermodi. Ihr Konstruktor kann dank der Spezifikation als <code>noexcept</code> nicht fehlschlagen <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>.
+Являясь специализированным классом ошибок, <code>ara::rds::RdsException</code> сам по себе не имеет сложных режимов сбоя. Благодаря спецификации как <code>noexcept</code> его конструктор не может завершиться сбоем <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>.
 </p>
 <p>
-Ein kritisches Szenario im Zusammenspiel mit der Adaptive Platform entsteht, wenn die Schnittstelle zwischen fehlercodebasierter und ausnahmebasierter Behandlung unzureichend abgestimmt ist. Wird eine <code>RdsException</code> in einem Thread geworfen, für den kein umfassender <code>catch</code>-Handler registriert ist, führt dies zum Aufruf von <code>std::terminate</code> und damit zum unkontrollierten Abbruch des Prozesses. Anwendungen, die Schnittstellen des Raw Data Stream nutzen, müssen daher sicherstellen, dass entweder primär non-throwing APIs (z.&nbsp;B. Inspektion von <code>ara::core::Result</code> ohne Aufruf auslösender Hilfsmethoden) gewählt werden oder die Aufrufe lückenlos durch entsprechende Ausnahmebehandlungsblöcke abgesichert sind.
+Критический сценарий при взаимодействии с Adaptive Platform возникает в том случае, когда интерфейс между обработкой на основе кодов ошибок и обработкой на основе исключений согласован недостаточно. Если <code>RdsException</code> генерируется в потоке, для которого не зарегистрирован исчерпывающий обработчик <code>catch</code>, это приводит к вызову <code>std::terminate</code> и, следовательно, к неконтролируемому аварийному завершению процесса. Поэтому приложения, использующие интерфейсы Raw Data Stream, должны гарантировать, что либо преимущественно выбираются non-throwing API (например, инспекция <code>ara::core::Result</code> без вызова инициирующих исключения вспомогательных методов), либо вызовы полностью защищены соответствующими блоками обработки исключений.
 </p>
 <!-- annahmen:
 1) Die Klasse dürfte über die Basisklasse ara::core::Exception Zugriff auf den gekapselten ErrorCode bieten. – Begründung: Der Payload zeigt die Vererbung von ara::core::Exception und den Konstruktor mit ara::core::ErrorCode, spezifiziert aber keine eigenen Memberfunktionen.
 2) Vermutlich wird RdsException intern ausgelöst, wenn an einem fehlerbehafteten ara::core::Result im Kontext von RDS ein Zugriff via Value() erfolgt. – Begründung: Dies entspricht dem Standardmuster der AUTOSAR Adaptive Platform für Exception-Wrapper um ErrorCodes.
 3) Vermutlich ist keine threadübergreifende Synchronisation erforderlich, da Ausnahmen als Wertobjekte thread-lokal verarbeitet werden. – Begründung: Standardsemantik von C++-Ausnahmen ohne geteilten Zustand.
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des Release R25-11 für das Modul rds.</p>
+<p class="ai-note">Настоящее руководство основано исключительно на требованиях спецификации релиза R25-11 для модуля rds.</p>
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_rds_RdsException_11291" title="Обсудить с ИИ">💬 Обсудить с ИИ</button>
   <button type="button" class="btn-feedback-action" data-feedback-open data-target-id="Class Guide: cl_ara_rds_RdsException_11291" title="Оставить отзыв">⚠️ Оставить отзыв</button>
@@ -352,55 +351,54 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="88a6d5669b559dd9dc828e868ec9f56429c90cc7b59e479a3f5a56b9a0e96e27" data-trace-output="bc48c06c85baf5b67a7d4f603c7c66046653d816eb8e2aac1fe9d534df14a555" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Контекст&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::rds::RdsException&lt;/code&gt; repräsentiert den zentralen Ausnahmetyp für das funktionale Cluster des Raw Data Stream (RDS) in der AUTOSAR Adaptive Platform. Sie fungiert als spezialisierter Informationsträger, wenn Fehlerbedingungen innerhalb des Streamings von Rohdaten nicht über lokale Rückgabewerte, sondern über den Ausnahme-Mechanismus von C++ an übergeordnete Aufrufschichten propagiert werden. Gemäß ihrer Vererbungshierarchie leitet &lt;code&gt;RdsException&lt;/code&gt; öffentlich von &lt;code&gt;ara::core::Exception&lt;/code&gt; ab. Dadurch fügt sie sich nahtlos in das einheitliche Fehlerbehandlungsmodell der Adaptive Platform ein, welches primär auf Werttypen wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; und &lt;code&gt;ara::core::Result&lt;/code&gt; aufbaut, für ausnahmebasierte Kontrollflüsse jedoch kompatible Ausnahmeklassen vorschreibt.
+Класс &lt;code&gt;ara::rds::RdsException&lt;/code&gt; представляет собой центральный тип исключений для функционального кластера Raw Data Stream (RDS) в AUTOSAR Adaptive Platform. Он функционирует как специализированный носитель информации в тех случаях, когда условия ошибок при потоковой передаче необработанных данных передаются вышестоящим уровням вызова не через локальные возвращаемые значения, а через механизм исключений C++. Согласно своей иерархии наследования &lt;code&gt;RdsException&lt;/code&gt; открыто наследует от &lt;code&gt;ara::core::Exception&lt;/code&gt;. Благодаря этому он органично встраивается в единую модель обработки ошибок Adaptive Platform, которая в первую очередь базируется на таких типах-значениях, как &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; и &lt;code&gt;ara::core::Result&lt;/code&gt;, однако предписывает совместимые классы исключений для потоков управления на основе исключений.
 &lt;/p&gt;
 &lt;p&gt;
-Die wesentlichen Interaktionspartner der Klasse umfassen drei Domänen:
+Основные участники взаимодействия с классом охватывают три домена:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;RDS-Funktionscluster:&lt;/strong&gt; Erzeugt bei schwerwiegenden Protokoll- oder Übertragungsfehlern im Rohdatenstrom entsprechende Fehlerzustände und kapselt diese in einem zugehörigen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Basisarchitektur (&lt;code&gt;ara::core&lt;/code&gt;):&lt;/strong&gt; Stellt mit &lt;code&gt;ara::core::Exception&lt;/code&gt; die gemeinsame Basisklasse sowie mit &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; den zugrundeliegenden Werttyp bereit. Interpretation: Über die Basisfunktionalität von &lt;code&gt;ara::core::Exception&lt;/code&gt; dürfte &lt;code&gt;RdsException&lt;/code&gt; Methoden zur Inspektion des Fehlercodes bereitstellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Anwendungssoftware:&lt;/strong&gt; Fängt die Ausnahme in definierten &lt;code&gt;catch&lt;/code&gt;-Blöcken ab, um kontrollierte Wiederanlauf- oder Degradierungsstrategien für den betroffenen Datenstrom einzuleiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Функциональный кластер RDS:&lt;/strong&gt; при возникновении критических ошибок протокола или передачи в потоке необработанных данных генерирует соответствующие состояния ошибок и инкапсулирует их в относящийся к ним &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Базовая архитектура (&lt;code&gt;ara::core&lt;/code&gt;):&lt;/strong&gt; предоставляет с помощью &lt;code&gt;ara::core::Exception&lt;/code&gt; общий базовый класс, а с помощью &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; — лежащий в основе тип-значение. Интерпретация: через базовую функциональность &lt;code&gt;ara::core::Exception&lt;/code&gt; &lt;code&gt;RdsException&lt;/code&gt;, вероятно, предоставляет методы для проверки кода ошибки.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Прикладное программное обеспечение:&lt;/strong&gt; перехватывает исключение в определенных блоках &lt;code&gt;catch&lt;/code&gt; для реализации контролируемых стратегий повторного запуска или деградации для затронутого потока данных.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;Жизненный цикл&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus einer Instanz von &lt;code&gt;ara::rds::RdsException&lt;/code&gt; beginnt deterministisch mit ihrer Initialisierung über den expliziten Konstruktor &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;. Dieser übernimmt als einzigen Parameter einen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; und ist als &lt;code&gt;noexcept&lt;/code&gt; deklariert. Die &lt;code&gt;noexcept&lt;/code&gt;-Garantie stellt sicher, dass die Konstruktion selbst unter widrigen Laufzeitbedingungen – wie etwa Ressourcenknappheit – garantiert nicht durch weitere Ausnahmen unterbrochen wird.
+Жизненный цикл экземпляра &lt;code&gt;ara::rds::RdsException&lt;/code&gt; начинается детерминированно с его инициализации через явный конструктор &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;. Он принимает в качестве единственного параметра &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; и объявлен как &lt;code&gt;noexcept&lt;/code&gt;. Гарантия &lt;code&gt;noexcept&lt;/code&gt; обеспечивает, что конструирование гарантированно не будет прервано дополнительными исключениями даже при неблагоприятных условиях времени выполнения, таких как нехватка ресурсов.
 &lt;/p&gt;
 &lt;p&gt;
-Nach der Konstruktion verbleibt das Ausnahmeobjekt in einem unveränderlichen Zustand. Es besitzt den übergebenen Fehlercode und fungiert als reines Wertobjekt. Die Weitergabe erfolgt über den C++-Laufzeitstack im Rahmen einer &lt;code&gt;throw&lt;/code&gt;-Anweisung. Der Besitz des Objekts liegt während des Stack-Unwindings bei der C++-Laufzeitumgebung, bis es an der passenden Fangstelle gebunden wird.
+После конструирования объект исключения остается в неизменяемом состоянии. Он содержит переданный код ошибки и функционирует как чистый объект-значение. Передача осуществляется по стеку времени выполнения C++ в рамках инструкции &lt;code&gt;throw&lt;/code&gt;. Во время раскрутки стека владение объектом находится у среды выполнения C++, пока он не будет связан в соответствующем месте перехвата.
 &lt;/p&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit und des Mehrfadenbetriebs gilt: Da Ausnahmeinstanzen typischerweise thread-lokal instanziiert und als konstante Referenz (&lt;code&gt;const ara::rds::RdsException&amp;amp;&lt;/code&gt;) gefangen werden, existiert kein geteilter Zustand zwischen Threads. Vermutlich ist für die Arbeit mit &lt;code&gt;RdsException&lt;/code&gt; daher keinerlei explizite Mutex-Synchronisation auf Ebene der Ausnahmeinstanz erforderlich. Die Zerstörung erfolgt automatisch durch die C++-Laufzeit, sobald der abfangende Block verlassen wird.
+Что касается параллелизма и многопоточного режима: поскольку экземпляры исключений обычно создаются локально для потока и перехватываются как константная ссылка (&lt;code&gt;const ara::rds::RdsException&amp;amp;&lt;/code&gt;), разделяемое состояние между потоками отсутствует. Предположительно, для работы с &lt;code&gt;RdsException&lt;/code&gt; поэтому не требуется никакой явной синхронизации с помощью мьютексов на уровне экземпляра исключения. Уничтожение выполняется автоматически средой выполнения C++, как только происходит выход из блока перехвата.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Путь использования&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Abfolge von Fehlererkennung, Ausnahmeerzeugung, Weiterleitung und Behandlung:
+Типичный сценарий использования подразделяется на последовательность обнаружения ошибки, генерации исключения, пересылки и обработки:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Fehleridentifikation im Datenstrom:&lt;/strong&gt; Innerhalb einer RDS-Verarbeitungsroutine schlägt eine Lese-, Schreib- oder Konfigurationsoperation fehl. Der Fehler wird zunächst als &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; formuliert, dessen Deklaration im Header &lt;code&gt;ara/rds/rds_error_domain.h&lt;/code&gt; verankert ist &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Soll die aufrufende Stelle per Ausnahme benachrichtigt werden, wird die Ausnahme explizit mit dem aufgetretenen Fehlercode erzeugt: &lt;code&gt;RdsException(errorCode)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;. Vermutlich geschieht dies auch automatisiert, wenn Anwendungen an einem fehlerhaften &lt;code&gt;ara::core::Result&lt;/code&gt; die Methode &lt;code&gt;Value()&lt;/code&gt; aufrufen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auslösen der Ausnahme:&lt;/strong&gt; Die Instanz wird mittels &lt;code&gt;throw&lt;/code&gt; in den Kontrollfluss eingespeist, was das Verlassen des aktuellen Kontextes erzwingt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fangen und Auswerten:&lt;/strong&gt; Die aufrufende Schicht fängt das Objekt gezielt als &lt;code&gt;ara::rds::RdsException&lt;/code&gt; oder polymorph als &lt;code&gt;ara::core::Exception&lt;/code&gt; ab und liest den zugrundeliegenden Fehlercode aus, um gezielte Diagnose- und Wiederherstellungsmaßnahmen anzustoßen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Идентификация ошибки в потоке данных:&lt;/strong&gt; внутри процедуры обработки RDS завершается сбоем операция чтения, записи или конфигурации. Ошибка сначала формируется как &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, объявление которого закреплено в заголовке &lt;code&gt;ara/rds/rds_error_domain.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Инстанцирование:&lt;/strong&gt; если вызывающую сторону необходимо уведомить посредством исключения, исключение генерируется явно с возникшим кодом ошибки: &lt;code&gt;RdsException(errorCode)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;. Предположительно, это также происходит автоматически, когда приложения вызывают метод &lt;code&gt;Value()&lt;/code&gt; у ошибочного &lt;code&gt;ara::core::Result&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Генерация исключения:&lt;/strong&gt; экземпляр вводится в поток управления с помощью &lt;code&gt;throw&lt;/code&gt;, что приводит к принудительному выходу из текущего контекста.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Перехват и анализ:&lt;/strong&gt; вызывающий уровень адресно перехватывает объект как &lt;code&gt;ara::rds::RdsException&lt;/code&gt; или полиморфно как &lt;code&gt;ara::core::Exception&lt;/code&gt; и считывает базовый код ошибки для запуска целевых мер по диагностике и восстановлению.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Сценарии ошибок&lt;/h4&gt;
 &lt;p&gt;
-Als dedizierte Fehlerklasse besitzt &lt;code&gt;ara::rds::RdsException&lt;/code&gt; selbst keine komplexen Fehlermodi. Ihr Konstruktor kann dank der Spezifikation als &lt;code&gt;noexcept&lt;/code&gt; nicht fehlschlagen &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;.
+Являясь специализированным классом ошибок, &lt;code&gt;ara::rds::RdsException&lt;/code&gt; сам по себе не имеет сложных режимов сбоя. Благодаря спецификации как &lt;code&gt;noexcept&lt;/code&gt; его конструктор не может завершиться сбоем &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-Ein kritisches Szenario im Zusammenspiel mit der Adaptive Platform entsteht, wenn die Schnittstelle zwischen fehlercodebasierter und ausnahmebasierter Behandlung unzureichend abgestimmt ist. Wird eine &lt;code&gt;RdsException&lt;/code&gt; in einem Thread geworfen, für den kein umfassender &lt;code&gt;catch&lt;/code&gt;-Handler registriert ist, führt dies zum Aufruf von &lt;code&gt;std::terminate&lt;/code&gt; und damit zum unkontrollierten Abbruch des Prozesses. Anwendungen, die Schnittstellen des Raw Data Stream nutzen, müssen daher sicherstellen, dass entweder primär non-throwing APIs (z.&amp;nbsp;B. Inspektion von &lt;code&gt;ara::core::Result&lt;/code&gt; ohne Aufruf auslösender Hilfsmethoden) gewählt werden oder die Aufrufe lückenlos durch entsprechende Ausnahmebehandlungsblöcke abgesichert sind.
+Критический сценарий при взаимодействии с Adaptive Platform возникает в том случае, когда интерфейс между обработкой на основе кодов ошибок и обработкой на основе исключений согласован недостаточно. Если &lt;code&gt;RdsException&lt;/code&gt; генерируется в потоке, для которого не зарегистрирован исчерпывающий обработчик &lt;code&gt;catch&lt;/code&gt;, это приводит к вызову &lt;code&gt;std::terminate&lt;/code&gt; и, следовательно, к неконтролируемому аварийному завершению процесса. Поэтому приложения, использующие интерфейсы Raw Data Stream, должны гарантировать, что либо преимущественно выбираются non-throwing API (например, инспекция &lt;code&gt;ara::core::Result&lt;/code&gt; без вызова инициирующих исключения вспомогательных методов), либо вызовы полностью защищены соответствующими блоками обработки исключений.
 &lt;/p&gt;
 &lt;!-- annahmen:
 1) Die Klasse dürfte über die Basisklasse ara::core::Exception Zugriff auf den gekapselten ErrorCode bieten. – Begründung: Der Payload zeigt die Vererbung von ara::core::Exception und den Konstruktor mit ara::core::ErrorCode, spezifiziert aber keine eigenen Memberfunktionen.
 2) Vermutlich wird RdsException intern ausgelöst, wenn an einem fehlerbehafteten ara::core::Result im Kontext von RDS ein Zugriff via Value() erfolgt. – Begründung: Dies entspricht dem Standardmuster der AUTOSAR Adaptive Platform für Exception-Wrapper um ErrorCodes.
 3) Vermutlich ist keine threadübergreifende Synchronisation erforderlich, da Ausnahmen als Wertobjekte thread-lokal verarbeitet werden. – Begründung: Standardsemantik von C++-Ausnahmen ohne geteilten Zustand.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des Release R25-11 für das Modul rds.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Настоящее руководство основано исключительно на требованиях спецификации релиза R25-11 для модуля rds.&lt;/p&gt;
 
 &lt;/div&gt;</pre>
         </div>

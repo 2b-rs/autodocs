@@ -24,71 +24,70 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>9a850e4c469b</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_crypto_x509_CertSignRequest_04d18b/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_crypto_x509_CertSignRequest_04d18b/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-In der AUTOSAR Adaptive Platform stellt das funktionale Modul <code>crypto</code> standardisierte kryptografische Schnittstellen für sicherheitsrelevante Fahrzeuganwendungen bereit. Innerhalb dieses Moduls und des dedizierten Namensraums <code>ara::crypto::x509</code> definiert die Klasse <code>ara::crypto::x509::CertSignRequest</code> eine Schnittstelle zur Repräsentation von Zertifikatssignierungsanforderungen (Certificate Signing Requests, CSR).
+AUTOSAR Adaptive Platform에서 기능 모듈 <code>crypto</code>은 안전 관련 차량 애플리케이션을 위한 표준화된 암호화 인터페이스를 제공합니다. 이 모듈과 전용 네임스페이스 <code>ara::crypto::x509</code> 내에서 <code>ara::crypto::x509::CertSignRequest</code> 클래스는 인증서 서명 요청(Certificate Signing Request, CSR)을 나타내기 위한 인터페이스를 정의합니다.
 </p>
 <p>
-In modernen Public-Key-Infrastrukturen (PKI) bilden Zertifikatssignierungsanforderungen das Bindeglied zwischen einem Schlüsselbesitzer und einer Zertifizierungsstelle (Certificate Authority, CA). Ein CSR kapselt den öffentlichen Schlüssel des Antragstellers zusammen mit Identitätsattributen und belegt den Besitz des korrespondierenden privaten Schlüssels. Die Schnittstelle <code>ara::crypto::x509::CertSignRequest</code> stellt das objektorientierte Gegenstück für diesen kryptografischen Standard in der Adaptive Platform dar.
+최신 공개 키 기반구조(PKI)에서 인증서 서명 요청은 키 소유자와 인증 기관(Certificate Authority, CA) 간의 연결 고리를 형성합니다. CSR은 신청자의 공개 키를 신원 속성과 함께 캡슐화하고 해당하는 개인 키의 소유를 증명합니다. <code>ara::crypto::x509::CertSignRequest</code> 인터페이스는 Adaptive Platform에서 이 암호화 표준에 대한 객체 지향적 대응물을 나타냅니다.
 </p>
 <p>
-Aus der Klassendeklaration geht hervor, dass die Klasse öffentlich von <code>ara::crypto::Serializable</code> erbt: <code>class CertSignRequest : public ara::crypto::Serializable</code>. Durch diese Basisklasse wird <code>CertSignRequest</code> direkt an das Serialisierungsframework des Kryptomoduls angebunden. Interpretation: Als Schnittstellenobjekt für Zertifikatsanträge dürfte <code>ara::crypto::x509::CertSignRequest</code> primär dazu dienen, die Validierung und Übermittlung von CSR-Datenstrukturen softwareseitig zu kapseln.
+클래스 선언에 따르면 이 클래스는 <code>ara::crypto::Serializable</code>으로부터 공개 상속을 받습니다: <code>class CertSignRequest : public ara::crypto::Serializable</code>. 이 기본 클래스를 통해 <code>CertSignRequest</code>는 암호화 모듈의 직렬화 프레임워크에 직접 연결됩니다. 해석: 인증서 요청을 위한 인터페이스 객체로서 <code>ara::crypto::x509::CertSignRequest</code>은 주로 CSR 데이터 구조의 유효성 검사 및 전송을 소프트웨어 측면에서 캡슐화하는 역할을 할 것으로 보입니다.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>수명 주기</h4>
 <p>
-Der Lebenszyklus einer Instanz von <code>ara::crypto::x509::CertSignRequest</code> wird im AUTOSAR-Kryptokonzept über Smart Pointer verwaltet. Für die Interaktion mit konstanten Objekten definiert die Spezifikation eine standardisierte Zeigerdefinition:
+<code>ara::crypto::x509::CertSignRequest</code> 인스턴스의 라이프사이클은 AUTOSAR 암호화 개념에서 스마트 포인터를 통해 관리됩니다. 상수 객체와의 상호작용을 위해 명세는 표준화된 포인터 정의를 정의합니다.
 </p>
 <ul>
 <li>
-Gemäß <a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a> deklariert die Klasse den Typalias <code>using Sptrc = std::shared_ptr&lt;const CertSignRequest&gt;;</code> im Header <code>ara/crypto/x509/cert_sign_request.h</code> als Smart Pointer auf das konstante Schnittstellenobjekt.
+<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>에 따르면 이 클래스는 헤더 <code>ara/crypto/x509/cert_sign_request.h</code>에서 타입 별칭 <code>using Sptrc = std::shared_ptr&lt;const CertSignRequest&gt;;</code>을 상수 인터페이스 객체에 대한 스마트 포인터로 선언합니다.
 </li>
 </ul>
 <p>
-Aus dieser Deklaration lassen sich wesentliche Aspekte für die Verwaltung und Nebenläufigkeit der Instanzen ableiten:
+이 선언으로부터 인스턴스의 관리 및 동시성에 대한 핵심적인 측면을 도출할 수 있습니다.
 </p>
 <ul>
 <li>
-<strong>Gemeinsame Eigentümerschaft:</strong> Der Einsatz von <code>std::shared_ptr</code> ermöglicht eine flexible Weitergabe des Objekts an unterschiedliche Funktionseinheiten, etwa Verarbeitungsdienste oder Kommunikationsadapter, wobei die Lebensdauer automatisch über Referenzzählung gesteuert wird.
+<strong>공유 소유권:</strong> <code>std::shared_ptr</code>을 사용하면 처리 서비스나 통신 어댑터와 같은 다양한 기능 단위로 객체를 유연하게 전달할 수 있으며, 수명은 참조 계수를 통해 자동으로 제어됩니다.
 </li>
 <li>
-<strong>Unveränderlichkeit:</strong> Da <code>Sptrc</code> (<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>) auf ein konstantes Interface zeigt, wird sichergestellt, dass Konsumenten die Eigenschaften des Signierungsantrags nach dessen Erstellung nicht mehr verändern können.
+<strong>불변성:</strong> <code>Sptrc</code>(<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>)은 상수 인터페이스를 가리키므로, 컨슈머가 서명 요청 생성 후 해당 속성을 더 이상 수정할 수 없도록 보장합니다.
 </li>
 <li>
-<strong>Zerstörung:</strong> Sobald die letzte <code>Sptrc</code>-Kopie freigegeben wird, erfolgt die automatische Zerstörung des Objekts und die Deallokation aller zugeordneten Ressourcen.
+<strong>소멸:</strong> 마지막 <code>Sptrc</code> 복사본이 해제되는 즉시 객체의 자동 소멸 및 모든 할당된 리소스의 할당 해제가 수행됩니다.
 </li>
 <li>
-<strong>Nebenläufigkeit:</strong> Der ausschließliche Lesezugriff über die konstante Schnittstelle ermöglicht eine threadsichere Nutzung über mehrere Ausführungskontexte hinweg, ohne dass zusätzliche Synchronisationsmechanismen erforderlich sind.
+<strong>동시성:</strong> 상수 인터페이스를 통한 독점적 읽기 접근은 추가적인 동기화 메커니즘 없이도 여러 실행 컨텍스트에 걸쳐 스레드 안전한 사용을 가능하게 합니다.
 </li>
 </ul>
 
-<h4>Nutzungspfad</h4>
+<h4>사용 경로</h4>
 <p>
-Ein charakteristischer Verwendungsablauf von <code>ara::crypto::x509::CertSignRequest</code> gliedert sich in folgende logische Phasen:
+<code>ara::crypto::x509::CertSignRequest</code>의 전형적인 사용 흐름은 다음과 같은 논리적 단계로 나뉩니다.
 </p>
 <ol>
 <li>
-<strong>Erzeugung:</strong> Eine Anwendung initiiert die Generierung eines neuen Schlüsselpaares und veranlasst die Erstellung eines korrespondierenden CSR-Objekts.
+<strong>생성:</strong> 애플리케이션이 새 키 쌍 생성을 시작하고 해당하는 CSR 객체의 생성을 요청합니다.
 </li>
 <li>
-<strong>Kapselung und Bereitstellung:</strong> Das fertige Objekt wird als <code>CertSignRequest::Sptrc</code> (<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>) an konsumierende Komponenten übergeben, wodurch ein unveränderlicher Zustand garantiert ist.
+<strong>캡슐화 및 제공:</strong> 완성된 객체는 <code>CertSignRequest::Sptrc</code>(<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>)으로 사용하는 컴포넌트에 전달되어 불변 상태가 보장됩니다.
 </li>
 <li>
-<strong>Serialisierung:</strong> Über die Vererbung von <code>ara::crypto::Serializable</code> wird das CSR-Objekt in einen standardisierten Bytestrom überführt (Interpretation: vermutlich in das DER-kodierte Format gemäß PKCS#10).
+<strong>직렬화:</strong> <code>ara::crypto::Serializable</code>의 상속을 통해 CSR 객체는 표준화된 바이트 스트림으로 변환됩니다(해석: 아마도 PKCS#10에 따른 DER 인코딩 형식).
 </li>
 <li>
-<strong>Versand und Zertifikatserhalt:</strong> Der Bytestrom wird über standardisierte Protokolle an eine externe Zertifizierungsstelle übermittelt, um im Gegenzug das signierte X.509-Zertifikat zu empfangen.
+<strong>전송 및 인증서 수신:</strong> 바이트 스트림은 서명된 X.509 인증서를 수신하기 위해 표준화된 프로토콜을 통해 외부 인증 기관으로 전송됩니다.
 </li>
 </ol>
 <!-- annahmen:
 1) Als Schnittstelle für CSR-Objekte dürfte ara::crypto::x509::CertSignRequest die softwareseitige Kapselung und Validierung von Zertifikatsanträgen vor der Übermittlung bilden. – Begründung: Der Payload spezifiziert die Klasse als "Certificate Signing Request (CSR) object interface", nennt jedoch keine Fabrik- oder Inspektionsmethoden.
 2) Über ara::crypto::Serializable dürfte die Serialisierung in ein DER-kodiertes Format (PKCS#10) erfolgen. – Begründung: Die Klassensyntax weist die Vererbung von ara::crypto::Serializable aus, ohne ein konkretes Encoding festzulegen.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">본 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 사양을 기반으로 합니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_crypto_x509_CertSignRequest_04d18b" title="AI와 토론">💬 AI와 토론</button>
@@ -410,68 +409,67 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="9a850e4c469b6a56349c0d32ecf1ca13d1f493971ab22070b7883509d95383e4" data-trace-output="f47c719c2d486c81836757ec4294fed8ed3c77ce22411c973b7bf8ce0ba6e69a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-In der AUTOSAR Adaptive Platform stellt das funktionale Modul &lt;code&gt;crypto&lt;/code&gt; standardisierte kryptografische Schnittstellen für sicherheitsrelevante Fahrzeuganwendungen bereit. Innerhalb dieses Moduls und des dedizierten Namensraums &lt;code&gt;ara::crypto::x509&lt;/code&gt; definiert die Klasse &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; eine Schnittstelle zur Repräsentation von Zertifikatssignierungsanforderungen (Certificate Signing Requests, CSR).
+AUTOSAR Adaptive Platform에서 기능 모듈 &lt;code&gt;crypto&lt;/code&gt;은 안전 관련 차량 애플리케이션을 위한 표준화된 암호화 인터페이스를 제공합니다. 이 모듈과 전용 네임스페이스 &lt;code&gt;ara::crypto::x509&lt;/code&gt; 내에서 &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; 클래스는 인증서 서명 요청(Certificate Signing Request, CSR)을 나타내기 위한 인터페이스를 정의합니다.
 &lt;/p&gt;
 &lt;p&gt;
-In modernen Public-Key-Infrastrukturen (PKI) bilden Zertifikatssignierungsanforderungen das Bindeglied zwischen einem Schlüsselbesitzer und einer Zertifizierungsstelle (Certificate Authority, CA). Ein CSR kapselt den öffentlichen Schlüssel des Antragstellers zusammen mit Identitätsattributen und belegt den Besitz des korrespondierenden privaten Schlüssels. Die Schnittstelle &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; stellt das objektorientierte Gegenstück für diesen kryptografischen Standard in der Adaptive Platform dar.
+최신 공개 키 기반구조(PKI)에서 인증서 서명 요청은 키 소유자와 인증 기관(Certificate Authority, CA) 간의 연결 고리를 형성합니다. CSR은 신청자의 공개 키를 신원 속성과 함께 캡슐화하고 해당하는 개인 키의 소유를 증명합니다. &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; 인터페이스는 Adaptive Platform에서 이 암호화 표준에 대한 객체 지향적 대응물을 나타냅니다.
 &lt;/p&gt;
 &lt;p&gt;
-Aus der Klassendeklaration geht hervor, dass die Klasse öffentlich von &lt;code&gt;ara::crypto::Serializable&lt;/code&gt; erbt: &lt;code&gt;class CertSignRequest : public ara::crypto::Serializable&lt;/code&gt;. Durch diese Basisklasse wird &lt;code&gt;CertSignRequest&lt;/code&gt; direkt an das Serialisierungsframework des Kryptomoduls angebunden. Interpretation: Als Schnittstellenobjekt für Zertifikatsanträge dürfte &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; primär dazu dienen, die Validierung und Übermittlung von CSR-Datenstrukturen softwareseitig zu kapseln.
+클래스 선언에 따르면 이 클래스는 &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;으로부터 공개 상속을 받습니다: &lt;code&gt;class CertSignRequest : public ara::crypto::Serializable&lt;/code&gt;. 이 기본 클래스를 통해 &lt;code&gt;CertSignRequest&lt;/code&gt;는 암호화 모듈의 직렬화 프레임워크에 직접 연결됩니다. 해석: 인증서 요청을 위한 인터페이스 객체로서 &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt;은 주로 CSR 데이터 구조의 유효성 검사 및 전송을 소프트웨어 측면에서 캡슐화하는 역할을 할 것으로 보입니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus einer Instanz von &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; wird im AUTOSAR-Kryptokonzept über Smart Pointer verwaltet. Für die Interaktion mit konstanten Objekten definiert die Spezifikation eine standardisierte Zeigerdefinition:
+&lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; 인스턴스의 라이프사이클은 AUTOSAR 암호화 개념에서 스마트 포인터를 통해 관리됩니다. 상수 객체와의 상호작용을 위해 명세는 표준화된 포인터 정의를 정의합니다.
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-Gemäß &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt; deklariert die Klasse den Typalias &lt;code&gt;using Sptrc = std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;;&lt;/code&gt; im Header &lt;code&gt;ara/crypto/x509/cert_sign_request.h&lt;/code&gt; als Smart Pointer auf das konstante Schnittstellenobjekt.
+&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;에 따르면 이 클래스는 헤더 &lt;code&gt;ara/crypto/x509/cert_sign_request.h&lt;/code&gt;에서 타입 별칭 &lt;code&gt;using Sptrc = std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;;&lt;/code&gt;을 상수 인터페이스 객체에 대한 스마트 포인터로 선언합니다.
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Aus dieser Deklaration lassen sich wesentliche Aspekte für die Verwaltung und Nebenläufigkeit der Instanzen ableiten:
+이 선언으로부터 인스턴스의 관리 및 동시성에 대한 핵심적인 측면을 도출할 수 있습니다.
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;strong&gt;Gemeinsame Eigentümerschaft:&lt;/strong&gt; Der Einsatz von &lt;code&gt;std::shared_ptr&lt;/code&gt; ermöglicht eine flexible Weitergabe des Objekts an unterschiedliche Funktionseinheiten, etwa Verarbeitungsdienste oder Kommunikationsadapter, wobei die Lebensdauer automatisch über Referenzzählung gesteuert wird.
+&lt;strong&gt;공유 소유권:&lt;/strong&gt; &lt;code&gt;std::shared_ptr&lt;/code&gt;을 사용하면 처리 서비스나 통신 어댑터와 같은 다양한 기능 단위로 객체를 유연하게 전달할 수 있으며, 수명은 참조 계수를 통해 자동으로 제어됩니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Unveränderlichkeit:&lt;/strong&gt; Da &lt;code&gt;Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) auf ein konstantes Interface zeigt, wird sichergestellt, dass Konsumenten die Eigenschaften des Signierungsantrags nach dessen Erstellung nicht mehr verändern können.
+&lt;strong&gt;불변성:&lt;/strong&gt; &lt;code&gt;Sptrc&lt;/code&gt;(&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;)은 상수 인터페이스를 가리키므로, 컨슈머가 서명 요청 생성 후 해당 속성을 더 이상 수정할 수 없도록 보장합니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Zerstörung:&lt;/strong&gt; Sobald die letzte &lt;code&gt;Sptrc&lt;/code&gt;-Kopie freigegeben wird, erfolgt die automatische Zerstörung des Objekts und die Deallokation aller zugeordneten Ressourcen.
+&lt;strong&gt;소멸:&lt;/strong&gt; 마지막 &lt;code&gt;Sptrc&lt;/code&gt; 복사본이 해제되는 즉시 객체의 자동 소멸 및 모든 할당된 리소스의 할당 해제가 수행됩니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Der ausschließliche Lesezugriff über die konstante Schnittstelle ermöglicht eine threadsichere Nutzung über mehrere Ausführungskontexte hinweg, ohne dass zusätzliche Synchronisationsmechanismen erforderlich sind.
+&lt;strong&gt;동시성:&lt;/strong&gt; 상수 인터페이스를 통한 독점적 읽기 접근은 추가적인 동기화 메커니즘 없이도 여러 실행 컨텍스트에 걸쳐 스레드 안전한 사용을 가능하게 합니다.
 &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
 &lt;p&gt;
-Ein charakteristischer Verwendungsablauf von &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; gliedert sich in folgende logische Phasen:
+&lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt;의 전형적인 사용 흐름은 다음과 같은 논리적 단계로 나뉩니다.
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;strong&gt;Erzeugung:&lt;/strong&gt; Eine Anwendung initiiert die Generierung eines neuen Schlüsselpaares und veranlasst die Erstellung eines korrespondierenden CSR-Objekts.
+&lt;strong&gt;생성:&lt;/strong&gt; 애플리케이션이 새 키 쌍 생성을 시작하고 해당하는 CSR 객체의 생성을 요청합니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Kapselung und Bereitstellung:&lt;/strong&gt; Das fertige Objekt wird als &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) an konsumierende Komponenten übergeben, wodurch ein unveränderlicher Zustand garantiert ist.
+&lt;strong&gt;캡슐화 및 제공:&lt;/strong&gt; 완성된 객체는 &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt;(&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;)으로 사용하는 컴포넌트에 전달되어 불변 상태가 보장됩니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Serialisierung:&lt;/strong&gt; Über die Vererbung von &lt;code&gt;ara::crypto::Serializable&lt;/code&gt; wird das CSR-Objekt in einen standardisierten Bytestrom überführt (Interpretation: vermutlich in das DER-kodierte Format gemäß PKCS#10).
+&lt;strong&gt;직렬화:&lt;/strong&gt; &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;의 상속을 통해 CSR 객체는 표준화된 바이트 스트림으로 변환됩니다(해석: 아마도 PKCS#10에 따른 DER 인코딩 형식).
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Versand und Zertifikatserhalt:&lt;/strong&gt; Der Bytestrom wird über standardisierte Protokolle an eine externe Zertifizierungsstelle übermittelt, um im Gegenzug das signierte X.509-Zertifikat zu empfangen.
+&lt;strong&gt;전송 및 인증서 수신:&lt;/strong&gt; 바이트 스트림은 서명된 X.509 인증서를 수신하기 위해 표준화된 프로토콜을 통해 외부 인증 기관으로 전송됩니다.
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;!-- annahmen:
 1) Als Schnittstelle für CSR-Objekte dürfte ara::crypto::x509::CertSignRequest die softwareseitige Kapselung und Validierung von Zertifikatsanträgen vor der Übermittlung bilden. – Begründung: Der Payload spezifiziert die Klasse als "Certificate Signing Request (CSR) object interface", nennt jedoch keine Fabrik- oder Inspektionsmethoden.
 2) Über ara::crypto::Serializable dürfte die Serialisierung in ein DER-kodiertes Format (PKCS#10) erfolgen. – Begründung: Die Klassensyntax weist die Vererbung von ara::crypto::Serializable aus, ohne ein konkretes Encoding festzulegen.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;본 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 사양을 기반으로 합니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

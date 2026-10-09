@@ -19,19 +19,18 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>c755c3a6b565</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_shwa_ara_shwa_59c3fa/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/namespaces/ns_shwa_ara_shwa_59c3fa/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_shwa_ara_shwa_59c3fa" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>Context</h4>
   <p>
-    Der Namespace <code>ara::shwa</code> (Safe Hardware Acceleration) stellt Schnittstellen zur Entdeckung, Zuweisung und Nutzung von Hardware-Beschleunigern (wie GPUs oder CPUs) für rechenintensive Aufgaben auf der AUTOSAR Adaptive Platform bereit. Das Modul trennt strukturell zwischen Systemerkundung, Ressourcenverwaltung und der eigentlichen asynchronen Auftragsverarbeitung.
+    The namespace <code>ara::shwa</code> (Safe Hardware Acceleration) provides interfaces for the discovery, allocation, and use of hardware accelerators (such as GPUs or CPUs) for compute-intensive tasks on the AUTOSAR Adaptive Platform. Structurally, the module separates system discovery, resource management, and actual asynchronous job processing.
   </p>
   <p>
-    Die zentrale Erkennungseinheit bildet <code>Platform</code>, über welche im System verfügbare Hardware-Beschleuniger-Plattformen ermittelt und die angebundenen <code>Device</code>-Instanzen abgefragt werden. Für die Auswahl konkreter Ausführungsziele stellt der Namespace Selektoren wie <code>DeviceSelector</code>, <code>CpuSelector</code>, <code>GpuSelector</code> und <code>AcceleratorSelector</code> bereit, mit deren Hilfe ein passendes <code>Device</code> anhand anwendungsspezifischer Ränge oder Zielarchitekturen ermittelt wird.
+    The central discovery entity is <code>Platform</code>, via which hardware accelerator platforms available in the system are determined and the connected <code>Device</code> instances are queried. For selecting specific execution targets, the namespace provides selectors such as <code>DeviceSelector</code>, <code>CpuSelector</code>, <code>GpuSelector</code>, and <code>AcceleratorSelector</code>, which are used to determine a suitable <code>Device</code> based on application-specific ranks or target architectures.
   </p>
   <p>
-    Aufgaben werden nicht direkt auf dem <code>Device</code> gestartet, sondern über eine <code>Queue</code> koordiniert, welche die parallele Verarbeitung auf dem gewählten Ziel steuert. Daten werden über <code>Buffer</code> bereitgestellt, deren Dimensionierung über <code>Range</code> bestimmt und deren Speicherzugriff über <code>Accessor</code> abgesichert wird. Das Zusammenspiel der Kernkomponenten deckt damit die Selektion, Speicherverwaltung und parallele Ausführung ab.
+    Tasks are not started directly on the <code>Device</code>, but are coordinated via a <code>Queue</code>, which controls parallel processing on the selected target. Data is provided via <code>Buffer</code>, whose sizing is determined via <code>Range</code> and whose memory access is protected via <code>Accessor</code>. The interaction of the core components thus covers selection, memory management, and parallel execution.
   </p>
 
   <div class="diagram" id="diag-shwa-kontext"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 706.36 234.80" style="max-width:942px">
@@ -149,25 +148,25 @@
 </g>
 </g>
 </svg></div>
-  <p class="diagram-note">Kontextdiagramm: Interaktion der Kernklassen bei Entdeckung, Allokation und Ausführung in ara::shwa. Quellen: Payload-Klassenbeschreibungen Platform, Device, Queue, Buffer, Accessor.</p>
+  <p class="diagram-note">Context diagram: Interaction of the core classes during discovery, allocation, and execution in ara::shwa. Sources: Payload class descriptions Platform, Device, Queue, Buffer, Accessor.</p>
 
-  <h4>Lebenszyklus</h4>
+  <h4>Lifecycle</h4>
   <p>
-    Im Lebenszyklus der beteiligten Objekte unterscheidet <code>ara::shwa</code> strikt zwischen ressourcenbesitzenden und nicht-besitzenden Entitäten:
+    In the lifecycle of the involved objects, <code>ara::shwa</code> strictly distinguishes between resource-owning and non-owning entities:
   </p>
   <ul>
     <li>
-      <strong>Ressourcenbesitzende Objekte:</strong> <code>Queue</code>, <code>Buffer</code> und <code>Accessor</code> besitzen konkrete Hardware- oder Speicherressourcen. Sie sind explizit nicht kopierbar (non-copyable) und dafür ausgelegt, exklusiv über <code>std::unique_ptr</code> verwaltet und bei Bedarf verschoben (move) zu werden.
+      <strong>Resource-owning objects:</strong> <code>Queue</code>, <code>Buffer</code>, and <code>Accessor</code> own concrete hardware or memory resources. They are explicitly non-copyable and designed to be managed exclusively via <code>std::unique_ptr</code> and moved as needed.
     </li>
     <li>
-      <strong>Ressourcenfreie Referenzobjekte:</strong> <code>Platform</code>, <code>Device</code>, <code>DeviceMonitor</code>, <code>Id</code> und <code>Range</code> besitzen die zugrundeliegenden Ressourcen nicht selbst. Sie sind als kopierbare (copyable) Deskriptoren und Handles ausgelegt.
+      <strong>Resource-free reference objects:</strong> <code>Platform</code>, <code>Device</code>, <code>DeviceMonitor</code>, <code>Id</code>, and <code>Range</code> do not own the underlying resources themselves. They are designed as copyable descriptors and handles.
     </li>
     <li>
-      <strong>Queue-gebundene Objekte:</strong> Instanzen von <code>Event</code> (für die Synchronisation zwischen Host und HWA) sowie <code>TaskHandler</code> (zur Steuerung von Task-Ausführungen) können ausschließlich innerhalb einer <code>Queue</code> instanziiert werden; außerhalb einer Queue besitzen sie keine funktionale Bedeutung.
+      <strong>Queue-bound objects:</strong> Instances of <code>Event</code> (for synchronization between host and HWA) and <code>TaskHandler</code> (for controlling task executions) can only be instantiated within a <code>Queue</code>; outside a queue, they have no functional significance.
     </li>
   </ul>
   <p>
-    Ein <code>Device</code> spiegelt bezüglich seiner Verfügbarkeit diskrete Betriebszustände wider, die über die Enumeration <code>DeviceStatus</code> abgebildet werden <a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103">[AP_SWS_SHWA_00103]</a>. Vor der Task-Zuteilung signalisiert der Zustand <code>kReady</code> die Ausführungsbereitschaft, während <code>kNotAccesible</code>, <code>kFailure</code> oder <code>kUnknown</code> die Nutzung einschränken oder verhindern.
+    A <code>Device</code> reflects discrete operating states regarding its availability, which are mapped via the enumeration <code>DeviceStatus</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103">[AP_SWS_SHWA_00103]</a>. Prior to task allocation, state <code>kReady</code> signals execution readiness, while <code>kNotAccesible</code>, <code>kFailure</code>, or <code>kUnknown</code> restrict or prevent use.
   </p>
 
   <div class="diagram" id="diag-shwa-device-status"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 488.61 169.70" style="max-width:651px">
@@ -241,53 +240,53 @@
 </g>
 </g>
 </svg></div>
-  <p class="diagram-note">Zustandsdiagramm: Betriebszustände eines Hardware-Beschleuniger-Geräts gemäß DeviceStatus. Quellen: [AP_SWS_SHWA_00103].</p>
+  <p class="diagram-note">State diagram: Operating states of a hardware accelerator device according to DeviceStatus. Sources: [AP_SWS_SHWA_00103].</p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>Usage Path</h4>
   <p>
-    Ein typischer Verarbeitungsablauf erstreckt sich über mehrere Klassen des Namespace und folgt einer festen Abfolge von Geräteauswahl, Erzeugung der Ausführungspipeline, Speicherpufferung und synchronisierter Abarbeitung:
+    A typical processing workflow spans several classes of the namespace and follows a fixed sequence of device selection, creation of the execution pipeline, memory buffering, and synchronized execution:
   </p>
   <ol>
     <li>
-      <strong>Plattform- und Geräteauswahl:</strong> Die Anwendung liest über <code>Platform</code> verfügbare Geräte aus oder setzt einen <code>DeviceSelector</code> (bzw. <code>GpuSelector</code>, <code>CpuSelector</code>, <code>AcceleratorSelector</code>) ein, um die am besten geeignete <code>Device</code>-Instanz mit dem höchsten Rang zu wählen.
+      <strong>Platform and device selection:</strong> The application reads available devices via <code>Platform</code> or uses a <code>DeviceSelector</code> (or <code>GpuSelector</code>, <code>CpuSelector</code>, <code>AcceleratorSelector</code>) to select the most suitable <code>Device</code> instance with the highest rank.
     </li>
     <li>
-      <strong>Queue-Instanziierung:</strong> Zur parallelen Verarbeitung wird für das selektierte <code>Device</code> eine <code>Queue</code> als <code>std::unique_ptr&lt;Queue&gt;</code> erzeugt.
+      <strong>Queue instantiation:</strong> For parallel processing, a <code>Queue</code> is created as a <code>std::unique_ptr&lt;Queue&gt;</code> for the selected <code>Device</code>.
     </li>
     <li>
-      <strong>Speicherallokation und Zugriffsverwaltung:</strong> Die Dimensionen werden über <code>Range</code> definiert. Anschließend wird ein <code>Buffer</code> zur Speicherallokation auf dem Host oder dem Beschleuniger erstellt. Für kontrollierte Lese- und Schreiboperationen wird ein <code>Accessor</code> instanziiert, dessen Modus über <code>AccessMode</code> als <code>kRead</code>, <code>kWrite</code> oder <code>kReadWrite</code> festgelegt wird <a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101">[AP_SWS_SHWA_00101]</a>.
+      <strong>Memory allocation and access management:</strong> The dimensions are defined via <code>Range</code>. Subsequently, a <code>Buffer</code> is created for memory allocation on the host or accelerator. For controlled read and write operations, a <code>Accessor</code> is instantiated whose mode is defined via <code>AccessMode</code> as <code>kRead</code>, <code>kWrite</code>, or <code>kReadWrite</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101">[AP_SWS_SHWA_00101]</a>.
     </li>
     <li>
-      <strong>Task-Übermittlung und Synchronisation:</strong> Über die <code>Queue</code> wird ein <code>TaskHandler</code> zur Ausführung auf dem Ziel (spezifiziert über <code>Target::kDevice</code> oder <code>Target::kHostTask</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102">[AP_SWS_SHWA_00102]</a>) eingereiht. Mittels eines innerhalb der Queue erzeugten <code>Event</code> erfolgt die Synchronisation zwischen Host-Anwendung und HWA-Verarbeitung.
+      <strong>Task submission and synchronization:</strong> Via the <code>Queue</code>, a <code>TaskHandler</code> is enqueued for execution on the target (specified via <code>Target::kDevice</code> or <code>Target::kHostTask</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102">[AP_SWS_SHWA_00102]</a>). By means of a <code>Event</code> created within the queue, synchronization between host application and HWA processing takes place.
     </li>
   </ol>
 
   <div class="diagram" id="diag-shwa-nutzungspfad"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1320 553" font-family="Helvetica,sans-Serif" style="max-width:1320px"><text x="660.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Nutzungspfad <a class="diag-ref" data-ref="modules/shwa.html" href="../modules/shwa.html">ara::shwa</a></text><line x1="135" y1="102" x2="135" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="765" y1="102" x2="765" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="975" y1="102" x2="975" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="1185" y1="102" x2="1185" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Anwendung</text><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Selector / Platform</text><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Device</text><rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Queue</text><rect x="882" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="975" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Buffer / Accessor</text><rect x="1092" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="1185" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"><a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html">TaskHandler</a> / Event</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><line x1="40" y1="120" x2="1280" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="135" font-size="11" font-style="italic" fill="#28251d">Use Case: 1. Geraeteauswahl</text><text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d">Waehle Device (<a class="diag-ref" data-ref="classes/cl_ara_shwa_DeviceSelector_128fbb.html" href="../classes/cl_ara_shwa_DeviceSelector_128fbb.html">DeviceSelector</a> / Platform)</text><line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="197" text-anchor="middle" font-size="11" fill="#28251d">Device</text><line x1="345" y1="203" x2="135" y2="203" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><line x1="40" y1="225" x2="1280" y2="225" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="240" font-size="11" font-style="italic" fill="#28251d">Use Case: 2. Queue und Puffer initialisieren</text><text x="450.0" y="268" text-anchor="middle" font-size="11" fill="#28251d">Erzeuge <a class="diag-ref" data-ref="classes/cl_ara_shwa_Queue_49e139.html" href="../classes/cl_ara_shwa_Queue_49e139.html">Queue</a>(Device) via std::unique_ptr</text><line x1="135" y1="274" x2="765" y2="274" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="555.0" y="302" text-anchor="middle" font-size="11" fill="#28251d">Erzeuge <a class="diag-ref" data-ref="classes/cl_ara_shwa_Buffer_63e774.html" href="../classes/cl_ara_shwa_Buffer_63e774.html">Buffer</a>(Range) und <a class="diag-ref" data-ref="classes/cl_ara_shwa_Accessor_f7ce9a.html" href="../classes/cl_ara_shwa_Accessor_f7ce9a.html">Accessor</a>(<a class="diag-ref" data-ref="namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101" href="../namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101">AccessMode</a>)</text><line x1="135" y1="308" x2="975" y2="308" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><line x1="40" y1="330" x2="1280" y2="330" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="345" font-size="11" font-style="italic" fill="#28251d">Use Case: 3. Task-Einreihung und Synchronisation</text><text x="450.0" y="373" text-anchor="middle" font-size="11" fill="#28251d">Reihe Task ein (Target)</text><line x1="135" y1="379" x2="765" y2="379" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="975.0" y="407" text-anchor="middle" font-size="11" fill="#28251d">Erzeuge <a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html">TaskHandler</a> und Event in Queue</text><line x1="765" y1="413" x2="1185" y2="413" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="870.0" y="441" text-anchor="middle" font-size="11" fill="#28251d">Fuehre Task auf Hardware aus</text><line x1="1185" y1="447" x2="555" y2="447" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="870.0" y="475" text-anchor="middle" font-size="11" fill="#28251d">Signalisiere Abschluss via Event</text><line x1="555" y1="481" x2="1185" y2="481" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><text x="660.0" y="509" text-anchor="middle" font-size="11" fill="#28251d">Task beendet / synchronisiert</text><line x1="1185" y1="515" x2="135" y2="515" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line></svg></div>
-  <p class="diagram-note">Sequenzdiagramm: Typischer Ablauf von Geräteauswahl, Pufferverwaltung, Queue-Zuweisung und Task-Synchronisation. Quellen: Payload-Klassenbeschreibungen Platform, DeviceSelector, Queue, Buffer, Accessor, TaskHandler, Event sowie [AP_SWS_SHWA_00101], [AP_SWS_SHWA_00102].</p>
+  <p class="diagram-note">Sequence diagram: Typical workflow of device selection, buffer management, queue allocation, and task synchronization. Sources: Payload class descriptions Platform, DeviceSelector, Queue, Buffer, Accessor, TaskHandler, Event as well as [AP_SWS_SHWA_00101], [AP_SWS_SHWA_00102].</p>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>Error Scenarios</h4>
   <p>
-    Die API von Safe Hardware Acceleration ist grundlegend ausnahmefrei gestaltet (exception-free). Operationen signalisieren Fehler über Fehlercodes des Typs <code>ara::core::ErrorCode</code>, die der spezifischen Fehlerdomäne <code>ShwaErrorDomain</code> zugeordnet sind.
+    The API of Safe Hardware Acceleration is designed fundamentally exception-free. Operations signal errors via error codes of type <code>ara::core::ErrorCode</code>, which are assigned to the specific error domain <code>ShwaErrorDomain</code>.
   </p>
   <p>
-    Der Zugriff auf die Domäne erfolgt über <code>GetShwaDomain()</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_01311" href="../spec/record.html?id=AP_SWS_SHWA_01311">[AP_SWS_SHWA_01311]</a>, während standardisierte Fehlercodes über die Hilfsfunktion <code>MakeErrorCode()</code> konstruiert werden <a class="spec-record-ref" data-req="AP_SWS_SHWA_01312" href="../spec/record.html?id=AP_SWS_SHWA_01312">[AP_SWS_SHWA_01312]</a>. Die Enumeration <code>ShwaErrorCode</code> definiert unter anderem folgende Ursachen <a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301">[AP_SWS_SHWA_01301]</a>:
+    Access to the domain takes place via <code>GetShwaDomain()</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_01311" href="../spec/record.html?id=AP_SWS_SHWA_01311">[AP_SWS_SHWA_01311]</a>, while standardized error codes are constructed via the helper function <code>MakeErrorCode()</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_01312" href="../spec/record.html?id=AP_SWS_SHWA_01312">[AP_SWS_SHWA_01312]</a>. The enumeration <code>ShwaErrorCode</code> defines the following causes, among others <a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301">[AP_SWS_SHWA_01301]</a>:
   </p>
   <ul>
-    <li><code>kRuntime</code>: allgemeiner Laufzeitfehler während des Betriebs.</li>
-    <li><code>kTaskExecutionFailure</code>: Ausführungsfehler eines übergebenen Tasks auf dem Beschleuniger oder Host.</li>
-    <li><code>kMemoryNotAllocated</code>: Allokation von Arbeitsspeicher durch <code>Buffer</code> schlug fehl.</li>
-    <li><code>kIntegrityCorrupted</code>: die Speicherintegrität eines <code>Buffer</code> konnte nicht aufrechterhalten werden.</li>
-    <li><code>kResourceBusy</code>: ein angefordertes Gerät oder eine Queue-Ressource ist belegt.</li>
-    <li><code>kInvalidAccessMode</code> und <code>kAccessorFailure</code>: unzulässiger Zugriffsmodus bei <code>AccessMode</code> oder Fehlschlag bei Erzeugung bzw. Nutzung von <code>Accessor</code>.</li>
-    <li><code>kEventInvalidOperation</code>: unzulässige Operation auf einem <code>Event</code>-Synchronisationsobjekt.</li>
-    <li><code>kFeatureNotSupported</code>: das angeforderte Hardware-Feature wird vom Backend oder Treiber nicht unterstützt.</li>
-    <li><code>kInvalidIndex</code>, <code>kInvalidParameter</code> und <code>kInvalidObject</code>: fehlerhafte Übergabewerte, ungültige Indizes oder die Verwendung bereits zerstörter bzw. ungültiger Objekte.</li>
-    <li><code>kTimedOut</code>: Zeitüberschreitung während der Ausführung oder Synchronisation.</li>
+    <li><code>kRuntime</code>: General runtime error during operation.</li>
+    <li><code>kTaskExecutionFailure</code>: Execution error of a submitted task on the accelerator or host.</li>
+    <li><code>kMemoryNotAllocated</code>: Allocation of main memory by <code>Buffer</code> failed.</li>
+    <li><code>kIntegrityCorrupted</code>: The memory integrity of a <code>Buffer</code> could not be maintained.</li>
+    <li><code>kResourceBusy</code>: A requested device or queue resource is busy.</li>
+    <li><code>kInvalidAccessMode</code> and <code>kAccessorFailure</code>: Impermissible access mode for <code>AccessMode</code> or failure during creation or use of <code>Accessor</code>.</li>
+    <li><code>kEventInvalidOperation</code>: Impermissible operation on a <code>Event</code> synchronization object.</li>
+    <li><code>kFeatureNotSupported</code>: The requested hardware feature is not supported by the backend or driver.</li>
+    <li><code>kInvalidIndex</code>, <code>kInvalidParameter</code>, and <code>kInvalidObject</code>: Erroneous input values, invalid indices, or the use of already destroyed or invalid objects.</li>
+    <li><code>kTimedOut</code>: Timeout during execution or synchronization.</li>
   </ul>
   <p>
-    Für Architekturen, die auf C++-Ausnahmen basieren, steht die Klasse <code>ShwaException</code> bereit. Die API selbst wirft diese Ausnahme nicht, Anwendungen können jedoch Fehlercodes bei Bedarf in Ausnahmen umwandeln und weiterleiten. Zur asynchronen Fehlerbehandlung auf HWA-Ebene bindet die Anwendung zudem <code>ErrorHandler</code> ein.
+    For architectures based on C++ exceptions, the class <code>ShwaException</code> is available. The API itself does not throw this exception; however, applications can convert error codes into exceptions and forward them if necessary. For asynchronous error handling at the HWA level, the application also integrates <code>ErrorHandler</code>.
   </p>
-  <p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des Moduls shwa im Release R25-11.</p>
+  <p class="ai-note">This guide is based exclusively on the specification requirements of the module shwa in Release R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_shwa_ara_shwa_59c3fa" title="Discuss with AI">💬 Discuss with AI</button>
@@ -907,16 +906,15 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="c755c3a6b565c99f920f41ce215e81f1bb434983950dd4c39c28c218ff94da52" data-trace-output="1fe54ef6e441e46d5ba274946e595a379ee260de42e1bd291092ebfcd527f9e7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;Context&lt;/h4&gt;
   &lt;p&gt;
-    Der Namespace &lt;code&gt;ara::shwa&lt;/code&gt; (Safe Hardware Acceleration) stellt Schnittstellen zur Entdeckung, Zuweisung und Nutzung von Hardware-Beschleunigern (wie GPUs oder CPUs) für rechenintensive Aufgaben auf der AUTOSAR Adaptive Platform bereit. Das Modul trennt strukturell zwischen Systemerkundung, Ressourcenverwaltung und der eigentlichen asynchronen Auftragsverarbeitung.
+    The namespace &lt;code&gt;ara::shwa&lt;/code&gt; (Safe Hardware Acceleration) provides interfaces for the discovery, allocation, and use of hardware accelerators (such as GPUs or CPUs) for compute-intensive tasks on the AUTOSAR Adaptive Platform. Structurally, the module separates system discovery, resource management, and actual asynchronous job processing.
   &lt;/p&gt;
   &lt;p&gt;
-    Die zentrale Erkennungseinheit bildet &lt;code&gt;Platform&lt;/code&gt;, über welche im System verfügbare Hardware-Beschleuniger-Plattformen ermittelt und die angebundenen &lt;code&gt;Device&lt;/code&gt;-Instanzen abgefragt werden. Für die Auswahl konkreter Ausführungsziele stellt der Namespace Selektoren wie &lt;code&gt;DeviceSelector&lt;/code&gt;, &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;GpuSelector&lt;/code&gt; und &lt;code&gt;AcceleratorSelector&lt;/code&gt; bereit, mit deren Hilfe ein passendes &lt;code&gt;Device&lt;/code&gt; anhand anwendungsspezifischer Ränge oder Zielarchitekturen ermittelt wird.
+    The central discovery entity is &lt;code&gt;Platform&lt;/code&gt;, via which hardware accelerator platforms available in the system are determined and the connected &lt;code&gt;Device&lt;/code&gt; instances are queried. For selecting specific execution targets, the namespace provides selectors such as &lt;code&gt;DeviceSelector&lt;/code&gt;, &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;GpuSelector&lt;/code&gt;, and &lt;code&gt;AcceleratorSelector&lt;/code&gt;, which are used to determine a suitable &lt;code&gt;Device&lt;/code&gt; based on application-specific ranks or target architectures.
   &lt;/p&gt;
   &lt;p&gt;
-    Aufgaben werden nicht direkt auf dem &lt;code&gt;Device&lt;/code&gt; gestartet, sondern über eine &lt;code&gt;Queue&lt;/code&gt; koordiniert, welche die parallele Verarbeitung auf dem gewählten Ziel steuert. Daten werden über &lt;code&gt;Buffer&lt;/code&gt; bereitgestellt, deren Dimensionierung über &lt;code&gt;Range&lt;/code&gt; bestimmt und deren Speicherzugriff über &lt;code&gt;Accessor&lt;/code&gt; abgesichert wird. Das Zusammenspiel der Kernkomponenten deckt damit die Selektion, Speicherverwaltung und parallele Ausführung ab.
+    Tasks are not started directly on the &lt;code&gt;Device&lt;/code&gt;, but are coordinated via a &lt;code&gt;Queue&lt;/code&gt;, which controls parallel processing on the selected target. Data is provided via &lt;code&gt;Buffer&lt;/code&gt;, whose sizing is determined via &lt;code&gt;Range&lt;/code&gt; and whose memory access is protected via &lt;code&gt;Accessor&lt;/code&gt;. The interaction of the core components thus covers selection, memory management, and parallel execution.
   &lt;/p&gt;
 
   &lt;div class="diagram" id="diag-shwa-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 706.36 234.80" style="max-width:942px"&gt;
@@ -1034,25 +1032,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Kontextdiagramm: Interaktion der Kernklassen bei Entdeckung, Allokation und Ausführung in ara::shwa. Quellen: Payload-Klassenbeschreibungen Platform, Device, Queue, Buffer, Accessor.&lt;/p&gt;
+  &lt;p class="diagram-note"&gt;Context diagram: Interaction of the core classes during discovery, allocation, and execution in ara::shwa. Sources: Payload class descriptions Platform, Device, Queue, Buffer, Accessor.&lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+  &lt;h4&gt;Lifecycle&lt;/h4&gt;
   &lt;p&gt;
-    Im Lebenszyklus der beteiligten Objekte unterscheidet &lt;code&gt;ara::shwa&lt;/code&gt; strikt zwischen ressourcenbesitzenden und nicht-besitzenden Entitäten:
+    In the lifecycle of the involved objects, &lt;code&gt;ara::shwa&lt;/code&gt; strictly distinguishes between resource-owning and non-owning entities:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ressourcenbesitzende Objekte:&lt;/strong&gt; &lt;code&gt;Queue&lt;/code&gt;, &lt;code&gt;Buffer&lt;/code&gt; und &lt;code&gt;Accessor&lt;/code&gt; besitzen konkrete Hardware- oder Speicherressourcen. Sie sind explizit nicht kopierbar (non-copyable) und dafür ausgelegt, exklusiv über &lt;code&gt;std::unique_ptr&lt;/code&gt; verwaltet und bei Bedarf verschoben (move) zu werden.
+      &lt;strong&gt;Resource-owning objects:&lt;/strong&gt; &lt;code&gt;Queue&lt;/code&gt;, &lt;code&gt;Buffer&lt;/code&gt;, and &lt;code&gt;Accessor&lt;/code&gt; own concrete hardware or memory resources. They are explicitly non-copyable and designed to be managed exclusively via &lt;code&gt;std::unique_ptr&lt;/code&gt; and moved as needed.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ressourcenfreie Referenzobjekte:&lt;/strong&gt; &lt;code&gt;Platform&lt;/code&gt;, &lt;code&gt;Device&lt;/code&gt;, &lt;code&gt;DeviceMonitor&lt;/code&gt;, &lt;code&gt;Id&lt;/code&gt; und &lt;code&gt;Range&lt;/code&gt; besitzen die zugrundeliegenden Ressourcen nicht selbst. Sie sind als kopierbare (copyable) Deskriptoren und Handles ausgelegt.
+      &lt;strong&gt;Resource-free reference objects:&lt;/strong&gt; &lt;code&gt;Platform&lt;/code&gt;, &lt;code&gt;Device&lt;/code&gt;, &lt;code&gt;DeviceMonitor&lt;/code&gt;, &lt;code&gt;Id&lt;/code&gt;, and &lt;code&gt;Range&lt;/code&gt; do not own the underlying resources themselves. They are designed as copyable descriptors and handles.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Queue-gebundene Objekte:&lt;/strong&gt; Instanzen von &lt;code&gt;Event&lt;/code&gt; (für die Synchronisation zwischen Host und HWA) sowie &lt;code&gt;TaskHandler&lt;/code&gt; (zur Steuerung von Task-Ausführungen) können ausschließlich innerhalb einer &lt;code&gt;Queue&lt;/code&gt; instanziiert werden; außerhalb einer Queue besitzen sie keine funktionale Bedeutung.
+      &lt;strong&gt;Queue-bound objects:&lt;/strong&gt; Instances of &lt;code&gt;Event&lt;/code&gt; (for synchronization between host and HWA) and &lt;code&gt;TaskHandler&lt;/code&gt; (for controlling task executions) can only be instantiated within a &lt;code&gt;Queue&lt;/code&gt;; outside a queue, they have no functional significance.
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Ein &lt;code&gt;Device&lt;/code&gt; spiegelt bezüglich seiner Verfügbarkeit diskrete Betriebszustände wider, die über die Enumeration &lt;code&gt;DeviceStatus&lt;/code&gt; abgebildet werden &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;. Vor der Task-Zuteilung signalisiert der Zustand &lt;code&gt;kReady&lt;/code&gt; die Ausführungsbereitschaft, während &lt;code&gt;kNotAccesible&lt;/code&gt;, &lt;code&gt;kFailure&lt;/code&gt; oder &lt;code&gt;kUnknown&lt;/code&gt; die Nutzung einschränken oder verhindern.
+    A &lt;code&gt;Device&lt;/code&gt; reflects discrete operating states regarding its availability, which are mapped via the enumeration &lt;code&gt;DeviceStatus&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;. Prior to task allocation, state &lt;code&gt;kReady&lt;/code&gt; signals execution readiness, while &lt;code&gt;kNotAccesible&lt;/code&gt;, &lt;code&gt;kFailure&lt;/code&gt;, or &lt;code&gt;kUnknown&lt;/code&gt; restrict or prevent use.
   &lt;/p&gt;
 
   &lt;div class="diagram" id="diag-shwa-device-status"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 488.61 169.70" style="max-width:651px"&gt;
@@ -1126,53 +1124,53 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Zustandsdiagramm: Betriebszustände eines Hardware-Beschleuniger-Geräts gemäß DeviceStatus. Quellen: [AP_SWS_SHWA_00103].&lt;/p&gt;
+  &lt;p class="diagram-note"&gt;State diagram: Operating states of a hardware accelerator device according to DeviceStatus. Sources: [AP_SWS_SHWA_00103].&lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;Usage Path&lt;/h4&gt;
   &lt;p&gt;
-    Ein typischer Verarbeitungsablauf erstreckt sich über mehrere Klassen des Namespace und folgt einer festen Abfolge von Geräteauswahl, Erzeugung der Ausführungspipeline, Speicherpufferung und synchronisierter Abarbeitung:
+    A typical processing workflow spans several classes of the namespace and follows a fixed sequence of device selection, creation of the execution pipeline, memory buffering, and synchronized execution:
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Plattform- und Geräteauswahl:&lt;/strong&gt; Die Anwendung liest über &lt;code&gt;Platform&lt;/code&gt; verfügbare Geräte aus oder setzt einen &lt;code&gt;DeviceSelector&lt;/code&gt; (bzw. &lt;code&gt;GpuSelector&lt;/code&gt;, &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;AcceleratorSelector&lt;/code&gt;) ein, um die am besten geeignete &lt;code&gt;Device&lt;/code&gt;-Instanz mit dem höchsten Rang zu wählen.
+      &lt;strong&gt;Platform and device selection:&lt;/strong&gt; The application reads available devices via &lt;code&gt;Platform&lt;/code&gt; or uses a &lt;code&gt;DeviceSelector&lt;/code&gt; (or &lt;code&gt;GpuSelector&lt;/code&gt;, &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;AcceleratorSelector&lt;/code&gt;) to select the most suitable &lt;code&gt;Device&lt;/code&gt; instance with the highest rank.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Queue-Instanziierung:&lt;/strong&gt; Zur parallelen Verarbeitung wird für das selektierte &lt;code&gt;Device&lt;/code&gt; eine &lt;code&gt;Queue&lt;/code&gt; als &lt;code&gt;std::unique_ptr&amp;lt;Queue&amp;gt;&lt;/code&gt; erzeugt.
+      &lt;strong&gt;Queue instantiation:&lt;/strong&gt; For parallel processing, a &lt;code&gt;Queue&lt;/code&gt; is created as a &lt;code&gt;std::unique_ptr&amp;lt;Queue&amp;gt;&lt;/code&gt; for the selected &lt;code&gt;Device&lt;/code&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Speicherallokation und Zugriffsverwaltung:&lt;/strong&gt; Die Dimensionen werden über &lt;code&gt;Range&lt;/code&gt; definiert. Anschließend wird ein &lt;code&gt;Buffer&lt;/code&gt; zur Speicherallokation auf dem Host oder dem Beschleuniger erstellt. Für kontrollierte Lese- und Schreiboperationen wird ein &lt;code&gt;Accessor&lt;/code&gt; instanziiert, dessen Modus über &lt;code&gt;AccessMode&lt;/code&gt; als &lt;code&gt;kRead&lt;/code&gt;, &lt;code&gt;kWrite&lt;/code&gt; oder &lt;code&gt;kReadWrite&lt;/code&gt; festgelegt wird &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;.
+      &lt;strong&gt;Memory allocation and access management:&lt;/strong&gt; The dimensions are defined via &lt;code&gt;Range&lt;/code&gt;. Subsequently, a &lt;code&gt;Buffer&lt;/code&gt; is created for memory allocation on the host or accelerator. For controlled read and write operations, a &lt;code&gt;Accessor&lt;/code&gt; is instantiated whose mode is defined via &lt;code&gt;AccessMode&lt;/code&gt; as &lt;code&gt;kRead&lt;/code&gt;, &lt;code&gt;kWrite&lt;/code&gt;, or &lt;code&gt;kReadWrite&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Task-Übermittlung und Synchronisation:&lt;/strong&gt; Über die &lt;code&gt;Queue&lt;/code&gt; wird ein &lt;code&gt;TaskHandler&lt;/code&gt; zur Ausführung auf dem Ziel (spezifiziert über &lt;code&gt;Target::kDevice&lt;/code&gt; oder &lt;code&gt;Target::kHostTask&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;) eingereiht. Mittels eines innerhalb der Queue erzeugten &lt;code&gt;Event&lt;/code&gt; erfolgt die Synchronisation zwischen Host-Anwendung und HWA-Verarbeitung.
+      &lt;strong&gt;Task submission and synchronization:&lt;/strong&gt; Via the &lt;code&gt;Queue&lt;/code&gt;, a &lt;code&gt;TaskHandler&lt;/code&gt; is enqueued for execution on the target (specified via &lt;code&gt;Target::kDevice&lt;/code&gt; or &lt;code&gt;Target::kHostTask&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;). By means of a &lt;code&gt;Event&lt;/code&gt; created within the queue, synchronization between host application and HWA processing takes place.
     &lt;/li&gt;
   &lt;/ol&gt;
 
   &lt;div class="diagram" id="diag-shwa-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1320 553" font-family="Helvetica,sans-Serif" style="max-width:1320px"&gt;&lt;text x="660.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Nutzungspfad &lt;a class="diag-ref" data-ref="modules/shwa.html" href="../modules/shwa.html"&gt;ara::shwa&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="765" y1="102" x2="765" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="975" y1="102" x2="975" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="1185" y1="102" x2="1185" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Selector / Platform&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Device&lt;/text&gt;&lt;rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Queue&lt;/text&gt;&lt;rect x="882" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="975" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Buffer / Accessor&lt;/text&gt;&lt;rect x="1092" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="1185" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt; / Event&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;line x1="40" y1="120" x2="1280" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 1. Geraeteauswahl&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;Waehle Device (&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_DeviceSelector_128fbb.html" href="../classes/cl_ara_shwa_DeviceSelector_128fbb.html"&gt;DeviceSelector&lt;/a&gt; / Platform)&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;Device&lt;/text&gt;&lt;line x1="345" y1="203" x2="135" y2="203" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="225" x2="1280" y2="225" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="240" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 2. Queue und Puffer initialisieren&lt;/text&gt;&lt;text x="450.0" y="268" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_Queue_49e139.html" href="../classes/cl_ara_shwa_Queue_49e139.html"&gt;Queue&lt;/a&gt;(Device) via std::unique_ptr&lt;/text&gt;&lt;line x1="135" y1="274" x2="765" y2="274" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="302" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_Buffer_63e774.html" href="../classes/cl_ara_shwa_Buffer_63e774.html"&gt;Buffer&lt;/a&gt;(Range) und &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_Accessor_f7ce9a.html" href="../classes/cl_ara_shwa_Accessor_f7ce9a.html"&gt;Accessor&lt;/a&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101" href="../namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101"&gt;AccessMode&lt;/a&gt;)&lt;/text&gt;&lt;line x1="135" y1="308" x2="975" y2="308" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;line x1="40" y1="330" x2="1280" y2="330" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="345" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 3. Task-Einreihung und Synchronisation&lt;/text&gt;&lt;text x="450.0" y="373" text-anchor="middle" font-size="11" fill="#28251d"&gt;Reihe Task ein (Target)&lt;/text&gt;&lt;line x1="135" y1="379" x2="765" y2="379" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="975.0" y="407" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt; und Event in Queue&lt;/text&gt;&lt;line x1="765" y1="413" x2="1185" y2="413" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="870.0" y="441" text-anchor="middle" font-size="11" fill="#28251d"&gt;Fuehre Task auf Hardware aus&lt;/text&gt;&lt;line x1="1185" y1="447" x2="555" y2="447" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="870.0" y="475" text-anchor="middle" font-size="11" fill="#28251d"&gt;Signalisiere Abschluss via Event&lt;/text&gt;&lt;line x1="555" y1="481" x2="1185" y2="481" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="660.0" y="509" text-anchor="middle" font-size="11" fill="#28251d"&gt;Task beendet / synchronisiert&lt;/text&gt;&lt;line x1="1185" y1="515" x2="135" y2="515" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Sequenzdiagramm: Typischer Ablauf von Geräteauswahl, Pufferverwaltung, Queue-Zuweisung und Task-Synchronisation. Quellen: Payload-Klassenbeschreibungen Platform, DeviceSelector, Queue, Buffer, Accessor, TaskHandler, Event sowie [AP_SWS_SHWA_00101], [AP_SWS_SHWA_00102].&lt;/p&gt;
+  &lt;p class="diagram-note"&gt;Sequence diagram: Typical workflow of device selection, buffer management, queue allocation, and task synchronization. Sources: Payload class descriptions Platform, DeviceSelector, Queue, Buffer, Accessor, TaskHandler, Event as well as [AP_SWS_SHWA_00101], [AP_SWS_SHWA_00102].&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
   &lt;p&gt;
-    Die API von Safe Hardware Acceleration ist grundlegend ausnahmefrei gestaltet (exception-free). Operationen signalisieren Fehler über Fehlercodes des Typs &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, die der spezifischen Fehlerdomäne &lt;code&gt;ShwaErrorDomain&lt;/code&gt; zugeordnet sind.
+    The API of Safe Hardware Acceleration is designed fundamentally exception-free. Operations signal errors via error codes of type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, which are assigned to the specific error domain &lt;code&gt;ShwaErrorDomain&lt;/code&gt;.
   &lt;/p&gt;
   &lt;p&gt;
-    Der Zugriff auf die Domäne erfolgt über &lt;code&gt;GetShwaDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01311" href="../spec/record.html?id=AP_SWS_SHWA_01311"&gt;[AP_SWS_SHWA_01311]&lt;/a&gt;, während standardisierte Fehlercodes über die Hilfsfunktion &lt;code&gt;MakeErrorCode()&lt;/code&gt; konstruiert werden &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01312" href="../spec/record.html?id=AP_SWS_SHWA_01312"&gt;[AP_SWS_SHWA_01312]&lt;/a&gt;. Die Enumeration &lt;code&gt;ShwaErrorCode&lt;/code&gt; definiert unter anderem folgende Ursachen &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301"&gt;[AP_SWS_SHWA_01301]&lt;/a&gt;:
+    Access to the domain takes place via &lt;code&gt;GetShwaDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01311" href="../spec/record.html?id=AP_SWS_SHWA_01311"&gt;[AP_SWS_SHWA_01311]&lt;/a&gt;, while standardized error codes are constructed via the helper function &lt;code&gt;MakeErrorCode()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01312" href="../spec/record.html?id=AP_SWS_SHWA_01312"&gt;[AP_SWS_SHWA_01312]&lt;/a&gt;. The enumeration &lt;code&gt;ShwaErrorCode&lt;/code&gt; defines the following causes, among others &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301"&gt;[AP_SWS_SHWA_01301]&lt;/a&gt;:
   &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;kRuntime&lt;/code&gt;: allgemeiner Laufzeitfehler während des Betriebs.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kTaskExecutionFailure&lt;/code&gt;: Ausführungsfehler eines übergebenen Tasks auf dem Beschleuniger oder Host.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kMemoryNotAllocated&lt;/code&gt;: Allokation von Arbeitsspeicher durch &lt;code&gt;Buffer&lt;/code&gt; schlug fehl.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kIntegrityCorrupted&lt;/code&gt;: die Speicherintegrität eines &lt;code&gt;Buffer&lt;/code&gt; konnte nicht aufrechterhalten werden.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kResourceBusy&lt;/code&gt;: ein angefordertes Gerät oder eine Queue-Ressource ist belegt.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kInvalidAccessMode&lt;/code&gt; und &lt;code&gt;kAccessorFailure&lt;/code&gt;: unzulässiger Zugriffsmodus bei &lt;code&gt;AccessMode&lt;/code&gt; oder Fehlschlag bei Erzeugung bzw. Nutzung von &lt;code&gt;Accessor&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kEventInvalidOperation&lt;/code&gt;: unzulässige Operation auf einem &lt;code&gt;Event&lt;/code&gt;-Synchronisationsobjekt.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kFeatureNotSupported&lt;/code&gt;: das angeforderte Hardware-Feature wird vom Backend oder Treiber nicht unterstützt.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kInvalidIndex&lt;/code&gt;, &lt;code&gt;kInvalidParameter&lt;/code&gt; und &lt;code&gt;kInvalidObject&lt;/code&gt;: fehlerhafte Übergabewerte, ungültige Indizes oder die Verwendung bereits zerstörter bzw. ungültiger Objekte.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kTimedOut&lt;/code&gt;: Zeitüberschreitung während der Ausführung oder Synchronisation.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kRuntime&lt;/code&gt;: General runtime error during operation.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kTaskExecutionFailure&lt;/code&gt;: Execution error of a submitted task on the accelerator or host.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kMemoryNotAllocated&lt;/code&gt;: Allocation of main memory by &lt;code&gt;Buffer&lt;/code&gt; failed.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kIntegrityCorrupted&lt;/code&gt;: The memory integrity of a &lt;code&gt;Buffer&lt;/code&gt; could not be maintained.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kResourceBusy&lt;/code&gt;: A requested device or queue resource is busy.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kInvalidAccessMode&lt;/code&gt; and &lt;code&gt;kAccessorFailure&lt;/code&gt;: Impermissible access mode for &lt;code&gt;AccessMode&lt;/code&gt; or failure during creation or use of &lt;code&gt;Accessor&lt;/code&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kEventInvalidOperation&lt;/code&gt;: Impermissible operation on a &lt;code&gt;Event&lt;/code&gt; synchronization object.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kFeatureNotSupported&lt;/code&gt;: The requested hardware feature is not supported by the backend or driver.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kInvalidIndex&lt;/code&gt;, &lt;code&gt;kInvalidParameter&lt;/code&gt;, and &lt;code&gt;kInvalidObject&lt;/code&gt;: Erroneous input values, invalid indices, or the use of already destroyed or invalid objects.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;kTimedOut&lt;/code&gt;: Timeout during execution or synchronization.&lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Für Architekturen, die auf C++-Ausnahmen basieren, steht die Klasse &lt;code&gt;ShwaException&lt;/code&gt; bereit. Die API selbst wirft diese Ausnahme nicht, Anwendungen können jedoch Fehlercodes bei Bedarf in Ausnahmen umwandeln und weiterleiten. Zur asynchronen Fehlerbehandlung auf HWA-Ebene bindet die Anwendung zudem &lt;code&gt;ErrorHandler&lt;/code&gt; ein.
+    For architectures based on C++ exceptions, the class &lt;code&gt;ShwaException&lt;/code&gt; is available. The API itself does not throw this exception; however, applications can convert error codes into exceptions and forward them if necessary. For asynchronous error handling at the HWA level, the application also integrates &lt;code&gt;ErrorHandler&lt;/code&gt;.
   &lt;/p&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des Moduls shwa im Release R25-11.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;This guide is based exclusively on the specification requirements of the module shwa in Release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

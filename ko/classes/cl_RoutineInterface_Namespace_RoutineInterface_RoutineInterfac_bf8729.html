@@ -24,37 +24,36 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>5f09d1956600</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-Die Datenstruktur <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> übernimmt im Modul <code>diag</code> der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation <code>RequestResult</code> einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+데이터 구조체 <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code>은(는) AUTOSAR Adaptive Platform의 모듈 <code>diag</code>에서 진단 루틴의 작업 <code>RequestResult</code>에 대한 모든 출력 매개변수를 번들로 취합하는 작업을 담당합니다. 표준화된 진단 서비스를 통한 진단 루틴 실행 시 순수 실행 상태 외에도 진단 관리 시스템으로 전송되어야 하는 애플리케이션별 결과 데이터가 존재하는 경우가 많습니다. 여러 개별 반환값을 매개변수 목록을 통해 개별적으로 전달하는 대신, 이 구조체는 모든 출력 인수를 공통 데이터 타입으로 캡슐화합니다.
 </p>
 <p>
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als C++-Struktur (<code>struct</code>) besitzt <code>&lt;RoutineInterface&gt;RequestResultOutput</code> den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von <code>RequestResult</code>, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-</p>
-<p>
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+이때 주요 상호작용 대상은 진단 루틴을 구현하는 구체적인 애플리케이션 컴포넌트와 진단 모듈의 런타임 환경입니다. 구조체는 애플리케이션 내부 로직과 생성된 인프라 간의 타입화된 인터페이스 역할을 합니다. 이 데이터 구조체의 필드는 각 AUTOSAR 모델에 정의된 진단 루틴의 출력 인수에 해당할 것이므로, 지정된 진단 출력의 직접적인 매핑이 보장됩니다.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>수명 주기</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+C++ 구조체(<code>struct</code>)로서 <code>&lt;RoutineInterface&gt;RequestResultOutput</code>은(는) 전형적인 값 타입(Value Type)의 라이프사이클을 갖습니다. 인스턴스화는 일반적으로 애플리케이션별 루틴이 결과를 확인하는 즉시 <code>RequestResult</code>의 실행 컨텍스트에서 수행됩니다. 애플리케이션은 구조체의 로컬 인스턴스를 생성하고, 그 안에 정의된 멤버를 현재 결과 값으로 채우며, 완성된 구조체를 호출자에게 전달합니다.
+</p>
+<p>
+소유권과 관련하여 이 객체는 복잡한 의존성을 갖지 않습니다. 즉, 외부 서비스에 대한 공유 소유권을 보유하지 않으며 장기 지속되는 시스템 리소스를 관리하지 않습니다. 이 구조체는 애플리케이션 루틴에 의해 인스턴스화된 후 일반적인 값 전달 또는 이동 시맨틱을 통해 진단 프레임워크로 반환될 것으로 추정됩니다. 진단 인프라에 의한 추가 처리 또는 직렬화 후, 해당 스코프를 벗어날 때 소멸자가 자동으로 호출됨으로써 객체의 라이프사이클이 정상적으로 종료됩니다. 포함된 페이로드 데이터 외에 자체적인 내부 상태는 존재하지 않으므로, 별도의 상태 전이나 상태 머신의 단계가 없습니다.
+</p>
+
+<h4>사용 경로</h4>
+<p>
+일반적인 사용 경로는 초기화, 채우기 및 반환 단계로 나뉩니다:
 </p>
 <ul>
-<li><strong>Vorbereitung:</strong> Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.</li>
-<li><strong>Erzeugung und Zuweisung:</strong> Die Anwendungskomponente deklariert eine Instanz von <code>&lt;RoutineInterface&gt;RequestResultOutput</code> und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.</li>
-<li><strong>Rückmeldung:</strong> Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.</li>
+<li><strong>준비:</strong> 애플리케이션이 생성된 루틴 인터페이스를 통해 실행 중인 진단 루틴의 중간 또는 최종 결과를 제공하라는 요청을 수신합니다.</li>
+<li><strong>생성 및 할당:</strong> 애플리케이션 컴포넌트가 <code>&lt;RoutineInterface&gt;RequestResultOutput</code>의 인스턴스를 선언하고 확인된 측정값, 상태 플래그 또는 기타 루틴 데이터를 각 필드에 할당합니다.</li>
+<li><strong>응답:</strong> 완전히 채워진 구조체가 호출 결과로 반환되어, 진단 하위 시스템이 출력 값을 결과 진단 프로토콜로 가져올 수 있도록 합니다.</li>
 </ul>
 <p>
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+해석: 순수 데이터 구조체로서 복잡한 리소스 관리가 필요하지 않으므로, 진단 프레임워크는 채워진 인스턴스를 일반적으로 값이나 이동 시맨틱을 통해 전달합니다. 구조체는 주로 수동적 데이터 전달자로 설계되었으므로 동행하는 자체 동기화를 포함하지 않습니다. 여러 스레드가 동일한 인스턴스에 병렬로 접근하는 경우 스레드 안전한 조율은 호출하는 애플리케이션 로직의 몫입니다.
 </p>
 
 <!-- annahmen:
@@ -62,7 +61,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.</p>
+<p class="ai-note">이 가이드는 AUTOSAR Adaptive 릴리스 R25-11의 사양 메타데이터만을 기반으로 합니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" title="AI와 토론">💬 AI와 토론</button>
@@ -279,34 +278,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5f09d1956600abe96f1cf76dbb99c3220413956c6723afdf9c79be1c5417c7ff" data-trace-output="2590cbb2aa4504dea4cf3ca53bae4121d11a631c0d4129c11343f8e147cff677" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; übernimmt im Modul &lt;code&gt;diag&lt;/code&gt; der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation &lt;code&gt;RequestResult&lt;/code&gt; einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+데이터 구조체 &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt;은(는) AUTOSAR Adaptive Platform의 모듈 &lt;code&gt;diag&lt;/code&gt;에서 진단 루틴의 작업 &lt;code&gt;RequestResult&lt;/code&gt;에 대한 모든 출력 매개변수를 번들로 취합하는 작업을 담당합니다. 표준화된 진단 서비스를 통한 진단 루틴 실행 시 순수 실행 상태 외에도 진단 관리 시스템으로 전송되어야 하는 애플리케이션별 결과 데이터가 존재하는 경우가 많습니다. 여러 개별 반환값을 매개변수 목록을 통해 개별적으로 전달하는 대신, 이 구조체는 모든 출력 인수를 공통 데이터 타입으로 캡슐화합니다.
 &lt;/p&gt;
 &lt;p&gt;
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als C++-Struktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von &lt;code&gt;RequestResult&lt;/code&gt;, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-&lt;/p&gt;
-&lt;p&gt;
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+이때 주요 상호작용 대상은 진단 루틴을 구현하는 구체적인 애플리케이션 컴포넌트와 진단 모듈의 런타임 환경입니다. 구조체는 애플리케이션 내부 로직과 생성된 인프라 간의 타입화된 인터페이스 역할을 합니다. 이 데이터 구조체의 필드는 각 AUTOSAR 모델에 정의된 진단 루틴의 출력 인수에 해당할 것이므로, 지정된 진단 출력의 직접적인 매핑이 보장됩니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+C++ 구조체(&lt;code&gt;struct&lt;/code&gt;)로서 &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt;은(는) 전형적인 값 타입(Value Type)의 라이프사이클을 갖습니다. 인스턴스화는 일반적으로 애플리케이션별 루틴이 결과를 확인하는 즉시 &lt;code&gt;RequestResult&lt;/code&gt;의 실행 컨텍스트에서 수행됩니다. 애플리케이션은 구조체의 로컬 인스턴스를 생성하고, 그 안에 정의된 멤버를 현재 결과 값으로 채우며, 완성된 구조체를 호출자에게 전달합니다.
+&lt;/p&gt;
+&lt;p&gt;
+소유권과 관련하여 이 객체는 복잡한 의존성을 갖지 않습니다. 즉, 외부 서비스에 대한 공유 소유권을 보유하지 않으며 장기 지속되는 시스템 리소스를 관리하지 않습니다. 이 구조체는 애플리케이션 루틴에 의해 인스턴스화된 후 일반적인 값 전달 또는 이동 시맨틱을 통해 진단 프레임워크로 반환될 것으로 추정됩니다. 진단 인프라에 의한 추가 처리 또는 직렬화 후, 해당 스코프를 벗어날 때 소멸자가 자동으로 호출됨으로써 객체의 라이프사이클이 정상적으로 종료됩니다. 포함된 페이로드 데이터 외에 자체적인 내부 상태는 존재하지 않으므로, 별도의 상태 전이나 상태 머신의 단계가 없습니다.
+&lt;/p&gt;
+
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;
+일반적인 사용 경로는 초기화, 채우기 및 반환 단계로 나뉩니다:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Vorbereitung:&lt;/strong&gt; Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Zuweisung:&lt;/strong&gt; Die Anwendungskomponente deklariert eine Instanz von &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;준비:&lt;/strong&gt; 애플리케이션이 생성된 루틴 인터페이스를 통해 실행 중인 진단 루틴의 중간 또는 최종 결과를 제공하라는 요청을 수신합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;생성 및 할당:&lt;/strong&gt; 애플리케이션 컴포넌트가 &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt;의 인스턴스를 선언하고 확인된 측정값, 상태 플래그 또는 기타 루틴 데이터를 각 필드에 할당합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;응답:&lt;/strong&gt; 완전히 채워진 구조체가 호출 결과로 반환되어, 진단 하위 시스템이 출력 값을 결과 진단 프로토콜로 가져올 수 있도록 합니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+해석: 순수 데이터 구조체로서 복잡한 리소스 관리가 필요하지 않으므로, 진단 프레임워크는 채워진 인스턴스를 일반적으로 값이나 이동 시맨틱을 통해 전달합니다. 구조체는 주로 수동적 데이터 전달자로 설계되었으므로 동행하는 자체 동기화를 포함하지 않습니다. 여러 스레드가 동일한 인스턴스에 병렬로 접근하는 경우 스레드 안전한 조율은 호출하는 애플리케이션 로직의 몫입니다.
 &lt;/p&gt;
 
 &lt;!-- annahmen:
@@ -314,7 +312,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 AUTOSAR Adaptive 릴리스 R25-11의 사양 메타데이터만을 기반으로 합니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

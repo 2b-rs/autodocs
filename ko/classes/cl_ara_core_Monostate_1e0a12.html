@@ -24,47 +24,46 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>b22ce7de55b7</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_Monostate_1e0a12/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_core_Monostate_1e0a12/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_Monostate_1e0a12" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>컨텍스트</h4>
   <p>
-    Der Typ <code>ara::core::Monostate</code> stellt im Modul <code>core</code> der AUTOSAR Adaptive Platform einen zustandslosen Einheitstyp (Unit Type) dar. Laut Spezifikationsbeschreibung dient die Struktur dem korrespondierenden Einsatz in Verbindung mit Varianten-Typen (<code>[variant]</code>). In typisierten Unions bzw. Summentypen wie Variantenstrukturen wird ein dedizierter Typ benötigt, wenn ein Zustand repräsentiert werden soll, der keine Nutzdaten trägt.
+    타입 <code>ara::core::Monostate</code>은(는) AUTOSAR Adaptive Platform의 모듈 <code>core</code>에서 상태가 없는 단위 타입(Unit Type)을 나타냅니다. 사양 설명에 따르면 이 구조체는 배리언트 타입(<code>[variant]</code>)과 연계하여 대응 사용되는 역할을 합니다. 배리언트 구조체와 같은 타입화된 유니언 또는 합 타입에서는 페이로드 데이터를 갖지 않는 상태를 표현해야 할 때 전용 타입이 필요합니다.
   </p>
   <p>
-    Als Kernkomponente des Basissystems interagiert <code>ara::core::Monostate</code> primär mit generischen Datenstrukturen zur Typauswahl. Interpretation: Die Definition als <code>struct Monostate final</code> dürfte sicherstellen, dass dieser Typ ausschließlich als distinkter Stellvertretertyp verwendet wird und keine abgeleiteten Spezialisierungen gestattet sind. Durch seine Existenz ermöglicht er es generischen Schnittstellen, eine leere Alternative explizit auf Typebene modellieren zu können, ohne auf zeigerbasierte Nullwerte oder unüberprüfte Sentinel-Werte zurückgreifen zu müssen.
+    기본 시스템의 핵심 컴포넌트로서 <code>ara::core::Monostate</code>은(는) 주로 타입 선택을 위한 제네릭 데이터 구조체와 상호작용합니다. 해석: <code>struct Monostate final</code>(으)로서의 정의는 이 타입이 구별되는 대표 타입으로만 사용되고 파생된 특수화가 허용되지 않도록 보장할 것으로 보입니다. 그 존재를 통해 제네릭 인터페이스는 포인터 기반 널 값이나 검증되지 않은 센티널 값에 의존할 필요 없이 타입 수준에서 빈 대안을 명시적으로 모델링할 수 있게 됩니다.
   </p>
 
-  <h4>Lebenszyklus</h4>
+  <h4>수명 주기</h4>
   <p>
-    Der Lebenszyklus von <code>ara::core::Monostate</code> ist trivial und an die Lebensdauer des Kontextes gebunden, in den die Struktur eingebettet wird. Da es sich um eine leere Datenstruktur handelt, belegt eine Instanz zur Laufzeit lediglich den minimalen, durch das C++-Objektmodell vorgeschriebenen Speicherplatz zur Wahrung einer eindeutigen Objektadresse, transportiert jedoch keinen dynamischen Zustand.
+    <code>ara::core::Monostate</code>의 라이프사이클은 단순하며 구조체가 포함되는 컨텍스트의 수명에 결합됩니다. 비어 있는 데이터 구조체이므로 인스턴스는 런타임에 고유한 객체 주소를 유지하기 위해 C++ 객체 모델에서 규정하는 최소 메모리 공간만 차지할 뿐, 동적 상태를 전달하지는 않습니다.
   </p>
   <p>
-    Hinsichtlich der Erzeugung und Zerstörung gelten folgende Eigenschaften:
+    생성 및 소멸과 관련하여 다음 특성이 적용됩니다:
   </p>
   <ul>
-    <li><strong>Erzeugung:</strong> Instanzen können ohne zusätzliche Parameter konstruiert werden. Sie besitzen weder Ressourcen noch Zeiger auf externe Komponenten.</li>
-    <li><strong>Zustandsmodell:</strong> Es existieren keine internen Zustandsübergänge. Alle Instanzen dieses Typs sind zueinander äquivalent, da kein interner Status existiert, der voneinander abweichen könnte.</li>
-    <li><strong>Besitzverhältnisse:</strong> <code>ara::core::Monostate</code> verwaltet keine dynamisch allokierten Ressourcen. Der Besitz liegt immer direkt bei der umgebenden Datenstruktur oder auf dem Stack des Aufrufers.</li>
-    <li><strong>Nebenläufigkeit:</strong> Da Instanzen keinen veränderlichen Zustand besitzen, sind Lese- und Kopiervorgänge thread-sicher, sofern keine Datenrennen auf den übergeordneten Speicherbereichen vorliegen.</li>
+    <li><strong>생성:</strong> 인스턴스는 추가 매개변수 없이 생성될 수 있습니다. 리소스나 외부 컴포넌트에 대한 포인터를 보유하지 않습니다.</li>
+    <li><strong>상태 모델:</strong> 내부 상태 전이가 존재하지 않습니다. 서로 다를 수 있는 내부 상태가 없으므로 이 타입의 모든 인스턴스는 상호 동등합니다.</li>
+    <li><strong>소유권:</strong> <code>ara::core::Monostate</code>은(는) 동적으로 할당된 리소스를 관리하지 않습니다. 소유권은 항상 둘러싼 데이터 구조체에 직접 있거나 호출자의 스택에 있습니다.</li>
+    <li><strong>동시성:</strong> 인스턴스가 가변 상태를 갖지 않으므로 상위 메모리 영역에서 데이터 레이스가 발생하지 않는 한 읽기 및 복사 작업은 스레드 안전합니다.</li>
   </ul>
   <p>
-    Vermutlich ist das Verhalten des Typs vollständig an das aus dem C++-Standard bekannte <code>std::monostate</code> angelehnt, um nahtlos mit Move- und Copy-Semantiken generischer Container zusammenzuspielen. Die Zerstörung erfordert keine Bereinigungsaktionen und erfolgt trivial.
+    아마도 이 타입의 동작은 제네릭 컨테이너의 이동 및 복사 시맨틱과 매끄럽게 상호 작용하기 위해 C++ 표준으로 알려진 <code>std::monostate</code>의 동작을 전적으로 기반으로 하는 것으로 추정됩니다. 소멸에는 정리 작업이 필요하지 않으며 자명하게(trivially) 수행됩니다.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>사용 경로</h4>
   <p>
-    Der typische Ablauf bei der Verwendung von <code>ara::core::Monostate</code> orientiert sich an der Modellierung von optionalen Zuständen oder Default-Konstruierbarkeit in Varianten:
+    <code>ara::core::Monostate</code> 사용 시의 일반적인 흐름은 variant에서 선택적 상태 모델링 또는 기본 생성 가능성에 맞춰져 있습니다:
   </p>
   <ol>
-    <li><strong>Typdefinition:</strong> Eine Variantenstruktur wird so typisiert, dass <code>ara::core::Monostate</code> als erste Alternative deklariert wird, wenn der Standardkonstruktor der Variante einen leeren oder inaktiven Zustand abbilden soll.</li>
-    <li><strong>Initialisierung:</strong> Bei der Standardkonstruktion der Variante nimmt diese den Zustand von <code>ara::core::Monostate</code> an, ohne dass hierfür Nutzdaten initialisiert werden müssen.</li>
-    <li><strong>Zustandsprüfung:</strong> Vor der Verarbeitung prüft die verarbeitende Logik, ob die Variante derzeit den Typ <code>ara::core::Monostate</code> hält, was fachlich das Fehlen eines konkreten Nutzdatenwertes anzeigt.</li>
-    <li><strong>Überschreiben:</strong> Sobald ein fachlicher Wert verfügbar ist, wird die Variante mit dem entsprechenden Nutzlasttyp belegt, wodurch der Monostate-Zustand verlassen wird.</li>
+    <li><strong>타입 정의:</strong> variant의 기본 생성자가 비어 있거나 비활성인 상태를 나타내야 할 때 <code>ara::core::Monostate</code>이 첫 번째 대안으로 선언되도록 variant 구조의 타입이 지정됩니다.</li>
+    <li><strong>초기화:</strong> variant의 기본 생성 시, 이를 위해 페이로드 데이터를 초기화할 필요 없이 <code>ara::core::Monostate</code> 상태를 취합니다.</li>
+    <li><strong>상태 확인:</strong> 처리 로직은 처리 전에 variant가 현재 <code>ara::core::Monostate</code> 타입을 보유하고 있는지 확인하며, 이는 기능적으로 구체적인 페이로드 데이터 값이 없음을 나타냅니다.</li>
+    <li><strong>덮어쓰기:</strong> 비즈니스 값이 사용 가능해지는 즉시 variant는 해당 페이로드 타입으로 채워지며, 이를 통해 monostate 상태를 벗어납니다.</li>
   </ol>
   <p>
-    Interpretation: Der Typ dürfte vor allem dann zum Einsatz kommen, wenn die übrigen Alternativen einer Variante keinen parameterlosen Konstruktor besitzen und somit eine explizite leere Initialisierungsform zwingend erforderlich ist.
+    해석: 이 타입은 주로 variant의 나머지 대안들에 매개변수 없는 생성자가 없어 명시적인 빈 초기화 형식이 반드시 필요한 경우에 사용될 것으로 보입니다.
   </p>
 
   <!-- annahmen:
@@ -74,7 +73,7 @@
   -->
 
   <p class="ai-note">
-    Dieser Leitfaden basiert auf den strukturellen Metadaten und Typbeschreibungen der AUTOSAR Adaptive Platform Release R25-11.
+    이 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 구조적 메타데이터 및 타입 설명을 기반으로 합니다.
   </p>
 
 <div class="ai-commentary-actions">
@@ -292,44 +291,43 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="b22ce7de55b730ee369384666b1096e6a9d4b56f5f2e55ddc0acd6ed53d83b2b" data-trace-output="de91c3135fa173accf498c66a3a1d072f50aef34adc8321f4c870e679c99014f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;컨텍스트&lt;/h4&gt;
   &lt;p&gt;
-    Der Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform einen zustandslosen Einheitstyp (Unit Type) dar. Laut Spezifikationsbeschreibung dient die Struktur dem korrespondierenden Einsatz in Verbindung mit Varianten-Typen (&lt;code&gt;[variant]&lt;/code&gt;). In typisierten Unions bzw. Summentypen wie Variantenstrukturen wird ein dedizierter Typ benötigt, wenn ein Zustand repräsentiert werden soll, der keine Nutzdaten trägt.
+    타입 &lt;code&gt;ara::core::Monostate&lt;/code&gt;은(는) AUTOSAR Adaptive Platform의 모듈 &lt;code&gt;core&lt;/code&gt;에서 상태가 없는 단위 타입(Unit Type)을 나타냅니다. 사양 설명에 따르면 이 구조체는 배리언트 타입(&lt;code&gt;[variant]&lt;/code&gt;)과 연계하여 대응 사용되는 역할을 합니다. 배리언트 구조체와 같은 타입화된 유니언 또는 합 타입에서는 페이로드 데이터를 갖지 않는 상태를 표현해야 할 때 전용 타입이 필요합니다.
   &lt;/p&gt;
   &lt;p&gt;
-    Als Kernkomponente des Basissystems interagiert &lt;code&gt;ara::core::Monostate&lt;/code&gt; primär mit generischen Datenstrukturen zur Typauswahl. Interpretation: Die Definition als &lt;code&gt;struct Monostate final&lt;/code&gt; dürfte sicherstellen, dass dieser Typ ausschließlich als distinkter Stellvertretertyp verwendet wird und keine abgeleiteten Spezialisierungen gestattet sind. Durch seine Existenz ermöglicht er es generischen Schnittstellen, eine leere Alternative explizit auf Typebene modellieren zu können, ohne auf zeigerbasierte Nullwerte oder unüberprüfte Sentinel-Werte zurückgreifen zu müssen.
+    기본 시스템의 핵심 컴포넌트로서 &lt;code&gt;ara::core::Monostate&lt;/code&gt;은(는) 주로 타입 선택을 위한 제네릭 데이터 구조체와 상호작용합니다. 해석: &lt;code&gt;struct Monostate final&lt;/code&gt;(으)로서의 정의는 이 타입이 구별되는 대표 타입으로만 사용되고 파생된 특수화가 허용되지 않도록 보장할 것으로 보입니다. 그 존재를 통해 제네릭 인터페이스는 포인터 기반 널 값이나 검증되지 않은 센티널 값에 의존할 필요 없이 타입 수준에서 빈 대안을 명시적으로 모델링할 수 있게 됩니다.
   &lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+  &lt;h4&gt;수명 주기&lt;/h4&gt;
   &lt;p&gt;
-    Der Lebenszyklus von &lt;code&gt;ara::core::Monostate&lt;/code&gt; ist trivial und an die Lebensdauer des Kontextes gebunden, in den die Struktur eingebettet wird. Da es sich um eine leere Datenstruktur handelt, belegt eine Instanz zur Laufzeit lediglich den minimalen, durch das C++-Objektmodell vorgeschriebenen Speicherplatz zur Wahrung einer eindeutigen Objektadresse, transportiert jedoch keinen dynamischen Zustand.
+    &lt;code&gt;ara::core::Monostate&lt;/code&gt;의 라이프사이클은 단순하며 구조체가 포함되는 컨텍스트의 수명에 결합됩니다. 비어 있는 데이터 구조체이므로 인스턴스는 런타임에 고유한 객체 주소를 유지하기 위해 C++ 객체 모델에서 규정하는 최소 메모리 공간만 차지할 뿐, 동적 상태를 전달하지는 않습니다.
   &lt;/p&gt;
   &lt;p&gt;
-    Hinsichtlich der Erzeugung und Zerstörung gelten folgende Eigenschaften:
+    생성 및 소멸과 관련하여 다음 특성이 적용됩니다:
   &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Instanzen können ohne zusätzliche Parameter konstruiert werden. Sie besitzen weder Ressourcen noch Zeiger auf externe Komponenten.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Zustandsmodell:&lt;/strong&gt; Es existieren keine internen Zustandsübergänge. Alle Instanzen dieses Typs sind zueinander äquivalent, da kein interner Status existiert, der voneinander abweichen könnte.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Besitzverhältnisse:&lt;/strong&gt; &lt;code&gt;ara::core::Monostate&lt;/code&gt; verwaltet keine dynamisch allokierten Ressourcen. Der Besitz liegt immer direkt bei der umgebenden Datenstruktur oder auf dem Stack des Aufrufers.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Da Instanzen keinen veränderlichen Zustand besitzen, sind Lese- und Kopiervorgänge thread-sicher, sofern keine Datenrennen auf den übergeordneten Speicherbereichen vorliegen.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;생성:&lt;/strong&gt; 인스턴스는 추가 매개변수 없이 생성될 수 있습니다. 리소스나 외부 컴포넌트에 대한 포인터를 보유하지 않습니다.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;상태 모델:&lt;/strong&gt; 내부 상태 전이가 존재하지 않습니다. 서로 다를 수 있는 내부 상태가 없으므로 이 타입의 모든 인스턴스는 상호 동등합니다.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;소유권:&lt;/strong&gt; &lt;code&gt;ara::core::Monostate&lt;/code&gt;은(는) 동적으로 할당된 리소스를 관리하지 않습니다. 소유권은 항상 둘러싼 데이터 구조체에 직접 있거나 호출자의 스택에 있습니다.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;동시성:&lt;/strong&gt; 인스턴스가 가변 상태를 갖지 않으므로 상위 메모리 영역에서 데이터 레이스가 발생하지 않는 한 읽기 및 복사 작업은 스레드 안전합니다.&lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Vermutlich ist das Verhalten des Typs vollständig an das aus dem C++-Standard bekannte &lt;code&gt;std::monostate&lt;/code&gt; angelehnt, um nahtlos mit Move- und Copy-Semantiken generischer Container zusammenzuspielen. Die Zerstörung erfordert keine Bereinigungsaktionen und erfolgt trivial.
+    아마도 이 타입의 동작은 제네릭 컨테이너의 이동 및 복사 시맨틱과 매끄럽게 상호 작용하기 위해 C++ 표준으로 알려진 &lt;code&gt;std::monostate&lt;/code&gt;의 동작을 전적으로 기반으로 하는 것으로 추정됩니다. 소멸에는 정리 작업이 필요하지 않으며 자명하게(trivially) 수행됩니다.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;사용 경로&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Ablauf bei der Verwendung von &lt;code&gt;ara::core::Monostate&lt;/code&gt; orientiert sich an der Modellierung von optionalen Zuständen oder Default-Konstruierbarkeit in Varianten:
+    &lt;code&gt;ara::core::Monostate&lt;/code&gt; 사용 시의 일반적인 흐름은 variant에서 선택적 상태 모델링 또는 기본 생성 가능성에 맞춰져 있습니다:
   &lt;/p&gt;
   &lt;ol&gt;
-    &lt;li&gt;&lt;strong&gt;Typdefinition:&lt;/strong&gt; Eine Variantenstruktur wird so typisiert, dass &lt;code&gt;ara::core::Monostate&lt;/code&gt; als erste Alternative deklariert wird, wenn der Standardkonstruktor der Variante einen leeren oder inaktiven Zustand abbilden soll.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Bei der Standardkonstruktion der Variante nimmt diese den Zustand von &lt;code&gt;ara::core::Monostate&lt;/code&gt; an, ohne dass hierfür Nutzdaten initialisiert werden müssen.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Zustandsprüfung:&lt;/strong&gt; Vor der Verarbeitung prüft die verarbeitende Logik, ob die Variante derzeit den Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; hält, was fachlich das Fehlen eines konkreten Nutzdatenwertes anzeigt.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Überschreiben:&lt;/strong&gt; Sobald ein fachlicher Wert verfügbar ist, wird die Variante mit dem entsprechenden Nutzlasttyp belegt, wodurch der Monostate-Zustand verlassen wird.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;타입 정의:&lt;/strong&gt; variant의 기본 생성자가 비어 있거나 비활성인 상태를 나타내야 할 때 &lt;code&gt;ara::core::Monostate&lt;/code&gt;이 첫 번째 대안으로 선언되도록 variant 구조의 타입이 지정됩니다.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;초기화:&lt;/strong&gt; variant의 기본 생성 시, 이를 위해 페이로드 데이터를 초기화할 필요 없이 &lt;code&gt;ara::core::Monostate&lt;/code&gt; 상태를 취합니다.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;상태 확인:&lt;/strong&gt; 처리 로직은 처리 전에 variant가 현재 &lt;code&gt;ara::core::Monostate&lt;/code&gt; 타입을 보유하고 있는지 확인하며, 이는 기능적으로 구체적인 페이로드 데이터 값이 없음을 나타냅니다.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;덮어쓰기:&lt;/strong&gt; 비즈니스 값이 사용 가능해지는 즉시 variant는 해당 페이로드 타입으로 채워지며, 이를 통해 monostate 상태를 벗어납니다.&lt;/li&gt;
   &lt;/ol&gt;
   &lt;p&gt;
-    Interpretation: Der Typ dürfte vor allem dann zum Einsatz kommen, wenn die übrigen Alternativen einer Variante keinen parameterlosen Konstruktor besitzen und somit eine explizite leere Initialisierungsform zwingend erforderlich ist.
+    해석: 이 타입은 주로 variant의 나머지 대안들에 매개변수 없는 생성자가 없어 명시적인 빈 초기화 형식이 반드시 필요한 경우에 사용될 것으로 보입니다.
   &lt;/p&gt;
 
   &lt;!-- annahmen:
@@ -339,7 +337,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
   --&gt;
 
   &lt;p class="ai-note"&gt;
-    Dieser Leitfaden basiert auf den strukturellen Metadaten und Typbeschreibungen der AUTOSAR Adaptive Platform Release R25-11.
+    이 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 구조적 메타데이터 및 타입 설명을 기반으로 합니다.
   &lt;/p&gt;
 
 

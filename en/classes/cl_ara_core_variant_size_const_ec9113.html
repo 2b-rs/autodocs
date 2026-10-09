@@ -24,44 +24,43 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>762a09862c5a</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_size_const_ec9113/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/classes/cl_ara_core_variant_size_const_ec9113/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_size_const_ec9113" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Die Template-Klasse <code>ara::core::variant_size&lt;const volatile T&gt;</code> stellt ein Hilfskonstrukt zur Metaprogrammierung innerhalb der AUTOSAR Adaptive Platform im Modul <code>core</code> dar. Ihre primäre Verantwortung liegt in der Ermittlung der Anzahl an Alternativen, die ein typisiertes Variantenobjekt aufnehmen kann, sofern der zugrunde liegende Typ <code>T</code> sowohl mit <code>const</code> als auch mit <code>volatile</code> qualifiziert ist. Die Beschreibung verweist diesbezüglich auf die korrespondierende Nutzung im Kontext von <code>variant</code>. Interpretation: Die Klasse leitet den Wert für die Anzahl der Typ-Alternativen von der unqualifizierten Spezialisierung <code>ara::core::variant_size&lt;T&gt;</code> ab, analog zum Verhalten des C++-Standards <code>std::variant_size</code>.
+The template class <code>ara::core::variant_size&lt;const volatile T&gt;</code> represents a utility construct for metaprogramming within the AUTOSAR Adaptive Platform in the <code>core</code> module. Its primary responsibility lies in determining the number of alternatives that a typed variant object can hold, provided that the underlying type <code>T</code> is qualified with both <code>const</code> and <code>volatile</code>. In this regard, the description refers to the corresponding usage in the context of <code>variant</code>. Interpretation: The class derives the value for the number of type alternatives from the unqualified specialization <code>ara::core::variant_size&lt;T&gt;</code>, analogous to the behavior of the C++ standard <code>std::variant_size</code>.
 </p>
 <p>
-In modernen C++-Architekturen der Adaptive Platform agiert diese Spezialisierung als Interaktionspartner für generische Algorithmen, statische Zusicherungen und Metaprogrammierungs-Pipelines. Sie stellt sicher, dass Entwickler und Bibliothekskomponenten den Umfang einer Variante abfragen können, selbst wenn Typdefinitionen oder Funktionsargumente mit redundanten oder spezifischen CV-Qualifizierern versehen sind. Die Spezialisierung dürfte primär implementiert worden sein, um generischen Template-Algorithmen eine lückenlose Typabfrage über alle Kombinationen von CV-Qualifizierern hinweg ohne manuelle Entfernung der Qualifizierer zu ermöglichen.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als reines Metaprogrammierungs-Konstrukt besitzt <code>ara::core::variant_size&lt;const volatile T&gt;</code> keinen klassischen Laufzeit-Lebenszyklus. Es existieren weder dynamische Allokationen noch veränderliche Datenstrukturen oder Ressourcen, die während der Programmausführung erzeugt, verwaltet oder freigegeben werden müssten. Die Auswertung der Struktur erfolgt ausnahmslos während der Übersetzungsphase des Compilers.
-</p>
-<p>
-Die Instanziierung des Templates wird durch den Compiler initiiert, sobald der Bezeichner innerhalb eines konstanten Ausdrucks (beispielsweise in <code>constexpr</code>-Berechnungen oder <code>static_assert</code>) referenziert wird. Da die Klasse typischerweise eine statische Konstante bereitstellt, entstehen zur Laufzeit weder ein Speicherbedarf noch Nebeneffekte. Hinsichtlich der Nebenläufigkeit ist das Konstrukt inhärent thread-sicher: Da sämtliche bereitgestellten Informationen zur Compilezeit berechnet und unveränderlich bereitgestellt werden, können beliebig viele Threads oder Funktionen zeitgleich auf die Metadaten zugreifen, ohne dass Synchronisierungsmechanismen erforderlich sind.
+In modern C++ architectures of the Adaptive Platform, this specialization acts as an interaction partner for generic algorithms, static assertions, and metaprogramming pipelines. It ensures that developers and library components can query the size of a variant even if type definitions or function arguments are provided with redundant or specific CV qualifiers. The specialization was presumably implemented primarily to enable seamless type queries across all combinations of CV qualifiers for generic template algorithms without manual removal of qualifiers.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Lifecycle</h4>
 <p>
-Der typische Nutzungspfad von <code>ara::core::variant_size&lt;const volatile T&gt;</code> vollzieht sich in generischen Template-Funktionen oder Metaprogrammierungs-Klassen, die mit varianten Typen parametrisiert sind. Ein Entwickler oder ein Bibliotheks-Template durchläuft dabei üblicherweise folgende logische Abfolge:
+As a pure metaprogramming construct, <code>ara::core::variant_size&lt;const volatile T&gt;</code> has no classic runtime lifecycle. There are neither dynamic allocations nor mutable data structures or resources that would need to be created, managed, or released during program execution. The evaluation of the structure occurs without exception during the compiler's compilation phase.
+</p>
+<p>
+Template instantiation is initiated by the compiler as soon as the identifier is referenced within a constant expression (for example in <code>constexpr</code> calculations or <code>static_assert</code>). Since the class typically provides a static constant, neither memory requirements nor side effects arise at runtime. With respect to concurrency, the construct is inherently thread-safe: Since all provided information is computed at compile time and provided immutably, any number of threads or functions can access the metadata concurrently without requiring synchronization mechanisms.
+</p>
+
+<h4>Usage Path</h4>
+<p>
+The typical usage path of <code>ara::core::variant_size&lt;const volatile T&gt;</code> takes place in generic template functions or metaprogramming classes parameterized with variant types. A developer or library template usually traverses the following logical sequence:
 </p>
 <ul>
-<li><strong>Typdeklaration und Parametrisierung:</strong> Ein generischer Typ oder Parameter liegt als <code>const volatile</code>-qualifizierte Variante vor, beispielsweise als Referenz oder Funktionsparameter in hardwarenahen Schnittstellen.</li>
-<li><strong>Abfrage der Alternativenanzahl:</strong> Über den Ausdruck <code>ara::core::variant_size&lt;DeclType&gt;::value</code> wird die Anzahl der im Varianten-Typ enthaltenen Alternativen abgefragt. Der Compiler wählt für diesen Ausdruck automatisch die <code>const volatile</code>-Spezialisierung aus.</li>
-<li><strong>Verarbeitung zur Compilezeit:</strong> Der erhaltene Wert wird unmittelbar in statischen Bedingungen ausgewertet, um beispielsweise Indizes zu validieren, Schleifen über Varianten-Typen mittels Template-Metaprogrammierung abzurollen oder Überladungen via SFINAE zu steuern.</li>
+<li><strong>Type declaration and parameterization:</strong> A generic type or parameter is present as a <code>const volatile</code>-qualified variant, for example as a reference or function parameter in hardware-related interfaces.</li>
+<li><strong>Querying the number of alternatives:</strong> Via the expression <code>ara::core::variant_size&lt;DeclType&gt;::value</code>, the number of alternatives contained in the variant type is queried. The compiler automatically selects the <code>const volatile</code> specialization for this expression.</li>
+<li><strong>Processing at compile time:</strong> The obtained value is evaluated immediately in static conditions, for example to validate indices, unroll loops over variant types using template metaprogramming, or control overloads via SFINAE.</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
+<h4>Error Scenarios</h4>
 <p>
-Da <code>ara::core::variant_size&lt;const volatile T&gt;</code> als Compilezeit-Konstrukt fungiert, manifestieren sich Fehlerszenarien nicht in Form von Laufzeit-Ausnahmen (Exceptions) oder AUTOSAR-spezifischen Fehlercodes (wie <code>ara::core::ErrorCode</code>). Stattdessen führen fehlerhafte Anwendungen zu Abbrüchen während der Kompilierung.
+Since <code>ara::core::variant_size&lt;const volatile T&gt;</code> acts as a compile-time construct, failure scenarios do not manifest in the form of runtime exceptions or AUTOSAR-specific error codes (such as <code>ara::core::ErrorCode</code>). Instead, erroneous usages lead to aborts during compilation.
 </p>
 <p>
-Ein primäres Fehlerszenario entsteht, wenn das Template mit einem Typ <code>T</code> instantiiert wird, der selbst keine Variante darstellt und für den keine gültige primäre <code>variant_size</code>-Spezialisierung existiert. In diesem Fall ist die Klasse unvollständig, was zu einem direkten Übersetzungsfehler führt. Laufzeitfehler treten vermutlich systembedingt nicht auf, da ungültige Typargumente bereits während der Kompilierung zu unvollständigen Typen oder Template-Fehlern führen.
+A primary failure scenario arises when the template is instantiated with a type <code>T</code> that itself does not represent a variant and for which no valid primary <code>variant_size</code> specialization exists. In this case, the class is incomplete, leading to a direct compilation error. Runtime errors presumably do not occur inherently, since invalid type arguments already lead to incomplete types or template errors during compilation.
 </p>
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des Moduls core im Release R25-11.</p>
+<p class="ai-note">This guide is based on the structural metadata of the core module in release R25-11.</p>
 <!-- annahmen: 1) Die Klasse spiegelt das Verhalten von std::variant_size wider und delegiert auf das Basis-Trait – Begründung: Die Beschreibung im Payload verweist explizit auf die entsprechende Nutzung in [variant]. 2) Vollständigkeit der CV-Qualifizierer für generische Bibliotheken – Begründung: Typ-Traits in AUTOSAR Adaptive Core orientieren sich am C++17-Standard für Type Support. 3) Rein statische Fehlererkennung ohne Laufzeitausnahmen – Begründung: Traits für variant_size sind reine Compile-Time-Konstrukte ohne Laufzeit-Zustand. -->
 
 <div class="ai-commentary-actions">
@@ -279,41 +278,40 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="762a09862c5a87190a9a3a96987442155239c8c3ed837e28e4d0c1287621427d" data-trace-output="54940b5180bf27c102da8582919e2071f454619e64d1565973eec8b0e6a12331" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Klasse &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; stellt ein Hilfskonstrukt zur Metaprogrammierung innerhalb der AUTOSAR Adaptive Platform im Modul &lt;code&gt;core&lt;/code&gt; dar. Ihre primäre Verantwortung liegt in der Ermittlung der Anzahl an Alternativen, die ein typisiertes Variantenobjekt aufnehmen kann, sofern der zugrunde liegende Typ &lt;code&gt;T&lt;/code&gt; sowohl mit &lt;code&gt;const&lt;/code&gt; als auch mit &lt;code&gt;volatile&lt;/code&gt; qualifiziert ist. Die Beschreibung verweist diesbezüglich auf die korrespondierende Nutzung im Kontext von &lt;code&gt;variant&lt;/code&gt;. Interpretation: Die Klasse leitet den Wert für die Anzahl der Typ-Alternativen von der unqualifizierten Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt; ab, analog zum Verhalten des C++-Standards &lt;code&gt;std::variant_size&lt;/code&gt;.
+The template class &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; represents a utility construct for metaprogramming within the AUTOSAR Adaptive Platform in the &lt;code&gt;core&lt;/code&gt; module. Its primary responsibility lies in determining the number of alternatives that a typed variant object can hold, provided that the underlying type &lt;code&gt;T&lt;/code&gt; is qualified with both &lt;code&gt;const&lt;/code&gt; and &lt;code&gt;volatile&lt;/code&gt;. In this regard, the description refers to the corresponding usage in the context of &lt;code&gt;variant&lt;/code&gt;. Interpretation: The class derives the value for the number of type alternatives from the unqualified specialization &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt;, analogous to the behavior of the C++ standard &lt;code&gt;std::variant_size&lt;/code&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-In modernen C++-Architekturen der Adaptive Platform agiert diese Spezialisierung als Interaktionspartner für generische Algorithmen, statische Zusicherungen und Metaprogrammierungs-Pipelines. Sie stellt sicher, dass Entwickler und Bibliothekskomponenten den Umfang einer Variante abfragen können, selbst wenn Typdefinitionen oder Funktionsargumente mit redundanten oder spezifischen CV-Qualifizierern versehen sind. Die Spezialisierung dürfte primär implementiert worden sein, um generischen Template-Algorithmen eine lückenlose Typabfrage über alle Kombinationen von CV-Qualifizierern hinweg ohne manuelle Entfernung der Qualifizierer zu ermöglichen.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als reines Metaprogrammierungs-Konstrukt besitzt &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; keinen klassischen Laufzeit-Lebenszyklus. Es existieren weder dynamische Allokationen noch veränderliche Datenstrukturen oder Ressourcen, die während der Programmausführung erzeugt, verwaltet oder freigegeben werden müssten. Die Auswertung der Struktur erfolgt ausnahmslos während der Übersetzungsphase des Compilers.
-&lt;/p&gt;
-&lt;p&gt;
-Die Instanziierung des Templates wird durch den Compiler initiiert, sobald der Bezeichner innerhalb eines konstanten Ausdrucks (beispielsweise in &lt;code&gt;constexpr&lt;/code&gt;-Berechnungen oder &lt;code&gt;static_assert&lt;/code&gt;) referenziert wird. Da die Klasse typischerweise eine statische Konstante bereitstellt, entstehen zur Laufzeit weder ein Speicherbedarf noch Nebeneffekte. Hinsichtlich der Nebenläufigkeit ist das Konstrukt inhärent thread-sicher: Da sämtliche bereitgestellten Informationen zur Compilezeit berechnet und unveränderlich bereitgestellt werden, können beliebig viele Threads oder Funktionen zeitgleich auf die Metadaten zugreifen, ohne dass Synchronisierungsmechanismen erforderlich sind.
+In modern C++ architectures of the Adaptive Platform, this specialization acts as an interaction partner for generic algorithms, static assertions, and metaprogramming pipelines. It ensures that developers and library components can query the size of a variant even if type definitions or function arguments are provided with redundant or specific CV qualifiers. The specialization was presumably implemented primarily to enable seamless type queries across all combinations of CV qualifiers for generic template algorithms without manual removal of qualifiers.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad von &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; vollzieht sich in generischen Template-Funktionen oder Metaprogrammierungs-Klassen, die mit varianten Typen parametrisiert sind. Ein Entwickler oder ein Bibliotheks-Template durchläuft dabei üblicherweise folgende logische Abfolge:
+As a pure metaprogramming construct, &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; has no classic runtime lifecycle. There are neither dynamic allocations nor mutable data structures or resources that would need to be created, managed, or released during program execution. The evaluation of the structure occurs without exception during the compiler's compilation phase.
+&lt;/p&gt;
+&lt;p&gt;
+Template instantiation is initiated by the compiler as soon as the identifier is referenced within a constant expression (for example in &lt;code&gt;constexpr&lt;/code&gt; calculations or &lt;code&gt;static_assert&lt;/code&gt;). Since the class typically provides a static constant, neither memory requirements nor side effects arise at runtime. With respect to concurrency, the construct is inherently thread-safe: Since all provided information is computed at compile time and provided immutably, any number of threads or functions can access the metadata concurrently without requiring synchronization mechanisms.
+&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;
+The typical usage path of &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; takes place in generic template functions or metaprogramming classes parameterized with variant types. A developer or library template usually traverses the following logical sequence:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Typdeklaration und Parametrisierung:&lt;/strong&gt; Ein generischer Typ oder Parameter liegt als &lt;code&gt;const volatile&lt;/code&gt;-qualifizierte Variante vor, beispielsweise als Referenz oder Funktionsparameter in hardwarenahen Schnittstellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage der Alternativenanzahl:&lt;/strong&gt; Über den Ausdruck &lt;code&gt;ara::core::variant_size&amp;lt;DeclType&amp;gt;::value&lt;/code&gt; wird die Anzahl der im Varianten-Typ enthaltenen Alternativen abgefragt. Der Compiler wählt für diesen Ausdruck automatisch die &lt;code&gt;const volatile&lt;/code&gt;-Spezialisierung aus.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung zur Compilezeit:&lt;/strong&gt; Der erhaltene Wert wird unmittelbar in statischen Bedingungen ausgewertet, um beispielsweise Indizes zu validieren, Schleifen über Varianten-Typen mittels Template-Metaprogrammierung abzurollen oder Überladungen via SFINAE zu steuern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Type declaration and parameterization:&lt;/strong&gt; A generic type or parameter is present as a &lt;code&gt;const volatile&lt;/code&gt;-qualified variant, for example as a reference or function parameter in hardware-related interfaces.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Querying the number of alternatives:&lt;/strong&gt; Via the expression &lt;code&gt;ara::core::variant_size&amp;lt;DeclType&amp;gt;::value&lt;/code&gt;, the number of alternatives contained in the variant type is queried. The compiler automatically selects the &lt;code&gt;const volatile&lt;/code&gt; specialization for this expression.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Processing at compile time:&lt;/strong&gt; The obtained value is evaluated immediately in static conditions, for example to validate indices, unroll loops over variant types using template metaprogramming, or control overloads via SFINAE.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
 &lt;p&gt;
-Da &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; als Compilezeit-Konstrukt fungiert, manifestieren sich Fehlerszenarien nicht in Form von Laufzeit-Ausnahmen (Exceptions) oder AUTOSAR-spezifischen Fehlercodes (wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;). Stattdessen führen fehlerhafte Anwendungen zu Abbrüchen während der Kompilierung.
+Since &lt;code&gt;ara::core::variant_size&amp;lt;const volatile T&amp;gt;&lt;/code&gt; acts as a compile-time construct, failure scenarios do not manifest in the form of runtime exceptions or AUTOSAR-specific error codes (such as &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;). Instead, erroneous usages lead to aborts during compilation.
 &lt;/p&gt;
 &lt;p&gt;
-Ein primäres Fehlerszenario entsteht, wenn das Template mit einem Typ &lt;code&gt;T&lt;/code&gt; instantiiert wird, der selbst keine Variante darstellt und für den keine gültige primäre &lt;code&gt;variant_size&lt;/code&gt;-Spezialisierung existiert. In diesem Fall ist die Klasse unvollständig, was zu einem direkten Übersetzungsfehler führt. Laufzeitfehler treten vermutlich systembedingt nicht auf, da ungültige Typargumente bereits während der Kompilierung zu unvollständigen Typen oder Template-Fehlern führen.
+A primary failure scenario arises when the template is instantiated with a type &lt;code&gt;T&lt;/code&gt; that itself does not represent a variant and for which no valid primary &lt;code&gt;variant_size&lt;/code&gt; specialization exists. In this case, the class is incomplete, leading to a direct compilation error. Runtime errors presumably do not occur inherently, since invalid type arguments already lead to incomplete types or template errors during compilation.
 &lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des Moduls core im Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;This guide is based on the structural metadata of the core module in release R25-11.&lt;/p&gt;
 &lt;!-- annahmen: 1) Die Klasse spiegelt das Verhalten von std::variant_size wider und delegiert auf das Basis-Trait – Begründung: Die Beschreibung im Payload verweist explizit auf die entsprechende Nutzung in [variant]. 2) Vollständigkeit der CV-Qualifizierer für generische Bibliotheken – Begründung: Typ-Traits in AUTOSAR Adaptive Core orientieren sich am C++17-Standard für Type Support. 3) Rein statische Fehlererkennung ohne Laufzeitausnahmen – Begründung: Traits für variant_size sind reine Compile-Time-Konstrukte ohne Laufzeit-Zustand. --&gt;
 
 

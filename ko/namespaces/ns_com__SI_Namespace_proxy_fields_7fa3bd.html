@@ -20,33 +20,32 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>25f2bfac8fca</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_proxy_fields_7fa3bd/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/namespaces/ns_com__SI_Namespace_proxy_fields_7fa3bd/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_proxy_fields_7fa3bd" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>&lt;SI-Namespace&gt;::proxy::fields</code> gehört zum Modul <code>com</code> der Adaptive Platform im Release R25-11. Er fasst die generierten Proxy-Feldklassen (<code>&lt;Field&gt;</code>) zusammen, die aus den Feldern der jeweiligen Service-Schnittstelle (<code>ServiceInterface</code>) in der Rolle eines Felds hervorgehen. Innerhalb der Kommunikationsarchitektur dient dieser Namespace dazu, die clientseitige Interaktion mit Dienstattributen zu kapseln und den Zugriff auf deren Eigenschaften zu strukturieren.</p>
+<h4>컨텍스트</h4>
+<p>네임스페이스 <code>&lt;SI-Namespace&gt;::proxy::fields</code>은 릴리스 R25-11의 Adaptive Platform <code>com</code> 모듈에 속합니다. 이는 필드 역할에서 해당 서비스 인터페이스(<code>ServiceInterface</code>)의 필드로부터 생성되는 프록시 필드 클래스(<code>&lt;Field&gt;</code>)를 그룹화합니다. 통신 아키텍처 내에서 이 네임스페이스는 서비스 속성과의 클라이언트 측 상호 작용을 캡슐화하고 해당 속성에 대한 접근을 구조화하는 역할을 합니다.</p>
 
-<p>Ein Proxy-Feld bildet dabei die Schnittstelle zwischen der Client-Anwendung und der Kommunikationsinfrastruktur, um auf Datenfelder eines entfernten oder lokalen Service-Skeletts zuzugreifen. Für jedes im <code>ServiceInterface</code> definierte Feld existiert eine spezifische Instanzklasse innerhalb dieses Namensraums.</p>
+<p>프록시 필드는 원격 또는 로컬 서비스 스켈레톤의 데이터 필드에 접근하기 위해 클라이언트 애플리케이션과 통신 인프라 간의 인터페이스를 형성합니다. <code>ServiceInterface</code>에 정의된 각 필드에 대해 이 네임스페이스 내에 특정 인스턴스 클래스가 존재합니다.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Proxy-Feldklassen innerhalb von <code>&lt;SI-Namespace&gt;::proxy::fields</code> sind direkt an den Lebenszyklus der übergeordneten Proxy-Instanz gebunden. Sie entstehen bei der Erzeugung des Service-Proxys und bleiben für dessen gesamte Betriebsdauer bestehen. Eine eigenständige Instanziierung außerhalb des Proxy-Kontexts ist im Architekturmodell üblicherweise nicht vorgesehen.</p>
+<h4>수명 주기</h4>
+<p><code>&lt;SI-Namespace&gt;::proxy::fields</code> 내의 프록시 필드 클래스는 상위 프록시 인스턴스의 수명 주기에 직접 바인딩됩니다. 이들은 서비스 프록시 생성 시 생성되며 전체 운영 수명 동안 유지됩니다. 아키텍처 모델에서는 프록시 컨텍스트 외부에서의 독자적인 인스턴스화가 일반적으로 제공되지 않습니다.</p>
 
-<p>Zerstört die Anwendung die Proxy-Instanz, werden auch die zugehörigen Feldrepräsentanten freigegeben. Nebenläufige Zugriffe auf Felder richten sich nach der Thread-Sicherheit der zugrundeliegenden Proxy-Implementierung und erfordern seitens der Anwendung eine koordinierte Aufrufreihenfolge bei asynchronen Operationen.</p>
+<p>애플리케이션이 프록시 인스턴스를 소멸시키면 연관된 필드 표현 객체도 해제됩니다. 필드에 대한 동시 접근은 기본 프록시 구현의 스레드 안전성을 따르며 비동기 작업 시 애플리케이션 측에서 조정된 호출 순서가 필요합니다.</p>
 
-<h4>Nutzungspfad</h4>
-<p>Ein typischer Nutzungspfad eines Felds über <code>&lt;Field&gt;</code> gliedert sich in folgende Phasen:</p>
+<h4>사용 경로</h4>
+<p><code>&lt;Field&gt;</code>을 통한 필드의 전형적인 사용 경로는 다음 단계로 나뉩니다:</p>
 <ol>
-<li><strong>Bereitstellung:</strong> Zugriff auf das gewünschte Feld über die initialisierte Proxy-Instanz des Services.</li>
-<li><strong>Abonnement / Benachrichtigung:</strong> Sofern das Feld Ereignisse bei Wertänderungen unterstützt, registriert der Client einen Empfänger oder abonniert Aktualisierungen.</li>
-<li><strong>Abfrage oder Modifikation:</strong> Ausführen von Lese- oder Schreibzugriffen auf den aktuellen Feldwert über die entsprechenden Zugriffsmethoden des generierten Feldobjekts.</li>
-<li><strong>Abschluss:</strong> Beenden von Abonnements vor dem Herunterfahren oder Zerstören der Proxy-Instanz.</li>
+<li><strong>제공:</strong> 서비스의 초기화된 프록시 인스턴스를 통해 원하는 필드에 접근합니다.</li>
+<li><strong>구독 / 알림:</strong> 필드가 값 변경 시 이벤트를 지원하는 경우 클라이언트는 수신자를 등록하거나 업데이트를 구독합니다.</li>
+<li><strong>조회 또는 수정:</strong> 생성된 필드 객체의 해당 접근 메서드를 통해 현재 필드 값에 대한 읽기 또는 쓰기 접근을 실행합니다.</li>
+<li><strong>종료:</strong> 프록시 인스턴스를 종료하거나 소멸시키기 전에 구독을 종료합니다.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Beim Zugriff auf Instanzen der Klasse <code>&lt;Field&gt;</code> können Fehler vor allem dann auftreten, wenn die zugrundeliegende Kommunikationsverbindung nicht etabliert ist oder während der Übertragung abbricht. Vorbedingungen für Interaktionen mit den Feldobjekten sind ein gültiger Zustand der Proxy-Instanz sowie eine aktive Service-Bindung. Schlägt eine Lese- oder Schreibanfrage fehl, meldet die Kommunikationsschicht diesen Zustand an den Aufrufer zurück.</p>
+<h4>오류 시나리오</h4>
+<p><code>&lt;Field&gt;</code> 클래스의 인스턴스에 접근할 때 기본 통신 연결이 설정되지 않았거나 전송 중에 끊어지는 경우 주로 오류가 발생할 수 있습니다. 필드 객체와의 상호 작용을 위한 사전 조건은 프록시 인스턴스의 유효한 상태 및 활성 서비스 바인딩입니다. 읽기 또는 쓰기 요청이 실패하면 통신 계층은 이 상태를 호출자에게 다시 보고합니다.</p>
 <!-- annahmen: 1) Die Feldklassen sind fest an den Lebenszyklus des übergeordneten Service-Proxys gebunden – Begründung: Der Payload belegt nur die Existenz von '<Field>' als Service proxy Field class im Kontext eines ServiceInterface, spezifische Lifecycle-Records fehlen im Payload. 2) Die Interaktion folgt dem Schema Bereitstellung, optionales Abonnement, Abfrage/Modifikation – Begründung: Typisches Verhaltensmuster von Service-Feldern im AUTOSAR-Adaptive-Umfeld, da konkrete SWS-Anforderungen im Payload nicht aufgeführt sind. 3) Fehlerzustände resultieren primär aus Kommunikationsunterbrechungen oder ungültigem Proxy-Zustand – Begründung: Standardmodell der ereignis- und methodenbasierten Feldkommunikation mangels expliziter Fehlerbelege im Payload. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11 für das Modul com. Spezifische Anforderungsbelege ([SWS_...]) und Dokumentstellen waren im Eingabe-Payload nicht enthalten.</p>
+<p class="ai-note">이 가이드는 com 모듈에 대한 릴리스 R25-11의 구조적 메타데이터를 기반으로 합니다. 특정 요구사항 증빙([SWS_...]) 및 문서 위치는 입력 페이로드에 포함되지 않았습니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_proxy_fields_7fa3bd" title="AI와 토론">💬 AI와 토론</button>
@@ -286,30 +285,29 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="25f2bfac8fcac97b7478eea15fa073c5ced0d80a10a10ff6b770ee2fcdd33417" data-trace-output="a50e4ae407812f825406e65ee76620c3e4c5d82ef8811bad6017952b078f059c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; gehört zum Modul &lt;code&gt;com&lt;/code&gt; der Adaptive Platform im Release R25-11. Er fasst die generierten Proxy-Feldklassen (&lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;) zusammen, die aus den Feldern der jeweiligen Service-Schnittstelle (&lt;code&gt;ServiceInterface&lt;/code&gt;) in der Rolle eines Felds hervorgehen. Innerhalb der Kommunikationsarchitektur dient dieser Namespace dazu, die clientseitige Interaktion mit Dienstattributen zu kapseln und den Zugriff auf deren Eigenschaften zu strukturieren.&lt;/p&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
+&lt;p&gt;네임스페이스 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt;은 릴리스 R25-11의 Adaptive Platform &lt;code&gt;com&lt;/code&gt; 모듈에 속합니다. 이는 필드 역할에서 해당 서비스 인터페이스(&lt;code&gt;ServiceInterface&lt;/code&gt;)의 필드로부터 생성되는 프록시 필드 클래스(&lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;)를 그룹화합니다. 통신 아키텍처 내에서 이 네임스페이스는 서비스 속성과의 클라이언트 측 상호 작용을 캡슐화하고 해당 속성에 대한 접근을 구조화하는 역할을 합니다.&lt;/p&gt;
 
-&lt;p&gt;Ein Proxy-Feld bildet dabei die Schnittstelle zwischen der Client-Anwendung und der Kommunikationsinfrastruktur, um auf Datenfelder eines entfernten oder lokalen Service-Skeletts zuzugreifen. Für jedes im &lt;code&gt;ServiceInterface&lt;/code&gt; definierte Feld existiert eine spezifische Instanzklasse innerhalb dieses Namensraums.&lt;/p&gt;
+&lt;p&gt;프록시 필드는 원격 또는 로컬 서비스 스켈레톤의 데이터 필드에 접근하기 위해 클라이언트 애플리케이션과 통신 인프라 간의 인터페이스를 형성합니다. &lt;code&gt;ServiceInterface&lt;/code&gt;에 정의된 각 필드에 대해 이 네임스페이스 내에 특정 인스턴스 클래스가 존재합니다.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Proxy-Feldklassen innerhalb von &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; sind direkt an den Lebenszyklus der übergeordneten Proxy-Instanz gebunden. Sie entstehen bei der Erzeugung des Service-Proxys und bleiben für dessen gesamte Betriebsdauer bestehen. Eine eigenständige Instanziierung außerhalb des Proxy-Kontexts ist im Architekturmodell üblicherweise nicht vorgesehen.&lt;/p&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::fields&lt;/code&gt; 내의 프록시 필드 클래스는 상위 프록시 인스턴스의 수명 주기에 직접 바인딩됩니다. 이들은 서비스 프록시 생성 시 생성되며 전체 운영 수명 동안 유지됩니다. 아키텍처 모델에서는 프록시 컨텍스트 외부에서의 독자적인 인스턴스화가 일반적으로 제공되지 않습니다.&lt;/p&gt;
 
-&lt;p&gt;Zerstört die Anwendung die Proxy-Instanz, werden auch die zugehörigen Feldrepräsentanten freigegeben. Nebenläufige Zugriffe auf Felder richten sich nach der Thread-Sicherheit der zugrundeliegenden Proxy-Implementierung und erfordern seitens der Anwendung eine koordinierte Aufrufreihenfolge bei asynchronen Operationen.&lt;/p&gt;
+&lt;p&gt;애플리케이션이 프록시 인스턴스를 소멸시키면 연관된 필드 표현 객체도 해제됩니다. 필드에 대한 동시 접근은 기본 프록시 구현의 스레드 안전성을 따르며 비동기 작업 시 애플리케이션 측에서 조정된 호출 순서가 필요합니다.&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Ein typischer Nutzungspfad eines Felds über &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; gliedert sich in folgende Phasen:&lt;/p&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;을 통한 필드의 전형적인 사용 경로는 다음 단계로 나뉩니다:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellung:&lt;/strong&gt; Zugriff auf das gewünschte Feld über die initialisierte Proxy-Instanz des Services.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abonnement / Benachrichtigung:&lt;/strong&gt; Sofern das Feld Ereignisse bei Wertänderungen unterstützt, registriert der Client einen Empfänger oder abonniert Aktualisierungen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage oder Modifikation:&lt;/strong&gt; Ausführen von Lese- oder Schreibzugriffen auf den aktuellen Feldwert über die entsprechenden Zugriffsmethoden des generierten Feldobjekts.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abschluss:&lt;/strong&gt; Beenden von Abonnements vor dem Herunterfahren oder Zerstören der Proxy-Instanz.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;제공:&lt;/strong&gt; 서비스의 초기화된 프록시 인스턴스를 통해 원하는 필드에 접근합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;구독 / 알림:&lt;/strong&gt; 필드가 값 변경 시 이벤트를 지원하는 경우 클라이언트는 수신자를 등록하거나 업데이트를 구독합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;조회 또는 수정:&lt;/strong&gt; 생성된 필드 객체의 해당 접근 메서드를 통해 현재 필드 값에 대한 읽기 또는 쓰기 접근을 실행합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;종료:&lt;/strong&gt; 프록시 인스턴스를 종료하거나 소멸시키기 전에 구독을 종료합니다.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Beim Zugriff auf Instanzen der Klasse &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; können Fehler vor allem dann auftreten, wenn die zugrundeliegende Kommunikationsverbindung nicht etabliert ist oder während der Übertragung abbricht. Vorbedingungen für Interaktionen mit den Feldobjekten sind ein gültiger Zustand der Proxy-Instanz sowie eine aktive Service-Bindung. Schlägt eine Lese- oder Schreibanfrage fehl, meldet die Kommunikationsschicht diesen Zustand an den Aufrufer zurück.&lt;/p&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; 클래스의 인스턴스에 접근할 때 기본 통신 연결이 설정되지 않았거나 전송 중에 끊어지는 경우 주로 오류가 발생할 수 있습니다. 필드 객체와의 상호 작용을 위한 사전 조건은 프록시 인스턴스의 유효한 상태 및 활성 서비스 바인딩입니다. 읽기 또는 쓰기 요청이 실패하면 통신 계층은 이 상태를 호출자에게 다시 보고합니다.&lt;/p&gt;
 &lt;!-- annahmen: 1) Die Feldklassen sind fest an den Lebenszyklus des übergeordneten Service-Proxys gebunden – Begründung: Der Payload belegt nur die Existenz von '&lt;Field&gt;' als Service proxy Field class im Kontext eines ServiceInterface, spezifische Lifecycle-Records fehlen im Payload. 2) Die Interaktion folgt dem Schema Bereitstellung, optionales Abonnement, Abfrage/Modifikation – Begründung: Typisches Verhaltensmuster von Service-Feldern im AUTOSAR-Adaptive-Umfeld, da konkrete SWS-Anforderungen im Payload nicht aufgeführt sind. 3) Fehlerzustände resultieren primär aus Kommunikationsunterbrechungen oder ungültigem Proxy-Zustand – Begründung: Standardmodell der ereignis- und methodenbasierten Feldkommunikation mangels expliziter Fehlerbelege im Payload. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11 für das Modul com. Spezifische Anforderungsbelege ([SWS_...]) und Dokumentstellen waren im Eingabe-Payload nicht enthalten.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 com 모듈에 대한 릴리스 R25-11의 구조적 메타데이터를 기반으로 합니다. 특정 요구사항 증빙([SWS_...]) 및 문서 위치는 입력 페이로드에 포함되지 않았습니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

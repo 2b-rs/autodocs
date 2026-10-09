@@ -19,48 +19,47 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>f8bb8e5d1de3</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_nm_NmException_6e2f84/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/classes/cl_ara_nm_NmException_6e2f84/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_nm_NmException_6e2f84" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Die Klasse <code>ara::nm::NmException</code> dient innerhalb der AUTOSAR Adaptive Platform als spezialisierter Ausnahmetyp für API-Fehler des Moduls Network Management (<code>nm</code>) <a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100">[SWS_ANM_01100]</a>. Sie ist im Header <code>ara/nm/nm_error_domain.h</code> deklariert <a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100">[SWS_ANM_01100]</a> und leitet öffentlich von der allgemeinen Basisklasse <code>ara::core::Exception</code> ab <a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100">[SWS_ANM_01100]</a>.
+Within the AUTOSAR Adaptive Platform, the class <code>ara::nm::NmException</code> serves as a specialized exception type for API errors of the Network Management (<code>nm</code>) module <a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100">[SWS_ANM_01100]</a>. It is declared in header <code>ara/nm/nm_error_domain.h</code> <a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100">[SWS_ANM_01100]</a> and derives publicly from the general base class <code>ara::core::Exception</code> <a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100">[SWS_ANM_01100]</a>.
 </p>
 <p>
-Die funktionale Rolle von <code>ara::nm::NmException</code> besteht darin, Fehlerzustände aus dem Network-Management-Subsystem strukturiert an aufrufende Anwendungsschichten zu melden. Durch die Vererbung von <code>ara::core::Exception</code> ordnet sich die Klasse in das fundamentale Fehlerbehandlungsmodell der Plattform ein und ermöglicht es aufrufenden Komponenten, Network-Management-Fehler gezielt über typisierte C++-Ausnahmebehandlungsblöcke abzufangen und von allgemeinen Systemfehlern zu unterscheiden.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Eine Instanz von <code>ara::nm::NmException</code> wird über einen expliziten Konstruktor erzeugt, der einen Fehlercode vom Typ <code>ara::core::ErrorCode</code> entgegennimmt <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>. Dieser Konstruktor ist als <code>noexcept</code> definiert <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>, womit garantiert ist, dass während der Konstruktion des Ausnahmeobjekts selbst keine weiteren Ausnahmen auftreten können. Weiterhin ist der Konstruktor als threadsicher (<code>thread-safe</code>) spezifiziert <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>, was die nebenläufige Instanziierung von Ausnahmeobjekten über verschiedene Threads hinweg ohne manuelle Synchronisation erlaubt.
-</p>
-<p>
-Hinsichtlich der Besitzverhältnisse folgt <code>ara::nm::NmException</code> dem regulären Ausnahmen-Lebenszyklus von C++. Das Ausnahmeobjekt wird typischerweise zum Zeitpunkt des Fehlers erzeugt, per Wert geworfen und im Exception-Speicher der Laufzeitumgebung verwaltet. Vermutlich wird die Instanz nach Verlassen des zuständigen <code>catch</code>-Blocks automatisch freigegeben. Da die Klasse keine internen Betriebsmodi oder Übergänge aufweist, besitzt sie keine eigene Zustandsmaschine.
+The functional role of <code>ara::nm::NmException</code> is to report error conditions from the Network Management subsystem to calling application layers in a structured manner. By inheriting from <code>ara::core::Exception</code>, the class integrates into the platform's fundamental error handling model and enables calling components to catch Network Management errors selectively via typed C++ exception handling blocks and distinguish them from general system errors.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Lifecycle</h4>
 <p>
-Der typische Nutzungspfad für <code>ara::nm::NmException</code> umfasst die Fehlererkennung im Subsystem, die Auslösung der Ausnahme und deren Abfangen in der aufrufenden Komponente:
+An instance of <code>ara::nm::NmException</code> is created via an explicit constructor that accepts an error code of type <code>ara::core::ErrorCode</code> <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>. This constructor is defined as <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>, guaranteeing that no further exceptions can occur during construction of the exception object itself. Furthermore, the constructor is specified as thread-safe (<code>thread-safe</code>) <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>, which permits concurrent instantiation of exception objects across different threads without manual synchronization.
+</p>
+<p>
+Regarding ownership, <code>ara::nm::NmException</code> follows the regular C++ exception lifecycle. The exception object is typically created at the time of the error, thrown by value, and managed in the runtime environment's exception storage. Presumably, the instance is automatically released after leaving the responsible <code>catch</code> block. Since the class has no internal operating modes or transitions, it does not possess its own state machine.
+</p>
+
+<h4>Usage Path</h4>
+<p>
+The typical usage path for <code>ara::nm::NmException</code> comprises error detection in the subsystem, throwing the exception, and catching it in the calling component:
 </p>
 <ol>
-<li><strong>Fehlererkennung:</strong> Das Network Management stellt bei der Bearbeitung einer Operation eine fehlerhafte Bedingung fest und erzeugt einen zugehörigen <code>ara::core::ErrorCode</code>.</li>
-<li><strong>Auslösen der Ausnahme:</strong> Das Subsystem instanziiert <code>ara::nm::NmException</code> mit dem entsprechenden <code>ara::core::ErrorCode</code> <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a> und wirft das Objekt aus.</li>
-<li><strong>Abfangen durch den Aufrufer:</strong> Die aufrufende Anwendung fängt die Ausnahme gezielt mit einem Block wie <code>catch (const ara::nm::NmException&amp; e)</code> oder generisch über <code>catch (const ara::core::Exception&amp; e)</code> ab.</li>
-<li><strong>Fehlerbehandlung:</strong> Die Anwendung reagiert auf den Fehler, beispielsweise durch Protokollierung oder Übergang in einen sicheren Ersatzbetrieb.</li>
+<li><strong>Error detection:</strong> During processing of an operation, Network Management detects an erroneous condition and creates an associated <code>ara::core::ErrorCode</code>.</li>
+<li><strong>Throwing the exception:</strong> The subsystem instantiates <code>ara::nm::NmException</code> with the corresponding <code>ara::core::ErrorCode</code> <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a> and throws the object.</li>
+<li><strong>Catching by the caller:</strong> The calling application catches the exception selectively with a block such as <code>catch (const ara::nm::NmException&amp; e)</code> or generically via <code>catch (const ara::core::Exception&amp; e)</code>.</li>
+<li><strong>Error handling:</strong> The application reacts to the error, for example by logging or transitioning to a safe fallback operation.</li>
 </ol>
 <p>
-Interpretation: In der AUTOSAR Adaptive Platform erfolgt die Fehlerbehandlung vorrangig über ergebnisbasierte Typen wie <code>ara::core::Result</code>. Vermutlich wird <code>ara::nm::NmException</code> vor allem dann ausgelöst, wenn aufrufende Schnittstellen fehlerhafte Result-Objekte explizit in Ausnahmen umwandeln oder APIs in Umgebungen mit aktivierten C++-Exceptions betrieben werden.
+Interpretation: In the AUTOSAR Adaptive Platform, error handling is primarily performed via result-based types such as <code>ara::core::Result</code>. Presumably, <code>ara::nm::NmException</code> is thrown primarily when calling interfaces explicitly convert erroneous result objects into exceptions or when APIs are operated in environments with enabled C++ exceptions.
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>Error Scenarios</h4>
 <p>
-Als dediziertes Fehlerobjekt kapselt <code>ara::nm::NmException</code> Fehlerszenarien des Network Managements. Für eine korrekte Fehlerbehandlung sind folgende Punkte wesentlich:
+As a dedicated error object, <code>ara::nm::NmException</code> encapsulates Network Management error scenarios. For proper error handling, the following points are essential:
 </p>
 <ul>
-<li><strong>Kapselung des Fehlercodes:</strong> Der Konstruktor erfordert zwingend die Übergabe eines <code>ara::core::ErrorCode</code> <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>. Die Basisklasse <code>ara::core::Exception</code> dürfte diesen Code bereitstellen, damit der Aufrufer die genaue Fehlerursache auswerten kann.</li>
-<li><strong>Verhinderung unbehandelter Ausnahmen:</strong> Wird eine geworfene <code>ara::nm::NmException</code> nicht im Aufrufstapel abgefangen, führt dies zum Aufruf von <code>std::terminate</code> und damit zur Beendigung des Prozesses. NM-Interaktionen müssen daher bei aktivierten Ausnahmen durch entsprechende Handler umschlossen sein.</li>
-<li><strong>Keine Folgeausnahmen bei der Erzeugung:</strong> Durch die <code>noexcept</code>-Garantie des Konstruktors <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a> wird verhindert, dass während der Fehlerbehandlung eine verschachtelte Ausnahme entsteht, was die Stabilität in kritischen Fehlersituationen erhöht.</li>
+<li><strong>Encapsulation of the error code:</strong> The constructor strictly requires passing a <code>ara::core::ErrorCode</code> <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a>. Base class <code>ara::core::Exception</code> is expected to provide this code so that the caller can evaluate the exact cause of the error.</li>
+<li><strong>Prevention of unhandled exceptions:</strong> If a thrown <code>ara::nm::NmException</code> is not caught in the call stack, this leads to a call to <code>std::terminate</code> and thus to termination of the process. Therefore, with exceptions enabled, NM interactions must be enclosed by corresponding handlers.</li>
+<li><strong>No secondary exceptions during creation:</strong> The <code>noexcept</code> guarantee of constructor <a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102">[SWS_ANM_01102]</a> prevents a nested exception from arising during error handling, which enhances stability in critical error situations.</li>
 </ul>
 
 <!-- annahmen:
@@ -68,7 +67,7 @@ Als dediziertes Fehlerobjekt kapselt <code>ara::nm::NmException</code> Fehlersze
 2) Interpretation: Der übergebene ara::core::ErrorCode dürfte über Zugriffsmethoden der Basisklasse ara::core::Exception für den Aufrufer einsehbar sein. – Begründung: NmException deklariert laut Payload keine eigenen Getter.
 3) Vermutlich wird das Ausnahmeobjekt nach dem Verlassen des catch-Blocks durch die C++-Laufzeitumgebung automatisch zerstört. – Begründung: Der Payload definiert keine abweichende Speicher- oder Lebenszyklusverwaltung.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen der AUTOSAR Adaptive Platform R25-11.</p>
+<p class="ai-note">This guide is based on the requirements of the AUTOSAR Adaptive Platform R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_nm_NmException_6e2f84" title="Discuss with AI">💬 Discuss with AI</button>
@@ -414,45 +413,44 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="f8bb8e5d1de394203c1d014a904b3cadb8bd6f6f80c5aab2e27066128ccd90b1" data-trace-output="09f2a20206cb295585127719d3e58897b2f5665f154e2544cc7e91d6819b13d3" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::nm::NmException&lt;/code&gt; dient innerhalb der AUTOSAR Adaptive Platform als spezialisierter Ausnahmetyp für API-Fehler des Moduls Network Management (&lt;code&gt;nm&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100"&gt;[SWS_ANM_01100]&lt;/a&gt;. Sie ist im Header &lt;code&gt;ara/nm/nm_error_domain.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100"&gt;[SWS_ANM_01100]&lt;/a&gt; und leitet öffentlich von der allgemeinen Basisklasse &lt;code&gt;ara::core::Exception&lt;/code&gt; ab &lt;a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100"&gt;[SWS_ANM_01100]&lt;/a&gt;.
+Within the AUTOSAR Adaptive Platform, the class &lt;code&gt;ara::nm::NmException&lt;/code&gt; serves as a specialized exception type for API errors of the Network Management (&lt;code&gt;nm&lt;/code&gt;) module &lt;a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100"&gt;[SWS_ANM_01100]&lt;/a&gt;. It is declared in header &lt;code&gt;ara/nm/nm_error_domain.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100"&gt;[SWS_ANM_01100]&lt;/a&gt; and derives publicly from the general base class &lt;code&gt;ara::core::Exception&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01100" href="../spec/record.html?id=SWS_ANM_01100"&gt;[SWS_ANM_01100]&lt;/a&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-Die funktionale Rolle von &lt;code&gt;ara::nm::NmException&lt;/code&gt; besteht darin, Fehlerzustände aus dem Network-Management-Subsystem strukturiert an aufrufende Anwendungsschichten zu melden. Durch die Vererbung von &lt;code&gt;ara::core::Exception&lt;/code&gt; ordnet sich die Klasse in das fundamentale Fehlerbehandlungsmodell der Plattform ein und ermöglicht es aufrufenden Komponenten, Network-Management-Fehler gezielt über typisierte C++-Ausnahmebehandlungsblöcke abzufangen und von allgemeinen Systemfehlern zu unterscheiden.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Eine Instanz von &lt;code&gt;ara::nm::NmException&lt;/code&gt; wird über einen expliziten Konstruktor erzeugt, der einen Fehlercode vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; entgegennimmt &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;. Dieser Konstruktor ist als &lt;code&gt;noexcept&lt;/code&gt; definiert &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;, womit garantiert ist, dass während der Konstruktion des Ausnahmeobjekts selbst keine weiteren Ausnahmen auftreten können. Weiterhin ist der Konstruktor als threadsicher (&lt;code&gt;thread-safe&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;, was die nebenläufige Instanziierung von Ausnahmeobjekten über verschiedene Threads hinweg ohne manuelle Synchronisation erlaubt.
-&lt;/p&gt;
-&lt;p&gt;
-Hinsichtlich der Besitzverhältnisse folgt &lt;code&gt;ara::nm::NmException&lt;/code&gt; dem regulären Ausnahmen-Lebenszyklus von C++. Das Ausnahmeobjekt wird typischerweise zum Zeitpunkt des Fehlers erzeugt, per Wert geworfen und im Exception-Speicher der Laufzeitumgebung verwaltet. Vermutlich wird die Instanz nach Verlassen des zuständigen &lt;code&gt;catch&lt;/code&gt;-Blocks automatisch freigegeben. Da die Klasse keine internen Betriebsmodi oder Übergänge aufweist, besitzt sie keine eigene Zustandsmaschine.
+The functional role of &lt;code&gt;ara::nm::NmException&lt;/code&gt; is to report error conditions from the Network Management subsystem to calling application layers in a structured manner. By inheriting from &lt;code&gt;ara::core::Exception&lt;/code&gt;, the class integrates into the platform's fundamental error handling model and enables calling components to catch Network Management errors selectively via typed C++ exception handling blocks and distinguish them from general system errors.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad für &lt;code&gt;ara::nm::NmException&lt;/code&gt; umfasst die Fehlererkennung im Subsystem, die Auslösung der Ausnahme und deren Abfangen in der aufrufenden Komponente:
+An instance of &lt;code&gt;ara::nm::NmException&lt;/code&gt; is created via an explicit constructor that accepts an error code of type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;. This constructor is defined as &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;, guaranteeing that no further exceptions can occur during construction of the exception object itself. Furthermore, the constructor is specified as thread-safe (&lt;code&gt;thread-safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;, which permits concurrent instantiation of exception objects across different threads without manual synchronization.
+&lt;/p&gt;
+&lt;p&gt;
+Regarding ownership, &lt;code&gt;ara::nm::NmException&lt;/code&gt; follows the regular C++ exception lifecycle. The exception object is typically created at the time of the error, thrown by value, and managed in the runtime environment's exception storage. Presumably, the instance is automatically released after leaving the responsible &lt;code&gt;catch&lt;/code&gt; block. Since the class has no internal operating modes or transitions, it does not possess its own state machine.
+&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;
+The typical usage path for &lt;code&gt;ara::nm::NmException&lt;/code&gt; comprises error detection in the subsystem, throwing the exception, and catching it in the calling component:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Fehlererkennung:&lt;/strong&gt; Das Network Management stellt bei der Bearbeitung einer Operation eine fehlerhafte Bedingung fest und erzeugt einen zugehörigen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auslösen der Ausnahme:&lt;/strong&gt; Das Subsystem instanziiert &lt;code&gt;ara::nm::NmException&lt;/code&gt; mit dem entsprechenden &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt; und wirft das Objekt aus.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfangen durch den Aufrufer:&lt;/strong&gt; Die aufrufende Anwendung fängt die Ausnahme gezielt mit einem Block wie &lt;code&gt;catch (const ara::nm::NmException&amp;amp; e)&lt;/code&gt; oder generisch über &lt;code&gt;catch (const ara::core::Exception&amp;amp; e)&lt;/code&gt; ab.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fehlerbehandlung:&lt;/strong&gt; Die Anwendung reagiert auf den Fehler, beispielsweise durch Protokollierung oder Übergang in einen sicheren Ersatzbetrieb.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Error detection:&lt;/strong&gt; During processing of an operation, Network Management detects an erroneous condition and creates an associated &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Throwing the exception:&lt;/strong&gt; The subsystem instantiates &lt;code&gt;ara::nm::NmException&lt;/code&gt; with the corresponding &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt; and throws the object.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Catching by the caller:&lt;/strong&gt; The calling application catches the exception selectively with a block such as &lt;code&gt;catch (const ara::nm::NmException&amp;amp; e)&lt;/code&gt; or generically via &lt;code&gt;catch (const ara::core::Exception&amp;amp; e)&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Error handling:&lt;/strong&gt; The application reacts to the error, for example by logging or transitioning to a safe fallback operation.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: In der AUTOSAR Adaptive Platform erfolgt die Fehlerbehandlung vorrangig über ergebnisbasierte Typen wie &lt;code&gt;ara::core::Result&lt;/code&gt;. Vermutlich wird &lt;code&gt;ara::nm::NmException&lt;/code&gt; vor allem dann ausgelöst, wenn aufrufende Schnittstellen fehlerhafte Result-Objekte explizit in Ausnahmen umwandeln oder APIs in Umgebungen mit aktivierten C++-Exceptions betrieben werden.
+Interpretation: In the AUTOSAR Adaptive Platform, error handling is primarily performed via result-based types such as &lt;code&gt;ara::core::Result&lt;/code&gt;. Presumably, &lt;code&gt;ara::nm::NmException&lt;/code&gt; is thrown primarily when calling interfaces explicitly convert erroneous result objects into exceptions or when APIs are operated in environments with enabled C++ exceptions.
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
 &lt;p&gt;
-Als dediziertes Fehlerobjekt kapselt &lt;code&gt;ara::nm::NmException&lt;/code&gt; Fehlerszenarien des Network Managements. Für eine korrekte Fehlerbehandlung sind folgende Punkte wesentlich:
+As a dedicated error object, &lt;code&gt;ara::nm::NmException&lt;/code&gt; encapsulates Network Management error scenarios. For proper error handling, the following points are essential:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Kapselung des Fehlercodes:&lt;/strong&gt; Der Konstruktor erfordert zwingend die Übergabe eines &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;. Die Basisklasse &lt;code&gt;ara::core::Exception&lt;/code&gt; dürfte diesen Code bereitstellen, damit der Aufrufer die genaue Fehlerursache auswerten kann.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verhinderung unbehandelter Ausnahmen:&lt;/strong&gt; Wird eine geworfene &lt;code&gt;ara::nm::NmException&lt;/code&gt; nicht im Aufrufstapel abgefangen, führt dies zum Aufruf von &lt;code&gt;std::terminate&lt;/code&gt; und damit zur Beendigung des Prozesses. NM-Interaktionen müssen daher bei aktivierten Ausnahmen durch entsprechende Handler umschlossen sein.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Keine Folgeausnahmen bei der Erzeugung:&lt;/strong&gt; Durch die &lt;code&gt;noexcept&lt;/code&gt;-Garantie des Konstruktors &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt; wird verhindert, dass während der Fehlerbehandlung eine verschachtelte Ausnahme entsteht, was die Stabilität in kritischen Fehlersituationen erhöht.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Encapsulation of the error code:&lt;/strong&gt; The constructor strictly requires passing a &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt;. Base class &lt;code&gt;ara::core::Exception&lt;/code&gt; is expected to provide this code so that the caller can evaluate the exact cause of the error.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Prevention of unhandled exceptions:&lt;/strong&gt; If a thrown &lt;code&gt;ara::nm::NmException&lt;/code&gt; is not caught in the call stack, this leads to a call to &lt;code&gt;std::terminate&lt;/code&gt; and thus to termination of the process. Therefore, with exceptions enabled, NM interactions must be enclosed by corresponding handlers.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;No secondary exceptions during creation:&lt;/strong&gt; The &lt;code&gt;noexcept&lt;/code&gt; guarantee of constructor &lt;a class="spec-record-ref" data-req="SWS_ANM_01102" href="../spec/record.html?id=SWS_ANM_01102"&gt;[SWS_ANM_01102]&lt;/a&gt; prevents a nested exception from arising during error handling, which enhances stability in critical error situations.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -460,7 +458,7 @@ Als dediziertes Fehlerobjekt kapselt &lt;code&gt;ara::nm::NmException&lt;/code&g
 2) Interpretation: Der übergebene ara::core::ErrorCode dürfte über Zugriffsmethoden der Basisklasse ara::core::Exception für den Aufrufer einsehbar sein. – Begründung: NmException deklariert laut Payload keine eigenen Getter.
 3) Vermutlich wird das Ausnahmeobjekt nach dem Verlassen des catch-Blocks durch die C++-Laufzeitumgebung automatisch zerstört. – Begründung: Der Payload definiert keine abweichende Speicher- oder Lebenszyklusverwaltung.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen der AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;This guide is based on the requirements of the AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

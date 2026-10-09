@@ -19,57 +19,56 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>3b7ffaf6c820</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_idsm_IdsmException_9a51e2/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_idsm_IdsmException_9a51e2/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_idsm_IdsmException_9a51e2" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Klasse <code>ara::idsm::IdsmException</code> fungiert als dedizierte Ausnahmeklasse für Fehler, die innerhalb der Programmierschnittstelle des Intrusion Detection System Manager (IdsM) der AUTOSAR Adaptive Platform auftreten (<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>). Sie ist in der Header-Datei <code>ara/idsm/idsm_error_domain.h</code> deklariert und leitet direkt von der Basisklasse <code>ara::core::Exception</code> ab (<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>).
+类 <code>ara::idsm::IdsmException</code> 充当在 AUTOSAR Adaptive Platform 的 Intrusion Detection System Manager（IdsM）编程接口内发生的错误的专用异常类（<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>）。它在头文件 <code>ara/idsm/idsm_error_domain.h</code> 中声明，并直接继承自基类 <code>ara::core::Exception</code>（<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>）。
 </p>
 <p>
-In der Systemarchitektur von AUTOSAR Adaptive dient das Modul IdsM der Überwachung und Erfassung von sicherheitsrelevanten Ereignissen im Bordnetz. Während die funktionale Schnittstellenphilosophie der Plattform primär auf wertbasierter Fehlerbehandlung mittels <code>ara::core::Result</code> aufbaut, stellt <code>IdsmException</code> die kanonische Brücke zu C++-Ausnahmemechanismen dar. Durch die Spezialisierung von <code>ara::core::Exception</code> fügt sich die Klasse nahtlos in die plattformweite Ausnahmehierarchie ein. Dies gestattet es aufrufenden Applikationen und Subsystemen, IdsM-spezifische Ausnahmesituationen entweder selektiv als <code>IdsmException</code> oder generisch über Basisklassen-Handler abzufangen.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Die Erzeugung einer Instanz von <code>ara::idsm::IdsmException</code> erfolgt über ihren expliziten Konstruktor, der einen Fehlercode vom Typ <code>ara::core::ErrorCode</code> entgegennimmt (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>). Durch das Schlüsselwort <code>explicit</code> werden implizite Konvertierungen von <code>ara::core::ErrorCode</code> in eine Ausnahme unterbunden (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>), was eine kontrollierte und bewusste Instanziierung sicherstellt.
-</p>
-<p>
-Der Konstruktor garantiert über das Attribut <code>noexcept</code>, dass während der Objekterzeugung selbst keine weiteren Ausnahmen ausgelöst werden (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>). Dies ist eine fundamentale Eigenschaft für Ausnahmeklassen, da ein Fehlschlagen der Initialisierung im Kontext eines bereits aktiven Fehlerpfads unmittelbar zum Abbruch der Anwendung führen würde. Darüber hinaus ist die Konstruktion von <code>IdsmException</code> ausdrücklich als threadsicher (<code>thread-safe</code>) spezifiziert (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>), wodurch Objekte auch in stark nebenläufigen Multithreading-Kontexten parallel ohne externe Synchronisation sicher instanziiert werden können.
-</p>
-<p>
-Als reines Ausnahme- und Informationstransportobjekt folgt <code>IdsmException</code> der Standard-Wertesemantik von C++-Ausnahmen: Sie wird typischerweise auf dem Stack oder temporär im Freispeicher des Exception-Laufzeitsystems allokiert, über den Stack-Unwinding-Mechanismus per Wert geworfen und im Behandler per konstanter Referenz gebunden. Mit dem Verlassen des zuständigen Behandlungsblocks endet die Lebensdauer des Objekts deterministisch.
+在 AUTOSAR Adaptive 的系统架构中，IdsM 模块用于监控和捕获车载网络中与安全相关的事件。虽然该平台的功能接口理念主要基于使用 <code>ara::core::Result</code> 的基于值的错误处理，但 <code>IdsmException</code> 构成了通往 C++ 异常机制的规范桥梁。通过对 <code>ara::core::Exception</code> 的特化，该类无缝融入平台级异常层次结构中。这使得调用方应用程序和子系统能够选择性地将其捕获为 <code>IdsmException</code>，或通过基类处理程序泛型地捕获 IdsM 特定的异常情况。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>生命周期</h4>
 <p>
-Die Verwendung von <code>ara::idsm::IdsmException</code> orientiert sich an der typischen Ausnahmebehandlung von AUTOSAR Adaptive Anwendungen bei Interaktionen mit der IdsM-Dienstschnittstelle. Schlägt eine Operation fehl, dürfte die zugrundeliegende Ursache zunächst als <code>ara::core::ErrorCode</code> festgestellt werden. Sofern Ausnahmen in der jeweiligen Übersetzungseinheit aktiviert sind oder Konvertierungsmechanismen wie <code>ValueOrThrow()</code> zum Einsatz kommen, wird hieraus eine <code>IdsmException</code> erzeugt (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>).
+<code>ara::idsm::IdsmException</code> 的实例通过其显式构造函数创建，该构造函数接收类型为 <code>ara::core::ErrorCode</code> 的错误代码（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>）。通过关键字 <code>explicit</code>，阻止了从 <code>ara::core::ErrorCode</code> 到异常的隐式转换（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>），从而确保了受控且明确的实例化。
 </p>
 <p>
-Der vollständige Aufruf- und Behandlungspfad umfasst typischerweise folgende Phasen:
+构造函数通过属性 <code>noexcept</code> 保证在对象创建本身期间不会引发其他异常（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>）。这是异常类的基本特性，因为在已经处于活动状态的错误路径上下文中初始化失败将直接导致应用程序中止。此外，<code>IdsmException</code> 的构造被明确规范为线程安全的（<code>thread-safe</code>）（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>），从而使对象即使在高度并发的多线程上下文中也可以并行安全地实例化而无需外部同步。
+</p>
+<p>
+作为纯异常和信息传输对象，<code>IdsmException</code> 遵循 C++ 异常的标准值语义：它通常在栈上或在异常运行时系统的空闲内存中临时分配，通过栈展开机制按值抛出，并在处理程序中通过常量引用绑定。随着离开负责的处理块，该对象的生命周期确定性地结束。
+</p>
+
+<h4>使用路径</h4>
+<p>
+<code>ara::idsm::IdsmException</code> 的使用遵循 AUTOSAR Adaptive 应用程序在与 IdsM 服务接口交互时的典型异常处理模式。如果某项操作失败，潜在的原因推测首先被确定为 <code>ara::core::ErrorCode</code>。只要在相应翻译单元中启用了异常，或者使用了诸如 <code>ValueOrThrow()</code> 之类的转换机制，就会据此生成一个 <code>IdsmException</code>（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>）。
+</p>
+<p>
+完整的调用和处理路径通常包含以下阶段：
 </p>
 <ul>
-<li><strong>Aufruf einer IdsM-Operation:</strong> Die Anwendung ruft eine Funktion des IdsM innerhalb eines geschützten <code>try</code>-Blocks auf.</li>
-<li><strong>Auslösen der Ausnahme:</strong> Im Fehlerfall kapselt die Laufzeitumgebung oder die aufgerufene Schnittstelle den relevanten <code>ara::core::ErrorCode</code> in eine Instanz von <code>IdsmException</code> und löst diese aus (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>).</li>
-<li><strong>Fangen der Ausnahme:</strong> Der aufrufende Kontext fängt das Ausnahmeobjekt gezielt mittels <code>catch (const ara::idsm::IdsmException&amp; e)</code> ab. Durch die Vererbung von <code>ara::core::Exception</code> kann die Ausnahme alternativ auch von allgemeinen Handlern auf höherer Ebene erfasst werden (<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>).</li>
-<li><strong>Fehlerinspektion:</strong> Innerhalb des Handlers greift die Anwendungslogik vermutlich über die von der Basisklasse <code>ara::core::Exception</code> bereitgestellte Schnittstelle auf den enthaltenen <code>ara::core::ErrorCode</code> zu, um die Fehlerdomäne und den Fehlerwert für Diagnose- oder Loggingzwecke auszuwerten.</li>
+<li><strong>调用 IdsM 操作：</strong>应用程序在受保护的 <code>try</code> 块内调用 IdsM 的函数。</li>
+<li><strong>抛出异常：</strong>在发生错误时，运行时环境或被调用的接口将相关的 <code>ara::core::ErrorCode</code> 封装到 <code>IdsmException</code> 的实例中并将其抛出（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>）。</li>
+<li><strong>捕获异常：</strong>调用上下文专门使用 <code>catch (const ara::idsm::IdsmException&amp; e)</code> 捕获异常对象。通过继承自 <code>ara::core::Exception</code>，该异常也可以由更高层的常规处理程序捕获（<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>）。</li>
+<li><strong>错误检查：</strong>在处理程序内部，应用程序逻辑推测通过基类 <code>ara::core::Exception</code> 提供的接口访问所包含的 <code>ara::core::ErrorCode</code>，以便评估用于诊断或日志记录目的的错误域和错误值。</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Als Transportmittel für Fehlermeldungen der IdsM-API (<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>) besitzt <code>IdsmException</code> ein streng deterministisches Verhalten. Die Klasse selbst schließt interne Fehlerzustände bei der Erzeugung durch die <code>noexcept</code>-Garantie (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>) vollständig aus.
+作为 IdsM API 错误消息的传输媒介（<a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704">[SWS_AIDSM_10704]</a>），<code>IdsmException</code> 具有严格确定性的行为。该类本身通过 <code>noexcept</code> 保证（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>）完全排除了创建时的内部错误状态。
 </p>
 <p>
-Im Rahmen des Gesamtsystems sind insbesondere folgende Szenarien zu beachten:
+在整个系统的框架内，尤其需要注意以下场景：
 </p>
 <ul>
-<li><strong>Gültigkeit des Fehlercodes:</strong> Vorbedingung für eine aussagekräftige Instanziierung ist die Übergabe eines gültig initialisierten <code>ara::core::ErrorCode</code> (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>). Wird ein nicht spezifizierter oder fehlerhafter Fehlercode übergeben, transportiert die Ausnahme diesen unverändert weiter.</li>
-<li><strong>Unbehandelte Ausnahmen:</strong> Wird eine ausgelöste <code>IdsmException</code> in keinem übergeordneten Stack-Frame abgefangen, führt dies nach Standard-C++-Semantik zum Aufruf von <code>std::terminate</code>. Kritische IdsM-Aufrufe müssen daher in ausnahmebasierten Umgebungen lückenlos durch entsprechende <code>catch</code>-Blöcke geschützt werden.</li>
-<li><strong>Nebenläufigkeit:</strong> Aufgrund der garantierten Threadsicherheit der Konstruktion (<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>) führt das gleichzeitige Erzeugen von <code>IdsmException</code>-Objekten auf mehreren Threads zu keinen Datenkonflikten oder Synchronisationsproblemen.</li>
+<li><strong>错误代码的有效性：</strong>进行有意义实例化的前置条件是传递一个有效初始化的 <code>ara::core::ErrorCode</code>（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>）。如果传递了未指定或有缺陷的错误代码，异常将原样继续传输它。</li>
+<li><strong>未处理的异常：</strong>如果抛出的 <code>IdsmException</code> 未在任何上层栈帧中被捕获，根据标准 C++ 语义将导致调用 <code>std::terminate</code>。因此，在基于异常的环境中，关键的 IdsM 调用必须通过相应的 <code>catch</code> 块进行无遗漏的保护。</li>
+<li><strong>并发性：</strong>由于保证了构造的线程安全性（<a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705">[SWS_AIDSM_10705]</a>），在多个线程上同时创建 <code>IdsmException</code> 对象不会导致数据冲突或同步问题。</li>
 </ul>
 <!-- annahmen: 1) Interpretation: IdsmException wird im Kontext aktivierter C++-Ausnahmen oder durch Hilfsfunktionen wie ValueOrThrow() aus einem ErrorCode instanziiert und geworfen. – Begründung: AUTOSAR Adaptive setzt primär auf ara::core::Result, bietet Exception-Klassen jedoch als Brücke für exception-basierte Abläufe an. 2) Interpretation: Die Inspektion des Fehlers im Catch-Block erfolgt über geerbte Funktionen von ara::core::Exception. – Begründung: IdsmException leitet von ara::core::Exception ab, definiert im Payload aber keine eigenständigen Zugriffsmethoden. -->
-<p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive (Release R25-11) zum Modul idsm.</p>
+<p class="ai-note">本指南基于 AUTOSAR Adaptive（Release R25-11）关于 idsm 模块的规范。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_idsm_IdsmException_9a51e2" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -415,54 +414,53 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3b7ffaf6c820ebbc0cdfbb74fefaf22cb621ea230f4456f69a7209101b4108bb" data-trace-output="ad7ebf010820285743de8c1bc472df4871d5280c04b18705fbf04d4b2e4cb87a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::idsm::IdsmException&lt;/code&gt; fungiert als dedizierte Ausnahmeklasse für Fehler, die innerhalb der Programmierschnittstelle des Intrusion Detection System Manager (IdsM) der AUTOSAR Adaptive Platform auftreten (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;). Sie ist in der Header-Datei &lt;code&gt;ara/idsm/idsm_error_domain.h&lt;/code&gt; deklariert und leitet direkt von der Basisklasse &lt;code&gt;ara::core::Exception&lt;/code&gt; ab (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;).
+类 &lt;code&gt;ara::idsm::IdsmException&lt;/code&gt; 充当在 AUTOSAR Adaptive Platform 的 Intrusion Detection System Manager（IdsM）编程接口内发生的错误的专用异常类（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;）。它在头文件 &lt;code&gt;ara/idsm/idsm_error_domain.h&lt;/code&gt; 中声明，并直接继承自基类 &lt;code&gt;ara::core::Exception&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;）。
 &lt;/p&gt;
 &lt;p&gt;
-In der Systemarchitektur von AUTOSAR Adaptive dient das Modul IdsM der Überwachung und Erfassung von sicherheitsrelevanten Ereignissen im Bordnetz. Während die funktionale Schnittstellenphilosophie der Plattform primär auf wertbasierter Fehlerbehandlung mittels &lt;code&gt;ara::core::Result&lt;/code&gt; aufbaut, stellt &lt;code&gt;IdsmException&lt;/code&gt; die kanonische Brücke zu C++-Ausnahmemechanismen dar. Durch die Spezialisierung von &lt;code&gt;ara::core::Exception&lt;/code&gt; fügt sich die Klasse nahtlos in die plattformweite Ausnahmehierarchie ein. Dies gestattet es aufrufenden Applikationen und Subsystemen, IdsM-spezifische Ausnahmesituationen entweder selektiv als &lt;code&gt;IdsmException&lt;/code&gt; oder generisch über Basisklassen-Handler abzufangen.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Die Erzeugung einer Instanz von &lt;code&gt;ara::idsm::IdsmException&lt;/code&gt; erfolgt über ihren expliziten Konstruktor, der einen Fehlercode vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; entgegennimmt (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;). Durch das Schlüsselwort &lt;code&gt;explicit&lt;/code&gt; werden implizite Konvertierungen von &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; in eine Ausnahme unterbunden (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;), was eine kontrollierte und bewusste Instanziierung sicherstellt.
-&lt;/p&gt;
-&lt;p&gt;
-Der Konstruktor garantiert über das Attribut &lt;code&gt;noexcept&lt;/code&gt;, dass während der Objekterzeugung selbst keine weiteren Ausnahmen ausgelöst werden (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;). Dies ist eine fundamentale Eigenschaft für Ausnahmeklassen, da ein Fehlschlagen der Initialisierung im Kontext eines bereits aktiven Fehlerpfads unmittelbar zum Abbruch der Anwendung führen würde. Darüber hinaus ist die Konstruktion von &lt;code&gt;IdsmException&lt;/code&gt; ausdrücklich als threadsicher (&lt;code&gt;thread-safe&lt;/code&gt;) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;), wodurch Objekte auch in stark nebenläufigen Multithreading-Kontexten parallel ohne externe Synchronisation sicher instanziiert werden können.
-&lt;/p&gt;
-&lt;p&gt;
-Als reines Ausnahme- und Informationstransportobjekt folgt &lt;code&gt;IdsmException&lt;/code&gt; der Standard-Wertesemantik von C++-Ausnahmen: Sie wird typischerweise auf dem Stack oder temporär im Freispeicher des Exception-Laufzeitsystems allokiert, über den Stack-Unwinding-Mechanismus per Wert geworfen und im Behandler per konstanter Referenz gebunden. Mit dem Verlassen des zuständigen Behandlungsblocks endet die Lebensdauer des Objekts deterministisch.
+在 AUTOSAR Adaptive 的系统架构中，IdsM 模块用于监控和捕获车载网络中与安全相关的事件。虽然该平台的功能接口理念主要基于使用 &lt;code&gt;ara::core::Result&lt;/code&gt; 的基于值的错误处理，但 &lt;code&gt;IdsmException&lt;/code&gt; 构成了通往 C++ 异常机制的规范桥梁。通过对 &lt;code&gt;ara::core::Exception&lt;/code&gt; 的特化，该类无缝融入平台级异常层次结构中。这使得调用方应用程序和子系统能够选择性地将其捕获为 &lt;code&gt;IdsmException&lt;/code&gt;，或通过基类处理程序泛型地捕获 IdsM 特定的异常情况。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Die Verwendung von &lt;code&gt;ara::idsm::IdsmException&lt;/code&gt; orientiert sich an der typischen Ausnahmebehandlung von AUTOSAR Adaptive Anwendungen bei Interaktionen mit der IdsM-Dienstschnittstelle. Schlägt eine Operation fehl, dürfte die zugrundeliegende Ursache zunächst als &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; festgestellt werden. Sofern Ausnahmen in der jeweiligen Übersetzungseinheit aktiviert sind oder Konvertierungsmechanismen wie &lt;code&gt;ValueOrThrow()&lt;/code&gt; zum Einsatz kommen, wird hieraus eine &lt;code&gt;IdsmException&lt;/code&gt; erzeugt (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;).
+&lt;code&gt;ara::idsm::IdsmException&lt;/code&gt; 的实例通过其显式构造函数创建，该构造函数接收类型为 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 的错误代码（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;）。通过关键字 &lt;code&gt;explicit&lt;/code&gt;，阻止了从 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 到异常的隐式转换（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;），从而确保了受控且明确的实例化。
 &lt;/p&gt;
 &lt;p&gt;
-Der vollständige Aufruf- und Behandlungspfad umfasst typischerweise folgende Phasen:
+构造函数通过属性 &lt;code&gt;noexcept&lt;/code&gt; 保证在对象创建本身期间不会引发其他异常（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;）。这是异常类的基本特性，因为在已经处于活动状态的错误路径上下文中初始化失败将直接导致应用程序中止。此外，&lt;code&gt;IdsmException&lt;/code&gt; 的构造被明确规范为线程安全的（&lt;code&gt;thread-safe&lt;/code&gt;）（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;），从而使对象即使在高度并发的多线程上下文中也可以并行安全地实例化而无需外部同步。
+&lt;/p&gt;
+&lt;p&gt;
+作为纯异常和信息传输对象，&lt;code&gt;IdsmException&lt;/code&gt; 遵循 C++ 异常的标准值语义：它通常在栈上或在异常运行时系统的空闲内存中临时分配，通过栈展开机制按值抛出，并在处理程序中通过常量引用绑定。随着离开负责的处理块，该对象的生命周期确定性地结束。
+&lt;/p&gt;
+
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;
+&lt;code&gt;ara::idsm::IdsmException&lt;/code&gt; 的使用遵循 AUTOSAR Adaptive 应用程序在与 IdsM 服务接口交互时的典型异常处理模式。如果某项操作失败，潜在的原因推测首先被确定为 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;。只要在相应翻译单元中启用了异常，或者使用了诸如 &lt;code&gt;ValueOrThrow()&lt;/code&gt; 之类的转换机制，就会据此生成一个 &lt;code&gt;IdsmException&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;）。
+&lt;/p&gt;
+&lt;p&gt;
+完整的调用和处理路径通常包含以下阶段：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Aufruf einer IdsM-Operation:&lt;/strong&gt; Die Anwendung ruft eine Funktion des IdsM innerhalb eines geschützten &lt;code&gt;try&lt;/code&gt;-Blocks auf.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auslösen der Ausnahme:&lt;/strong&gt; Im Fehlerfall kapselt die Laufzeitumgebung oder die aufgerufene Schnittstelle den relevanten &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; in eine Instanz von &lt;code&gt;IdsmException&lt;/code&gt; und löst diese aus (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fangen der Ausnahme:&lt;/strong&gt; Der aufrufende Kontext fängt das Ausnahmeobjekt gezielt mittels &lt;code&gt;catch (const ara::idsm::IdsmException&amp;amp; e)&lt;/code&gt; ab. Durch die Vererbung von &lt;code&gt;ara::core::Exception&lt;/code&gt; kann die Ausnahme alternativ auch von allgemeinen Handlern auf höherer Ebene erfasst werden (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fehlerinspektion:&lt;/strong&gt; Innerhalb des Handlers greift die Anwendungslogik vermutlich über die von der Basisklasse &lt;code&gt;ara::core::Exception&lt;/code&gt; bereitgestellte Schnittstelle auf den enthaltenen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; zu, um die Fehlerdomäne und den Fehlerwert für Diagnose- oder Loggingzwecke auszuwerten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;调用 IdsM 操作：&lt;/strong&gt;应用程序在受保护的 &lt;code&gt;try&lt;/code&gt; 块内调用 IdsM 的函数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;抛出异常：&lt;/strong&gt;在发生错误时，运行时环境或被调用的接口将相关的 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 封装到 &lt;code&gt;IdsmException&lt;/code&gt; 的实例中并将其抛出（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;捕获异常：&lt;/strong&gt;调用上下文专门使用 &lt;code&gt;catch (const ara::idsm::IdsmException&amp;amp; e)&lt;/code&gt; 捕获异常对象。通过继承自 &lt;code&gt;ara::core::Exception&lt;/code&gt;，该异常也可以由更高层的常规处理程序捕获（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;错误检查：&lt;/strong&gt;在处理程序内部，应用程序逻辑推测通过基类 &lt;code&gt;ara::core::Exception&lt;/code&gt; 提供的接口访问所包含的 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;，以便评估用于诊断或日志记录目的的错误域和错误值。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Als Transportmittel für Fehlermeldungen der IdsM-API (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;) besitzt &lt;code&gt;IdsmException&lt;/code&gt; ein streng deterministisches Verhalten. Die Klasse selbst schließt interne Fehlerzustände bei der Erzeugung durch die &lt;code&gt;noexcept&lt;/code&gt;-Garantie (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;) vollständig aus.
+作为 IdsM API 错误消息的传输媒介（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10704" href="../spec/record.html?id=SWS_AIDSM_10704"&gt;[SWS_AIDSM_10704]&lt;/a&gt;），&lt;code&gt;IdsmException&lt;/code&gt; 具有严格确定性的行为。该类本身通过 &lt;code&gt;noexcept&lt;/code&gt; 保证（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;）完全排除了创建时的内部错误状态。
 &lt;/p&gt;
 &lt;p&gt;
-Im Rahmen des Gesamtsystems sind insbesondere folgende Szenarien zu beachten:
+在整个系统的框架内，尤其需要注意以下场景：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeit des Fehlercodes:&lt;/strong&gt; Vorbedingung für eine aussagekräftige Instanziierung ist die Übergabe eines gültig initialisierten &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;). Wird ein nicht spezifizierter oder fehlerhafter Fehlercode übergeben, transportiert die Ausnahme diesen unverändert weiter.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Unbehandelte Ausnahmen:&lt;/strong&gt; Wird eine ausgelöste &lt;code&gt;IdsmException&lt;/code&gt; in keinem übergeordneten Stack-Frame abgefangen, führt dies nach Standard-C++-Semantik zum Aufruf von &lt;code&gt;std::terminate&lt;/code&gt;. Kritische IdsM-Aufrufe müssen daher in ausnahmebasierten Umgebungen lückenlos durch entsprechende &lt;code&gt;catch&lt;/code&gt;-Blöcke geschützt werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Aufgrund der garantierten Threadsicherheit der Konstruktion (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;) führt das gleichzeitige Erzeugen von &lt;code&gt;IdsmException&lt;/code&gt;-Objekten auf mehreren Threads zu keinen Datenkonflikten oder Synchronisationsproblemen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;错误代码的有效性：&lt;/strong&gt;进行有意义实例化的前置条件是传递一个有效初始化的 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;）。如果传递了未指定或有缺陷的错误代码，异常将原样继续传输它。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;未处理的异常：&lt;/strong&gt;如果抛出的 &lt;code&gt;IdsmException&lt;/code&gt; 未在任何上层栈帧中被捕获，根据标准 C++ 语义将导致调用 &lt;code&gt;std::terminate&lt;/code&gt;。因此，在基于异常的环境中，关键的 IdsM 调用必须通过相应的 &lt;code&gt;catch&lt;/code&gt; 块进行无遗漏的保护。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;并发性：&lt;/strong&gt;由于保证了构造的线程安全性（&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10705" href="../spec/record.html?id=SWS_AIDSM_10705"&gt;[SWS_AIDSM_10705]&lt;/a&gt;），在多个线程上同时创建 &lt;code&gt;IdsmException&lt;/code&gt; 对象不会导致数据冲突或同步问题。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Interpretation: IdsmException wird im Kontext aktivierter C++-Ausnahmen oder durch Hilfsfunktionen wie ValueOrThrow() aus einem ErrorCode instanziiert und geworfen. – Begründung: AUTOSAR Adaptive setzt primär auf ara::core::Result, bietet Exception-Klassen jedoch als Brücke für exception-basierte Abläufe an. 2) Interpretation: Die Inspektion des Fehlers im Catch-Block erfolgt über geerbte Funktionen von ara::core::Exception. – Begründung: IdsmException leitet von ara::core::Exception ab, definiert im Payload aber keine eigenständigen Zugriffsmethoden. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive (Release R25-11) zum Modul idsm.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive（Release R25-11）关于 idsm 模块的规范。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

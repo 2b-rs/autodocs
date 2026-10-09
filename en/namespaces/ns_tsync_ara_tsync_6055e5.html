@@ -20,28 +20,27 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>9331b66b0573</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_tsync_ara_tsync_6055e5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/namespaces/ns_tsync_ara_tsync_6055e5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_tsync_ara_tsync_6055e5" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Der C++-Namespace <code>ara::tsync</code> stellt die funktionale Schnittstelle des Moduls <em>Time Synchronization</em> (tsync) in der AUTOSAR Adaptive Platform dar. Er ermöglicht Anwendungen den einheitlichen Zugriff auf synchronisierte Zeitbasen sowie die Überwachung von Synchronisationszuständen und Zeitgüte. Die Architektur unterscheidet primär zwischen Konsumenten und Bereitstellern von Zeitinformationen:
+The C++ namespace <code>ara::tsync</code> represents the functional interface of the <em>Time Synchronization</em> (tsync) module in the AUTOSAR Adaptive Platform. It provides applications with uniform access to synchronized time bases as well as the monitoring of synchronization states and time quality. The architecture primarily distinguishes between consumers and providers of time information:
 </p>
 <ul>
-<li><code>SynchronizedTimeBaseConsumer</code> dient Anwendungen als Zugriffspunkt auf eine konfigurierte, über einen <em>InstanceSpecifier</em> referenzierte Zeitbasis, um Zeitstempel abzurufen oder Zustandsänderungen zu verfolgen.</li>
-<li><code>SynchronizedTimeBaseProvider</code> ermöglicht Anwendungen oder Plattformkomponenten, als Zeitquelle zu agieren und eine Zeitbasis bereitzustellen.</li>
-<li><code>TimeBase</code> fungiert als Pseudo-Clock-Konstrukt zur standardkonformen Typisierung im Rahmen von <code>std::chrono</code>. Basierend darauf definiert der Typalias <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) standardisierte Zeitpunkte als <code>std::chrono::time_point&lt;TimeBase, std::chrono::nanoseconds&gt;</code>.</li>
-<li><code>SynchronizedTimeBaseStatus</code> erfasst Momentaufnahmen des Systemzustands einer Zeitbasis inklusive Kommunikations- und Sprunginformationen.</li>
-<li>Mess- und Validierungsdatenstrukturen (darunter <code>TimeMasterMeasurementType</code>, <code>TimeSlaveMeasurementType</code>, <code>PdelayInitiatorMeasurementType</code>, <code>PdelayResponderMeasurementType</code> und <code>TimePrecisionMeasurement</code>) sowie die Callback-Schnittstellen <code>ConsumerTimeBaseValidationNotification</code> und <code>ProviderTimeBaseValidationNotification</code> unterstützen die Verifikation und Präzisionsbewertung der Zeitverteilung.</li>
+<li><code>SynchronizedTimeBaseConsumer</code> serves applications as an access point to a configured time base referenced via an <em>InstanceSpecifier</em> in order to retrieve timestamps or track state changes.</li>
+<li><code>SynchronizedTimeBaseProvider</code> enables applications or platform components to act as a time source and provide a time base.</li>
+<li><code>TimeBase</code> functions as a pseudo-clock construct for standards-compliant typing within the framework of <code>std::chrono</code>. Based on this, the type alias <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) defines standardized points in time as <code>std::chrono::time_point&lt;TimeBase, std::chrono::nanoseconds&gt;</code>.</li>
+<li><code>SynchronizedTimeBaseStatus</code> captures snapshots of the system state of a time base, including communication and jump information.</li>
+<li>Measurement and validation data structures (including <code>TimeMasterMeasurementType</code>, <code>TimeSlaveMeasurementType</code>, <code>PdelayInitiatorMeasurementType</code>, <code>PdelayResponderMeasurementType</code>, and <code>TimePrecisionMeasurement</code>) as well as the callback interfaces <code>ConsumerTimeBaseValidationNotification</code> and <code>ProviderTimeBaseValidationNotification</code> support the verification and precision assessment of the time distribution.</li>
 </ul>
 
-<h4>Lebenszyklus und Synchronisationszustände</h4>
+<h4>Lifecycle and synchronization states</h4>
 <p>
-Zeitbasen durchlaufen im Laufzeitbetrieb diskrete Synchronisationszustände, die über das Enum <code>SynchronizationStatus</code> (<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a>) abgebildet werden. Nach dem Start befindet sich eine Zeitbasis initial im Zustand <code>kNotSynchronizedUntilStartup</code> (=0). Sobald Synchronisationsnachrichten erfolgreich verarbeitet werden, wechselt die Zeitbasis entweder in den Zustand <code>kSynchronized</code> (=2) bei direkter Kopplung an den Time Master oder in <code>kSynchToGateway</code> (=3), falls die Synchronisation mittelbar über ein Gateway erfolgt. Bleibt die Synchronisation innerhalb eines definierten Zeitfensters aus, wird der Zustand <code>kTimeOut</code> (=1) eingenommen.
+During runtime operation, time bases pass through discrete synchronization states that are represented via the enum <code>SynchronizationStatus</code> (<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a>). After startup, a time base is initially in state <code>kNotSynchronizedUntilStartup</code> (=0). As soon as synchronization messages are processed successfully, the time base transitions either to state <code>kSynchronized</code> (=2) in the case of direct coupling to the Time Master or to <code>kSynchToGateway</code> (=3) if synchronization takes place indirectly via a gateway. If synchronization fails to occur within a defined time window, the state <code>kTimeOut</code> (=1) is entered.
 </p>
 <p>
-Parallel zum Kommunikationszustand signalisiert das Enum <code>LeapJump</code> (<a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051">[SWS_TS_01051]</a>) sprunghafte Korrekturen der Zeitbasis: <code>kTimeLeapNone</code> (=0) zeigt den regulären Verlauf ohne Schwellwertüberschreitung an, während <code>kTimeLeapFuture</code> (=1) einen Vorwärtssprung und <code>kTimeLeapPast</code> (=2) einen Rückwärtssprung über den konfigurierten Schwellwert hinaus kennzeichnet.
+In parallel with the communication state, the enum <code>LeapJump</code> (<a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051">[SWS_TS_01051]</a>) signals abrupt corrections of the time base: <code>kTimeLeapNone</code> (=0) indicates regular progress without exceeding a threshold, while <code>kTimeLeapFuture</code> (=1) marks a forward jump and <code>kTimeLeapPast</code> (=2) marks a backward jump beyond the configured threshold.
 </p>
 <div class="diagram" id="diag-sync-status"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 466.11 357.40" style="max-width:621px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 343)">
@@ -150,64 +149,64 @@ Parallel zum Kommunikationszustand signalisiert das Enum <code>LeapJump</code> (
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Synchronisationszustände einer Zeitbasis gemäß SynchronizationStatus. Quellen: <a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a></p>
+<p class="diagram-note">State diagram: Synchronization states of a time base according to SynchronizationStatus. Sources: <a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a></p>
 
-<h4>Nutzungspfad</h4>
+<h4>Usage Path</h4>
 <p>
-Ein typischer Nutzungsablauf auf Konsumentenseite gliedert sich in Instanziierung, Registrierung asynchroner Callback-Funktionen und zyklische bzw. ereignisgesteuerte Abfrage von Zeitinformationen:
+A typical usage workflow on the consumer side is divided into instantiation, registration of asynchronous callback functions, and cyclic or event-driven querying of time information:
 </p>
 <ol>
-<li><strong>Zugriff binden:</strong> Eine Konsumenten-Anwendung instanziiert ein Objekt vom Typ <code>SynchronizedTimeBaseConsumer</code> unter Angabe des passenden <em>InstanceSpecifier</em>.</li>
-<li><strong>Benachrichtigungen registrieren:</strong> Um über Statuswechsel informiert zu werden, übergibt die Anwendung Callback-Funktionen an den Konsumenten. Die Funktionssignaturen sind über Callback-Aliase vorgegeben:
+<li><strong>Bind access:</strong> A consumer application instantiates an object of type <code>SynchronizedTimeBaseConsumer</code> by specifying the appropriate <em>InstanceSpecifier</em>.</li>
+<li><strong>Register notifications:</strong> To be informed about status changes, the application passes callback functions to the consumer. The function signatures are predefined via callback aliases:
 <ul>
-<li><code>SynchronizationNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222">[SWS_TS_14222]</a>) zur Benachrichtigung bei Wechsel des <code>SynchronizationStatus</code> (Signatur <code>std::function&lt;void(const SynchronizationStatus &amp;)&gt;</code>, als nicht threadsicher spezifiziert).</li>
-<li><code>SynchronizedTimeBaseNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221">[SWS_TS_14221]</a>) zur Übermittlung vollständiger Status-Snapshots via <code>SynchronizedTimeBaseStatus</code> (Signatur <code>std::function&lt;void(const SynchronizedTimeBaseStatus &amp;)&gt;</code>, nicht threadsicher).</li>
-<li><code>TimePrecisionNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223">[SWS_TS_14223]</a>) zur periodischen Auswertung von Präzisionsmessdaten über <code>TimePrecisionMeasurement</code> (Signatur <code>std::function&lt;void(const TimePrecisionMeasurement &amp;)&gt;</code>, nicht threadsicher).</li>
+<li><code>SynchronizationNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222">[SWS_TS_14222]</a>) for notification upon a change of the <code>SynchronizationStatus</code> (signature <code>std::function&lt;void(const SynchronizationStatus &amp;)&gt;</code>, specified as non-thread-safe).</li>
+<li><code>SynchronizedTimeBaseNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221">[SWS_TS_14221]</a>) for transmitting complete status snapshots via <code>SynchronizedTimeBaseStatus</code> (signature <code>std::function&lt;void(const SynchronizedTimeBaseStatus &amp;)&gt;</code>, non-thread-safe).</li>
+<li><code>TimePrecisionNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223">[SWS_TS_14223]</a>) for the periodic evaluation of precision measurement data via <code>TimePrecisionMeasurement</code> (signature <code>std::function&lt;void(const TimePrecisionMeasurement &amp;)&gt;</code>, non-thread-safe).</li>
 </ul>
 </li>
-<li><strong>Zeitstempel und Nutzerdaten erfassen:</strong> Die Anwendung fragt Zeitpunkte vom Typ <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) ab und kann anwendungsbezogene Zusatzinformationen über <code>UserData</code> transportieren.</li>
+<li><strong>Record timestamps and user data:</strong> The application queries points in time of type <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) and can transport application-related additional information via <code>UserData</code>.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Error Scenarios</h4>
 <p>
-Die Fehlerbehandlung in <code>ara::tsync</code> orientiert sich an den Konventionen von <code>ara::core</code>. Fehler werden über die Fehlerdomäne <code>TsyncErrorDomain</code> und den Fehlercode-Enum <code>TsyncErrc</code> (<a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901">[SWS_TS_00901]</a>) abgebildet:
+Error handling in <code>ara::tsync</code> is guided by the conventions of <code>ara::core</code>. Errors are mapped via the error domain <code>TsyncErrorDomain</code> and the error code enum <code>TsyncErrc</code> (<a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901">[SWS_TS_00901]</a>):
 </p>
 <table>
 <thead>
 <tr>
-<th>Fehlercode</th>
-<th>Numerischer Wert</th>
-<th>Bedeutung und Ursache</th>
+<th>Error code</th>
+<th>Numeric value</th>
+<th>Meaning and cause</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>kDaemonConnectionLost</code></td>
 <td>1</td>
-<td>Die angeforderte Operation schlägt fehl, da die Verbindung zum Time-Synchronization-Daemon unterbrochen ist.</td>
+<td>The requested operation fails because the connection to the Time Synchronization daemon is interrupted.</td>
 </tr>
 <tr>
 <td><code>kLimitsExceeded</code></td>
 <td>2</td>
-<td>Ein übergebener Parameter überschreitet den zulässigen Wertebereich.</td>
+<td>A passed parameter exceeds the permissible value range.</td>
 </tr>
 <tr>
 <td><code>kFunctionNotSupported</code></td>
 <td>3</td>
-<td>Die angeforderte Funktion wird von der aktuellen Implementierung oder Konfiguration nicht unterstützt.</td>
+<td>The requested function is not supported by the current implementation or configuration.</td>
 </tr>
 <tr>
 <td><code>kInvalidUserDataSize</code></td>
 <td>4</td>
-<td>Die Länge der übergebenen Nutzerdaten überschreitet die maximal zulässige Größe (spezifiziert durch <code>UserData::kMaxUserDataSize</code>, standardmäßig 3 Bytes).</td>
+<td>The length of the passed user data exceeds the maximum permissible size (specified by <code>UserData::kMaxUserDataSize</code>, 3 bytes by default).</td>
 </tr>
 </tbody>
 </table>
 <p>
-Für die Erzeugung und Prüfung von Fehlerobjekten stellt der Namespace die threadsichere und ausnahmesichere Hilfsfunktion <code>MakeErrorCode</code> (<a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910">[SWS_TS_00910]</a>) sowie den Zugriff auf die globale Fehlerdomäne über <code>GetTsyncErrorDomain</code> (<a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909">[SWS_TS_00909]</a>) bereit. Alternativ signalisiert die Exception-Klasse <code>TsyncException</code> Ausnahmesituationen in Kontexten, in denen C++-Exceptions zum Einsatz kommen.
+For creating and checking error objects, the namespace provides the thread-safe and exception-safe helper function <code>MakeErrorCode</code> (<a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910">[SWS_TS_00910]</a>) as well as access to the global error domain via <code>GetTsyncErrorDomain</code> (<a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909">[SWS_TS_00909]</a>). Alternatively, the exception class <code>TsyncException</code> signals exceptional situations in contexts where C++ exceptions are used.
 </p>
 <!-- annahmen: 1) Die Zustandsübergänge zwischen den SynchronizationStatus-Werten ergeben sich fachlich aus dem beschriebenen Verlust bzw. Wiederaufbau der Synchronisation. – Begründung: SWS_TS_01050 definiert die Zustände kNotSynchronizedUntilStartup, kTimeOut, kSynchronized und kSynchToGateway, spezifiziert jedoch keine separate Übergangsmatrix im Payload. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen und Typdefinitionen der Spezifikation ara::tsync (AUTOSAR Adaptive Platform R25-11).</p>
+<p class="ai-note">This guide is based on the requirements and type definitions of the specification ara::tsync (AUTOSAR Adaptive Platform R25-11).</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_tsync_ara_tsync_6055e5" title="Discuss with AI">💬 Discuss with AI</button>
@@ -1251,25 +1250,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="9331b66b057303cbbb041c6200a918337902f1552e503fed1bb5c4d67bc2ec02" data-trace-output="9fea7be386120556fd7f83a6372aa2fc03fda55cc0e8780fe077557fc046fe90" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Der C++-Namespace &lt;code&gt;ara::tsync&lt;/code&gt; stellt die funktionale Schnittstelle des Moduls &lt;em&gt;Time Synchronization&lt;/em&gt; (tsync) in der AUTOSAR Adaptive Platform dar. Er ermöglicht Anwendungen den einheitlichen Zugriff auf synchronisierte Zeitbasen sowie die Überwachung von Synchronisationszuständen und Zeitgüte. Die Architektur unterscheidet primär zwischen Konsumenten und Bereitstellern von Zeitinformationen:
+The C++ namespace &lt;code&gt;ara::tsync&lt;/code&gt; represents the functional interface of the &lt;em&gt;Time Synchronization&lt;/em&gt; (tsync) module in the AUTOSAR Adaptive Platform. It provides applications with uniform access to synchronized time bases as well as the monitoring of synchronization states and time quality. The architecture primarily distinguishes between consumers and providers of time information:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; dient Anwendungen als Zugriffspunkt auf eine konfigurierte, über einen &lt;em&gt;InstanceSpecifier&lt;/em&gt; referenzierte Zeitbasis, um Zeitstempel abzurufen oder Zustandsänderungen zu verfolgen.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseProvider&lt;/code&gt; ermöglicht Anwendungen oder Plattformkomponenten, als Zeitquelle zu agieren und eine Zeitbasis bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TimeBase&lt;/code&gt; fungiert als Pseudo-Clock-Konstrukt zur standardkonformen Typisierung im Rahmen von &lt;code&gt;std::chrono&lt;/code&gt;. Basierend darauf definiert der Typalias &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) standardisierte Zeitpunkte als &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase, std::chrono::nanoseconds&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; erfasst Momentaufnahmen des Systemzustands einer Zeitbasis inklusive Kommunikations- und Sprunginformationen.&lt;/li&gt;
-&lt;li&gt;Mess- und Validierungsdatenstrukturen (darunter &lt;code&gt;TimeMasterMeasurementType&lt;/code&gt;, &lt;code&gt;TimeSlaveMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayInitiatorMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayResponderMeasurementType&lt;/code&gt; und &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt;) sowie die Callback-Schnittstellen &lt;code&gt;ConsumerTimeBaseValidationNotification&lt;/code&gt; und &lt;code&gt;ProviderTimeBaseValidationNotification&lt;/code&gt; unterstützen die Verifikation und Präzisionsbewertung der Zeitverteilung.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; serves applications as an access point to a configured time base referenced via an &lt;em&gt;InstanceSpecifier&lt;/em&gt; in order to retrieve timestamps or track state changes.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseProvider&lt;/code&gt; enables applications or platform components to act as a time source and provide a time base.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TimeBase&lt;/code&gt; functions as a pseudo-clock construct for standards-compliant typing within the framework of &lt;code&gt;std::chrono&lt;/code&gt;. Based on this, the type alias &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) defines standardized points in time as &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase, std::chrono::nanoseconds&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; captures snapshots of the system state of a time base, including communication and jump information.&lt;/li&gt;
+&lt;li&gt;Measurement and validation data structures (including &lt;code&gt;TimeMasterMeasurementType&lt;/code&gt;, &lt;code&gt;TimeSlaveMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayInitiatorMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayResponderMeasurementType&lt;/code&gt;, and &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt;) as well as the callback interfaces &lt;code&gt;ConsumerTimeBaseValidationNotification&lt;/code&gt; and &lt;code&gt;ProviderTimeBaseValidationNotification&lt;/code&gt; support the verification and precision assessment of the time distribution.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus und Synchronisationszustände&lt;/h4&gt;
+&lt;h4&gt;Lifecycle and synchronization states&lt;/h4&gt;
 &lt;p&gt;
-Zeitbasen durchlaufen im Laufzeitbetrieb diskrete Synchronisationszustände, die über das Enum &lt;code&gt;SynchronizationStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;) abgebildet werden. Nach dem Start befindet sich eine Zeitbasis initial im Zustand &lt;code&gt;kNotSynchronizedUntilStartup&lt;/code&gt; (=0). Sobald Synchronisationsnachrichten erfolgreich verarbeitet werden, wechselt die Zeitbasis entweder in den Zustand &lt;code&gt;kSynchronized&lt;/code&gt; (=2) bei direkter Kopplung an den Time Master oder in &lt;code&gt;kSynchToGateway&lt;/code&gt; (=3), falls die Synchronisation mittelbar über ein Gateway erfolgt. Bleibt die Synchronisation innerhalb eines definierten Zeitfensters aus, wird der Zustand &lt;code&gt;kTimeOut&lt;/code&gt; (=1) eingenommen.
+During runtime operation, time bases pass through discrete synchronization states that are represented via the enum &lt;code&gt;SynchronizationStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;). After startup, a time base is initially in state &lt;code&gt;kNotSynchronizedUntilStartup&lt;/code&gt; (=0). As soon as synchronization messages are processed successfully, the time base transitions either to state &lt;code&gt;kSynchronized&lt;/code&gt; (=2) in the case of direct coupling to the Time Master or to &lt;code&gt;kSynchToGateway&lt;/code&gt; (=3) if synchronization takes place indirectly via a gateway. If synchronization fails to occur within a defined time window, the state &lt;code&gt;kTimeOut&lt;/code&gt; (=1) is entered.
 &lt;/p&gt;
 &lt;p&gt;
-Parallel zum Kommunikationszustand signalisiert das Enum &lt;code&gt;LeapJump&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051"&gt;[SWS_TS_01051]&lt;/a&gt;) sprunghafte Korrekturen der Zeitbasis: &lt;code&gt;kTimeLeapNone&lt;/code&gt; (=0) zeigt den regulären Verlauf ohne Schwellwertüberschreitung an, während &lt;code&gt;kTimeLeapFuture&lt;/code&gt; (=1) einen Vorwärtssprung und &lt;code&gt;kTimeLeapPast&lt;/code&gt; (=2) einen Rückwärtssprung über den konfigurierten Schwellwert hinaus kennzeichnet.
+In parallel with the communication state, the enum &lt;code&gt;LeapJump&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051"&gt;[SWS_TS_01051]&lt;/a&gt;) signals abrupt corrections of the time base: &lt;code&gt;kTimeLeapNone&lt;/code&gt; (=0) indicates regular progress without exceeding a threshold, while &lt;code&gt;kTimeLeapFuture&lt;/code&gt; (=1) marks a forward jump and &lt;code&gt;kTimeLeapPast&lt;/code&gt; (=2) marks a backward jump beyond the configured threshold.
 &lt;/p&gt;
 &lt;div class="diagram" id="diag-sync-status"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 466.11 357.40" style="max-width:621px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 343)"&gt;
@@ -1378,64 +1376,64 @@ Parallel zum Kommunikationszustand signalisiert das Enum &lt;code&gt;LeapJump&lt
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Synchronisationszustände einer Zeitbasis gemäß SynchronizationStatus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;State diagram: Synchronization states of a time base according to SynchronizationStatus. Sources: &lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Usage Path&lt;/h4&gt;
 &lt;p&gt;
-Ein typischer Nutzungsablauf auf Konsumentenseite gliedert sich in Instanziierung, Registrierung asynchroner Callback-Funktionen und zyklische bzw. ereignisgesteuerte Abfrage von Zeitinformationen:
+A typical usage workflow on the consumer side is divided into instantiation, registration of asynchronous callback functions, and cyclic or event-driven querying of time information:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Zugriff binden:&lt;/strong&gt; Eine Konsumenten-Anwendung instanziiert ein Objekt vom Typ &lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; unter Angabe des passenden &lt;em&gt;InstanceSpecifier&lt;/em&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Benachrichtigungen registrieren:&lt;/strong&gt; Um über Statuswechsel informiert zu werden, übergibt die Anwendung Callback-Funktionen an den Konsumenten. Die Funktionssignaturen sind über Callback-Aliase vorgegeben:
+&lt;li&gt;&lt;strong&gt;Bind access:&lt;/strong&gt; A consumer application instantiates an object of type &lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; by specifying the appropriate &lt;em&gt;InstanceSpecifier&lt;/em&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Register notifications:&lt;/strong&gt; To be informed about status changes, the application passes callback functions to the consumer. The function signatures are predefined via callback aliases:
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SynchronizationNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222"&gt;[SWS_TS_14222]&lt;/a&gt;) zur Benachrichtigung bei Wechsel des &lt;code&gt;SynchronizationStatus&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const SynchronizationStatus &amp;amp;)&amp;gt;&lt;/code&gt;, als nicht threadsicher spezifiziert).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221"&gt;[SWS_TS_14221]&lt;/a&gt;) zur Übermittlung vollständiger Status-Snapshots via &lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const SynchronizedTimeBaseStatus &amp;amp;)&amp;gt;&lt;/code&gt;, nicht threadsicher).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TimePrecisionNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223"&gt;[SWS_TS_14223]&lt;/a&gt;) zur periodischen Auswertung von Präzisionsmessdaten über &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const TimePrecisionMeasurement &amp;amp;)&amp;gt;&lt;/code&gt;, nicht threadsicher).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizationNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222"&gt;[SWS_TS_14222]&lt;/a&gt;) for notification upon a change of the &lt;code&gt;SynchronizationStatus&lt;/code&gt; (signature &lt;code&gt;std::function&amp;lt;void(const SynchronizationStatus &amp;amp;)&amp;gt;&lt;/code&gt;, specified as non-thread-safe).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221"&gt;[SWS_TS_14221]&lt;/a&gt;) for transmitting complete status snapshots via &lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; (signature &lt;code&gt;std::function&amp;lt;void(const SynchronizedTimeBaseStatus &amp;amp;)&amp;gt;&lt;/code&gt;, non-thread-safe).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TimePrecisionNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223"&gt;[SWS_TS_14223]&lt;/a&gt;) for the periodic evaluation of precision measurement data via &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt; (signature &lt;code&gt;std::function&amp;lt;void(const TimePrecisionMeasurement &amp;amp;)&amp;gt;&lt;/code&gt;, non-thread-safe).&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zeitstempel und Nutzerdaten erfassen:&lt;/strong&gt; Die Anwendung fragt Zeitpunkte vom Typ &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) ab und kann anwendungsbezogene Zusatzinformationen über &lt;code&gt;UserData&lt;/code&gt; transportieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Record timestamps and user data:&lt;/strong&gt; The application queries points in time of type &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) and can transport application-related additional information via &lt;code&gt;UserData&lt;/code&gt;.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
 &lt;p&gt;
-Die Fehlerbehandlung in &lt;code&gt;ara::tsync&lt;/code&gt; orientiert sich an den Konventionen von &lt;code&gt;ara::core&lt;/code&gt;. Fehler werden über die Fehlerdomäne &lt;code&gt;TsyncErrorDomain&lt;/code&gt; und den Fehlercode-Enum &lt;code&gt;TsyncErrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901"&gt;[SWS_TS_00901]&lt;/a&gt;) abgebildet:
+Error handling in &lt;code&gt;ara::tsync&lt;/code&gt; is guided by the conventions of &lt;code&gt;ara::core&lt;/code&gt;. Errors are mapped via the error domain &lt;code&gt;TsyncErrorDomain&lt;/code&gt; and the error code enum &lt;code&gt;TsyncErrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901"&gt;[SWS_TS_00901]&lt;/a&gt;):
 &lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
-&lt;th&gt;Fehlercode&lt;/th&gt;
-&lt;th&gt;Numerischer Wert&lt;/th&gt;
-&lt;th&gt;Bedeutung und Ursache&lt;/th&gt;
+&lt;th&gt;Error code&lt;/th&gt;
+&lt;th&gt;Numeric value&lt;/th&gt;
+&lt;th&gt;Meaning and cause&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kDaemonConnectionLost&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;1&lt;/td&gt;
-&lt;td&gt;Die angeforderte Operation schlägt fehl, da die Verbindung zum Time-Synchronization-Daemon unterbrochen ist.&lt;/td&gt;
+&lt;td&gt;The requested operation fails because the connection to the Time Synchronization daemon is interrupted.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kLimitsExceeded&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;2&lt;/td&gt;
-&lt;td&gt;Ein übergebener Parameter überschreitet den zulässigen Wertebereich.&lt;/td&gt;
+&lt;td&gt;A passed parameter exceeds the permissible value range.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kFunctionNotSupported&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;3&lt;/td&gt;
-&lt;td&gt;Die angeforderte Funktion wird von der aktuellen Implementierung oder Konfiguration nicht unterstützt.&lt;/td&gt;
+&lt;td&gt;The requested function is not supported by the current implementation or configuration.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kInvalidUserDataSize&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;4&lt;/td&gt;
-&lt;td&gt;Die Länge der übergebenen Nutzerdaten überschreitet die maximal zulässige Größe (spezifiziert durch &lt;code&gt;UserData::kMaxUserDataSize&lt;/code&gt;, standardmäßig 3 Bytes).&lt;/td&gt;
+&lt;td&gt;The length of the passed user data exceeds the maximum permissible size (specified by &lt;code&gt;UserData::kMaxUserDataSize&lt;/code&gt;, 3 bytes by default).&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;
-Für die Erzeugung und Prüfung von Fehlerobjekten stellt der Namespace die threadsichere und ausnahmesichere Hilfsfunktion &lt;code&gt;MakeErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910"&gt;[SWS_TS_00910]&lt;/a&gt;) sowie den Zugriff auf die globale Fehlerdomäne über &lt;code&gt;GetTsyncErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909"&gt;[SWS_TS_00909]&lt;/a&gt;) bereit. Alternativ signalisiert die Exception-Klasse &lt;code&gt;TsyncException&lt;/code&gt; Ausnahmesituationen in Kontexten, in denen C++-Exceptions zum Einsatz kommen.
+For creating and checking error objects, the namespace provides the thread-safe and exception-safe helper function &lt;code&gt;MakeErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910"&gt;[SWS_TS_00910]&lt;/a&gt;) as well as access to the global error domain via &lt;code&gt;GetTsyncErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909"&gt;[SWS_TS_00909]&lt;/a&gt;). Alternatively, the exception class &lt;code&gt;TsyncException&lt;/code&gt; signals exceptional situations in contexts where C++ exceptions are used.
 &lt;/p&gt;
 &lt;!-- annahmen: 1) Die Zustandsübergänge zwischen den SynchronizationStatus-Werten ergeben sich fachlich aus dem beschriebenen Verlust bzw. Wiederaufbau der Synchronisation. – Begründung: SWS_TS_01050 definiert die Zustände kNotSynchronizedUntilStartup, kTimeOut, kSynchronized und kSynchToGateway, spezifiziert jedoch keine separate Übergangsmatrix im Payload. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen und Typdefinitionen der Spezifikation ara::tsync (AUTOSAR Adaptive Platform R25-11).&lt;/p&gt;
+&lt;p class="ai-note"&gt;This guide is based on the requirements and type definitions of the specification ara::tsync (AUTOSAR Adaptive Platform R25-11).&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

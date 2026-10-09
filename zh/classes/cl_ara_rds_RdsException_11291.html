@@ -19,58 +19,57 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>88a6d5669b55</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_rds_RdsException_11291/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_rds_RdsException_11291/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_rds_RdsException_11291" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Klasse <code>ara::rds::RdsException</code> repräsentiert den zentralen Ausnahmetyp für das funktionale Cluster des Raw Data Stream (RDS) in der AUTOSAR Adaptive Platform. Sie fungiert als spezialisierter Informationsträger, wenn Fehlerbedingungen innerhalb des Streamings von Rohdaten nicht über lokale Rückgabewerte, sondern über den Ausnahme-Mechanismus von C++ an übergeordnete Aufrufschichten propagiert werden. Gemäß ihrer Vererbungshierarchie leitet <code>RdsException</code> öffentlich von <code>ara::core::Exception</code> ab. Dadurch fügt sie sich nahtlos in das einheitliche Fehlerbehandlungsmodell der Adaptive Platform ein, welches primär auf Werttypen wie <code>ara::core::ErrorCode</code> und <code>ara::core::Result</code> aufbaut, für ausnahmebasierte Kontrollflüsse jedoch kompatible Ausnahmeklassen vorschreibt.
+类 <code>ara::rds::RdsException</code> 代表 AUTOSAR Adaptive Platform 中 Raw Data Stream（RDS）功能集群的核心异常类型。当原始数据流式传输内的错误条件不通过本地返回值，而是通过 C++ 异常机制向上传播到上层调用层时，它充当专用信息载体。根据其继承层次结构，<code>RdsException</code> 公有继承自 <code>ara::core::Exception</code>。因此，它无缝融入 Adaptive Platform 的统一错误处理模型中，该模型主要基于诸如 <code>ara::core::ErrorCode</code> 和 <code>ara::core::Result</code> 的值类型构建，但针对基于异常的控制流规定了兼容的异常类。
 </p>
 <p>
-Die wesentlichen Interaktionspartner der Klasse umfassen drei Domänen:
+该类的基本交互伙伴涵盖三个领域：
 </p>
 <ul>
-<li><strong>RDS-Funktionscluster:</strong> Erzeugt bei schwerwiegenden Protokoll- oder Übertragungsfehlern im Rohdatenstrom entsprechende Fehlerzustände und kapselt diese in einem zugehörigen <code>ara::core::ErrorCode</code>.</li>
-<li><strong>Basisarchitektur (<code>ara::core</code>):</strong> Stellt mit <code>ara::core::Exception</code> die gemeinsame Basisklasse sowie mit <code>ara::core::ErrorCode</code> den zugrundeliegenden Werttyp bereit. Interpretation: Über die Basisfunktionalität von <code>ara::core::Exception</code> dürfte <code>RdsException</code> Methoden zur Inspektion des Fehlercodes bereitstellen.</li>
-<li><strong>Anwendungssoftware:</strong> Fängt die Ausnahme in definierten <code>catch</code>-Blöcken ab, um kontrollierte Wiederanlauf- oder Degradierungsstrategien für den betroffenen Datenstrom einzuleiten.</li>
+<li><strong>RDS 功能集群：</strong>在原始数据流中发生严重协议或传输错误时生成相应的错误状态，并将其封装在关联的 <code>ara::core::ErrorCode</code> 中。</li>
+<li><strong>基础架构（<code>ara::core</code>）：</strong>通过 <code>ara::core::Exception</code> 提供公共基类，并通过 <code>ara::core::ErrorCode</code> 提供底层值类型。解释：通过 <code>ara::core::Exception</code> 的基本功能，<code>RdsException</code> 大概提供用于检查错误码的方法。</li>
+<li><strong>应用软件：</strong>在定义的 <code>catch</code> 块中捕获异常，以便为受影响的数据流启动受控的重新启动或降级策略。</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
+<h4>生命周期</h4>
 <p>
-Der Lebenszyklus einer Instanz von <code>ara::rds::RdsException</code> beginnt deterministisch mit ihrer Initialisierung über den expliziten Konstruktor <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>. Dieser übernimmt als einzigen Parameter einen <code>ara::core::ErrorCode</code> und ist als <code>noexcept</code> deklariert. Die <code>noexcept</code>-Garantie stellt sicher, dass die Konstruktion selbst unter widrigen Laufzeitbedingungen – wie etwa Ressourcenknappheit – garantiert nicht durch weitere Ausnahmen unterbrochen wird.
+<code>ara::rds::RdsException</code> 实例的生命周期确定性地始于通过显式构造函数 <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a> 进行的初始化。该构造函数接收 <code>ara::core::ErrorCode</code> 作为唯一参数，并被声明为 <code>noexcept</code>。<code>noexcept</code> 保证确保了即使在不利的运行时条件下（例如资源匮乏），构造过程也保证不会被其他异常打断。
 </p>
 <p>
-Nach der Konstruktion verbleibt das Ausnahmeobjekt in einem unveränderlichen Zustand. Es besitzt den übergebenen Fehlercode und fungiert als reines Wertobjekt. Die Weitergabe erfolgt über den C++-Laufzeitstack im Rahmen einer <code>throw</code>-Anweisung. Der Besitz des Objekts liegt während des Stack-Unwindings bei der C++-Laufzeitumgebung, bis es an der passenden Fangstelle gebunden wird.
+在构造完成后，异常对象保持在不可变状态。它持有传入的错误码，并充当纯值对象。传递是通过 C++ 运行时栈在 <code>throw</code> 语句的上下文中进行的。在栈展开（stack unwinding）期间，对象的所有权归 C++ 运行时环境所有，直到它在合适的捕获点被绑定。
 </p>
 <p>
-Hinsichtlich der Nebenläufigkeit und des Mehrfadenbetriebs gilt: Da Ausnahmeinstanzen typischerweise thread-lokal instanziiert und als konstante Referenz (<code>const ara::rds::RdsException&amp;</code>) gefangen werden, existiert kein geteilter Zustand zwischen Threads. Vermutlich ist für die Arbeit mit <code>RdsException</code> daher keinerlei explizite Mutex-Synchronisation auf Ebene der Ausnahmeinstanz erforderlich. Die Zerstörung erfolgt automatisch durch die C++-Laufzeit, sobald der abfangende Block verlassen wird.
+关于并发性和多线程运行：由于异常实例通常是在线程本地进行实例化并作为常量引用（<code>const ara::rds::RdsException&amp;</code>）被捕获，因此线程之间不存在共享状态。因此，使用 <code>RdsException</code> 时大概不需要在异常实例层级进行任何显式的互斥锁同步。一旦离开捕获块，就会由 C++ 运行时自动销毁。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>使用路径</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Abfolge von Fehlererkennung, Ausnahmeerzeugung, Weiterleitung und Behandlung:
+典型的使用路径分为错误检测、异常生成、传递和处理这一序列：
 </p>
 <ol>
-<li><strong>Fehleridentifikation im Datenstrom:</strong> Innerhalb einer RDS-Verarbeitungsroutine schlägt eine Lese-, Schreib- oder Konfigurationsoperation fehl. Der Fehler wird zunächst als <code>ara::core::ErrorCode</code> formuliert, dessen Deklaration im Header <code>ara/rds/rds_error_domain.h</code> verankert ist <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>.</li>
-<li><strong>Instanziierung:</strong> Soll die aufrufende Stelle per Ausnahme benachrichtigt werden, wird die Ausnahme explizit mit dem aufgetretenen Fehlercode erzeugt: <code>RdsException(errorCode)</code> <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>. Vermutlich geschieht dies auch automatisiert, wenn Anwendungen an einem fehlerhaften <code>ara::core::Result</code> die Methode <code>Value()</code> aufrufen.</li>
-<li><strong>Auslösen der Ausnahme:</strong> Die Instanz wird mittels <code>throw</code> in den Kontrollfluss eingespeist, was das Verlassen des aktuellen Kontextes erzwingt.</li>
-<li><strong>Fangen und Auswerten:</strong> Die aufrufende Schicht fängt das Objekt gezielt als <code>ara::rds::RdsException</code> oder polymorph als <code>ara::core::Exception</code> ab und liest den zugrundeliegenden Fehlercode aus, um gezielte Diagnose- und Wiederherstellungsmaßnahmen anzustoßen.</li>
+<li><strong>数据流中的错误识别：</strong>在 RDS 处理例程内部，读、写或配置操作失败。错误首先被表述为 <code>ara::core::ErrorCode</code>，其声明固定在头文件 <code>ara/rds/rds_error_domain.h</code> 中 <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>。</li>
+<li><strong>实例化：</strong>若要通过异常通知调用方，则使用发生的错误码显式创建异常：<code>RdsException(errorCode)</code> <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>。当应用程序在有缺陷的 <code>ara::core::Result</code> 上调用方法 <code>Value()</code> 时，大概也会自动发生此操作。</li>
+<li><strong>抛出异常：</strong>通过 <code>throw</code> 将实例注入控制流中，这将强制退出当前上下文。</li>
+<li><strong>捕获和求值：</strong>调用层特异性地将其作为 <code>ara::rds::RdsException</code> 或多态地作为 <code>ara::core::Exception</code> 捕获，并读取底层的错误码，以触发针对性的诊断和恢复措施。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Als dedizierte Fehlerklasse besitzt <code>ara::rds::RdsException</code> selbst keine komplexen Fehlermodi. Ihr Konstruktor kann dank der Spezifikation als <code>noexcept</code> nicht fehlschlagen <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>.
+作为专用错误类，<code>ara::rds::RdsException</code> 本身没有复杂的错误模式。得益于作为 <code>noexcept</code> 的规范说明，其构造函数不会失败 <a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292">[SWS_RDS_11292]</a>。
 </p>
 <p>
-Ein kritisches Szenario im Zusammenspiel mit der Adaptive Platform entsteht, wenn die Schnittstelle zwischen fehlercodebasierter und ausnahmebasierter Behandlung unzureichend abgestimmt ist. Wird eine <code>RdsException</code> in einem Thread geworfen, für den kein umfassender <code>catch</code>-Handler registriert ist, führt dies zum Aufruf von <code>std::terminate</code> und damit zum unkontrollierten Abbruch des Prozesses. Anwendungen, die Schnittstellen des Raw Data Stream nutzen, müssen daher sicherstellen, dass entweder primär non-throwing APIs (z.&nbsp;B. Inspektion von <code>ara::core::Result</code> ohne Aufruf auslösender Hilfsmethoden) gewählt werden oder die Aufrufe lückenlos durch entsprechende Ausnahmebehandlungsblöcke abgesichert sind.
+在与 Adaptive Platform 的交互中，如果基于错误码的处理与基于异常的处理之间的接口未充分协调，则会出现危急场景。如果在未注册全局 <code>catch</code> 处理程序的线程中抛出 <code>RdsException</code>，将导致调用 <code>std::terminate</code> 并因此造成进程不受控的中止。因此，使用 Raw Data Stream 接口的应用程序必须确保：要么主要选择 non-throwing API（例如检查 <code>ara::core::Result</code> 而不调用触发异常的辅助方法），要么通过相应的异常处理块对调用进行无遗漏的保护。
 </p>
 <!-- annahmen:
 1) Die Klasse dürfte über die Basisklasse ara::core::Exception Zugriff auf den gekapselten ErrorCode bieten. – Begründung: Der Payload zeigt die Vererbung von ara::core::Exception und den Konstruktor mit ara::core::ErrorCode, spezifiziert aber keine eigenen Memberfunktionen.
 2) Vermutlich wird RdsException intern ausgelöst, wenn an einem fehlerbehafteten ara::core::Result im Kontext von RDS ein Zugriff via Value() erfolgt. – Begründung: Dies entspricht dem Standardmuster der AUTOSAR Adaptive Platform für Exception-Wrapper um ErrorCodes.
 3) Vermutlich ist keine threadübergreifende Synchronisation erforderlich, da Ausnahmen als Wertobjekte thread-lokal verarbeitet werden. – Begründung: Standardsemantik von C++-Ausnahmen ohne geteilten Zustand.
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des Release R25-11 für das Modul rds.</p>
+<p class="ai-note">本指南完全基于 release R25-11 针对模块 rds 的规范要求。</p>
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_rds_RdsException_11291" title="与 AI 讨论">💬 与 AI 讨论</button>
   <button type="button" class="btn-feedback-action" data-feedback-open data-target-id="Class Guide: cl_ara_rds_RdsException_11291" title="提供反馈">⚠️ 提供反馈</button>
@@ -352,55 +351,54 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="88a6d5669b559dd9dc828e868ec9f56429c90cc7b59e479a3f5a56b9a0e96e27" data-trace-output="bc48c06c85baf5b67a7d4f603c7c66046653d816eb8e2aac1fe9d534df14a555" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::rds::RdsException&lt;/code&gt; repräsentiert den zentralen Ausnahmetyp für das funktionale Cluster des Raw Data Stream (RDS) in der AUTOSAR Adaptive Platform. Sie fungiert als spezialisierter Informationsträger, wenn Fehlerbedingungen innerhalb des Streamings von Rohdaten nicht über lokale Rückgabewerte, sondern über den Ausnahme-Mechanismus von C++ an übergeordnete Aufrufschichten propagiert werden. Gemäß ihrer Vererbungshierarchie leitet &lt;code&gt;RdsException&lt;/code&gt; öffentlich von &lt;code&gt;ara::core::Exception&lt;/code&gt; ab. Dadurch fügt sie sich nahtlos in das einheitliche Fehlerbehandlungsmodell der Adaptive Platform ein, welches primär auf Werttypen wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; und &lt;code&gt;ara::core::Result&lt;/code&gt; aufbaut, für ausnahmebasierte Kontrollflüsse jedoch kompatible Ausnahmeklassen vorschreibt.
+类 &lt;code&gt;ara::rds::RdsException&lt;/code&gt; 代表 AUTOSAR Adaptive Platform 中 Raw Data Stream（RDS）功能集群的核心异常类型。当原始数据流式传输内的错误条件不通过本地返回值，而是通过 C++ 异常机制向上传播到上层调用层时，它充当专用信息载体。根据其继承层次结构，&lt;code&gt;RdsException&lt;/code&gt; 公有继承自 &lt;code&gt;ara::core::Exception&lt;/code&gt;。因此，它无缝融入 Adaptive Platform 的统一错误处理模型中，该模型主要基于诸如 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 和 &lt;code&gt;ara::core::Result&lt;/code&gt; 的值类型构建，但针对基于异常的控制流规定了兼容的异常类。
 &lt;/p&gt;
 &lt;p&gt;
-Die wesentlichen Interaktionspartner der Klasse umfassen drei Domänen:
+该类的基本交互伙伴涵盖三个领域：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;RDS-Funktionscluster:&lt;/strong&gt; Erzeugt bei schwerwiegenden Protokoll- oder Übertragungsfehlern im Rohdatenstrom entsprechende Fehlerzustände und kapselt diese in einem zugehörigen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Basisarchitektur (&lt;code&gt;ara::core&lt;/code&gt;):&lt;/strong&gt; Stellt mit &lt;code&gt;ara::core::Exception&lt;/code&gt; die gemeinsame Basisklasse sowie mit &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; den zugrundeliegenden Werttyp bereit. Interpretation: Über die Basisfunktionalität von &lt;code&gt;ara::core::Exception&lt;/code&gt; dürfte &lt;code&gt;RdsException&lt;/code&gt; Methoden zur Inspektion des Fehlercodes bereitstellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Anwendungssoftware:&lt;/strong&gt; Fängt die Ausnahme in definierten &lt;code&gt;catch&lt;/code&gt;-Blöcken ab, um kontrollierte Wiederanlauf- oder Degradierungsstrategien für den betroffenen Datenstrom einzuleiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;RDS 功能集群：&lt;/strong&gt;在原始数据流中发生严重协议或传输错误时生成相应的错误状态，并将其封装在关联的 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 中。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;基础架构（&lt;code&gt;ara::core&lt;/code&gt;）：&lt;/strong&gt;通过 &lt;code&gt;ara::core::Exception&lt;/code&gt; 提供公共基类，并通过 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 提供底层值类型。解释：通过 &lt;code&gt;ara::core::Exception&lt;/code&gt; 的基本功能，&lt;code&gt;RdsException&lt;/code&gt; 大概提供用于检查错误码的方法。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;应用软件：&lt;/strong&gt;在定义的 &lt;code&gt;catch&lt;/code&gt; 块中捕获异常，以便为受影响的数据流启动受控的重新启动或降级策略。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus einer Instanz von &lt;code&gt;ara::rds::RdsException&lt;/code&gt; beginnt deterministisch mit ihrer Initialisierung über den expliziten Konstruktor &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;. Dieser übernimmt als einzigen Parameter einen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; und ist als &lt;code&gt;noexcept&lt;/code&gt; deklariert. Die &lt;code&gt;noexcept&lt;/code&gt;-Garantie stellt sicher, dass die Konstruktion selbst unter widrigen Laufzeitbedingungen – wie etwa Ressourcenknappheit – garantiert nicht durch weitere Ausnahmen unterbrochen wird.
+&lt;code&gt;ara::rds::RdsException&lt;/code&gt; 实例的生命周期确定性地始于通过显式构造函数 &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt; 进行的初始化。该构造函数接收 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 作为唯一参数，并被声明为 &lt;code&gt;noexcept&lt;/code&gt;。&lt;code&gt;noexcept&lt;/code&gt; 保证确保了即使在不利的运行时条件下（例如资源匮乏），构造过程也保证不会被其他异常打断。
 &lt;/p&gt;
 &lt;p&gt;
-Nach der Konstruktion verbleibt das Ausnahmeobjekt in einem unveränderlichen Zustand. Es besitzt den übergebenen Fehlercode und fungiert als reines Wertobjekt. Die Weitergabe erfolgt über den C++-Laufzeitstack im Rahmen einer &lt;code&gt;throw&lt;/code&gt;-Anweisung. Der Besitz des Objekts liegt während des Stack-Unwindings bei der C++-Laufzeitumgebung, bis es an der passenden Fangstelle gebunden wird.
+在构造完成后，异常对象保持在不可变状态。它持有传入的错误码，并充当纯值对象。传递是通过 C++ 运行时栈在 &lt;code&gt;throw&lt;/code&gt; 语句的上下文中进行的。在栈展开（stack unwinding）期间，对象的所有权归 C++ 运行时环境所有，直到它在合适的捕获点被绑定。
 &lt;/p&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit und des Mehrfadenbetriebs gilt: Da Ausnahmeinstanzen typischerweise thread-lokal instanziiert und als konstante Referenz (&lt;code&gt;const ara::rds::RdsException&amp;amp;&lt;/code&gt;) gefangen werden, existiert kein geteilter Zustand zwischen Threads. Vermutlich ist für die Arbeit mit &lt;code&gt;RdsException&lt;/code&gt; daher keinerlei explizite Mutex-Synchronisation auf Ebene der Ausnahmeinstanz erforderlich. Die Zerstörung erfolgt automatisch durch die C++-Laufzeit, sobald der abfangende Block verlassen wird.
+关于并发性和多线程运行：由于异常实例通常是在线程本地进行实例化并作为常量引用（&lt;code&gt;const ara::rds::RdsException&amp;amp;&lt;/code&gt;）被捕获，因此线程之间不存在共享状态。因此，使用 &lt;code&gt;RdsException&lt;/code&gt; 时大概不需要在异常实例层级进行任何显式的互斥锁同步。一旦离开捕获块，就会由 C++ 运行时自动销毁。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Abfolge von Fehlererkennung, Ausnahmeerzeugung, Weiterleitung und Behandlung:
+典型的使用路径分为错误检测、异常生成、传递和处理这一序列：
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Fehleridentifikation im Datenstrom:&lt;/strong&gt; Innerhalb einer RDS-Verarbeitungsroutine schlägt eine Lese-, Schreib- oder Konfigurationsoperation fehl. Der Fehler wird zunächst als &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; formuliert, dessen Deklaration im Header &lt;code&gt;ara/rds/rds_error_domain.h&lt;/code&gt; verankert ist &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Soll die aufrufende Stelle per Ausnahme benachrichtigt werden, wird die Ausnahme explizit mit dem aufgetretenen Fehlercode erzeugt: &lt;code&gt;RdsException(errorCode)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;. Vermutlich geschieht dies auch automatisiert, wenn Anwendungen an einem fehlerhaften &lt;code&gt;ara::core::Result&lt;/code&gt; die Methode &lt;code&gt;Value()&lt;/code&gt; aufrufen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auslösen der Ausnahme:&lt;/strong&gt; Die Instanz wird mittels &lt;code&gt;throw&lt;/code&gt; in den Kontrollfluss eingespeist, was das Verlassen des aktuellen Kontextes erzwingt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fangen und Auswerten:&lt;/strong&gt; Die aufrufende Schicht fängt das Objekt gezielt als &lt;code&gt;ara::rds::RdsException&lt;/code&gt; oder polymorph als &lt;code&gt;ara::core::Exception&lt;/code&gt; ab und liest den zugrundeliegenden Fehlercode aus, um gezielte Diagnose- und Wiederherstellungsmaßnahmen anzustoßen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;数据流中的错误识别：&lt;/strong&gt;在 RDS 处理例程内部，读、写或配置操作失败。错误首先被表述为 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;，其声明固定在头文件 &lt;code&gt;ara/rds/rds_error_domain.h&lt;/code&gt; 中 &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;实例化：&lt;/strong&gt;若要通过异常通知调用方，则使用发生的错误码显式创建异常：&lt;code&gt;RdsException(errorCode)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;。当应用程序在有缺陷的 &lt;code&gt;ara::core::Result&lt;/code&gt; 上调用方法 &lt;code&gt;Value()&lt;/code&gt; 时，大概也会自动发生此操作。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;抛出异常：&lt;/strong&gt;通过 &lt;code&gt;throw&lt;/code&gt; 将实例注入控制流中，这将强制退出当前上下文。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;捕获和求值：&lt;/strong&gt;调用层特异性地将其作为 &lt;code&gt;ara::rds::RdsException&lt;/code&gt; 或多态地作为 &lt;code&gt;ara::core::Exception&lt;/code&gt; 捕获，并读取底层的错误码，以触发针对性的诊断和恢复措施。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Als dedizierte Fehlerklasse besitzt &lt;code&gt;ara::rds::RdsException&lt;/code&gt; selbst keine komplexen Fehlermodi. Ihr Konstruktor kann dank der Spezifikation als &lt;code&gt;noexcept&lt;/code&gt; nicht fehlschlagen &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;.
+作为专用错误类，&lt;code&gt;ara::rds::RdsException&lt;/code&gt; 本身没有复杂的错误模式。得益于作为 &lt;code&gt;noexcept&lt;/code&gt; 的规范说明，其构造函数不会失败 &lt;a class="spec-record-ref" data-req="SWS_RDS_11292" href="../spec/record.html?id=SWS_RDS_11292"&gt;[SWS_RDS_11292]&lt;/a&gt;。
 &lt;/p&gt;
 &lt;p&gt;
-Ein kritisches Szenario im Zusammenspiel mit der Adaptive Platform entsteht, wenn die Schnittstelle zwischen fehlercodebasierter und ausnahmebasierter Behandlung unzureichend abgestimmt ist. Wird eine &lt;code&gt;RdsException&lt;/code&gt; in einem Thread geworfen, für den kein umfassender &lt;code&gt;catch&lt;/code&gt;-Handler registriert ist, führt dies zum Aufruf von &lt;code&gt;std::terminate&lt;/code&gt; und damit zum unkontrollierten Abbruch des Prozesses. Anwendungen, die Schnittstellen des Raw Data Stream nutzen, müssen daher sicherstellen, dass entweder primär non-throwing APIs (z.&amp;nbsp;B. Inspektion von &lt;code&gt;ara::core::Result&lt;/code&gt; ohne Aufruf auslösender Hilfsmethoden) gewählt werden oder die Aufrufe lückenlos durch entsprechende Ausnahmebehandlungsblöcke abgesichert sind.
+在与 Adaptive Platform 的交互中，如果基于错误码的处理与基于异常的处理之间的接口未充分协调，则会出现危急场景。如果在未注册全局 &lt;code&gt;catch&lt;/code&gt; 处理程序的线程中抛出 &lt;code&gt;RdsException&lt;/code&gt;，将导致调用 &lt;code&gt;std::terminate&lt;/code&gt; 并因此造成进程不受控的中止。因此，使用 Raw Data Stream 接口的应用程序必须确保：要么主要选择 non-throwing API（例如检查 &lt;code&gt;ara::core::Result&lt;/code&gt; 而不调用触发异常的辅助方法），要么通过相应的异常处理块对调用进行无遗漏的保护。
 &lt;/p&gt;
 &lt;!-- annahmen:
 1) Die Klasse dürfte über die Basisklasse ara::core::Exception Zugriff auf den gekapselten ErrorCode bieten. – Begründung: Der Payload zeigt die Vererbung von ara::core::Exception und den Konstruktor mit ara::core::ErrorCode, spezifiziert aber keine eigenen Memberfunktionen.
 2) Vermutlich wird RdsException intern ausgelöst, wenn an einem fehlerbehafteten ara::core::Result im Kontext von RDS ein Zugriff via Value() erfolgt. – Begründung: Dies entspricht dem Standardmuster der AUTOSAR Adaptive Platform für Exception-Wrapper um ErrorCodes.
 3) Vermutlich ist keine threadübergreifende Synchronisation erforderlich, da Ausnahmen als Wertobjekte thread-lokal verarbeitet werden. – Begründung: Standardsemantik von C++-Ausnahmen ohne geteilten Zustand.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des Release R25-11 für das Modul rds.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南完全基于 release R25-11 针对模块 rds 的规范要求。&lt;/p&gt;
 
 &lt;/div&gt;</pre>
         </div>

@@ -24,57 +24,56 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>e99044a03d11</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-Die Datenstruktur <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> ist Bestandteil des Moduls <code>diag</code> innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation <code>ReadOutput</code> zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+데이터 구조체 <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code>은(는) 릴리스 R25-11의 AUTOSAR Adaptive Platform 내 모듈 <code>diag</code>의 구성 요소입니다. 이 구조체의 기본 역할은 작업 <code>ReadOutput</code>에 대한 출력 인수를 취합하여 타입화된 전송 구조체로 제공하는 것입니다.
 </p>
 <p>
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+진단 지향 애플리케이션에서 이 데이터 구조는 특정 Data Identifier(DID)의 읽은 페이로드 데이터 및 관련 출력 매개변수를 캡슐화합니다. 포인터나 참조를 통해 여러 개별 반환 매개변수를 전달하는 대신, 이 구조체는 모든 결과 값을 하나의 연관된 단위로 묶습니다. 상호작용 대상에는 내부 진단 서버, 이를 구현하는 애플리케이션 계층 및 해당 Data Identifier의 생성된 인터페이스가 포함됩니다. 해석: 이 구조체는 인터페이스 정의를 일관되게 유지하기 위해 비동기 호출 체인 내에서 전달되는 표준화된 반환 컨테이너 역할을 할 것으로 보입니다.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>수명 주기</h4>
 <p>
-Als reine Datenkapsel (Data Transfer Object) besitzt <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+순수 데이터 캡슐(Data Transfer Object)로서 <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code>은(는) 일반적으로 값 객체(Value Object)의 특성을 갖습니다. 관련 Data Identifier에 대한 읽기 작업이 처리되는 즉시 인스턴스별로 생성이 수행됩니다.
 </p>
 <p>
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+소유권은 선택된 전달 메커니즘에 따라 결정됩니다:
 </p>
 <ul>
-<li><strong>Erzeugung:</strong> Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.</li>
-<li><strong>Übergabe und Transport:</strong> Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.</li>
-<li><strong>Zerstörung:</strong> Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.</li>
+<li><strong>생성:</strong> 인스턴스화는 쿼리된 진단 값을 확인하고 이를 구조체 필드에 삽입하는 제공 측 애플리케이션 로직에서 수행될 것으로 추정됩니다.</li>
+<li><strong>전달 및 전송:</strong> 객체는 복사 또는 이동(이동 시맨틱)을 통해 진단 관리의 호출 계층으로 전달됩니다. 인터페이스 경계를 넘어 전달될 때 소유권은 수신자에게 이전됩니다.</li>
+<li><strong>소멸:</strong> 수명은 수신자의 스코프를 벗어날 때 또는 진단 응답을 위한 직렬화가 완료된 후 자동으로 종료됩니다.</li>
 </ul>
 <p>
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+이 구조체는 자체 제어 흐름을 갖지 않으므로 내부 상태 머신을 관리하지 않습니다. 동시성과 관련해서는 순수 데이터 애그리게이트이므로 내부 동기화 메커니즘이 존재하지 않을 것으로 보이며, 따라서 서로 다른 스레드에서의 동시 읽기 및 쓰기 접근은 외부에서 동기화되어야 합니다.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>사용 경로</h4>
 <p>
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+이 데이터 구조체의 일반적인 사용은 Data Identifier 판독을 위한 진단 요청의 프레임워크 내에서 고정된 순서를 따릅니다:
 </p>
 <ol>
-<li><strong>Anfrageempfang:</strong> Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle <code>&lt;DataIdentifierInterface&gt;</code> zu.</li>
-<li><strong>Verarbeitung und Datenermittlung:</strong> Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.</li>
-<li><strong>Zuweisung:</strong> Eine Instanz von <code>&lt;DataIdentifier&gt;ReadOutput</code> wird deklariert und mit den ermittelten Ergebniswerten befüllt.</li>
-<li><strong>Rückmeldung:</strong> Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.</li>
-<li><strong>Ressourcenfreigabe:</strong> Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.</li>
+<li><strong>요청 수신:</strong> 진단 클라이언트가 표준화된 진단 프로토콜을 통해 Data Identifier의 판독을 요청합니다. 진단 스택은 이 요청을 해당 인터페이스 <code>&lt;DataIdentifierInterface&gt;</code>에 할당합니다.</li>
+<li><strong>처리 및 데이터 확인:</strong> 담당 애플리케이션 함수가 차량 하위 시스템 또는 내부 메모리의 현재 데이터 값을 확인합니다.</li>
+<li><strong>할당:</strong> <code>&lt;DataIdentifier&gt;ReadOutput</code>의 인스턴스가 선언되고 확인된 결과 값으로 채워집니다.</li>
+<li><strong>응답:</strong> 채워진 구조체는 진단 프레임워크로 반환되며, 프레임워크는 필드를 읽고 진단 텔레그램을 포맷하여 진단 클라이언트로 응답을 전송합니다.</li>
+<li><strong>리소스 해제:</strong> 성공적인 전달 및 처리 후 인스턴스가 소멸됩니다.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>오류 시나리오</h4>
 <p>
-Als reine Datenstruktur löst <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+순수 데이터 구조체로서 <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> 자체는 기능적 오류 코드나 예외를 발생시키지 않습니다. 그러나 사용 컨텍스트에서 잠재적인 오류 조건이 발생할 수 있습니다:
 </p>
 <ul>
-<li><strong>Unvollständige Initialisierung:</strong> Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.</li>
-<li><strong>Bereitstellungsfehler:</strong> Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.</li>
-<li><strong>Gültigkeitsbereichsverletzungen:</strong> Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.</li>
+<li><strong>불완전한 초기화:</strong> 반환하기 전에 필요한 모든 출력 매개변수가 올바르게 채워지지 않으면, 하위 계층에서 불완전하거나 일관되지 않은 진단 응답을 생성할 수 있습니다. 반환을 위한 사전 조건은 항상 정의된 모든 필드가 완전히 채워지는 것입니다.</li>
+<li><strong>제공 오류:</strong> 애플리케이션 로직이 요청된 값을 확인할 수 없는 경우(예: 센서 또는 버스 오류), 일반적으로 유효한 구조체 인스턴스가 전달되지 않고 해당 진단 오류 코드가 보고됩니다.</li>
+<li><strong>스코프 위반:</strong> 비동기 전달 시, 참조하는 컴포넌트가 데이터 구조체에 접근하는 동안 해당 구조체가 조기에 해제되지 않도록 보장해야 합니다.</li>
 </ul>
 <!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls <code>diag</code> (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.</p>
+<p class="ai-note">이 가이드는 AUTOSAR Adaptive 모듈 <code>diag</code>(릴리스 R25-11)의 구조적 메타데이터를 기반으로 합니다. 구체적인 인터페이스 요구사항 및 데이터 필드 정의는 각 모듈 사양을 참조하십시오.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" title="AI와 토론">💬 AI와 토론</button>
@@ -291,54 +290,53 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e99044a03d11e8b09b129f1b5c47ea5922c27eb4b52d94473eae5fa72ded1446" data-trace-output="5b21e6473f1200bb788b607a95f4bbc5672f78e6a2a7c1c616413fdea8550597" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation &lt;code&gt;ReadOutput&lt;/code&gt; zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+데이터 구조체 &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt;은(는) 릴리스 R25-11의 AUTOSAR Adaptive Platform 내 모듈 &lt;code&gt;diag&lt;/code&gt;의 구성 요소입니다. 이 구조체의 기본 역할은 작업 &lt;code&gt;ReadOutput&lt;/code&gt;에 대한 출력 인수를 취합하여 타입화된 전송 구조체로 제공하는 것입니다.
 &lt;/p&gt;
 &lt;p&gt;
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+진단 지향 애플리케이션에서 이 데이터 구조는 특정 Data Identifier(DID)의 읽은 페이로드 데이터 및 관련 출력 매개변수를 캡슐화합니다. 포인터나 참조를 통해 여러 개별 반환 매개변수를 전달하는 대신, 이 구조체는 모든 결과 값을 하나의 연관된 단위로 묶습니다. 상호작용 대상에는 내부 진단 서버, 이를 구현하는 애플리케이션 계층 및 해당 Data Identifier의 생성된 인터페이스가 포함됩니다. 해석: 이 구조체는 인터페이스 정의를 일관되게 유지하기 위해 비동기 호출 체인 내에서 전달되는 표준화된 반환 컨테이너 역할을 할 것으로 보입니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenkapsel (Data Transfer Object) besitzt &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+순수 데이터 캡슐(Data Transfer Object)로서 &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt;은(는) 일반적으로 값 객체(Value Object)의 특성을 갖습니다. 관련 Data Identifier에 대한 읽기 작업이 처리되는 즉시 인스턴스별로 생성이 수행됩니다.
 &lt;/p&gt;
 &lt;p&gt;
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+소유권은 선택된 전달 메커니즘에 따라 결정됩니다:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe und Transport:&lt;/strong&gt; Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;생성:&lt;/strong&gt; 인스턴스화는 쿼리된 진단 값을 확인하고 이를 구조체 필드에 삽입하는 제공 측 애플리케이션 로직에서 수행될 것으로 추정됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;전달 및 전송:&lt;/strong&gt; 객체는 복사 또는 이동(이동 시맨틱)을 통해 진단 관리의 호출 계층으로 전달됩니다. 인터페이스 경계를 넘어 전달될 때 소유권은 수신자에게 이전됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;소멸:&lt;/strong&gt; 수명은 수신자의 스코프를 벗어날 때 또는 진단 응답을 위한 직렬화가 완료된 후 자동으로 종료됩니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+이 구조체는 자체 제어 흐름을 갖지 않으므로 내부 상태 머신을 관리하지 않습니다. 동시성과 관련해서는 순수 데이터 애그리게이트이므로 내부 동기화 메커니즘이 존재하지 않을 것으로 보이며, 따라서 서로 다른 스레드에서의 동시 읽기 및 쓰기 접근은 외부에서 동기화되어야 합니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
 &lt;p&gt;
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+이 데이터 구조체의 일반적인 사용은 Data Identifier 판독을 위한 진단 요청의 프레임워크 내에서 고정된 순서를 따릅니다:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Anfrageempfang:&lt;/strong&gt; Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt; zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung und Datenermittlung:&lt;/strong&gt; Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zuweisung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; wird deklariert und mit den ermittelten Ergebniswerten befüllt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ressourcenfreigabe:&lt;/strong&gt; Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;요청 수신:&lt;/strong&gt; 진단 클라이언트가 표준화된 진단 프로토콜을 통해 Data Identifier의 판독을 요청합니다. 진단 스택은 이 요청을 해당 인터페이스 &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;에 할당합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;처리 및 데이터 확인:&lt;/strong&gt; 담당 애플리케이션 함수가 차량 하위 시스템 또는 내부 메모리의 현재 데이터 값을 확인합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;할당:&lt;/strong&gt; &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt;의 인스턴스가 선언되고 확인된 결과 값으로 채워집니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;응답:&lt;/strong&gt; 채워진 구조체는 진단 프레임워크로 반환되며, 프레임워크는 필드를 읽고 진단 텔레그램을 포맷하여 진단 클라이언트로 응답을 전송합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;리소스 해제:&lt;/strong&gt; 성공적인 전달 및 처리 후 인스턴스가 소멸됩니다.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenstruktur löst &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+순수 데이터 구조체로서 &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; 자체는 기능적 오류 코드나 예외를 발생시키지 않습니다. 그러나 사용 컨텍스트에서 잠재적인 오류 조건이 발생할 수 있습니다:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Initialisierung:&lt;/strong&gt; Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellungsfehler:&lt;/strong&gt; Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeitsbereichsverletzungen:&lt;/strong&gt; Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;불완전한 초기화:&lt;/strong&gt; 반환하기 전에 필요한 모든 출력 매개변수가 올바르게 채워지지 않으면, 하위 계층에서 불완전하거나 일관되지 않은 진단 응답을 생성할 수 있습니다. 반환을 위한 사전 조건은 항상 정의된 모든 필드가 완전히 채워지는 것입니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;제공 오류:&lt;/strong&gt; 애플리케이션 로직이 요청된 값을 확인할 수 없는 경우(예: 센서 또는 버스 오류), 일반적으로 유효한 구조체 인스턴스가 전달되지 않고 해당 진단 오류 코드가 보고됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;스코프 위반:&lt;/strong&gt; 비동기 전달 시, 참조하는 컴포넌트가 데이터 구조체에 접근하는 동안 해당 구조체가 조기에 해제되지 않도록 보장해야 합니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls &lt;code&gt;diag&lt;/code&gt; (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 AUTOSAR Adaptive 모듈 &lt;code&gt;diag&lt;/code&gt;(릴리스 R25-11)의 구조적 메타데이터를 기반으로 합니다. 구체적인 인터페이스 요구사항 및 데이터 필드 정의는 각 모듈 사양을 참조하십시오.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

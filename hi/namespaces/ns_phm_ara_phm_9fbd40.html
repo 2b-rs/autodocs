@@ -20,30 +20,29 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>2dbc936761fb</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/hi/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_phm_ara_phm_9fbd40" data-view-mode="editor" title="क्यूरेशन संपादक और ऑडिट डोजियर खोलें" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ क्यूरेट करें</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>ara::phm</code> stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.</p>
-<p>Die Architektur im Namespace stützt sich auf vier zentrale Klassen:</p>
+<h4>संदर्भ</h4>
+<p>Namespace <code>ara::phm</code> AUTOSAR Adaptive Platform में Platform Health Management (PHM) के लिए प्रोग्रामिंग इंटरफ़ेस प्रदान करता है। इसकी मुख्य ज़िम्मेदारी जीवंतता, समय सीमा और तार्किक प्रोग्राम प्रवाह के संबंध में प्रक्रियाओं और अनुप्रयोगों की कार्यात्मक निगरानी करने के साथ-साथ त्रुटि प्रतिक्रियाओं के समन्वय में निहित है।</p>
+<p>इस namespace की वास्तुकला चार केंद्रीय classes पर आधारित है:</p>
 <ul>
-<li><code>SupervisedEntity</code>: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.</li>
-<li><code>RecoveryAction</code>: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.</li>
-<li><code>PhmErrorDomain</code>: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.</li>
-<li><code>PhmException</code>: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.</li>
+<li><code>SupervisedEntity</code>: किसी एप्लिकेशन के भीतर निगरानी की जा रही सॉफ़्टवेयर इकाई का प्रतिनिधित्व करता है, जो स्थिति की जानकारी रिपोर्ट करती है।</li>
+<li><code>RecoveryAction</code>: पुनर्प्राप्ति क्रियाओं के लिए अमूर्त आधार वर्ग, जिन्हें पहचानी गई त्रुटियों पर निष्पादित किया जाता है।</li>
+<li><code>PhmErrorDomain</code>: सबसिस्टम के त्रुटि संदेशों के लिए त्रुटि डोमेन को परिभाषित करता है।</li>
+<li><code>PhmException</code>: Platform Health Management में असाधारण मामलों के लिए मानक अपवाद प्रकार।</li>
 </ul>
-<p>Die Überwachungsmethoden werden über die Enumeration <code>TypeOfSupervision</code> spezifiziert <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. Hierbei unterscheidet die Plattform zwischen <code>kAliveSupervision</code> (Lebenszeichenüberwachung), <code>kDeadlineSupervision</code> (Einhaltung definierter Zeitintervalle) und <code>kLogicalSupervision</code> (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.</p>
+<p>निगरानी विधियों को enumeration <code>TypeOfSupervision</code> के माध्यम से निर्दिष्ट किया जाता है <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>। यहाँ प्लेटफ़ॉर्म <code>kAliveSupervision</code> (जीवंतता निगरानी), <code>kDeadlineSupervision</code> (परिभाषित समय अंतरालों का अनुपालन) और <code>kLogicalSupervision</code> (नियंत्रण प्रवाह बिंदुओं के सही क्रम की जाँच) के बीच अंतर करता है। PHM इस प्रक्रिया में PHM डेमॉन के साथ-साथ Adaptive Platform के State Management के साथ निकटता से इंटरैक्ट करता है।</p>
 
-<h4>Lebenszyklus</h4>
-<p>Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert <code>ElementarySupervisionStatus</code> den Zustand einer einzelnen Überwachungsfunktion <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
+<h4>जीवनचक्र</h4>
+<p>निगरानी जीवनचक्र को बहु-स्तरीय स्थिति प्रश्नों और परिवर्तनों द्वारा दर्शाया जाता है। सबसे निचले स्तर पर, <code>ElementarySupervisionStatus</code> एकल निगरानी फ़ंक्शन की स्थिति को परिभाषित करता है <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
 <ul>
-<li><code>kDeactivated</code>: Die elementare Überwachung ist inaktiv.</li>
-<li><code>kOK</code>: Die Überwachung ist aktiv und es liegt kein Fehler vor.</li>
-<li><code>kFailed</code>: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.</li>
-<li><code>kExpired</code>: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.</li>
+<li><code>kDeactivated</code>: प्राथमिक निगरानी निष्क्रिय है।</li>
+<li><code>kOK</code>: निगरानी सक्रिय है और कोई त्रुटि मौजूद नहीं है।</li>
+<li><code>kFailed</code>: एक त्रुटि दर्ज की गई है, लेकिन यह अभी भी सहनशीलता या डिबाउंसिंग विंडो के भीतर है।</li>
+<li><code>kExpired</code>: सहनशीलता विंडो की समाप्ति के बाद एक त्रुटि अंतिम रूप से योग्य हो गई है।</li>
 </ul>
-<p>Zur Bewertung des Gesamtzustands aggregiert <code>GlobalSupervisionStatus</code> die Resultate korrespondierender elementarer Überwachungen <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. Der globale Zustand wechselt dabei von <code>kDeactivated</code> nach <code>kOK</code>, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über <code>kFailed</code> und <code>kExpired</code> bis hin zu <code>kStopped</code>, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.</p>
+<p>समग्र स्थिति का मूल्यांकन करने के लिए, <code>GlobalSupervisionStatus</code> संबंधित प्राथमिक निगरानी के परिणामों को एकत्रित करता है <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>। कम से कम एक प्राथमिक निगरानी के सक्रिय और त्रुटि-रहित होते ही वैश्विक स्थिति <code>kDeactivated</code> से <code>kOK</code> में बदल जाती है। यदि त्रुटियाँ होती हैं, तो स्थिति <code>kFailed</code> और <code>kExpired</code> के माध्यम से <code>kStopped</code> तक बढ़ जाती है, बशर्ते त्रुटि योग्यता के बाद की रियायती अवधि पार हो गई हो।</p>
 <div class="diagram" id="diag-global-supervision"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)">
 <title>GlobalSupervisionStatus</title>
@@ -115,31 +114,31 @@
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
+<p class="diagram-note">स्टेट डायग्राम: ग्लोबल मॉनिटरिंग चक्र में एग्रीगेटेड मॉनिटरिंग स्थितियाँ और संभावित ट्रांज़िशन। स्रोत: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:</p>
+<h4>उपयोग पथ</h4>
+<p>किसी अडेप्टिव एप्लिकेशन को सुरक्षित करने की सामान्य प्रक्रिया में कई एक-दूसरे पर आधारित चरण शामिल हैं:</p>
 <ol>
-<li><strong>Konfiguration und Anbindung:</strong> Die Anwendung instanziiert eine <code>SupervisedEntity</code> für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus <code>TypeOfSupervision</code> (<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> oder <code>kLogicalSupervision</code>) zugeordnet <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
-<li><strong>Zyklische Ausführung und Meldung:</strong> Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben <code>ElementarySupervisionStatus</code> und <code>GlobalSupervisionStatus</code> im Status <code>kOK</code> <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
-<li><strong>Reaktionsabwicklung:</strong> Wird ein Überwachungsfehler qualifiziert (Übergang zu <code>kExpired</code> bzw. <code>kStopped</code>), wird eine abgeleitete Instanz von <code>RecoveryAction</code> herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.</li>
+<li><strong>कॉन्फ़िगरेशन और कनेक्शन:</strong> एप्लिकेशन निगरानी किए जाने वाले संबंधित घटकों के लिए एक <code>SupervisedEntity</code> को इंस्टैंशिएट करता है। इसमें मॉनिटरिंग पैरामीटर्स को <code>TypeOfSupervision</code> (<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> या <code>kLogicalSupervision</code>) के मोड्स में मैप किया जाता है <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>।</li>
+<li><strong>चक्रीय निष्पादन और रिपोर्टिंग:</strong> सामान्य संचालन के दौरान, एंटिटी सबसिस्टम को चेकपॉइंट्स रिपोर्ट करती है। जब तक आवश्यकताओं का अनुपालन होता रहता है, <code>ElementarySupervisionStatus</code> और <code>GlobalSupervisionStatus</code> <code>kOK</code> स्टेटस में बने रहते हैं <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>।</li>
+<li><strong>प्रतिक्रिया हैंडलिंग:</strong> यदि कोई मॉनिटरिंग त्रुटि क्वालिफ़ाई होती है (<code>kExpired</code> या <code>kStopped</code> में ट्रांज़िशन), तो रीस्टार्ट या स्थिति परिवर्तन जैसी सुधारात्मक कार्रवाइयां शुरू करने के लिए <code>RecoveryAction</code> के एक व्युत्पन्न इंस्टेंस का उपयोग किया जाता है।</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlerzustände und Ausnahmebedingungen im Namespace <code>ara::phm</code> werden über standardisierte Fehlerstrukturen abgewickelt:</p>
+<h4>त्रुटि परिदृश्य</h4>
+<p>नेमस्पेस <code>ara::phm</code> में त्रुटि स्थितियां और अपवाद स्थितियां मानकीकृत त्रुटि संरचनाओं के माध्यम से प्रबंधित की जाती हैं:</p>
 <ul>
-<li>Die Fehlerdomäne kann über die freie Funktion <code>GetPhmDomain()</code> bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
-<li>Konkrete Fehlerursachen werden über die Enumeration <code>PhmErrc</code> typisiert <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
+<li>एरर डोमेन को फ़्री फ़ंक्शन <code>GetPhmDomain()</code> के माध्यम से प्राप्त किया जा सकता है; यह कॉल थ्रेड-सेफ़ है और कोई अपवाद उत्पन्न नहीं करता है <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>।</li>
+<li>विशिष्ट त्रुटि कारणों को इन्यूमरेशन <code>PhmErrc</code> के माध्यम से टाइप किया जाता है <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
   <ul>
-  <li><code>kOfferFailed</code>: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.</li>
-  <li><code>kSMCanNotHandleRecovery</code>: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.</li>
-  <li><code>kServiceNotReady</code>: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.</li>
+  <li><code>kOfferFailed</code>: सेवा की पेशकश नहीं की जा सकी, क्योंकि PHM-Daemon से कनेक्शन विफल हो गया।</li>
+  <li><code>kSMCanNotHandleRecovery</code>: State Management पुनर्प्राप्ति निष्पादित नहीं कर सकता; Platform Health Management एस्केलेशन को संभालता है और वॉचडॉग को ट्रिगर करता है।</li>
+  <li><code>kServiceNotReady</code>: एक समानांतर इनेबल या डिसेबल प्रक्रिया पहले से ही संसाधित की जा रही है।</li>
   </ul>
 </li>
-<li>Mit der Hilfsfunktion <code>MakeErrorCode()</code> werden Fehlermeldungen vom Typ <code>ara::core::ErrorCode</code> unter Kombination eines <code>PhmErrc</code> und herstellerspezifischer Zusatzdaten erzeugt <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird <code>PhmException</code> geworfen.</li>
+<li>हेल्पर फ़ंक्शन <code>MakeErrorCode()</code> का उपयोग करके, एक <code>PhmErrc</code> और वेंडर-विशिष्ट अतिरिक्त डेटा के संयोजन के साथ <code>ara::core::ErrorCode</code> प्रकार के त्रुटि संदेश उत्पन्न किए जाते हैं <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>। गंभीर त्रुटियों के मामले में, जिनके लिए एक्सेप्शन हैंडलिंग की आवश्यकता होती है, <code>PhmException</code> को थ्रो किया जाता है।</li>
 </ul>
 <!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">यह गाइड पूरी तरह से AUTOSAR Adaptive Platform रिलीज़ R25-11 के विनिर्देश पर आधारित है।</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_phm_ara_phm_9fbd40" title="एआई से चर्चा करें">💬 एआई से चर्चा करें</button>
@@ -870,27 +869,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="2dbc936761fb64b98a9037f5e9f9ab5cef60d528e14abcc64ef715a78921ef83" data-trace-output="adf8edc9a987c4e41c3a797151bc26a7e6d0712e1e9ec4162917bbbc99f85417" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;ara::phm&lt;/code&gt; stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.&lt;/p&gt;
-&lt;p&gt;Die Architektur im Namespace stützt sich auf vier zentrale Klassen:&lt;/p&gt;
+&lt;h4&gt;संदर्भ&lt;/h4&gt;
+&lt;p&gt;Namespace &lt;code&gt;ara::phm&lt;/code&gt; AUTOSAR Adaptive Platform में Platform Health Management (PHM) के लिए प्रोग्रामिंग इंटरफ़ेस प्रदान करता है। इसकी मुख्य ज़िम्मेदारी जीवंतता, समय सीमा और तार्किक प्रोग्राम प्रवाह के संबंध में प्रक्रियाओं और अनुप्रयोगों की कार्यात्मक निगरानी करने के साथ-साथ त्रुटि प्रतिक्रियाओं के समन्वय में निहित है।&lt;/p&gt;
+&lt;p&gt;इस namespace की वास्तुकला चार केंद्रीय classes पर आधारित है:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: किसी एप्लिकेशन के भीतर निगरानी की जा रही सॉफ़्टवेयर इकाई का प्रतिनिधित्व करता है, जो स्थिति की जानकारी रिपोर्ट करती है।&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: पुनर्प्राप्ति क्रियाओं के लिए अमूर्त आधार वर्ग, जिन्हें पहचानी गई त्रुटियों पर निष्पादित किया जाता है।&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: सबसिस्टम के त्रुटि संदेशों के लिए त्रुटि डोमेन को परिभाषित करता है।&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Platform Health Management में असाधारण मामलों के लिए मानक अपवाद प्रकार।&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Die Überwachungsmethoden werden über die Enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; spezifiziert &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Hierbei unterscheidet die Plattform zwischen &lt;code&gt;kAliveSupervision&lt;/code&gt; (Lebenszeichenüberwachung), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (Einhaltung definierter Zeitintervalle) und &lt;code&gt;kLogicalSupervision&lt;/code&gt; (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.&lt;/p&gt;
+&lt;p&gt;निगरानी विधियों को enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; के माध्यम से निर्दिष्ट किया जाता है &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;। यहाँ प्लेटफ़ॉर्म &lt;code&gt;kAliveSupervision&lt;/code&gt; (जीवंतता निगरानी), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (परिभाषित समय अंतरालों का अनुपालन) और &lt;code&gt;kLogicalSupervision&lt;/code&gt; (नियंत्रण प्रवाह बिंदुओं के सही क्रम की जाँच) के बीच अंतर करता है। PHM इस प्रक्रिया में PHM डेमॉन के साथ-साथ Adaptive Platform के State Management के साथ निकटता से इंटरैक्ट करता है।&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; den Zustand einer einzelnen Überwachungsfunktion &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
+&lt;h4&gt;जीवनचक्र&lt;/h4&gt;
+&lt;p&gt;निगरानी जीवनचक्र को बहु-स्तरीय स्थिति प्रश्नों और परिवर्तनों द्वारा दर्शाया जाता है। सबसे निचले स्तर पर, &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; एकल निगरानी फ़ंक्शन की स्थिति को परिभाषित करता है &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: Die elementare Überwachung ist inaktiv.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: Die Überwachung ist aktiv und es liegt kein Fehler vor.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: प्राथमिक निगरानी निष्क्रिय है।&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: निगरानी सक्रिय है और कोई त्रुटि मौजूद नहीं है।&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: एक त्रुटि दर्ज की गई है, लेकिन यह अभी भी सहनशीलता या डिबाउंसिंग विंडो के भीतर है।&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: सहनशीलता विंडो की समाप्ति के बाद एक त्रुटि अंतिम रूप से योग्य हो गई है।&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Zur Bewertung des Gesamtzustands aggregiert &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; die Resultate korrespondierender elementarer Überwachungen &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. Der globale Zustand wechselt dabei von &lt;code&gt;kDeactivated&lt;/code&gt; nach &lt;code&gt;kOK&lt;/code&gt;, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über &lt;code&gt;kFailed&lt;/code&gt; und &lt;code&gt;kExpired&lt;/code&gt; bis hin zu &lt;code&gt;kStopped&lt;/code&gt;, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.&lt;/p&gt;
+&lt;p&gt;समग्र स्थिति का मूल्यांकन करने के लिए, &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; संबंधित प्राथमिक निगरानी के परिणामों को एकत्रित करता है &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;। कम से कम एक प्राथमिक निगरानी के सक्रिय और त्रुटि-रहित होते ही वैश्विक स्थिति &lt;code&gt;kDeactivated&lt;/code&gt; से &lt;code&gt;kOK&lt;/code&gt; में बदल जाती है। यदि त्रुटियाँ होती हैं, तो स्थिति &lt;code&gt;kFailed&lt;/code&gt; और &lt;code&gt;kExpired&lt;/code&gt; के माध्यम से &lt;code&gt;kStopped&lt;/code&gt; तक बढ़ जाती है, बशर्ते त्रुटि योग्यता के बाद की रियायती अवधि पार हो गई हो।&lt;/p&gt;
 &lt;div class="diagram" id="diag-global-supervision"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
 &lt;title&gt;GlobalSupervisionStatus&lt;/title&gt;
@@ -962,31 +960,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;स्टेट डायग्राम: ग्लोबल मॉनिटरिंग चक्र में एग्रीगेटेड मॉनिटरिंग स्थितियाँ और संभावित ट्रांज़िशन। स्रोत: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:&lt;/p&gt;
+&lt;h4&gt;उपयोग पथ&lt;/h4&gt;
+&lt;p&gt;किसी अडेप्टिव एप्लिकेशन को सुरक्षित करने की सामान्य प्रक्रिया में कई एक-दूसरे पर आधारित चरण शामिल हैं:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Konfiguration und Anbindung:&lt;/strong&gt; Die Anwendung instanziiert eine &lt;code&gt;SupervisedEntity&lt;/code&gt; für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; oder &lt;code&gt;kLogicalSupervision&lt;/code&gt;) zugeordnet &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zyklische Ausführung und Meldung:&lt;/strong&gt; Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; und &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; im Status &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reaktionsabwicklung:&lt;/strong&gt; Wird ein Überwachungsfehler qualifiziert (Übergang zu &lt;code&gt;kExpired&lt;/code&gt; bzw. &lt;code&gt;kStopped&lt;/code&gt;), wird eine abgeleitete Instanz von &lt;code&gt;RecoveryAction&lt;/code&gt; herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;कॉन्फ़िगरेशन और कनेक्शन:&lt;/strong&gt; एप्लिकेशन निगरानी किए जाने वाले संबंधित घटकों के लिए एक &lt;code&gt;SupervisedEntity&lt;/code&gt; को इंस्टैंशिएट करता है। इसमें मॉनिटरिंग पैरामीटर्स को &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; या &lt;code&gt;kLogicalSupervision&lt;/code&gt;) के मोड्स में मैप किया जाता है &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;।&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;चक्रीय निष्पादन और रिपोर्टिंग:&lt;/strong&gt; सामान्य संचालन के दौरान, एंटिटी सबसिस्टम को चेकपॉइंट्स रिपोर्ट करती है। जब तक आवश्यकताओं का अनुपालन होता रहता है, &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; और &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; &lt;code&gt;kOK&lt;/code&gt; स्टेटस में बने रहते हैं &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;।&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;प्रतिक्रिया हैंडलिंग:&lt;/strong&gt; यदि कोई मॉनिटरिंग त्रुटि क्वालिफ़ाई होती है (&lt;code&gt;kExpired&lt;/code&gt; या &lt;code&gt;kStopped&lt;/code&gt; में ट्रांज़िशन), तो रीस्टार्ट या स्थिति परिवर्तन जैसी सुधारात्मक कार्रवाइयां शुरू करने के लिए &lt;code&gt;RecoveryAction&lt;/code&gt; के एक व्युत्पन्न इंस्टेंस का उपयोग किया जाता है।&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlerzustände und Ausnahmebedingungen im Namespace &lt;code&gt;ara::phm&lt;/code&gt; werden über standardisierte Fehlerstrukturen abgewickelt:&lt;/p&gt;
+&lt;h4&gt;त्रुटि परिदृश्य&lt;/h4&gt;
+&lt;p&gt;नेमस्पेस &lt;code&gt;ara::phm&lt;/code&gt; में त्रुटि स्थितियां और अपवाद स्थितियां मानकीकृत त्रुटि संरचनाओं के माध्यम से प्रबंधित की जाती हैं:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Die Fehlerdomäne kann über die freie Funktion &lt;code&gt;GetPhmDomain()&lt;/code&gt; bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Konkrete Fehlerursachen werden über die Enumeration &lt;code&gt;PhmErrc&lt;/code&gt; typisiert &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
+&lt;li&gt;एरर डोमेन को फ़्री फ़ंक्शन &lt;code&gt;GetPhmDomain()&lt;/code&gt; के माध्यम से प्राप्त किया जा सकता है; यह कॉल थ्रेड-सेफ़ है और कोई अपवाद उत्पन्न नहीं करता है &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;।&lt;/li&gt;
+&lt;li&gt;विशिष्ट त्रुटि कारणों को इन्यूमरेशन &lt;code&gt;PhmErrc&lt;/code&gt; के माध्यम से टाइप किया जाता है &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
   &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: सेवा की पेशकश नहीं की जा सकी, क्योंकि PHM-Daemon से कनेक्शन विफल हो गया।&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: State Management पुनर्प्राप्ति निष्पादित नहीं कर सकता; Platform Health Management एस्केलेशन को संभालता है और वॉचडॉग को ट्रिगर करता है।&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: एक समानांतर इनेबल या डिसेबल प्रक्रिया पहले से ही संसाधित की जा रही है।&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;Mit der Hilfsfunktion &lt;code&gt;MakeErrorCode()&lt;/code&gt; werden Fehlermeldungen vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; unter Kombination eines &lt;code&gt;PhmErrc&lt;/code&gt; und herstellerspezifischer Zusatzdaten erzeugt &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird &lt;code&gt;PhmException&lt;/code&gt; geworfen.&lt;/li&gt;
+&lt;li&gt;हेल्पर फ़ंक्शन &lt;code&gt;MakeErrorCode()&lt;/code&gt; का उपयोग करके, एक &lt;code&gt;PhmErrc&lt;/code&gt; और वेंडर-विशिष्ट अतिरिक्त डेटा के संयोजन के साथ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; प्रकार के त्रुटि संदेश उत्पन्न किए जाते हैं &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;। गंभीर त्रुटियों के मामले में, जिनके लिए एक्सेप्शन हैंडलिंग की आवश्यकता होती है, &lt;code&gt;PhmException&lt;/code&gt; को थ्रो किया जाता है।&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;यह गाइड पूरी तरह से AUTOSAR Adaptive Platform रिलीज़ R25-11 के विनिर्देश पर आधारित है।&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

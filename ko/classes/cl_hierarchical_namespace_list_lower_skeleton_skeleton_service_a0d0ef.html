@@ -20,65 +20,64 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>4a9713a1a7c9</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>컨텍스트</h4>
   <p>
-    Die Klasse <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> bildet die serverseitige Basisabstraktion für die Bereitstellung eines Service-Interfaces innerhalb des Moduls für Kommunikationsmanagement (<code>com</code>) der AUTOSAR Adaptive Platform. Als generiertes Schnittstellengerüst übernimmt das Skeleton die Vermittlerrolle zwischen der plattformspezifischen Kommunikationsinfrastruktur (wie etwa einer SOME/IP-Bindung) und der anwendungsspezifischen Dienstanbieter-Implementierung. Es entkoppelt die Service-Geschäftslogik von Protokolldetails, der Nachrichten-Deserialisierung sowie dem zugrunde liegenden Dispatching.
+    <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> 클래스는 AUTOSAR Adaptive Platform의 통신 관리(<code>com</code>) 모듈 내에서 서비스 인터페이스를 제공하기 위한 서버 측 기본 추상화를 구성합니다. 생성된 인터페이스 스캐폴드로서 Skeleton은 플랫폼 고유의 통신 인프라(예: SOME/IP 바인딩)와 애플리케이션별 서비스 제공자 구현 간의 중개 역할을 담당합니다. 이는 서비스 비즈니스 로직을 프로토콜 세부 정보, 메시지 역직렬화 및 기본 디스패칭으로부터 분리합니다.
   </p>
   <p>
-    Im Gesamtsystem interagiert die Skeleton-Klasse mit drei wesentlichen Partnern:
-  </p>
-  <ul>
-    <li>
-      <strong>Dienstanwendung (Service Provider):</strong> Die konkrete Anwendung leitet von der Skeleton-Klasse ab und implementiert die reinen virtuellen Methodenfunktionen für reguläre Anfrage-Antwort-Muster <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a> sowie Fire-and-Forget-Methoden <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.
-    </li>
-    <li>
-      <strong>Kommunikationsinfrastruktur (Middleware):</strong> Die Laufzeitumgebung empfängt eingehende Anforderungsnachrichten von Service-Clients, deserialisiert die übertragenen Daten und reicht diese zur Methodenausführung an das Skeleton weiter <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=99">AUTOSAR_AP_SWS_CommunicationManagement S. 99</a>.
-    </li>
-    <li>
-      <strong>Asynchroner Ausführungskontext:</strong> Über Rückgabetypen wie <code>ara::core::Future</code> wird die Entkopplung von Aufrufannahme und asynchroner Ergebnisbereitstellung realisiert <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.
-    </li>
-  </ul>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Die Instanziierung des abgeleiteten Skeleton-Objekts erfolgt explizit durch die Dienstanwendung. Bei der Erzeugung über den Konstruktor wird zwingend der Verarbeitungsmodus für Methodenaufrufe (<code>ara::com::MethodCallProcessingMode</code>) übergeben <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>. Dieser Modus legt fest, wie eingehende Methodenaufrufe thread- und ablaufseitig verarbeitet werden:
+    전체 시스템에서 Skeleton 클래스는 세 가지 주요 대상과 상호작용합니다:
   </p>
   <ul>
     <li>
-      <strong>Ereignisgesteuerte Verarbeitung (<code>kEvent</code> bzw. <code>kEventSingleThread</code>):</strong> Sobald eine eingehende Anforderungsnachricht deserialisiert wurde, wird die korrespondierende virtuelle Methode der Skeleton-Klasse unmittelbar im Rahmen des Nachrichtenempfangs aufgerufen <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>.
+      <strong>서비스 애플리케이션(Service Provider):</strong> 구체적인 애플리케이션은 Skeleton 클래스로부터 파생되며, 일반적인 요청-응답 패턴 <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a> 및 Fire-and-Forget 메서드 <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>을(를) 위한 순수 가상 메서드 함수를 구현합니다.
     </li>
     <li>
-      <strong>Gepufferte Polling-Verarbeitung (<code>kPoll</code>):</strong> Eingehende Nachrichten werden vorgehalten und erst dann zur Ausführung gebracht, wenn die Anwendung die Abarbeitung aktiv über die dafür vorgesehene Polling-Schnittstelle anstößt <a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307">[SWS_CM_10307]</a>.
+      <strong>통신 인프라(Middleware):</strong> 런타임 환경은 서비스 클라이언트로부터 수신 요청 메시지를 받아 전송된 데이터를 역직렬화하고, 이를 메서드 실행을 위해 Skeleton으로 전달합니다 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=99">AUTOSAR_AP_SWS_CommunicationManagement 99쪽</a>.
+    </li>
+    <li>
+      <strong>비동기 실행 컨텍스트:</strong> <code>ara::core::Future</code>과(와) 같은 반환 타입을 통해 호출 수락과 비동기 결과 제공의 분리가 실현됩니다 <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.
+    </li>
+  </ul>
+
+  <h4>수명 주기</h4>
+  <p>
+    파생된 Skeleton 객체의 인스턴스화는 서비스 애플리케이션에 의해 명시적으로 수행됩니다. 생성자를 통해 생성할 때 메서드 호출 처리 모드(<code>ara::com::MethodCallProcessingMode</code>)를 반드시 전달해야 합니다 <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>. 이 모드는 수신되는 메서드 호출이 스레드 및 실행 측면에서 어떻게 처리되는지 정의합니다:
+  </p>
+  <ul>
+    <li>
+      <strong>이벤트 기반 처리(<code>kEvent</code> 또는 <code>kEventSingleThread</code>):</strong> 수신된 요청 메시지가 역직렬화되는 즉시, 메시지 수신의 일환으로 Skeleton 클래스의 해당 가상 메서드가 직접 호출됩니다 <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>.
+    </li>
+    <li>
+      <strong>버퍼링된 폴링 처리(<code>kPoll</code>):</strong> 수신된 메시지는 대기 상태로 유지되며, 애플리케이션이 전용 폴링 인터페이스를 통해 처리를 능동적으로 트리거할 때만 실행됩니다 <a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307">[SWS_CM_10307]</a>.
     </li>
   </ul>
   <p>
-    Die Lebensdauer des Skeleton-Objekts liegt vollständig in der Verantwortung der erzeugenden Dienstanwendung. Vor der Zerstörung der Instanz sollte der Dienst geregelt abgemeldet werden (Interpretation: Eine kontrollierte Beendigung stellt sicher, dass keine Methodenaufrufe mehr auf freigegebene Ressourcen der Dienstanwendung zugreifen und offene asynchrone Berechnungen sauber abgeschlossen werden können).
+    Skeleton 객체의 수명 주기는 전적으로 이를 생성한 서비스 애플리케이션의 책임입니다. 인스턴스가 파괴되기 전에 서비스를 정상적으로 등록 해제해야 합니다(해석: 제어된 종료를 통해 메서드 호출이 서비스 애플리케이션의 해제된 리소스에 더 이상 접근하지 않도록 보장하고 보류 중인 비동기 계산을 깔끔하게 완료할 수 있습니다).
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>사용 경로</h4>
   <p>
-    Der typische Nutzungsablauf für die Bereitstellung eines Dienstes über das Skeleton umfasst folgende Schritte:
+    Skeleton을 통해 서비스를 제공하기 위한 일반적인 사용 흐름은 다음 단계로 구성됩니다:
   </p>
   <ol>
     <li>
-      <strong>Schnittstellenimplementierung:</strong> Die Dienstanwendung leitet von <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> ab und implementiert die rein virtuellen Methoden:
+      <strong>인터페이스 구현:</strong> 서비스 애플리케이션은 <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code>에서 파생되어 순수 가상 메서드를 구현합니다:
       <ul>
-        <li>Reguläre Methoden mit Rückgabewert implementieren die Signatur <code>virtual ara::core::Future&lt;{&lt;method-name&gt;}Output&gt; {&lt;method-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.</li>
-        <li>Einwegmethoden ohne Rückantwort implementieren <code>virtual void {&lt;fnfmethod-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.</li>
+        <li>반환값이 있는 일반 메서드는 시그니처 <code>virtual ara::core::Future&lt;{&lt;method-name&gt;}Output&gt; {&lt;method-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>을(를) 구현합니다.</li>
+        <li>응답이 없는 단방향 메서드는 <code>virtual void {&lt;fnfmethod-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>을(를) 구현합니다.</li>
       </ul>
     </li>
     <li>
-      <strong>Instanziierung:</strong> Die abgeleitete Skeleton-Klasse wird mit dem gewünschten <code>MethodCallProcessingMode</code> konstruiert <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>.
+      <strong>인스턴스화:</strong> 파생된 Skeleton 클래스는 원하는 <code>MethodCallProcessingMode</code>(으)로 생성됩니다 <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>.
     </li>
     <li>
-      <strong>Methodenausführung:</strong> Beim Eintreffen von Anfragen ruft die Middleware die implementierte Methode auf <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>.
+      <strong>메서드 실행:</strong> 요청이 도착하면 미들웨어가 구현된 메서드를 호출합니다 <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>.
     </li>
     <li>
-      <strong>Ergebnisrückgabe:</strong> Bei regulären Methoden liefert die Dienstanwendung ein <code>ara::core::Future</code> mit dem erzeugten <code>Output</code>-Objekt zurück <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, welches durch die Middleware serialisiert und als Antwortnachricht an den Client versendet wird. Bei Fire-and-Forget-Methoden erfolgt keinerlei Antwortübermittlung <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.
+      <strong>결과 반환:</strong> 일반 메서드의 경우 서비스 애플리케이션은 생성된 <code>Output</code> 객체가 포함된 <code>ara::core::Future</code>을(를) 반환하며 <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, 이는 미들웨어에 의해 직렬화되어 클라이언트에 응답 메시지로 전송됩니다. Fire-and-Forget 메서드의 경우 어떠한 응답도 전송되지 않습니다 <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.
     </li>
   </ol>
 
@@ -88,23 +87,23 @@
 [SWS_CM_00191]</title><path d="M 40 258 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="273" font-size="11" font-weight="bold" fill="#28251d">alt</text><text x="96" y="273" font-size="11" font-style="italic" fill="#28251d">Reguläre Methode</text></g><text x="240.0" y="298" text-anchor="middle" font-size="11" fill="#28251d">&lt;method-name&gt;(Argumente)</text><line x1="345" y1="304" x2="135" y2="304" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><g class="seq-tip"><title>Rückgabe ara::core::Future&lt;Output&gt;
 [SWS_CM_99556]</title><text x="240.0" y="332" text-anchor="middle" font-size="11" fill="#28251d">Rückgabe <a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt;Output&gt;</text><line x1="135" y1="338" x2="345" y2="338" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line></g><text x="450.0" y="366" text-anchor="middle" font-size="11" fill="#28251d">Antwortnachricht senden</text><line x1="345" y1="372" x2="555" y2="372" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><g class="seq-tip"><title>Fire-and-Forget Methode
 [SWS_CM_90434]</title><line x1="40" y1="394" x2="650" y2="394" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="409" font-size="11" font-style="italic" fill="#28251d">Fire-and-Forget Methode</text></g><text x="240.0" y="437" text-anchor="middle" font-size="11" fill="#28251d">&lt;fnfmethod-name&gt;(Argumente)</text><line x1="345" y1="443" x2="135" y2="443" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 135 457 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></path><text x="189" y="472" text-anchor="start" font-size="11" fill="#28251d">Verarbeitung ohne Antwort</text></svg></div>
-  <p class="diagram-note">Sequenzdiagramm: Typischer Ablauf der Methodenverarbeitung über das Skeleton. Quellen: <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>, <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>, <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a> [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]</p>
+  <p class="diagram-note">시퀀스 다이어그램: Skeleton을 통한 메서드 처리의 일반적인 흐름. 출처: <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>, <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>, <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a> [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]</p>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>오류 시나리오</h4>
   <p>
-    Hinsichtlich des Fehlerverhaltens unterscheiden sich Methodenaufrufe grundlegend anhand ihrer Kommunikationssemantik:
+    오류 동작과 관련하여 메서드 호출은 통신 시맨틱에 따라 근본적으로 다릅니다:
   </p>
   <ul>
     <li>
-      <strong>Reguläre Methoden:</strong> Die Schnittstelle ist als <code>noexcept</code> deklariert und erfordert Ausnahmesicherheit (<code>exception safe</code>) <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>. Scheitert eine Methodenverarbeitung, wird der Fehler nicht über C++-Exceptions gemeldet, sondern asynchron über das zurückgegebene <code>ara::core::Future</code> transportiert. Im Fehlerfall enthält dieses entweder einen Fehlercode aus <code>ara::com::ComErrc</code> oder einen domänenspezifischen Anwendungsfehler vom Typ <code>ApApplicationError</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.
+      <strong>일반 메서드:</strong> 인터페이스는 <code>noexcept</code>(으)로 선언되어 있으며 예외 안전성(<code>exception safe</code>)을 요구합니다 <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>. 메서드 처리가 실패할 경우 오류는 C++ 예외를 통해 보고되지 않고 반환된 <code>ara::core::Future</code>을(를) 통해 비동기적으로 전달됩니다. 오류 발생 시 이는 <code>ara::com::ComErrc</code>의 오류 코드 또는 <code>ApApplicationError</code> 타입의 도메인별 애플리케이션 오류를 포함합니다 <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.
     </li>
     <li>
-      <strong>Fire-and-Forget-Methoden:</strong> Auch diese Methoden sind als <code>noexcept</code> deklariert und müssen ausnahmesicher implementiert werden <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>. Da konstruktionsbedingt kein Rückkanal zum aufrufenden Client existiert, können weder Erfolgs- noch Fehlerinformationen übertragen werden. Tritt während der Bearbeitung ein Fehler auf, muss dieser intern innerhalb des Service-Providers behandelt werden (Interpretation: Lokale Protokollierung oder interne Kompensationsmaßnahmen sind für Fire-and-Forget-Methoden zwingend erforderlich, da keine Fehlerübertragung an den Client stattfindet).
+      <strong>Fire-and-Forget 메서드:</strong> 이러한 메서드 역시 <code>noexcept</code>(으)로 선언되어 있으며 예외에 안전하게 구현되어야 합니다 <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>. 구조상 호출 클라이언트로의 역방향 채널이 존재하지 않으므로 성공 또는 오류 정보가 전송될 수 없습니다. 처리 중 오류가 발생하면 서비스 제공자 내부에서 이를 처리해야 합니다(해석: 클라이언트로의 오류 전송이 발생하지 않으므로 Fire-and-Forget 메서드에는 로컬 로깅 또는 내부 보상 조치가 필수적입니다).
     </li>
   </ul>
 
   <!-- annahmen: 1) Kontrollierte Beendigung vor Zerstörung – Begründung: Verhindert fehlerhafte Zugriffe bei noch offenen asynchronen Vorgängen. 2) Interne Fehlerbehandlung bei Fire-and-Forget – Begründung: Signatur besitzt void-Rückgabe und keinen Fehlerrückkanal an den Aufrufer. -->
-  <p class="ai-note">Dieser Klassen-Leitfaden wurde auf Basis der AUTOSAR Adaptive Platform Spezifikation für Release R25-11 erstellt.</p>
+  <p class="ai-note">이 클래스 가이드는 릴리스 R25-11용 AUTOSAR Adaptive Platform 사양을 기반으로 작성되었습니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef" title="AI와 토론">💬 AI와 토론</button>
@@ -548,62 +547,61 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="4a9713a1a7c99e6498d1a2a60a897fec486da6102ff23ea8677d3c373a7b0386" data-trace-output="db5288a426d918bb7b2dc8e362970ede62c10f9f85d1e8605b600ea6e6e161b1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;컨텍스트&lt;/h4&gt;
   &lt;p&gt;
-    Die Klasse &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; bildet die serverseitige Basisabstraktion für die Bereitstellung eines Service-Interfaces innerhalb des Moduls für Kommunikationsmanagement (&lt;code&gt;com&lt;/code&gt;) der AUTOSAR Adaptive Platform. Als generiertes Schnittstellengerüst übernimmt das Skeleton die Vermittlerrolle zwischen der plattformspezifischen Kommunikationsinfrastruktur (wie etwa einer SOME/IP-Bindung) und der anwendungsspezifischen Dienstanbieter-Implementierung. Es entkoppelt die Service-Geschäftslogik von Protokolldetails, der Nachrichten-Deserialisierung sowie dem zugrunde liegenden Dispatching.
+    &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; 클래스는 AUTOSAR Adaptive Platform의 통신 관리(&lt;code&gt;com&lt;/code&gt;) 모듈 내에서 서비스 인터페이스를 제공하기 위한 서버 측 기본 추상화를 구성합니다. 생성된 인터페이스 스캐폴드로서 Skeleton은 플랫폼 고유의 통신 인프라(예: SOME/IP 바인딩)와 애플리케이션별 서비스 제공자 구현 간의 중개 역할을 담당합니다. 이는 서비스 비즈니스 로직을 프로토콜 세부 정보, 메시지 역직렬화 및 기본 디스패칭으로부터 분리합니다.
   &lt;/p&gt;
   &lt;p&gt;
-    Im Gesamtsystem interagiert die Skeleton-Klasse mit drei wesentlichen Partnern:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Dienstanwendung (Service Provider):&lt;/strong&gt; Die konkrete Anwendung leitet von der Skeleton-Klasse ab und implementiert die reinen virtuellen Methodenfunktionen für reguläre Anfrage-Antwort-Muster &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; sowie Fire-and-Forget-Methoden &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Kommunikationsinfrastruktur (Middleware):&lt;/strong&gt; Die Laufzeitumgebung empfängt eingehende Anforderungsnachrichten von Service-Clients, deserialisiert die übertragenen Daten und reicht diese zur Methodenausführung an das Skeleton weiter &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;AUTOSAR_AP_SWS_CommunicationManagement S. 99&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Asynchroner Ausführungskontext:&lt;/strong&gt; Über Rückgabetypen wie &lt;code&gt;ara::core::Future&lt;/code&gt; wird die Entkopplung von Aufrufannahme und asynchroner Ergebnisbereitstellung realisiert &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Die Instanziierung des abgeleiteten Skeleton-Objekts erfolgt explizit durch die Dienstanwendung. Bei der Erzeugung über den Konstruktor wird zwingend der Verarbeitungsmodus für Methodenaufrufe (&lt;code&gt;ara::com::MethodCallProcessingMode&lt;/code&gt;) übergeben &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;. Dieser Modus legt fest, wie eingehende Methodenaufrufe thread- und ablaufseitig verarbeitet werden:
+    전체 시스템에서 Skeleton 클래스는 세 가지 주요 대상과 상호작용합니다:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ereignisgesteuerte Verarbeitung (&lt;code&gt;kEvent&lt;/code&gt; bzw. &lt;code&gt;kEventSingleThread&lt;/code&gt;):&lt;/strong&gt; Sobald eine eingehende Anforderungsnachricht deserialisiert wurde, wird die korrespondierende virtuelle Methode der Skeleton-Klasse unmittelbar im Rahmen des Nachrichtenempfangs aufgerufen &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
+      &lt;strong&gt;서비스 애플리케이션(Service Provider):&lt;/strong&gt; 구체적인 애플리케이션은 Skeleton 클래스로부터 파생되며, 일반적인 요청-응답 패턴 &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; 및 Fire-and-Forget 메서드 &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;을(를) 위한 순수 가상 메서드 함수를 구현합니다.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Gepufferte Polling-Verarbeitung (&lt;code&gt;kPoll&lt;/code&gt;):&lt;/strong&gt; Eingehende Nachrichten werden vorgehalten und erst dann zur Ausführung gebracht, wenn die Anwendung die Abarbeitung aktiv über die dafür vorgesehene Polling-Schnittstelle anstößt &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;.
+      &lt;strong&gt;통신 인프라(Middleware):&lt;/strong&gt; 런타임 환경은 서비스 클라이언트로부터 수신 요청 메시지를 받아 전송된 데이터를 역직렬화하고, 이를 메서드 실행을 위해 Skeleton으로 전달합니다 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;AUTOSAR_AP_SWS_CommunicationManagement 99쪽&lt;/a&gt;.
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;비동기 실행 컨텍스트:&lt;/strong&gt; &lt;code&gt;ara::core::Future&lt;/code&gt;과(와) 같은 반환 타입을 통해 호출 수락과 비동기 결과 제공의 분리가 실현됩니다 &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
+    &lt;/li&gt;
+  &lt;/ul&gt;
+
+  &lt;h4&gt;수명 주기&lt;/h4&gt;
+  &lt;p&gt;
+    파생된 Skeleton 객체의 인스턴스화는 서비스 애플리케이션에 의해 명시적으로 수행됩니다. 생성자를 통해 생성할 때 메서드 호출 처리 모드(&lt;code&gt;ara::com::MethodCallProcessingMode&lt;/code&gt;)를 반드시 전달해야 합니다 &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;. 이 모드는 수신되는 메서드 호출이 스레드 및 실행 측면에서 어떻게 처리되는지 정의합니다:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;
+      &lt;strong&gt;이벤트 기반 처리(&lt;code&gt;kEvent&lt;/code&gt; 또는 &lt;code&gt;kEventSingleThread&lt;/code&gt;):&lt;/strong&gt; 수신된 요청 메시지가 역직렬화되는 즉시, 메시지 수신의 일환으로 Skeleton 클래스의 해당 가상 메서드가 직접 호출됩니다 &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;버퍼링된 폴링 처리(&lt;code&gt;kPoll&lt;/code&gt;):&lt;/strong&gt; 수신된 메시지는 대기 상태로 유지되며, 애플리케이션이 전용 폴링 인터페이스를 통해 처리를 능동적으로 트리거할 때만 실행됩니다 &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;.
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Die Lebensdauer des Skeleton-Objekts liegt vollständig in der Verantwortung der erzeugenden Dienstanwendung. Vor der Zerstörung der Instanz sollte der Dienst geregelt abgemeldet werden (Interpretation: Eine kontrollierte Beendigung stellt sicher, dass keine Methodenaufrufe mehr auf freigegebene Ressourcen der Dienstanwendung zugreifen und offene asynchrone Berechnungen sauber abgeschlossen werden können).
+    Skeleton 객체의 수명 주기는 전적으로 이를 생성한 서비스 애플리케이션의 책임입니다. 인스턴스가 파괴되기 전에 서비스를 정상적으로 등록 해제해야 합니다(해석: 제어된 종료를 통해 메서드 호출이 서비스 애플리케이션의 해제된 리소스에 더 이상 접근하지 않도록 보장하고 보류 중인 비동기 계산을 깔끔하게 완료할 수 있습니다).
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;사용 경로&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Nutzungsablauf für die Bereitstellung eines Dienstes über das Skeleton umfasst folgende Schritte:
+    Skeleton을 통해 서비스를 제공하기 위한 일반적인 사용 흐름은 다음 단계로 구성됩니다:
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Schnittstellenimplementierung:&lt;/strong&gt; Die Dienstanwendung leitet von &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; ab und implementiert die rein virtuellen Methoden:
+      &lt;strong&gt;인터페이스 구현:&lt;/strong&gt; 서비스 애플리케이션은 &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt;에서 파생되어 순수 가상 메서드를 구현합니다:
       &lt;ul&gt;
-        &lt;li&gt;Reguläre Methoden mit Rückgabewert implementieren die Signatur &lt;code&gt;virtual ara::core::Future&amp;lt;{&amp;lt;method-name&amp;gt;}Output&amp;gt; {&amp;lt;method-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.&lt;/li&gt;
-        &lt;li&gt;Einwegmethoden ohne Rückantwort implementieren &lt;code&gt;virtual void {&amp;lt;fnfmethod-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.&lt;/li&gt;
+        &lt;li&gt;반환값이 있는 일반 메서드는 시그니처 &lt;code&gt;virtual ara::core::Future&amp;lt;{&amp;lt;method-name&amp;gt;}Output&amp;gt; {&amp;lt;method-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;을(를) 구현합니다.&lt;/li&gt;
+        &lt;li&gt;응답이 없는 단방향 메서드는 &lt;code&gt;virtual void {&amp;lt;fnfmethod-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;을(를) 구현합니다.&lt;/li&gt;
       &lt;/ul&gt;
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Instanziierung:&lt;/strong&gt; Die abgeleitete Skeleton-Klasse wird mit dem gewünschten &lt;code&gt;MethodCallProcessingMode&lt;/code&gt; konstruiert &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;.
+      &lt;strong&gt;인스턴스화:&lt;/strong&gt; 파생된 Skeleton 클래스는 원하는 &lt;code&gt;MethodCallProcessingMode&lt;/code&gt;(으)로 생성됩니다 &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Methodenausführung:&lt;/strong&gt; Beim Eintreffen von Anfragen ruft die Middleware die implementierte Methode auf &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
+      &lt;strong&gt;메서드 실행:&lt;/strong&gt; 요청이 도착하면 미들웨어가 구현된 메서드를 호출합니다 &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ergebnisrückgabe:&lt;/strong&gt; Bei regulären Methoden liefert die Dienstanwendung ein &lt;code&gt;ara::core::Future&lt;/code&gt; mit dem erzeugten &lt;code&gt;Output&lt;/code&gt;-Objekt zurück &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, welches durch die Middleware serialisiert und als Antwortnachricht an den Client versendet wird. Bei Fire-and-Forget-Methoden erfolgt keinerlei Antwortübermittlung &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
+      &lt;strong&gt;결과 반환:&lt;/strong&gt; 일반 메서드의 경우 서비스 애플리케이션은 생성된 &lt;code&gt;Output&lt;/code&gt; 객체가 포함된 &lt;code&gt;ara::core::Future&lt;/code&gt;을(를) 반환하며 &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, 이는 미들웨어에 의해 직렬화되어 클라이언트에 응답 메시지로 전송됩니다. Fire-and-Forget 메서드의 경우 어떠한 응답도 전송되지 않습니다 &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
     &lt;/li&gt;
   &lt;/ol&gt;
 
@@ -613,23 +611,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 [SWS_CM_00191]&lt;/title&gt;&lt;path d="M 40 258 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="273" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="273" font-size="11" font-style="italic" fill="#28251d"&gt;Reguläre Methode&lt;/text&gt;&lt;/g&gt;&lt;text x="240.0" y="298" text-anchor="middle" font-size="11" fill="#28251d"&gt;&amp;lt;method-name&amp;gt;(Argumente)&lt;/text&gt;&lt;line x1="345" y1="304" x2="135" y2="304" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Rückgabe ara::core::Future&amp;lt;Output&amp;gt;
 [SWS_CM_99556]&lt;/title&gt;&lt;text x="240.0" y="332" text-anchor="middle" font-size="11" fill="#28251d"&gt;Rückgabe &lt;a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html"&gt;ara::core::Future&lt;/a&gt;&amp;lt;Output&amp;gt;&lt;/text&gt;&lt;line x1="135" y1="338" x2="345" y2="338" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;text x="450.0" y="366" text-anchor="middle" font-size="11" fill="#28251d"&gt;Antwortnachricht senden&lt;/text&gt;&lt;line x1="345" y1="372" x2="555" y2="372" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Fire-and-Forget Methode
 [SWS_CM_90434]&lt;/title&gt;&lt;line x1="40" y1="394" x2="650" y2="394" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="409" font-size="11" font-style="italic" fill="#28251d"&gt;Fire-and-Forget Methode&lt;/text&gt;&lt;/g&gt;&lt;text x="240.0" y="437" text-anchor="middle" font-size="11" fill="#28251d"&gt;&amp;lt;fnfmethod-name&amp;gt;(Argumente)&lt;/text&gt;&lt;line x1="345" y1="443" x2="135" y2="443" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 135 457 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="472" text-anchor="start" font-size="11" fill="#28251d"&gt;Verarbeitung ohne Antwort&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Sequenzdiagramm: Typischer Ablauf der Methodenverarbeitung über das Skeleton. Quellen: &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]&lt;/p&gt;
+  &lt;p class="diagram-note"&gt;시퀀스 다이어그램: Skeleton을 통한 메서드 처리의 일반적인 흐름. 출처: &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;오류 시나리오&lt;/h4&gt;
   &lt;p&gt;
-    Hinsichtlich des Fehlerverhaltens unterscheiden sich Methodenaufrufe grundlegend anhand ihrer Kommunikationssemantik:
+    오류 동작과 관련하여 메서드 호출은 통신 시맨틱에 따라 근본적으로 다릅니다:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Reguläre Methoden:&lt;/strong&gt; Die Schnittstelle ist als &lt;code&gt;noexcept&lt;/code&gt; deklariert und erfordert Ausnahmesicherheit (&lt;code&gt;exception safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;. Scheitert eine Methodenverarbeitung, wird der Fehler nicht über C++-Exceptions gemeldet, sondern asynchron über das zurückgegebene &lt;code&gt;ara::core::Future&lt;/code&gt; transportiert. Im Fehlerfall enthält dieses entweder einen Fehlercode aus &lt;code&gt;ara::com::ComErrc&lt;/code&gt; oder einen domänenspezifischen Anwendungsfehler vom Typ &lt;code&gt;ApApplicationError&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
+      &lt;strong&gt;일반 메서드:&lt;/strong&gt; 인터페이스는 &lt;code&gt;noexcept&lt;/code&gt;(으)로 선언되어 있으며 예외 안전성(&lt;code&gt;exception safe&lt;/code&gt;)을 요구합니다 &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;. 메서드 처리가 실패할 경우 오류는 C++ 예외를 통해 보고되지 않고 반환된 &lt;code&gt;ara::core::Future&lt;/code&gt;을(를) 통해 비동기적으로 전달됩니다. 오류 발생 시 이는 &lt;code&gt;ara::com::ComErrc&lt;/code&gt;의 오류 코드 또는 &lt;code&gt;ApApplicationError&lt;/code&gt; 타입의 도메인별 애플리케이션 오류를 포함합니다 &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Fire-and-Forget-Methoden:&lt;/strong&gt; Auch diese Methoden sind als &lt;code&gt;noexcept&lt;/code&gt; deklariert und müssen ausnahmesicher implementiert werden &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;. Da konstruktionsbedingt kein Rückkanal zum aufrufenden Client existiert, können weder Erfolgs- noch Fehlerinformationen übertragen werden. Tritt während der Bearbeitung ein Fehler auf, muss dieser intern innerhalb des Service-Providers behandelt werden (Interpretation: Lokale Protokollierung oder interne Kompensationsmaßnahmen sind für Fire-and-Forget-Methoden zwingend erforderlich, da keine Fehlerübertragung an den Client stattfindet).
+      &lt;strong&gt;Fire-and-Forget 메서드:&lt;/strong&gt; 이러한 메서드 역시 &lt;code&gt;noexcept&lt;/code&gt;(으)로 선언되어 있으며 예외에 안전하게 구현되어야 합니다 &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;. 구조상 호출 클라이언트로의 역방향 채널이 존재하지 않으므로 성공 또는 오류 정보가 전송될 수 없습니다. 처리 중 오류가 발생하면 서비스 제공자 내부에서 이를 처리해야 합니다(해석: 클라이언트로의 오류 전송이 발생하지 않으므로 Fire-and-Forget 메서드에는 로컬 로깅 또는 내부 보상 조치가 필수적입니다).
     &lt;/li&gt;
   &lt;/ul&gt;
 
   &lt;!-- annahmen: 1) Kontrollierte Beendigung vor Zerstörung – Begründung: Verhindert fehlerhafte Zugriffe bei noch offenen asynchronen Vorgängen. 2) Interne Fehlerbehandlung bei Fire-and-Forget – Begründung: Signatur besitzt void-Rückgabe und keinen Fehlerrückkanal an den Aufrufer. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde auf Basis der AUTOSAR Adaptive Platform Spezifikation für Release R25-11 erstellt.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;이 클래스 가이드는 릴리스 R25-11용 AUTOSAR Adaptive Platform 사양을 기반으로 작성되었습니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

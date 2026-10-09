@@ -19,65 +19,64 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>dbc17625de75</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_shwa_PropertyList_e7bb02/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_shwa_PropertyList_e7bb02/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_shwa_PropertyList_e7bb02" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>上下文</h4>
   <p>
-    Die Klasse <code>ara::shwa::PropertyList</code> stellt innerhalb des Moduls <code>shwa</code> der AUTOSAR Adaptive Platform eine strukturierte Zusammenfassung von Eigenschaften bereit. Gemäß der Klassensyntax ist der Typ als <code>final</code> deklariert, womit eine Spezialisierung über Vererbungshierarchien ausgeschlossen ist und Instanzen als in sich geschlossene Wert- oder Konfigurationsobjekte fungieren. In softwarebasierten Steuergerätesystemen dient eine solche Eigenschaftsliste als Kapselung von Attributen, Parametern oder Zustandsmerkmalen, welche bei Funktionsaufrufen an Systemkomponenten übermittelt werden.
+    类 <code>ara::shwa::PropertyList</code> 在 AUTOSAR Adaptive Platform 的模块 <code>shwa</code> 内提供了属性的结构化汇总。根据类语法，该类型被声明为 <code>final</code>，从而排除了通过继承层次结构的特化，其实例充当自包含的值对象或配置对象。在基于软件的 ECU 系统中，此类属性列表用作属性、参数或状态特征的封装，在函数调用时传递给系统组件。
   </p>
   <p>
-    Interpretation: Die Klasse dürfte als generische Hülle für heterogene Eigenschaftstypen konzipiert sein, um funktionale Konfigurationen typsicher und flexibel zu bündeln. Die primären Interaktionspartner sind hierbei die aufrufende Anwendungslogik, welche die Liste zur Laufzeit parametriert, sowie empfangende Dienste des Moduls <code>shwa</code>, welche die enthaltenen Eigenschaften zur Initialisierung oder Betriebssteuerung verarbeiten.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Der Lebenszyklus eines Objekts der Klasse <code>ara::shwa::PropertyList</code> beginnt mit der Instanziierung über den variadischen Konstruktor <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>. Durch das Funktionstemplate <code>template &lt;typename... Properties&gt; PropertyList(Properties... props) noexcept</code> können Aufrufer eine beliebige Anzahl von Eigenschaftsobjekten unterschiedlicher Typen direkt bei der Erzeugung übergeben.
-  </p>
-  <p>
-    Hinsichtlich der Besitzverhältnisse unterliegt die Klasse den üblichen RAII-Prinzipien (Resource Acquisition Is Initialization) moderner C++-Entwurfsmuster. Instanzen werden vorzugsweise lokal auf dem Aufruf-Stack oder als Member von Verwaltungsobjekten instanziiert. Die Lebensdauer der übergebenen Eigenschaften ist an die Lebensdauer der Liste gekoppelt. Da die Klasse als <code>final</code> spezifiziert ist, ist keine polymorphe Zerstörung über Basisklassenzeiger vorgesehen; die Zerstörung erfolgt deterministisch beim Verlassen des Gültigkeitsbereichs.
-  </p>
-  <p>
-    In Bezug auf Nebenläufigkeit ist die Klasse gemäß <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> als nicht threadsicher (<code>not thread-safe</code>) ausgewiesen. Dies bedingt, dass eine Instanz von <code>ara::shwa::PropertyList</code> nicht ohne externe Synchronisation nebenläufig über mehrere Threads hinweg modifiziert oder ausgelesen werden darf. Bei Verwendung in nebenläufigen Ausführungskontexten muss die aufrufende Software die Zugriffe durch Sperrmechanismen absichern oder thread-lokale Instanzen vorhalten.
+    Interpretation：该类大概被设计为异构属性类型的通用外壳，以便对功能配置进行类型安全且灵活的捆绑。此时主要的交互伙伴为在运行时参数化列表的调用应用程序逻辑，以及处理所包含属性以进行初始化或运行控制的模块 <code>shwa</code> 的接收服务。
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>生命周期</h4>
   <p>
-    Der typische Nutzungspfad umfasst die Definition der Eigenschaftsparameter, die Bündelung über den Konstruktor und die Übergabe an nachgelagerte Schnittstellen:
+    类 <code>ara::shwa::PropertyList</code> 对象的生命周期始于通过可变参数构造函数 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> 进行的实例化。通过函数模板 <code>template &lt;typename... Properties&gt; PropertyList(Properties... props) noexcept</code>，调用方可以在创建时直接传入任意数量的不同类型的属性对象。
+  </p>
+  <p>
+    关于所有权关系，该类遵循现代 C++ 设计模式中通用的 RAII 原则（Resource Acquisition Is Initialization）。实例优选在调用栈上本地实例化或作为管理对象的成员实例化。传入属性的生命周期与列表的生命周期相绑定。由于该类被指定为 <code>final</code>，因此未提供通过基类指针进行的多态销毁；销毁在离开作用域时确定性地发生。
+  </p>
+  <p>
+    关于并发性，根据 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>，该类被指明为非线程安全（<code>not thread-safe</code>）。这意味着在没有外部同步的情况下，不得跨多个线程并发修改或读取 <code>ara::shwa::PropertyList</code> 的实例。在并发执行上下文中使用时，调用软件必须通过锁定机制保护访问或维护线程局部实例。
+  </p>
+
+  <h4>使用路径</h4>
+  <p>
+    典型的使用路径包括定义属性参数、通过构造函数进行捆绑以及传递给下游接口：
   </p>
   <ol>
     <li>
-      <strong>Definition der Eigenschaften:</strong> Die aufrufende Komponente bereitet die individuellen Eigenschaftsobjekte vor, welche für den jeweiligen Anwendungsfall relevant sind.
+      <strong>定义属性：</strong>调用组件准备与相应用例相关的各个属性对象。
     </li>
     <li>
-      <strong>Initialisierung der Liste:</strong> Über den variadischen Konstruktor <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> wird <code>ara::shwa::PropertyList</code> unter Angabe der Argumente erzeugt. Die Template-Argumente werden hierbei durch den Compiler automatisch deduziert.
+      <strong>初始化列表：</strong>通过可变参数构造函数 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>，在指定实参的情况下创建 <code>ara::shwa::PropertyList</code>。模板实参在此由编译器自动推导。
     </li>
     <li>
-      <strong>Weitergabe an Modulfunktionen:</strong> Das fertige Konfigurationsobjekt wird an Schnittstellen des Moduls <code>shwa</code> übergeben, um spezifische Dienste zu konfigurieren oder Verarbeitungsvorgänge anzustoßen.
+      <strong>传递给模块函数：</strong>完成的配置对象被传递给模块 <code>shwa</code> 的接口，以配置特定服务或触发处理流程。
     </li>
   </ol>
   <p>
-    Interpretation: Da in der Spezifikation außer dem Konstruktor keine mutierenden Elementfunktionen ausgewiesen sind, dürfte die Klasse primär als unveränderliches Werteobjekt (Immutable Value Object) fungieren, dessen Inhalt während der Weitergabe stabil bleibt.
+    Interpretation：由于规范中除构造函数外未指定任何变异成员函数，因此该类大概主要充当不可变值对象（Immutable Value Object），其内容在传递过程中保持稳定。
   </p>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>错误场景</h4>
   <p>
-    Hinsichtlich der Fehlersicherheit weist die Konstruktion von <code>ara::shwa::PropertyList</code> eine strikte Garantie auf: Gemäß <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> ist der Konstruktor mit dem Spezifizierer <code>noexcept</code> deklariert und als ausnahmesicher (<code>exception safe</code>) eingestuft. Auf Sprachebene können bei der Erzeugung somit keine C++-Exceptions entweichen.
+    关于错误安全性，<code>ara::shwa::PropertyList</code> 的构造具有严格保证：根据 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>，构造函数使用说明符 <code>noexcept</code> 进行声明，并归类为异常安全（<code>exception safe</code>）。因此在语言层面上，创建时不会有 C++ 异常逃逸。
   </p>
   <p>
-    Potenzielle Fehlerszenarien liegen somit primär in der fehlerhaften Handhabung der Systemumgebung oder ungültigen Vorbedingungen:
+    潜在的错误场景主要存在于系统环境的错误处理或无效前置条件中：
   </p>
   <ul>
     <li>
-      <strong>Unerlaubter Mehrfachzugriff (Data Race):</strong> Da die Klasse nicht threadsicher ist <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>, führt ein gleichzeitiger ungeschützter Zugriff aus parallelen Threads zu undefiniertem Verhalten. Vorbedingung für jede Operation ist der exklusive Zugriff.
+      <strong>未允许的多次访问（Data Race）：</strong>由于该类不是线程安全的 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>，因此来自并行线程的并发无保护访问会导致未定义行为。每次操作的前置条件是互斥访问。
     </li>
     <li>
-      <strong>Typinkompatibilität bei der Instanziierung:</strong> Werden Argumente übergeben, die nicht den syntaktischen oder semantischen Anforderungen der aufnehmenden Parameter genügen, schlägt die Kompilierung fehl. Dies verlagert potenzielle Laufzeitfehler weitgehend in die Übersetzungsphase.
+      <strong>实例化时的类型不兼容：</strong>如果传入的实参不满足接收参数的语法或语义要求，编译将会失败。这在很大程度上将潜在的运行时错误转移到了编译阶段。
     </li>
   </ul>
   <!-- annahmen: 1) Die Klasse dient als generischer Container zur Bündelung heterogener Eigenschaftstypen für shwa-Funktionen. – Begründung: Das unbeschränkte variadische Template des Konstruktors ohne weitere Typrestriktionen legt eine flexible Sammelfunktion nahe. 2) Die Instanzen fungieren primär als unveränderliche Werteobjekte. – Begründung: Der Payload führt außer dem Initialisierungskonstruktor keine mutierenden Elementfunktionen auf. -->
-  <p class="ai-note">Dieser Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikation R25-11 erstellt.</p>
+  <p class="ai-note">本指南是基于 AUTOSAR 规范 R25-11 自动生成的。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_shwa_PropertyList_e7bb02" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -360,62 +359,61 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="dbc17625de75cb5782acaf94feeacee6f20f888139264d76fe216a1a51418fe3" data-trace-output="df29b10839299332e8a0cfaf5118942602eb927e0f9dd48b712b07dd3b44139d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;上下文&lt;/h4&gt;
   &lt;p&gt;
-    Die Klasse &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; stellt innerhalb des Moduls &lt;code&gt;shwa&lt;/code&gt; der AUTOSAR Adaptive Platform eine strukturierte Zusammenfassung von Eigenschaften bereit. Gemäß der Klassensyntax ist der Typ als &lt;code&gt;final&lt;/code&gt; deklariert, womit eine Spezialisierung über Vererbungshierarchien ausgeschlossen ist und Instanzen als in sich geschlossene Wert- oder Konfigurationsobjekte fungieren. In softwarebasierten Steuergerätesystemen dient eine solche Eigenschaftsliste als Kapselung von Attributen, Parametern oder Zustandsmerkmalen, welche bei Funktionsaufrufen an Systemkomponenten übermittelt werden.
+    类 &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的模块 &lt;code&gt;shwa&lt;/code&gt; 内提供了属性的结构化汇总。根据类语法，该类型被声明为 &lt;code&gt;final&lt;/code&gt;，从而排除了通过继承层次结构的特化，其实例充当自包含的值对象或配置对象。在基于软件的 ECU 系统中，此类属性列表用作属性、参数或状态特征的封装，在函数调用时传递给系统组件。
   &lt;/p&gt;
   &lt;p&gt;
-    Interpretation: Die Klasse dürfte als generische Hülle für heterogene Eigenschaftstypen konzipiert sein, um funktionale Konfigurationen typsicher und flexibel zu bündeln. Die primären Interaktionspartner sind hierbei die aufrufende Anwendungslogik, welche die Liste zur Laufzeit parametriert, sowie empfangende Dienste des Moduls &lt;code&gt;shwa&lt;/code&gt;, welche die enthaltenen Eigenschaften zur Initialisierung oder Betriebssteuerung verarbeiten.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Der Lebenszyklus eines Objekts der Klasse &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; beginnt mit der Instanziierung über den variadischen Konstruktor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. Durch das Funktionstemplate &lt;code&gt;template &amp;lt;typename... Properties&amp;gt; PropertyList(Properties... props) noexcept&lt;/code&gt; können Aufrufer eine beliebige Anzahl von Eigenschaftsobjekten unterschiedlicher Typen direkt bei der Erzeugung übergeben.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Hinsichtlich der Besitzverhältnisse unterliegt die Klasse den üblichen RAII-Prinzipien (Resource Acquisition Is Initialization) moderner C++-Entwurfsmuster. Instanzen werden vorzugsweise lokal auf dem Aufruf-Stack oder als Member von Verwaltungsobjekten instanziiert. Die Lebensdauer der übergebenen Eigenschaften ist an die Lebensdauer der Liste gekoppelt. Da die Klasse als &lt;code&gt;final&lt;/code&gt; spezifiziert ist, ist keine polymorphe Zerstörung über Basisklassenzeiger vorgesehen; die Zerstörung erfolgt deterministisch beim Verlassen des Gültigkeitsbereichs.
-  &lt;/p&gt;
-  &lt;p&gt;
-    In Bezug auf Nebenläufigkeit ist die Klasse gemäß &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; als nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;) ausgewiesen. Dies bedingt, dass eine Instanz von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; nicht ohne externe Synchronisation nebenläufig über mehrere Threads hinweg modifiziert oder ausgelesen werden darf. Bei Verwendung in nebenläufigen Ausführungskontexten muss die aufrufende Software die Zugriffe durch Sperrmechanismen absichern oder thread-lokale Instanzen vorhalten.
+    Interpretation：该类大概被设计为异构属性类型的通用外壳，以便对功能配置进行类型安全且灵活的捆绑。此时主要的交互伙伴为在运行时参数化列表的调用应用程序逻辑，以及处理所包含属性以进行初始化或运行控制的模块 &lt;code&gt;shwa&lt;/code&gt; 的接收服务。
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;生命周期&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Nutzungspfad umfasst die Definition der Eigenschaftsparameter, die Bündelung über den Konstruktor und die Übergabe an nachgelagerte Schnittstellen:
+    类 &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; 对象的生命周期始于通过可变参数构造函数 &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; 进行的实例化。通过函数模板 &lt;code&gt;template &amp;lt;typename... Properties&amp;gt; PropertyList(Properties... props) noexcept&lt;/code&gt;，调用方可以在创建时直接传入任意数量的不同类型的属性对象。
+  &lt;/p&gt;
+  &lt;p&gt;
+    关于所有权关系，该类遵循现代 C++ 设计模式中通用的 RAII 原则（Resource Acquisition Is Initialization）。实例优选在调用栈上本地实例化或作为管理对象的成员实例化。传入属性的生命周期与列表的生命周期相绑定。由于该类被指定为 &lt;code&gt;final&lt;/code&gt;，因此未提供通过基类指针进行的多态销毁；销毁在离开作用域时确定性地发生。
+  &lt;/p&gt;
+  &lt;p&gt;
+    关于并发性，根据 &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;，该类被指明为非线程安全（&lt;code&gt;not thread-safe&lt;/code&gt;）。这意味着在没有外部同步的情况下，不得跨多个线程并发修改或读取 &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; 的实例。在并发执行上下文中使用时，调用软件必须通过锁定机制保护访问或维护线程局部实例。
+  &lt;/p&gt;
+
+  &lt;h4&gt;使用路径&lt;/h4&gt;
+  &lt;p&gt;
+    典型的使用路径包括定义属性参数、通过构造函数进行捆绑以及传递给下游接口：
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Definition der Eigenschaften:&lt;/strong&gt; Die aufrufende Komponente bereitet die individuellen Eigenschaftsobjekte vor, welche für den jeweiligen Anwendungsfall relevant sind.
+      &lt;strong&gt;定义属性：&lt;/strong&gt;调用组件准备与相应用例相关的各个属性对象。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Initialisierung der Liste:&lt;/strong&gt; Über den variadischen Konstruktor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; wird &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; unter Angabe der Argumente erzeugt. Die Template-Argumente werden hierbei durch den Compiler automatisch deduziert.
+      &lt;strong&gt;初始化列表：&lt;/strong&gt;通过可变参数构造函数 &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;，在指定实参的情况下创建 &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt;。模板实参在此由编译器自动推导。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Weitergabe an Modulfunktionen:&lt;/strong&gt; Das fertige Konfigurationsobjekt wird an Schnittstellen des Moduls &lt;code&gt;shwa&lt;/code&gt; übergeben, um spezifische Dienste zu konfigurieren oder Verarbeitungsvorgänge anzustoßen.
+      &lt;strong&gt;传递给模块函数：&lt;/strong&gt;完成的配置对象被传递给模块 &lt;code&gt;shwa&lt;/code&gt; 的接口，以配置特定服务或触发处理流程。
     &lt;/li&gt;
   &lt;/ol&gt;
   &lt;p&gt;
-    Interpretation: Da in der Spezifikation außer dem Konstruktor keine mutierenden Elementfunktionen ausgewiesen sind, dürfte die Klasse primär als unveränderliches Werteobjekt (Immutable Value Object) fungieren, dessen Inhalt während der Weitergabe stabil bleibt.
+    Interpretation：由于规范中除构造函数外未指定任何变异成员函数，因此该类大概主要充当不可变值对象（Immutable Value Object），其内容在传递过程中保持稳定。
   &lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;错误场景&lt;/h4&gt;
   &lt;p&gt;
-    Hinsichtlich der Fehlersicherheit weist die Konstruktion von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; eine strikte Garantie auf: Gemäß &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; ist der Konstruktor mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; deklariert und als ausnahmesicher (&lt;code&gt;exception safe&lt;/code&gt;) eingestuft. Auf Sprachebene können bei der Erzeugung somit keine C++-Exceptions entweichen.
+    关于错误安全性，&lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; 的构造具有严格保证：根据 &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;，构造函数使用说明符 &lt;code&gt;noexcept&lt;/code&gt; 进行声明，并归类为异常安全（&lt;code&gt;exception safe&lt;/code&gt;）。因此在语言层面上，创建时不会有 C++ 异常逃逸。
   &lt;/p&gt;
   &lt;p&gt;
-    Potenzielle Fehlerszenarien liegen somit primär in der fehlerhaften Handhabung der Systemumgebung oder ungültigen Vorbedingungen:
+    潜在的错误场景主要存在于系统环境的错误处理或无效前置条件中：
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Unerlaubter Mehrfachzugriff (Data Race):&lt;/strong&gt; Da die Klasse nicht threadsicher ist &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, führt ein gleichzeitiger ungeschützter Zugriff aus parallelen Threads zu undefiniertem Verhalten. Vorbedingung für jede Operation ist der exklusive Zugriff.
+      &lt;strong&gt;未允许的多次访问（Data Race）：&lt;/strong&gt;由于该类不是线程安全的 &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;，因此来自并行线程的并发无保护访问会导致未定义行为。每次操作的前置条件是互斥访问。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Typinkompatibilität bei der Instanziierung:&lt;/strong&gt; Werden Argumente übergeben, die nicht den syntaktischen oder semantischen Anforderungen der aufnehmenden Parameter genügen, schlägt die Kompilierung fehl. Dies verlagert potenzielle Laufzeitfehler weitgehend in die Übersetzungsphase.
+      &lt;strong&gt;实例化时的类型不兼容：&lt;/strong&gt;如果传入的实参不满足接收参数的语法或语义要求，编译将会失败。这在很大程度上将潜在的运行时错误转移到了编译阶段。
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;!-- annahmen: 1) Die Klasse dient als generischer Container zur Bündelung heterogener Eigenschaftstypen für shwa-Funktionen. – Begründung: Das unbeschränkte variadische Template des Konstruktors ohne weitere Typrestriktionen legt eine flexible Sammelfunktion nahe. 2) Die Instanzen fungieren primär als unveränderliche Werteobjekte. – Begründung: Der Payload führt außer dem Initialisierungskonstruktor keine mutierenden Elementfunktionen auf. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikation R25-11 erstellt.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;本指南是基于 AUTOSAR 规范 R25-11 自动生成的。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

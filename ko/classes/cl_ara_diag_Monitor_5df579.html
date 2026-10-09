@@ -24,36 +24,35 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>6ed6a268d2d2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_diag_Monitor_5df579/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_diag_Monitor_5df579/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_diag_Monitor_5df579" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Klasse <code>ara::diag::Monitor</code> bildet die primäre Schnittstelle für adaptive Anwendungen zur Implementierung von Diagnoseüberwachungen (Monitoren) gemäß <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=69">AUTOSAR AP SWS Diagnostics S. 69</a>. Ihre Hauptverantwortung liegt darin, den operativen Status von Fehlererkennungspfaden an das Diagnosemanagement (Diagnostic Management, DM) zu melden und die Synchronisation zwischen der anwendungsinternen Überwachungslogik und den übergeordneten Diagnoseroutinen sicherzustellen.</p>
-<p>An der Interaktion sind im Wesentlichen drei Parteien beteiligt:</p>
+<h4>컨텍스트</h4>
+<p><code>ara::diag::Monitor</code> 클래스는 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=69">AUTOSAR AP SWS Diagnostics 69쪽</a>에 따라 진단 모니터링(모니터)을 구현하기 위한 어댑티브 애플리케이션의 기본 인터페이스를 형성합니다. 이 클래스의 주요 책임은 오류 감지 경로의 작동 상태를 Diagnostic Management(DM)에 보고하고, 애플리케이션 내부 모니터링 로직과 상위 진단 루틴 간의 동기화를 보장하는 것입니다.</p>
+<p>상호작용에는 기본적으로 세 당사자가 관여합니다:</p>
 <ul>
-<li><strong>Anwendung (Überwachungsfunktion):</strong> Führt anwendungsspezifische Sensor- oder Systemprüfungen aus, ermittelt Fehlerzustände und meldet diese über <code>ReportMonitorAction()</code> <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>. Zudem implementiert sie den optionalen Initialisierungs-Callback <code>initMonitor</code>.</li>
-<li><strong>ara::diag::Monitor:</strong> Dient als standardisierter Service-Endpunkt der Adaptive Platform und kapselt die Verbindung zum modellierten Diagnoseport (<code>DiagnosticMonitorInterface</code>) <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>.</li>
-<li><strong>Diagnostic Management (DM):</strong> Verarbeitet die gemeldeten Zustände, steuert Ereignisstatusbits und leitet bei Bedarf Reinitialisierungsanfragen über das DM an die Anwendung weiter <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>.</li>
+<li><strong>애플리케이션(모니터링 기능):</strong> 애플리케이션별 센서 또는 시스템 검사를 실행하고, 오류 상태를 확인하여 <code>ReportMonitorAction()</code>을(를) 통해 보고합니다<a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>. 또한 선택적 초기화 콜백 <code>initMonitor</code>을(를) 구현합니다.</li>
+<li><strong>ara::diag::Monitor:</strong> Adaptive Platform의 표준화된 서비스 엔드포인트 역할을 하며 모델링된 진단 포트(<code>DiagnosticMonitorInterface</code>)에 대한 연결을 캡슐화합니다<a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>.</li>
+<li><strong>Diagnostic Management (DM):</strong> 보고된 상태를 처리하고, 이벤트 상태 비트를 제어하며, 필요한 경우 DM을 통해 재초기화 요청을 애플리케이션으로 전달합니다<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>.</li>
 </ul>
-<p>Je nach Diagnosemodell unterstützt <code>ara::diag::Monitor</code> unterschiedliche Strategien zur Entprellung (Debouncing), die bereits bei der Instanziierung fest vorgegeben werden:</p>
+<p>진단 모델에 따라 <code>ara::diag::Monitor</code>은(는) 디바운싱(Debouncing)을 위한 다양한 전략을 지원하며, 이는 인스턴스화 시 이미 고정적으로 지정됩니다:</p>
 <ul>
-<li><strong>Monitor-intern:</strong> Die Entprellung erfolgt vollständig in der Anwendung; ein Callback zur Ermittlung des Fault Detection Counters (FDC) wird registriert <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>.</li>
-<li><strong>Zählerbasiert:</strong> Nutzt vorkonfigurierte Zählerwerte (<code>CounterBased</code>) der Plattform <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>.</li>
-<li><strong>Zeitbasiert:</strong> Nutzt zeitgesteuerte Schwellwerte (<code>TimeBased</code>) <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>.</li>
-<li><strong>Ohne Entprellung:</strong> Direkte Weitergabe unqualifizierter Testergebnisse an das DM <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a>.</li>
+<li><strong>모니터 내부:</strong> 디바운싱이 애플리케이션에서 완전히 수행되며, Fault Detection Counter(FDC)를 결정하기 위한 콜백이 등록됩니다<a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>.</li>
+<li><strong>카운터 기반:</strong> 플랫폼의 사전 구성된 카운터 값(<code>CounterBased</code>)을 사용합니다<a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>.</li>
+<li><strong>시간 기반:</strong> 시간 제어 임계값(<code>TimeBased</code>)을 사용합니다<a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>.</li>
+<li><strong>디바운싱 없음:</strong> 자격이 부여되지 않은 테스트 결과를 DM에 직접 전달<a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a>.</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
-<p>Instanzen von <code>ara::diag::Monitor</code> sind als unteilbare Einheiten konzipiert. Die Klasse ist weder kopierbar noch verschiebbar; sowohl Kopier- und Move-Konstruktor als auch die entsprechenden Zuweisungsoperatoren sind explizit gelöscht (<code>=delete</code>) <a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683">[SWS_DM_01683]</a>, <a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684">[SWS_DM_01684]</a>, <a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685">[SWS_DM_01685]</a>, <a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686">[SWS_DM_01686]</a>. Eine Instanz verbleibt somit fest an ihrer Speicheradresse.</p>
-<p>Der Lebenszyklus gliedert sich in folgende Zustände:</p>
+<h4>수명 주기</h4>
+<p><code>ara::diag::Monitor</code>의 인스턴스는 분할할 수 없는 단위로 설계되었습니다. 이 클래스는 복사할 수도 이동할 수도 없습니다. 복사 및 이동 생성자와 해당 대입 연산자 모두 명시적으로 삭제되었습니다(<code>=delete</code>) <a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683">[SWS_DM_01683]</a>, <a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684">[SWS_DM_01684]</a>, <a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685">[SWS_DM_01685]</a>, <a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686">[SWS_DM_01686]</a>. 따라서 인스턴스는 해당 메모리 주소에 고정되어 유지됩니다.</p>
+<p>수명 주기는 다음과 같은 상태로 나뉩니다:</p>
 <ol>
-<li><strong>Nicht initialisiert:</strong> Vor Aufruf des Konstruktors existiert kein Objekt.</li>
-<li><strong>Instanziiert:</strong> Die Anwendung erzeugt das Monitor-Objekt über einen der vier ausnahmesicheren Konstruktoren <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>, <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>, <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a> unter Angabe des <code>InstanceSpecifier</code>. Zu diesem Zeitpunkt werden noch keine Nachrichten vom DM entgegengenommen.</li>
-<li><strong>Angeboten:</strong> Durch den expliziten Aufruf von <code>Offer()</code> erklärt die Anwendung ihre Bereitschaft zur Entgegennahme von Initialisierungsaufrufen (<code>initMonitor</code>) <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>. Erst in diesem Zustand ist der Kommunikationspfad zum DM vollständig aktiv.</li>
-<li><strong>Gestoppt:</strong> Mittels <code>StopOffer()</code> deaktiviert die Anwendung die Weiterleitung von Anfragen seitens des DM <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>. Nach dem Stoppen dürfte eine erneute Aktivierung über <code>Offer()</code> möglich sein, um die Weiterleitung bei Bedarf wieder aufzunehmen.</li>
+<li><strong>초기화되지 않음:</strong> 생성자를 호출하기 전에는 객체가 존재하지 않습니다.</li>
+<li><strong>인스턴스화됨:</strong> 애플리케이션은 <code>InstanceSpecifier</code>을(를) 지정하여 네 가지 예외 안전 생성자 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>, <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>, <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a> 중 하나를 통해 Monitor 객체를 생성합니다. 이 시점에는 아직 DM으로부터 메시지를 수신하지 않습니다.</li>
+<li><strong>제공됨:</strong> <code>Offer()</code>의 명시적 호출을 통해 애플리케이션은 초기화 호출(<code>initMonitor</code>)을 수신할 준비가 되었음을 선언합니다<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>. 이 상태에서만 DM으로의 통신 경로가 완전히 활성화됩니다.</li>
+<li><strong>중지됨:</strong> 애플리케이션은 <code>StopOffer()</code>을(를) 사용하여 DM 측의 요청 전달을 비활성화합니다<a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>. 중지 후에는 필요 시 전달을 재개하기 위해 <code>Offer()</code>을(를) 통한 재활성화가 가능할 것으로 보입니다.</li>
 </ol>
-<p>Hinsichtlich der Nebenläufigkeit sind sämtliche Elementfunktionen von <code>ara::diag::Monitor</code> als nicht thread-sicher (<code>not thread-safe</code>) spezifiziert <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>. Greifen mehrere Anwendungs-Threads auf dieselbe Instanz zu, ist ein externer Synchronisationsmechanismus zwingend erforderlich.</p>
+<p>동시성과 관련하여 <code>ara::diag::Monitor</code>의 모든 멤버 함수는 스레드 안전하지 않은 것(<code>not thread-safe</code>)으로 지정되어 있습니다<a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>. 여러 애플리케이션 스레드가 동일한 인스턴스에 액세스하는 경우 외부 동기화 메커니즘이 반드시 필요합니다.</p>
 <div class="diagram" id="diag-lebenszyklus"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 405.34 126.80" style="max-width:540px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 112.4)">
 <title>MonitorLebenszyklus</title>
@@ -111,70 +110,70 @@
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Zustandsübergänge einer Monitor-Instanz von der Erzeugung über die Dienstfreigabe bis zur Deaktivierung. Quellen: <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
+<p class="diagram-note">상태 다이어그램: 생성부터 서비스 릴리스, 비활성화까지 Monitor 인스턴스의 상태 전이. 출처: <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
 
-<h4>Nutzungspfad</h4>
-<p>Die typische Verwendung von <code>ara::diag::Monitor</code> folgt einer festen Abfolge aus Initialisierung, Bereitschaftssignalisierung, zyklischer Statusmeldung und kontrollierter Deaktivierung:</p>
+<h4>사용 경로</h4>
+<p><code>ara::diag::Monitor</code>의 일반적인 사용법은 초기화, 준비 상태 신호 전송, 주기적 상태 보고 및 제어된 비활성화의 정해진 순서를 따릅니다:</p>
 <ol>
-<li><strong>Konstruktion:</strong> Die Anwendung wählt den Konstruktor, der zur DEXT-Modellierung des zugehörigen Ports passt (z. B. monitor-intern mit FDC-Funktion <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a> oder zählerbasiert <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>) und übergibt die <code>initMonitor</code>-Rückruffunktion.</li>
-<li><strong>Dienst aktivieren:</strong> Vor der ersten Diagnoseverarbeitung ruft die Anwendung <code>Offer()</code> auf <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>. Das zurückgegebene <code>ara::core::Result&lt;void&gt;</code> bestätigt die fehlerfreie Aktivierung.</li>
-<li><strong>Reinitialisierung verarbeiten:</strong> Bei Änderungen des System- oder Monitorstatus kann das DM den registrierten Callback <code>initMonitor</code> ausführen, um die interne Überwachungslogik zurückzusetzen <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>.</li>
-<li><strong>Aktionen und Ergebnisse melden:</strong> Während des normalen Überwachungsbetriebs ruft die Anwendung wiederholt <code>ReportMonitorAction()</code> auf <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>. Hierbei werden Prüfergebnisse (bestanden/fehlgeschlagen) oder Steuerbefehle für das Entprellen gemeldet.</li>
-<li><strong>Dienst beenden:</strong> Beim Herunterfahren der Komponente wird <code>StopOffer()</code> aufgerufen <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>, bevor das Objekt schließlich zerstört wird.</li>
+<li><strong>생성:</strong> 애플리케이션은 해당 포트의 DEXT 모델링과 일치하는 생성자(예: FDC 함수가 포함된 모니터 내부 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a> 또는 카운터 기반 <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>)를 선택하고 <code>initMonitor</code> 콜백 함수를 전달합니다.</li>
+<li><strong>서비스 활성화:</strong> 최초 진단 처리를 수행하기 전에 애플리케이션은 <code>Offer()</code>을(를) 호출합니다<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>. 반환된 <code>ara::core::Result&lt;void&gt;</code>은(는) 오류 없는 활성화를 확인합니다.</li>
+<li><strong>재초기화 처리:</strong> 시스템 또는 모니터 상태가 변경되면 DM은 등록된 콜백 <code>initMonitor</code>을(를) 실행하여 내부 모니터링 로직을 재설정할 수 있습니다<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>.</li>
+<li><strong>작업 및 결과 보고:</strong> 정상적인 모니터링 동작 중에 애플리케이션은 <code>ReportMonitorAction()</code>을(를) 반복적으로 호출합니다<a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>. 이때 테스트 결과(합격/불합격) 또는 디바운싱을 위한 제어 명령이 보고됩니다.</li>
+<li><strong>서비스 종료:</strong> 컴포넌트를 종료할 때 객체가 최종적으로 소멸되기 전에 <code>StopOffer()</code>이(가) 호출됩니다<a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>.</li>
 </ol>
 <div class="diagram" id="diag-nutzungspfad"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 436" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Ablauf der Diagnoseüberwachung</text><line x1="135" y1="102" x2="135" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Anwendung</text><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html">ara::diag::Monitor</a></text><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Diagnostic Management</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><rect x="40" y="218" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><rect x="40" y="300" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html">Monitor</a>(specifier, initMonitor, ...)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088">Offer</a>()</text><line x1="135" y1="166" x2="345" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;void&gt;</text><line x1="345" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><path d="M 40 218 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="233" font-size="11" font-weight="bold" fill="#28251d">opt</text><text x="96" y="233" font-size="11" font-style="italic" fill="#28251d">Reinitialisierungsbedarf</text><text x="345.0" y="258" text-anchor="middle" font-size="11" fill="#28251d">initMonitor()</text><line x1="555" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><path d="M 40 300 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="315" font-size="11" font-weight="bold" fill="#28251d">loop</text><text x="96" y="315" font-size="11" font-style="italic" fill="#28251d">Überwachungszyklus</text><text x="240.0" y="340" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543">ReportMonitorAction</a>(action)</text><line x1="135" y1="346" x2="345" y2="346" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="392" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089">StopOffer</a>()</text><line x1="135" y1="398" x2="345" y2="398" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line></svg></div>
-<p class="diagram-note">Sequenzdiagramm: Typische Interaktionsabfolge zwischen Anwendung, Monitor und DM während des Überwachungsbetriebs. Quellen: <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
+<p class="diagram-note">시퀀스 다이어그램: 모니터링 동작 중 애플리케이션, 모니터 및 DM 간의 일반적인 상호작용 순서. 출처: <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlersituationen rund um <code>ara::diag::Monitor</code> lassen sich in statische Konfigurationsverletzungen bei der Instanziierung und dynamische Laufzeitfehler unterteilen:</p>
+<h4>오류 시나리오</h4>
+<p><code>ara::diag::Monitor</code>과 관련된 오류 상황은 인스턴스화 시의 정적 구성 위반과 동적 런타임 오류로 구분할 수 있습니다:</p>
 <table class="violations-table">
 <thead>
 <tr>
-<th>Fehler / Violation</th>
-<th>Kontext / Ursprung</th>
-<th>Bedeutung und Konsequenz</th>
+<th>오류 / 위반</th>
+<th>컨텍스트 / 원인</th>
+<th>의미 및 결과</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>InstanceSpecifierMappingIntegrityViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Der übergebene <code>InstanceSpecifier</code> lässt sich im Ausführungsmodell nicht auflösen oder verweist nicht auf einen <code>PortPrototype</code>.</td>
+<td>생성자 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td>전달된 <code>InstanceSpecifier</code>을(를) 실행 모델에서 확인할 수 없거나 <code>PortPrototype</code>을(를) 참조하지 않습니다.</td>
 </tr>
 <tr>
 <td><code>PortInterfaceMappingViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Der referenzierte Port ist nicht durch ein <code>DiagnosticMonitorInterface</code> typisiert.</td>
+<td>생성자 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td>참조된 포트가 <code>DiagnosticMonitorInterface</code>(으)로 형식화되지 않았습니다.</td>
 </tr>
 <tr>
 <td><code>ProcessMappingViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Kein modellierter Prozess stimmt mit dem aktuellen Laufzeitprozess überein.</td>
+<td>생성자 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td>현재 런타임 프로세스와 일치하는 모델링된 프로세스가 없습니다.</td>
 </tr>
 <tr>
 <td><code>InstanceSpecifierAlreadyInUseViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Der <code>InstanceSpecifier</code> wurde innerhalb desselben Prozesses bereits für eine andere Instanz registriert.</td>
+<td>생성자 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td><code>InstanceSpecifier</code>이(가) 동일한 프로세스 내에서 이미 다른 인스턴스에 대해 등록되었습니다.</td>
 </tr>
 <tr>
 <td><code>InvalidDebouncingAlgorithmViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>, <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>, <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a></td>
-<td>Widerspruch zwischen dem gewählten Konstruktor und der im Modell (DEXT) konfigurierten Entprellmethode (z. B. time-based vs. counter-based).</td>
+<td>생성자 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>, <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>, <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a></td>
+<td>선택한 생성자와 모델(DEXT)에 구성된 디바운싱 방법 간의 불일치(예: time-based vs. counter-based).</td>
 </tr>
 <tr>
 <td><code>DiagOfferErrc::kAlreadyOffered</code></td>
 <td><code>Offer()</code> <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a></td>
-<td>Rückgabe im <code>ara::core::Result</code>, falls <code>Offer()</code> aufgerufen wird, während der Dienst bereits angeboten wird (Rollback-Semantik).</td>
+<td>서비스가 이미 제공되고 있는 중에 <code>Offer()</code>을(를) 호출할 경우 <code>ara::core::Result</code>에서 반환됨(롤백 의미 체계).</td>
 </tr>
 <tr>
 <td><code>UnexpectedMonitorActionHandlingViolation</code></td>
 <td><code>ReportMonitorAction()</code> <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a></td>
-<td>Der übergebene Wert für <code>action</code> wird vom aktuell konfigurierten Entprellalgorithmus nicht unterstützt.</td>
+<td><code>action</code>에 대해 전달된 값이 현재 구성된 디바운싱 알고리즘에서 지원되지 않습니다.</td>
 </tr>
 </tbody>
 </table>
 <!-- annahmen: 1) Nach Aufruf von StopOffer() dürfte eine erneute Aktivierung über Offer() zulässig sein – Begründung: SWS_DM_01089 spezifiziert lediglich die Deaktivierung der Weiterleitung von DM-Anfragen, verbietet ein erneutes Offerieren jedoch nicht explizit. -->
-<p class="ai-note">Dieser Leitfaden wurde durch einen KI-Kurations-Assistenten auf Basis von AUTOSAR R25-11 Spezifikationsdaten erstellt.</p>
+<p class="ai-note">이 가이드는 AUTOSAR R25-11 사양 데이터를 기반으로 AI 큐레이션 어시스턴트에 의해 작성되었습니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_diag_Monitor_5df579" title="AI와 토론">💬 AI와 토론</button>
@@ -1251,33 +1250,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="6ed6a268d2d2b083c629a88237b755ff3c189edff64457de88a8a9c1c491f675" data-trace-output="d88bf058a28f63716a04806f644dff077eb725ca8eec9450e4fc1a2e041b3d0a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Klasse &lt;code&gt;ara::diag::Monitor&lt;/code&gt; bildet die primäre Schnittstelle für adaptive Anwendungen zur Implementierung von Diagnoseüberwachungen (Monitoren) gemäß &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=69"&gt;AUTOSAR AP SWS Diagnostics S. 69&lt;/a&gt;. Ihre Hauptverantwortung liegt darin, den operativen Status von Fehlererkennungspfaden an das Diagnosemanagement (Diagnostic Management, DM) zu melden und die Synchronisation zwischen der anwendungsinternen Überwachungslogik und den übergeordneten Diagnoseroutinen sicherzustellen.&lt;/p&gt;
-&lt;p&gt;An der Interaktion sind im Wesentlichen drei Parteien beteiligt:&lt;/p&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::diag::Monitor&lt;/code&gt; 클래스는 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=69"&gt;AUTOSAR AP SWS Diagnostics 69쪽&lt;/a&gt;에 따라 진단 모니터링(모니터)을 구현하기 위한 어댑티브 애플리케이션의 기본 인터페이스를 형성합니다. 이 클래스의 주요 책임은 오류 감지 경로의 작동 상태를 Diagnostic Management(DM)에 보고하고, 애플리케이션 내부 모니터링 로직과 상위 진단 루틴 간의 동기화를 보장하는 것입니다.&lt;/p&gt;
+&lt;p&gt;상호작용에는 기본적으로 세 당사자가 관여합니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Anwendung (Überwachungsfunktion):&lt;/strong&gt; Führt anwendungsspezifische Sensor- oder Systemprüfungen aus, ermittelt Fehlerzustände und meldet diese über &lt;code&gt;ReportMonitorAction()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Zudem implementiert sie den optionalen Initialisierungs-Callback &lt;code&gt;initMonitor&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;ara::diag::Monitor:&lt;/strong&gt; Dient als standardisierter Service-Endpunkt der Adaptive Platform und kapselt die Verbindung zum modellierten Diagnoseport (&lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Diagnostic Management (DM):&lt;/strong&gt; Verarbeitet die gemeldeten Zustände, steuert Ereignisstatusbits und leitet bei Bedarf Reinitialisierungsanfragen über das DM an die Anwendung weiter &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;애플리케이션(모니터링 기능):&lt;/strong&gt; 애플리케이션별 센서 또는 시스템 검사를 실행하고, 오류 상태를 확인하여 &lt;code&gt;ReportMonitorAction()&lt;/code&gt;을(를) 통해 보고합니다&lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. 또한 선택적 초기화 콜백 &lt;code&gt;initMonitor&lt;/code&gt;을(를) 구현합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;ara::diag::Monitor:&lt;/strong&gt; Adaptive Platform의 표준화된 서비스 엔드포인트 역할을 하며 모델링된 진단 포트(&lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt;)에 대한 연결을 캡슐화합니다&lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Diagnostic Management (DM):&lt;/strong&gt; 보고된 상태를 처리하고, 이벤트 상태 비트를 제어하며, 필요한 경우 DM을 통해 재초기화 요청을 애플리케이션으로 전달합니다&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Je nach Diagnosemodell unterstützt &lt;code&gt;ara::diag::Monitor&lt;/code&gt; unterschiedliche Strategien zur Entprellung (Debouncing), die bereits bei der Instanziierung fest vorgegeben werden:&lt;/p&gt;
+&lt;p&gt;진단 모델에 따라 &lt;code&gt;ara::diag::Monitor&lt;/code&gt;은(는) 디바운싱(Debouncing)을 위한 다양한 전략을 지원하며, 이는 인스턴스화 시 이미 고정적으로 지정됩니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Monitor-intern:&lt;/strong&gt; Die Entprellung erfolgt vollständig in der Anwendung; ein Callback zur Ermittlung des Fault Detection Counters (FDC) wird registriert &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zählerbasiert:&lt;/strong&gt; Nutzt vorkonfigurierte Zählerwerte (&lt;code&gt;CounterBased&lt;/code&gt;) der Plattform &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zeitbasiert:&lt;/strong&gt; Nutzt zeitgesteuerte Schwellwerte (&lt;code&gt;TimeBased&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ohne Entprellung:&lt;/strong&gt; Direkte Weitergabe unqualifizierter Testergebnisse an das DM &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;모니터 내부:&lt;/strong&gt; 디바운싱이 애플리케이션에서 완전히 수행되며, Fault Detection Counter(FDC)를 결정하기 위한 콜백이 등록됩니다&lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;카운터 기반:&lt;/strong&gt; 플랫폼의 사전 구성된 카운터 값(&lt;code&gt;CounterBased&lt;/code&gt;)을 사용합니다&lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;시간 기반:&lt;/strong&gt; 시간 제어 임계값(&lt;code&gt;TimeBased&lt;/code&gt;)을 사용합니다&lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;디바운싱 없음:&lt;/strong&gt; 자격이 부여되지 않은 테스트 결과를 DM에 직접 전달&lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Instanzen von &lt;code&gt;ara::diag::Monitor&lt;/code&gt; sind als unteilbare Einheiten konzipiert. Die Klasse ist weder kopierbar noch verschiebbar; sowohl Kopier- und Move-Konstruktor als auch die entsprechenden Zuweisungsoperatoren sind explizit gelöscht (&lt;code&gt;=delete&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683"&gt;[SWS_DM_01683]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684"&gt;[SWS_DM_01684]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685"&gt;[SWS_DM_01685]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686"&gt;[SWS_DM_01686]&lt;/a&gt;. Eine Instanz verbleibt somit fest an ihrer Speicheradresse.&lt;/p&gt;
-&lt;p&gt;Der Lebenszyklus gliedert sich in folgende Zustände:&lt;/p&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::diag::Monitor&lt;/code&gt;의 인스턴스는 분할할 수 없는 단위로 설계되었습니다. 이 클래스는 복사할 수도 이동할 수도 없습니다. 복사 및 이동 생성자와 해당 대입 연산자 모두 명시적으로 삭제되었습니다(&lt;code&gt;=delete&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683"&gt;[SWS_DM_01683]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684"&gt;[SWS_DM_01684]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685"&gt;[SWS_DM_01685]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686"&gt;[SWS_DM_01686]&lt;/a&gt;. 따라서 인스턴스는 해당 메모리 주소에 고정되어 유지됩니다.&lt;/p&gt;
+&lt;p&gt;수명 주기는 다음과 같은 상태로 나뉩니다:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Nicht initialisiert:&lt;/strong&gt; Vor Aufruf des Konstruktors existiert kein Objekt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziiert:&lt;/strong&gt; Die Anwendung erzeugt das Monitor-Objekt über einen der vier ausnahmesicheren Konstruktoren &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt; unter Angabe des &lt;code&gt;InstanceSpecifier&lt;/code&gt;. Zu diesem Zeitpunkt werden noch keine Nachrichten vom DM entgegengenommen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Angeboten:&lt;/strong&gt; Durch den expliziten Aufruf von &lt;code&gt;Offer()&lt;/code&gt; erklärt die Anwendung ihre Bereitschaft zur Entgegennahme von Initialisierungsaufrufen (&lt;code&gt;initMonitor&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;. Erst in diesem Zustand ist der Kommunikationspfad zum DM vollständig aktiv.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gestoppt:&lt;/strong&gt; Mittels &lt;code&gt;StopOffer()&lt;/code&gt; deaktiviert die Anwendung die Weiterleitung von Anfragen seitens des DM &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;. Nach dem Stoppen dürfte eine erneute Aktivierung über &lt;code&gt;Offer()&lt;/code&gt; möglich sein, um die Weiterleitung bei Bedarf wieder aufzunehmen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;초기화되지 않음:&lt;/strong&gt; 생성자를 호출하기 전에는 객체가 존재하지 않습니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;인스턴스화됨:&lt;/strong&gt; 애플리케이션은 &lt;code&gt;InstanceSpecifier&lt;/code&gt;을(를) 지정하여 네 가지 예외 안전 생성자 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt; 중 하나를 통해 Monitor 객체를 생성합니다. 이 시점에는 아직 DM으로부터 메시지를 수신하지 않습니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;제공됨:&lt;/strong&gt; &lt;code&gt;Offer()&lt;/code&gt;의 명시적 호출을 통해 애플리케이션은 초기화 호출(&lt;code&gt;initMonitor&lt;/code&gt;)을 수신할 준비가 되었음을 선언합니다&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;. 이 상태에서만 DM으로의 통신 경로가 완전히 활성화됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;중지됨:&lt;/strong&gt; 애플리케이션은 &lt;code&gt;StopOffer()&lt;/code&gt;을(를) 사용하여 DM 측의 요청 전달을 비활성화합니다&lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;. 중지 후에는 필요 시 전달을 재개하기 위해 &lt;code&gt;Offer()&lt;/code&gt;을(를) 통한 재활성화가 가능할 것으로 보입니다.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Hinsichtlich der Nebenläufigkeit sind sämtliche Elementfunktionen von &lt;code&gt;ara::diag::Monitor&lt;/code&gt; als nicht thread-sicher (&lt;code&gt;not thread-safe&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;. Greifen mehrere Anwendungs-Threads auf dieselbe Instanz zu, ist ein externer Synchronisationsmechanismus zwingend erforderlich.&lt;/p&gt;
+&lt;p&gt;동시성과 관련하여 &lt;code&gt;ara::diag::Monitor&lt;/code&gt;의 모든 멤버 함수는 스레드 안전하지 않은 것(&lt;code&gt;not thread-safe&lt;/code&gt;)으로 지정되어 있습니다&lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;. 여러 애플리케이션 스레드가 동일한 인스턴스에 액세스하는 경우 외부 동기화 메커니즘이 반드시 필요합니다.&lt;/p&gt;
 &lt;div class="diagram" id="diag-lebenszyklus"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 405.34 126.80" style="max-width:540px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 112.4)"&gt;
 &lt;title&gt;MonitorLebenszyklus&lt;/title&gt;
@@ -1335,70 +1333,70 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Zustandsübergänge einer Monitor-Instanz von der Erzeugung über die Dienstfreigabe bis zur Deaktivierung. Quellen: &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;상태 다이어그램: 생성부터 서비스 릴리스, 비활성화까지 Monitor 인스턴스의 상태 전이. 출처: &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die typische Verwendung von &lt;code&gt;ara::diag::Monitor&lt;/code&gt; folgt einer festen Abfolge aus Initialisierung, Bereitschaftssignalisierung, zyklischer Statusmeldung und kontrollierter Deaktivierung:&lt;/p&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::diag::Monitor&lt;/code&gt;의 일반적인 사용법은 초기화, 준비 상태 신호 전송, 주기적 상태 보고 및 제어된 비활성화의 정해진 순서를 따릅니다:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Konstruktion:&lt;/strong&gt; Die Anwendung wählt den Konstruktor, der zur DEXT-Modellierung des zugehörigen Ports passt (z. B. monitor-intern mit FDC-Funktion &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt; oder zählerbasiert &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;) und übergibt die &lt;code&gt;initMonitor&lt;/code&gt;-Rückruffunktion.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienst aktivieren:&lt;/strong&gt; Vor der ersten Diagnoseverarbeitung ruft die Anwendung &lt;code&gt;Offer()&lt;/code&gt; auf &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;. Das zurückgegebene &lt;code&gt;ara::core::Result&amp;lt;void&amp;gt;&lt;/code&gt; bestätigt die fehlerfreie Aktivierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reinitialisierung verarbeiten:&lt;/strong&gt; Bei Änderungen des System- oder Monitorstatus kann das DM den registrierten Callback &lt;code&gt;initMonitor&lt;/code&gt; ausführen, um die interne Überwachungslogik zurückzusetzen &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Aktionen und Ergebnisse melden:&lt;/strong&gt; Während des normalen Überwachungsbetriebs ruft die Anwendung wiederholt &lt;code&gt;ReportMonitorAction()&lt;/code&gt; auf &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Hierbei werden Prüfergebnisse (bestanden/fehlgeschlagen) oder Steuerbefehle für das Entprellen gemeldet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienst beenden:&lt;/strong&gt; Beim Herunterfahren der Komponente wird &lt;code&gt;StopOffer()&lt;/code&gt; aufgerufen &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;, bevor das Objekt schließlich zerstört wird.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;생성:&lt;/strong&gt; 애플리케이션은 해당 포트의 DEXT 모델링과 일치하는 생성자(예: FDC 함수가 포함된 모니터 내부 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt; 또는 카운터 기반 &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;)를 선택하고 &lt;code&gt;initMonitor&lt;/code&gt; 콜백 함수를 전달합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;서비스 활성화:&lt;/strong&gt; 최초 진단 처리를 수행하기 전에 애플리케이션은 &lt;code&gt;Offer()&lt;/code&gt;을(를) 호출합니다&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;. 반환된 &lt;code&gt;ara::core::Result&amp;lt;void&amp;gt;&lt;/code&gt;은(는) 오류 없는 활성화를 확인합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;재초기화 처리:&lt;/strong&gt; 시스템 또는 모니터 상태가 변경되면 DM은 등록된 콜백 &lt;code&gt;initMonitor&lt;/code&gt;을(를) 실행하여 내부 모니터링 로직을 재설정할 수 있습니다&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;작업 및 결과 보고:&lt;/strong&gt; 정상적인 모니터링 동작 중에 애플리케이션은 &lt;code&gt;ReportMonitorAction()&lt;/code&gt;을(를) 반복적으로 호출합니다&lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. 이때 테스트 결과(합격/불합격) 또는 디바운싱을 위한 제어 명령이 보고됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;서비스 종료:&lt;/strong&gt; 컴포넌트를 종료할 때 객체가 최종적으로 소멸되기 전에 &lt;code&gt;StopOffer()&lt;/code&gt;이(가) 호출됩니다&lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;div class="diagram" id="diag-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 436" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf der Diagnoseüberwachung&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html"&gt;ara::diag::Monitor&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Diagnostic Management&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="218" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;rect x="40" y="300" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html"&gt;Monitor&lt;/a&gt;(specifier, initMonitor, ...)&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088"&gt;Offer&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="166" x2="345" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html"&gt;ara::core::Result&lt;/a&gt;&amp;lt;void&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 218 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="233" font-size="11" font-weight="bold" fill="#28251d"&gt;opt&lt;/text&gt;&lt;text x="96" y="233" font-size="11" font-style="italic" fill="#28251d"&gt;Reinitialisierungsbedarf&lt;/text&gt;&lt;text x="345.0" y="258" text-anchor="middle" font-size="11" fill="#28251d"&gt;initMonitor()&lt;/text&gt;&lt;line x1="555" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 300 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="315" font-size="11" font-weight="bold" fill="#28251d"&gt;loop&lt;/text&gt;&lt;text x="96" y="315" font-size="11" font-style="italic" fill="#28251d"&gt;Überwachungszyklus&lt;/text&gt;&lt;text x="240.0" y="340" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543"&gt;ReportMonitorAction&lt;/a&gt;(action)&lt;/text&gt;&lt;line x1="135" y1="346" x2="345" y2="346" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="392" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089"&gt;StopOffer&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="398" x2="345" y2="398" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typische Interaktionsabfolge zwischen Anwendung, Monitor und DM während des Überwachungsbetriebs. Quellen: &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;시퀀스 다이어그램: 모니터링 동작 중 애플리케이션, 모니터 및 DM 간의 일반적인 상호작용 순서. 출처: &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlersituationen rund um &lt;code&gt;ara::diag::Monitor&lt;/code&gt; lassen sich in statische Konfigurationsverletzungen bei der Instanziierung und dynamische Laufzeitfehler unterteilen:&lt;/p&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::diag::Monitor&lt;/code&gt;과 관련된 오류 상황은 인스턴스화 시의 정적 구성 위반과 동적 런타임 오류로 구분할 수 있습니다:&lt;/p&gt;
 &lt;table class="violations-table"&gt;
 &lt;thead&gt;
 &lt;tr&gt;
-&lt;th&gt;Fehler / Violation&lt;/th&gt;
-&lt;th&gt;Kontext / Ursprung&lt;/th&gt;
-&lt;th&gt;Bedeutung und Konsequenz&lt;/th&gt;
+&lt;th&gt;오류 / 위반&lt;/th&gt;
+&lt;th&gt;컨텍스트 / 원인&lt;/th&gt;
+&lt;th&gt;의미 및 결과&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;InstanceSpecifierMappingIntegrityViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der übergebene &lt;code&gt;InstanceSpecifier&lt;/code&gt; lässt sich im Ausführungsmodell nicht auflösen oder verweist nicht auf einen &lt;code&gt;PortPrototype&lt;/code&gt;.&lt;/td&gt;
+&lt;td&gt;생성자 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;전달된 &lt;code&gt;InstanceSpecifier&lt;/code&gt;을(를) 실행 모델에서 확인할 수 없거나 &lt;code&gt;PortPrototype&lt;/code&gt;을(를) 참조하지 않습니다.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;PortInterfaceMappingViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der referenzierte Port ist nicht durch ein &lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt; typisiert.&lt;/td&gt;
+&lt;td&gt;생성자 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;참조된 포트가 &lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt;(으)로 형식화되지 않았습니다.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;ProcessMappingViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Kein modellierter Prozess stimmt mit dem aktuellen Laufzeitprozess überein.&lt;/td&gt;
+&lt;td&gt;생성자 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;현재 런타임 프로세스와 일치하는 모델링된 프로세스가 없습니다.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;InstanceSpecifierAlreadyInUseViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der &lt;code&gt;InstanceSpecifier&lt;/code&gt; wurde innerhalb desselben Prozesses bereits für eine andere Instanz registriert.&lt;/td&gt;
+&lt;td&gt;생성자 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;InstanceSpecifier&lt;/code&gt;이(가) 동일한 프로세스 내에서 이미 다른 인스턴스에 대해 등록되었습니다.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;InvalidDebouncingAlgorithmViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Widerspruch zwischen dem gewählten Konstruktor und der im Modell (DEXT) konfigurierten Entprellmethode (z. B. time-based vs. counter-based).&lt;/td&gt;
+&lt;td&gt;생성자 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;선택한 생성자와 모델(DEXT)에 구성된 디바운싱 방법 간의 불일치(예: time-based vs. counter-based).&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;DiagOfferErrc::kAlreadyOffered&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;Offer()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Rückgabe im &lt;code&gt;ara::core::Result&lt;/code&gt;, falls &lt;code&gt;Offer()&lt;/code&gt; aufgerufen wird, während der Dienst bereits angeboten wird (Rollback-Semantik).&lt;/td&gt;
+&lt;td&gt;서비스가 이미 제공되고 있는 중에 &lt;code&gt;Offer()&lt;/code&gt;을(를) 호출할 경우 &lt;code&gt;ara::core::Result&lt;/code&gt;에서 반환됨(롤백 의미 체계).&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;UnexpectedMonitorActionHandlingViolation&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;ReportMonitorAction()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der übergebene Wert für &lt;code&gt;action&lt;/code&gt; wird vom aktuell konfigurierten Entprellalgorithmus nicht unterstützt.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;action&lt;/code&gt;에 대해 전달된 값이 현재 구성된 디바운싱 알고리즘에서 지원되지 않습니다.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;!-- annahmen: 1) Nach Aufruf von StopOffer() dürfte eine erneute Aktivierung über Offer() zulässig sein – Begründung: SWS_DM_01089 spezifiziert lediglich die Deaktivierung der Weiterleitung von DM-Anfragen, verbietet ein erneutes Offerieren jedoch nicht explizit. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch einen KI-Kurations-Assistenten auf Basis von AUTOSAR R25-11 Spezifikationsdaten erstellt.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 AUTOSAR R25-11 사양 데이터를 기반으로 AI 큐레이션 어시스턴트에 의해 작성되었습니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

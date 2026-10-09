@@ -20,28 +20,27 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>9331b66b0573</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_tsync_ara_tsync_6055e5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/namespaces/ns_tsync_ara_tsync_6055e5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_tsync_ara_tsync_6055e5" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Der C++-Namespace <code>ara::tsync</code> stellt die funktionale Schnittstelle des Moduls <em>Time Synchronization</em> (tsync) in der AUTOSAR Adaptive Platform dar. Er ermöglicht Anwendungen den einheitlichen Zugriff auf synchronisierte Zeitbasen sowie die Überwachung von Synchronisationszuständen und Zeitgüte. Die Architektur unterscheidet primär zwischen Konsumenten und Bereitstellern von Zeitinformationen:
+C++ 命名空间 <code>ara::tsync</code> 构成了 AUTOSAR Adaptive Platform 中 <em>Time Synchronization</em>（tsync）模块的功能接口。它使应用程序能够对同步时间基准进行统一访问，并监控同步状态和时间质量。该架构主要区分时间信息的消费者与提供者：
 </p>
 <ul>
-<li><code>SynchronizedTimeBaseConsumer</code> dient Anwendungen als Zugriffspunkt auf eine konfigurierte, über einen <em>InstanceSpecifier</em> referenzierte Zeitbasis, um Zeitstempel abzurufen oder Zustandsänderungen zu verfolgen.</li>
-<li><code>SynchronizedTimeBaseProvider</code> ermöglicht Anwendungen oder Plattformkomponenten, als Zeitquelle zu agieren und eine Zeitbasis bereitzustellen.</li>
-<li><code>TimeBase</code> fungiert als Pseudo-Clock-Konstrukt zur standardkonformen Typisierung im Rahmen von <code>std::chrono</code>. Basierend darauf definiert der Typalias <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) standardisierte Zeitpunkte als <code>std::chrono::time_point&lt;TimeBase, std::chrono::nanoseconds&gt;</code>.</li>
-<li><code>SynchronizedTimeBaseStatus</code> erfasst Momentaufnahmen des Systemzustands einer Zeitbasis inklusive Kommunikations- und Sprunginformationen.</li>
-<li>Mess- und Validierungsdatenstrukturen (darunter <code>TimeMasterMeasurementType</code>, <code>TimeSlaveMeasurementType</code>, <code>PdelayInitiatorMeasurementType</code>, <code>PdelayResponderMeasurementType</code> und <code>TimePrecisionMeasurement</code>) sowie die Callback-Schnittstellen <code>ConsumerTimeBaseValidationNotification</code> und <code>ProviderTimeBaseValidationNotification</code> unterstützen die Verifikation und Präzisionsbewertung der Zeitverteilung.</li>
+<li><code>SynchronizedTimeBaseConsumer</code> 用作应用程序访问经由 <em>InstanceSpecifier</em> 引用的已配置时间基准的访问点，以获取时间戳或跟踪状态变化。</li>
+<li><code>SynchronizedTimeBaseProvider</code> 使应用程序或平台组件能够充当时间源并提供时间基准。</li>
+<li><code>TimeBase</code> 用作伪时钟结构，用于在 <code>std::chrono</code> 框架下进行符合标准的类型化。以此为基础，类型别名 <code>Timestamp</code>（<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>）将标准化时间点定义为 <code>std::chrono::time_point&lt;TimeBase, std::chrono::nanoseconds&gt;</code>。</li>
+<li><code>SynchronizedTimeBaseStatus</code> 捕获时间基准的系统状态快照，包括通信和跳变信息。</li>
+<li>测量与验证数据结构（包括 <code>TimeMasterMeasurementType</code>、<code>TimeSlaveMeasurementType</code>、<code>PdelayInitiatorMeasurementType</code>、<code>PdelayResponderMeasurementType</code> 和 <code>TimePrecisionMeasurement</code>）以及回调接口 <code>ConsumerTimeBaseValidationNotification</code> 和 <code>ProviderTimeBaseValidationNotification</code> 支持时间分配的验证和精度评估。</li>
 </ul>
 
-<h4>Lebenszyklus und Synchronisationszustände</h4>
+<h4>生命周期与同步状态</h4>
 <p>
-Zeitbasen durchlaufen im Laufzeitbetrieb diskrete Synchronisationszustände, die über das Enum <code>SynchronizationStatus</code> (<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a>) abgebildet werden. Nach dem Start befindet sich eine Zeitbasis initial im Zustand <code>kNotSynchronizedUntilStartup</code> (=0). Sobald Synchronisationsnachrichten erfolgreich verarbeitet werden, wechselt die Zeitbasis entweder in den Zustand <code>kSynchronized</code> (=2) bei direkter Kopplung an den Time Master oder in <code>kSynchToGateway</code> (=3), falls die Synchronisation mittelbar über ein Gateway erfolgt. Bleibt die Synchronisation innerhalb eines definierten Zeitfensters aus, wird der Zustand <code>kTimeOut</code> (=1) eingenommen.
+时间基准在运行时经历离散的同步状态，这些状态通过枚举 <code>SynchronizationStatus</code>（<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a>）进行映射。启动后，时间基准初始处于状态 <code>kNotSynchronizedUntilStartup</code>（=0）。一旦成功处理同步报文，时间基准将切换为状态 <code>kSynchronized</code>（=2，在直接耦合到 Time Master 的情况下），或者切换为 <code>kSynchToGateway</code>（=3，若通过网关间接进行同步）。如果在定义的时间窗口内未进行同步，则进入状态 <code>kTimeOut</code>（=1）。
 </p>
 <p>
-Parallel zum Kommunikationszustand signalisiert das Enum <code>LeapJump</code> (<a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051">[SWS_TS_01051]</a>) sprunghafte Korrekturen der Zeitbasis: <code>kTimeLeapNone</code> (=0) zeigt den regulären Verlauf ohne Schwellwertüberschreitung an, während <code>kTimeLeapFuture</code> (=1) einen Vorwärtssprung und <code>kTimeLeapPast</code> (=2) einen Rückwärtssprung über den konfigurierten Schwellwert hinaus kennzeichnet.
+与通信状态并行，枚举 <code>LeapJump</code>（<a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051">[SWS_TS_01051]</a>）指示时间基准的跳变校正：<code>kTimeLeapNone</code>（=0）表示未超出阈值的正常进程，而 <code>kTimeLeapFuture</code>（=1）表示超出已配置阈值向前跳变，<code>kTimeLeapPast</code>（=2）表示向后跳变。
 </p>
 <div class="diagram" id="diag-sync-status"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 466.11 357.40" style="max-width:621px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 343)">
@@ -150,64 +149,64 @@ Parallel zum Kommunikationszustand signalisiert das Enum <code>LeapJump</code> (
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Synchronisationszustände einer Zeitbasis gemäß SynchronizationStatus. Quellen: <a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a></p>
+<p class="diagram-note">状态图：根据 SynchronizationStatus 的时间基准同步状态。来源：<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a></p>
 
-<h4>Nutzungspfad</h4>
+<h4>使用路径</h4>
 <p>
-Ein typischer Nutzungsablauf auf Konsumentenseite gliedert sich in Instanziierung, Registrierung asynchroner Callback-Funktionen und zyklische bzw. ereignisgesteuerte Abfrage von Zeitinformationen:
+消费者端的典型使用流程分为实例化、注册异步回调函数以及周期性或事件驱动地查询时间信息：
 </p>
 <ol>
-<li><strong>Zugriff binden:</strong> Eine Konsumenten-Anwendung instanziiert ein Objekt vom Typ <code>SynchronizedTimeBaseConsumer</code> unter Angabe des passenden <em>InstanceSpecifier</em>.</li>
-<li><strong>Benachrichtigungen registrieren:</strong> Um über Statuswechsel informiert zu werden, übergibt die Anwendung Callback-Funktionen an den Konsumenten. Die Funktionssignaturen sind über Callback-Aliase vorgegeben:
+<li><strong>绑定访问：</strong>消费者应用程序通过指定适当的 <em>InstanceSpecifier</em> 实例化类型为 <code>SynchronizedTimeBaseConsumer</code> 的对象。</li>
+<li><strong>注册通知：</strong>为了获知状态变化，应用程序将回调函数传递给消费者。函数签名通过回调别名预先指定：
 <ul>
-<li><code>SynchronizationNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222">[SWS_TS_14222]</a>) zur Benachrichtigung bei Wechsel des <code>SynchronizationStatus</code> (Signatur <code>std::function&lt;void(const SynchronizationStatus &amp;)&gt;</code>, als nicht threadsicher spezifiziert).</li>
-<li><code>SynchronizedTimeBaseNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221">[SWS_TS_14221]</a>) zur Übermittlung vollständiger Status-Snapshots via <code>SynchronizedTimeBaseStatus</code> (Signatur <code>std::function&lt;void(const SynchronizedTimeBaseStatus &amp;)&gt;</code>, nicht threadsicher).</li>
-<li><code>TimePrecisionNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223">[SWS_TS_14223]</a>) zur periodischen Auswertung von Präzisionsmessdaten über <code>TimePrecisionMeasurement</code> (Signatur <code>std::function&lt;void(const TimePrecisionMeasurement &amp;)&gt;</code>, nicht threadsicher).</li>
+<li><code>SynchronizationNotifier</code>（<a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222">[SWS_TS_14222]</a>）用于在 <code>SynchronizationStatus</code> 发生变化时进行通知（签名 <code>std::function&lt;void(const SynchronizationStatus &amp;)&gt;</code>，被指定为非线程安全）。</li>
+<li><code>SynchronizedTimeBaseNotifier</code>（<a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221">[SWS_TS_14221]</a>）用于通过 <code>SynchronizedTimeBaseStatus</code> 传输完整的状态快照（签名 <code>std::function&lt;void(const SynchronizedTimeBaseStatus &amp;)&gt;</code>，非线程安全）。</li>
+<li><code>TimePrecisionNotifier</code>（<a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223">[SWS_TS_14223]</a>）用于通过 <code>TimePrecisionMeasurement</code> 周期性评估精度测量数据（签名 <code>std::function&lt;void(const TimePrecisionMeasurement &amp;)&gt;</code>，非线程安全）。</li>
 </ul>
 </li>
-<li><strong>Zeitstempel und Nutzerdaten erfassen:</strong> Die Anwendung fragt Zeitpunkte vom Typ <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) ab und kann anwendungsbezogene Zusatzinformationen über <code>UserData</code> transportieren.</li>
+<li><strong>获取时间戳和用户数据：</strong>应用程序查询类型为 <code>Timestamp</code>（<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>）的时间点，并可以通过 <code>UserData</code> 传输与应用相关的附加信息。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Die Fehlerbehandlung in <code>ara::tsync</code> orientiert sich an den Konventionen von <code>ara::core</code>. Fehler werden über die Fehlerdomäne <code>TsyncErrorDomain</code> und den Fehlercode-Enum <code>TsyncErrc</code> (<a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901">[SWS_TS_00901]</a>) abgebildet:
+<code>ara::tsync</code> 中的错误处理遵循 <code>ara::core</code> 的约定。错误通过错误域 <code>TsyncErrorDomain</code> 和错误代码枚举 <code>TsyncErrc</code>（<a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901">[SWS_TS_00901]</a>）进行映射：
 </p>
 <table>
 <thead>
 <tr>
-<th>Fehlercode</th>
-<th>Numerischer Wert</th>
-<th>Bedeutung und Ursache</th>
+<th>错误代码</th>
+<th>数值</th>
+<th>含义与原因</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>kDaemonConnectionLost</code></td>
 <td>1</td>
-<td>Die angeforderte Operation schlägt fehl, da die Verbindung zum Time-Synchronization-Daemon unterbrochen ist.</td>
+<td>请求的操作失败，因为与 Time Synchronization 守护进程的连接已中断。</td>
 </tr>
 <tr>
 <td><code>kLimitsExceeded</code></td>
 <td>2</td>
-<td>Ein übergebener Parameter überschreitet den zulässigen Wertebereich.</td>
+<td>传入的参数超出了允许的值范围。</td>
 </tr>
 <tr>
 <td><code>kFunctionNotSupported</code></td>
 <td>3</td>
-<td>Die angeforderte Funktion wird von der aktuellen Implementierung oder Konfiguration nicht unterstützt.</td>
+<td>当前实现或配置不支持所请求的功能。</td>
 </tr>
 <tr>
 <td><code>kInvalidUserDataSize</code></td>
 <td>4</td>
-<td>Die Länge der übergebenen Nutzerdaten überschreitet die maximal zulässige Größe (spezifiziert durch <code>UserData::kMaxUserDataSize</code>, standardmäßig 3 Bytes).</td>
+<td>传入的用户数据长度超过了允许的最大大小（由 <code>UserData::kMaxUserDataSize</code> 指定，默认值为 3 字节）。</td>
 </tr>
 </tbody>
 </table>
 <p>
-Für die Erzeugung und Prüfung von Fehlerobjekten stellt der Namespace die threadsichere und ausnahmesichere Hilfsfunktion <code>MakeErrorCode</code> (<a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910">[SWS_TS_00910]</a>) sowie den Zugriff auf die globale Fehlerdomäne über <code>GetTsyncErrorDomain</code> (<a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909">[SWS_TS_00909]</a>) bereit. Alternativ signalisiert die Exception-Klasse <code>TsyncException</code> Ausnahmesituationen in Kontexten, in denen C++-Exceptions zum Einsatz kommen.
+为了创建和检查错误对象，该命名空间提供了线程安全且异常安全的辅助函数 <code>MakeErrorCode</code>（<a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910">[SWS_TS_00910]</a>），以及通过 <code>GetTsyncErrorDomain</code>（<a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909">[SWS_TS_00909]</a>）对全局错误域的访问。或者，在采用 C++ 异常的上下文中，异常类 <code>TsyncException</code> 会指示异常情况。
 </p>
 <!-- annahmen: 1) Die Zustandsübergänge zwischen den SynchronizationStatus-Werten ergeben sich fachlich aus dem beschriebenen Verlust bzw. Wiederaufbau der Synchronisation. – Begründung: SWS_TS_01050 definiert die Zustände kNotSynchronizedUntilStartup, kTimeOut, kSynchronized und kSynchToGateway, spezifiziert jedoch keine separate Übergangsmatrix im Payload. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen und Typdefinitionen der Spezifikation ara::tsync (AUTOSAR Adaptive Platform R25-11).</p>
+<p class="ai-note">本指南基于规范 ara::tsync（AUTOSAR Adaptive Platform R25-11）的要求和类型定义。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_tsync_ara_tsync_6055e5" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -1251,25 +1250,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="9331b66b057303cbbb041c6200a918337902f1552e503fed1bb5c4d67bc2ec02" data-trace-output="9fea7be386120556fd7f83a6372aa2fc03fda55cc0e8780fe077557fc046fe90" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Der C++-Namespace &lt;code&gt;ara::tsync&lt;/code&gt; stellt die funktionale Schnittstelle des Moduls &lt;em&gt;Time Synchronization&lt;/em&gt; (tsync) in der AUTOSAR Adaptive Platform dar. Er ermöglicht Anwendungen den einheitlichen Zugriff auf synchronisierte Zeitbasen sowie die Überwachung von Synchronisationszuständen und Zeitgüte. Die Architektur unterscheidet primär zwischen Konsumenten und Bereitstellern von Zeitinformationen:
+C++ 命名空间 &lt;code&gt;ara::tsync&lt;/code&gt; 构成了 AUTOSAR Adaptive Platform 中 &lt;em&gt;Time Synchronization&lt;/em&gt;（tsync）模块的功能接口。它使应用程序能够对同步时间基准进行统一访问，并监控同步状态和时间质量。该架构主要区分时间信息的消费者与提供者：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; dient Anwendungen als Zugriffspunkt auf eine konfigurierte, über einen &lt;em&gt;InstanceSpecifier&lt;/em&gt; referenzierte Zeitbasis, um Zeitstempel abzurufen oder Zustandsänderungen zu verfolgen.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseProvider&lt;/code&gt; ermöglicht Anwendungen oder Plattformkomponenten, als Zeitquelle zu agieren und eine Zeitbasis bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TimeBase&lt;/code&gt; fungiert als Pseudo-Clock-Konstrukt zur standardkonformen Typisierung im Rahmen von &lt;code&gt;std::chrono&lt;/code&gt;. Basierend darauf definiert der Typalias &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) standardisierte Zeitpunkte als &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase, std::chrono::nanoseconds&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; erfasst Momentaufnahmen des Systemzustands einer Zeitbasis inklusive Kommunikations- und Sprunginformationen.&lt;/li&gt;
-&lt;li&gt;Mess- und Validierungsdatenstrukturen (darunter &lt;code&gt;TimeMasterMeasurementType&lt;/code&gt;, &lt;code&gt;TimeSlaveMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayInitiatorMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayResponderMeasurementType&lt;/code&gt; und &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt;) sowie die Callback-Schnittstellen &lt;code&gt;ConsumerTimeBaseValidationNotification&lt;/code&gt; und &lt;code&gt;ProviderTimeBaseValidationNotification&lt;/code&gt; unterstützen die Verifikation und Präzisionsbewertung der Zeitverteilung.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; 用作应用程序访问经由 &lt;em&gt;InstanceSpecifier&lt;/em&gt; 引用的已配置时间基准的访问点，以获取时间戳或跟踪状态变化。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseProvider&lt;/code&gt; 使应用程序或平台组件能够充当时间源并提供时间基准。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TimeBase&lt;/code&gt; 用作伪时钟结构，用于在 &lt;code&gt;std::chrono&lt;/code&gt; 框架下进行符合标准的类型化。以此为基础，类型别名 &lt;code&gt;Timestamp&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;）将标准化时间点定义为 &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase, std::chrono::nanoseconds&amp;gt;&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; 捕获时间基准的系统状态快照，包括通信和跳变信息。&lt;/li&gt;
+&lt;li&gt;测量与验证数据结构（包括 &lt;code&gt;TimeMasterMeasurementType&lt;/code&gt;、&lt;code&gt;TimeSlaveMeasurementType&lt;/code&gt;、&lt;code&gt;PdelayInitiatorMeasurementType&lt;/code&gt;、&lt;code&gt;PdelayResponderMeasurementType&lt;/code&gt; 和 &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt;）以及回调接口 &lt;code&gt;ConsumerTimeBaseValidationNotification&lt;/code&gt; 和 &lt;code&gt;ProviderTimeBaseValidationNotification&lt;/code&gt; 支持时间分配的验证和精度评估。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus und Synchronisationszustände&lt;/h4&gt;
+&lt;h4&gt;生命周期与同步状态&lt;/h4&gt;
 &lt;p&gt;
-Zeitbasen durchlaufen im Laufzeitbetrieb diskrete Synchronisationszustände, die über das Enum &lt;code&gt;SynchronizationStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;) abgebildet werden. Nach dem Start befindet sich eine Zeitbasis initial im Zustand &lt;code&gt;kNotSynchronizedUntilStartup&lt;/code&gt; (=0). Sobald Synchronisationsnachrichten erfolgreich verarbeitet werden, wechselt die Zeitbasis entweder in den Zustand &lt;code&gt;kSynchronized&lt;/code&gt; (=2) bei direkter Kopplung an den Time Master oder in &lt;code&gt;kSynchToGateway&lt;/code&gt; (=3), falls die Synchronisation mittelbar über ein Gateway erfolgt. Bleibt die Synchronisation innerhalb eines definierten Zeitfensters aus, wird der Zustand &lt;code&gt;kTimeOut&lt;/code&gt; (=1) eingenommen.
+时间基准在运行时经历离散的同步状态，这些状态通过枚举 &lt;code&gt;SynchronizationStatus&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;）进行映射。启动后，时间基准初始处于状态 &lt;code&gt;kNotSynchronizedUntilStartup&lt;/code&gt;（=0）。一旦成功处理同步报文，时间基准将切换为状态 &lt;code&gt;kSynchronized&lt;/code&gt;（=2，在直接耦合到 Time Master 的情况下），或者切换为 &lt;code&gt;kSynchToGateway&lt;/code&gt;（=3，若通过网关间接进行同步）。如果在定义的时间窗口内未进行同步，则进入状态 &lt;code&gt;kTimeOut&lt;/code&gt;（=1）。
 &lt;/p&gt;
 &lt;p&gt;
-Parallel zum Kommunikationszustand signalisiert das Enum &lt;code&gt;LeapJump&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051"&gt;[SWS_TS_01051]&lt;/a&gt;) sprunghafte Korrekturen der Zeitbasis: &lt;code&gt;kTimeLeapNone&lt;/code&gt; (=0) zeigt den regulären Verlauf ohne Schwellwertüberschreitung an, während &lt;code&gt;kTimeLeapFuture&lt;/code&gt; (=1) einen Vorwärtssprung und &lt;code&gt;kTimeLeapPast&lt;/code&gt; (=2) einen Rückwärtssprung über den konfigurierten Schwellwert hinaus kennzeichnet.
+与通信状态并行，枚举 &lt;code&gt;LeapJump&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051"&gt;[SWS_TS_01051]&lt;/a&gt;）指示时间基准的跳变校正：&lt;code&gt;kTimeLeapNone&lt;/code&gt;（=0）表示未超出阈值的正常进程，而 &lt;code&gt;kTimeLeapFuture&lt;/code&gt;（=1）表示超出已配置阈值向前跳变，&lt;code&gt;kTimeLeapPast&lt;/code&gt;（=2）表示向后跳变。
 &lt;/p&gt;
 &lt;div class="diagram" id="diag-sync-status"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 466.11 357.40" style="max-width:621px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 343)"&gt;
@@ -1378,64 +1376,64 @@ Parallel zum Kommunikationszustand signalisiert das Enum &lt;code&gt;LeapJump&lt
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Synchronisationszustände einer Zeitbasis gemäß SynchronizationStatus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;状态图：根据 SynchronizationStatus 的时间基准同步状态。来源：&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
 &lt;p&gt;
-Ein typischer Nutzungsablauf auf Konsumentenseite gliedert sich in Instanziierung, Registrierung asynchroner Callback-Funktionen und zyklische bzw. ereignisgesteuerte Abfrage von Zeitinformationen:
+消费者端的典型使用流程分为实例化、注册异步回调函数以及周期性或事件驱动地查询时间信息：
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Zugriff binden:&lt;/strong&gt; Eine Konsumenten-Anwendung instanziiert ein Objekt vom Typ &lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; unter Angabe des passenden &lt;em&gt;InstanceSpecifier&lt;/em&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Benachrichtigungen registrieren:&lt;/strong&gt; Um über Statuswechsel informiert zu werden, übergibt die Anwendung Callback-Funktionen an den Konsumenten. Die Funktionssignaturen sind über Callback-Aliase vorgegeben:
+&lt;li&gt;&lt;strong&gt;绑定访问：&lt;/strong&gt;消费者应用程序通过指定适当的 &lt;em&gt;InstanceSpecifier&lt;/em&gt; 实例化类型为 &lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; 的对象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;注册通知：&lt;/strong&gt;为了获知状态变化，应用程序将回调函数传递给消费者。函数签名通过回调别名预先指定：
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SynchronizationNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222"&gt;[SWS_TS_14222]&lt;/a&gt;) zur Benachrichtigung bei Wechsel des &lt;code&gt;SynchronizationStatus&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const SynchronizationStatus &amp;amp;)&amp;gt;&lt;/code&gt;, als nicht threadsicher spezifiziert).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221"&gt;[SWS_TS_14221]&lt;/a&gt;) zur Übermittlung vollständiger Status-Snapshots via &lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const SynchronizedTimeBaseStatus &amp;amp;)&amp;gt;&lt;/code&gt;, nicht threadsicher).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TimePrecisionNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223"&gt;[SWS_TS_14223]&lt;/a&gt;) zur periodischen Auswertung von Präzisionsmessdaten über &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const TimePrecisionMeasurement &amp;amp;)&amp;gt;&lt;/code&gt;, nicht threadsicher).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizationNotifier&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222"&gt;[SWS_TS_14222]&lt;/a&gt;）用于在 &lt;code&gt;SynchronizationStatus&lt;/code&gt; 发生变化时进行通知（签名 &lt;code&gt;std::function&amp;lt;void(const SynchronizationStatus &amp;amp;)&amp;gt;&lt;/code&gt;，被指定为非线程安全）。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseNotifier&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221"&gt;[SWS_TS_14221]&lt;/a&gt;）用于通过 &lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; 传输完整的状态快照（签名 &lt;code&gt;std::function&amp;lt;void(const SynchronizedTimeBaseStatus &amp;amp;)&amp;gt;&lt;/code&gt;，非线程安全）。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TimePrecisionNotifier&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223"&gt;[SWS_TS_14223]&lt;/a&gt;）用于通过 &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt; 周期性评估精度测量数据（签名 &lt;code&gt;std::function&amp;lt;void(const TimePrecisionMeasurement &amp;amp;)&amp;gt;&lt;/code&gt;，非线程安全）。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zeitstempel und Nutzerdaten erfassen:&lt;/strong&gt; Die Anwendung fragt Zeitpunkte vom Typ &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) ab und kann anwendungsbezogene Zusatzinformationen über &lt;code&gt;UserData&lt;/code&gt; transportieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;获取时间戳和用户数据：&lt;/strong&gt;应用程序查询类型为 &lt;code&gt;Timestamp&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;）的时间点，并可以通过 &lt;code&gt;UserData&lt;/code&gt; 传输与应用相关的附加信息。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Die Fehlerbehandlung in &lt;code&gt;ara::tsync&lt;/code&gt; orientiert sich an den Konventionen von &lt;code&gt;ara::core&lt;/code&gt;. Fehler werden über die Fehlerdomäne &lt;code&gt;TsyncErrorDomain&lt;/code&gt; und den Fehlercode-Enum &lt;code&gt;TsyncErrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901"&gt;[SWS_TS_00901]&lt;/a&gt;) abgebildet:
+&lt;code&gt;ara::tsync&lt;/code&gt; 中的错误处理遵循 &lt;code&gt;ara::core&lt;/code&gt; 的约定。错误通过错误域 &lt;code&gt;TsyncErrorDomain&lt;/code&gt; 和错误代码枚举 &lt;code&gt;TsyncErrc&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901"&gt;[SWS_TS_00901]&lt;/a&gt;）进行映射：
 &lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
-&lt;th&gt;Fehlercode&lt;/th&gt;
-&lt;th&gt;Numerischer Wert&lt;/th&gt;
-&lt;th&gt;Bedeutung und Ursache&lt;/th&gt;
+&lt;th&gt;错误代码&lt;/th&gt;
+&lt;th&gt;数值&lt;/th&gt;
+&lt;th&gt;含义与原因&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kDaemonConnectionLost&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;1&lt;/td&gt;
-&lt;td&gt;Die angeforderte Operation schlägt fehl, da die Verbindung zum Time-Synchronization-Daemon unterbrochen ist.&lt;/td&gt;
+&lt;td&gt;请求的操作失败，因为与 Time Synchronization 守护进程的连接已中断。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kLimitsExceeded&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;2&lt;/td&gt;
-&lt;td&gt;Ein übergebener Parameter überschreitet den zulässigen Wertebereich.&lt;/td&gt;
+&lt;td&gt;传入的参数超出了允许的值范围。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kFunctionNotSupported&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;3&lt;/td&gt;
-&lt;td&gt;Die angeforderte Funktion wird von der aktuellen Implementierung oder Konfiguration nicht unterstützt.&lt;/td&gt;
+&lt;td&gt;当前实现或配置不支持所请求的功能。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kInvalidUserDataSize&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;4&lt;/td&gt;
-&lt;td&gt;Die Länge der übergebenen Nutzerdaten überschreitet die maximal zulässige Größe (spezifiziert durch &lt;code&gt;UserData::kMaxUserDataSize&lt;/code&gt;, standardmäßig 3 Bytes).&lt;/td&gt;
+&lt;td&gt;传入的用户数据长度超过了允许的最大大小（由 &lt;code&gt;UserData::kMaxUserDataSize&lt;/code&gt; 指定，默认值为 3 字节）。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;
-Für die Erzeugung und Prüfung von Fehlerobjekten stellt der Namespace die threadsichere und ausnahmesichere Hilfsfunktion &lt;code&gt;MakeErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910"&gt;[SWS_TS_00910]&lt;/a&gt;) sowie den Zugriff auf die globale Fehlerdomäne über &lt;code&gt;GetTsyncErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909"&gt;[SWS_TS_00909]&lt;/a&gt;) bereit. Alternativ signalisiert die Exception-Klasse &lt;code&gt;TsyncException&lt;/code&gt; Ausnahmesituationen in Kontexten, in denen C++-Exceptions zum Einsatz kommen.
+为了创建和检查错误对象，该命名空间提供了线程安全且异常安全的辅助函数 &lt;code&gt;MakeErrorCode&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910"&gt;[SWS_TS_00910]&lt;/a&gt;），以及通过 &lt;code&gt;GetTsyncErrorDomain&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909"&gt;[SWS_TS_00909]&lt;/a&gt;）对全局错误域的访问。或者，在采用 C++ 异常的上下文中，异常类 &lt;code&gt;TsyncException&lt;/code&gt; 会指示异常情况。
 &lt;/p&gt;
 &lt;!-- annahmen: 1) Die Zustandsübergänge zwischen den SynchronizationStatus-Werten ergeben sich fachlich aus dem beschriebenen Verlust bzw. Wiederaufbau der Synchronisation. – Begründung: SWS_TS_01050 definiert die Zustände kNotSynchronizedUntilStartup, kTimeOut, kSynchronized und kSynchToGateway, spezifiziert jedoch keine separate Übergangsmatrix im Payload. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen und Typdefinitionen der Spezifikation ara::tsync (AUTOSAR Adaptive Platform R25-11).&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于规范 ara::tsync（AUTOSAR Adaptive Platform R25-11）的要求和类型定义。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

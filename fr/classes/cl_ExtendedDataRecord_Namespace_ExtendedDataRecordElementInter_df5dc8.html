@@ -24,89 +24,88 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>3d8265ab4cff</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/fr/classes/cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8" data-view-mode="editor" title="Ouvrir l'éditeur de modération et dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Modérer</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>Contexte</h4>
   <p>
-    Im Diagnosemodul der AUTOSAR Adaptive Platform (Release R25-11) nimmt die Datenstruktur
+    Dans le module de diagnostic de l'AUTOSAR Adaptive Platform (version R25-11), la structure de données
     <code>&lt;ExtendedDataRecord-Namespace&gt;::&lt;ExtendedDataRecordElementInterface&gt;::&lt;ExtendedDataRecordElement&gt;ReadOutput</code>
-    die Rolle eines standardisierten Datenbehälters ein. Zweck dieser Struktur ist das Zusammenfassen
-    sämtlicher Ausgabeargumente, die bei einem Lesevorgang eines Extended-Data-Record-Elements anfallen.
-    Extended Data Records (EDR) dienen im fahrzeugdiagnostischen Umfeld dazu, erweiterte Fehler-
-    und Zustandsinformationen bereitzustellen, die einem bestimmten Diagnoseereignis oder
-    Diagnostic Trouble Code (DTC) zugeordnet sind.
+    joue le rôle d'un conteneur de données standardisé. L'objectif de cette structure est de regrouper
+    l'ensemble des arguments de sortie générés lors d'une opération de lecture d'un élément d'Extended Data Record.
+    Les Extended Data Records (EDR) servent, dans l'environnement du diagnostic de bord, à fournir des informations
+    étendues d'erreur et d'état associées à un événement de diagnostic spécifique ou à un
+    Diagnostic Trouble Code (DTC).
   </p>
   <p>
-    An der Interaktion sind im diagnostischen Ablauf primär die diagnosefähige Anwendungssoftware,
-    die Schnittstelle <code>&lt;ExtendedDataRecordElementInterface&gt;</code> sowie die übergeordnete
-    Diagnoseverwaltung beteiligt. Da C++-Funktionssignaturen für asynchrone oder synchrone Abfragen
-    nur einen einzelnen Rückgabetyp unterstützen, kapselt diese Struktur alle Ausgabewerte in einer
-    semantischen Einheit. Vermutlich dient diese Struktur als reiner Datentransfer-Container
-    (Value Object bzw. Plain Old Data), der die typsichere Rückgabe von Datenelementen an das
-    Diagnosesubsystem vereinfacht.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Der Lebenszyklus der Struktur <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code> ist
-    an den Ablauf des zugehörigen Leseaufrufs gekoppelt und folgt typischen C++-Wertsemantiken.
-    Die Instanziierung und Befüllung dürfte typischerweise serverseitig in der implementierenden
-    Diagnoseanwendung erfolgen, sobald die geforderten Record-Daten aus dem Speicher oder aus
-    internen Registern zusammengestellt wurden.
-  </p>
-  <p>
-    Nach der Belegung der enthaltenen Member-Variablen geht die Struktur in den Besitz der
-    aufrufenden Schicht über, beispielsweise als Ergebniswert eines asynchronen Aufrufmusters
-    oder als direkter Methodenrückgabewert. Interpretation: Aufgrund der Natur als reines
-    Transferobjekt besitzt die Struktur vermutlich keinen internen Zustand oder aktive
-    Zustandsübergänge und wird nach der Auswertung der enthaltenen Diagnosedaten durch den
-    Aufrufer wieder verworfen.
-  </p>
-  <p>
-    Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Instanzen der Struktur üblicherweise
-    nicht über Thread-Grenzen hinweg geteilt modifiziert werden. Eine Instanz wird im ausführenden
-    Kontext der Leseoperation erzeugt und kann anschließend thread-sicher übergeben werden, sofern
-    nach der Erzeugung keine weiteren konkurrierenden Schreibzugriffe stattfinden. Speicherverwaltung
-    und Zerstörung erfolgen automatisch gemäß den Standardregeln für automatische oder dynamische
-    Objektlebensdauern in C++.
+    Dans le déroulement du diagnostic, les principaux participants à l'interaction sont le logiciel d'application compatible avec le diagnostic,
+    l'interface <code>&lt;ExtendedDataRecordElementInterface&gt;</code> ainsi que la gestion
+    de diagnostic de niveau supérieur. Étant donné que les signatures de fonctions C++ pour les interrogations asynchrones ou synchrones
+    ne prennent en charge qu'un seul type de retour, cette structure encapsule toutes les valeurs de sortie dans une
+    unité sémantique. Vraisemblablement, cette structure sert de simple conteneur de transfert de données
+    (Value Object ou Plain Old Data), ce qui simplifie le retour sûr au niveau des types des éléments de données au
+    sous-système de diagnostic.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>Cycle de vie</h4>
   <p>
-    Der typische Nutzungspfad gliedert sich in die Bereitstellung, die Übertragung und die
-    Auswertung der diagnostischen Ausgabedaten:
+    Le cycle de vie de la structure <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code> est
+    couplé au déroulement de l'appel de lecture associé et suit les sémantiques de valeur C++ classiques.
+    L'instanciation et le remplissage devraient généralement avoir lieu côté serveur dans l'application
+    de diagnostic de mise en œuvre dès que les données d'enregistrement requises ont été collectées à partir de la mémoire ou de
+    registres internes.
+  </p>
+  <p>
+    Après l'affectation des variables membres contenues, la structure passe sous la propriété de la
+    couche appelante, par exemple en tant que valeur de résultat d'un modèle d'appel asynchrone
+    ou en tant que valeur de retour directe de méthode. Interprétation : en raison de sa nature de simple
+    objet de transfert, la structure ne possède vraisemblablement aucun état interne ni transition d'état
+    active et est de nouveau détruite après l'évaluation des données de diagnostic contenues par
+    l'appelant.
+  </p>
+  <p>
+    En ce qui concerne la concurrence, il convient de noter que les instances de la structure ne sont généralement
+    pas modifiées de manière partagée entre plusieurs threads. Une instance est créée dans le contexte
+    d'exécution de l'opération de lecture et peut ensuite être transmise de manière thread-safe, pour autant
+    qu'aucun autre accès en écriture concurrent n'ait lieu après sa création. La gestion de la mémoire
+    et la destruction s'effectuent automatiquement selon les règles standard relatives aux durées de vie automatiques ou dynamiques
+    des objets en C++.
+  </p>
+
+  <h4>Parcours d'utilisation</h4>
+  <p>
+    Le chemin d'utilisation typique s'articule autour de la mise à disposition, de la transmission et de
+    l'évaluation des données de sortie de diagnostic :
   </p>
   <ol>
     <li>
-      <strong>Anforderung empfangen:</strong> Das Diagnosesystem initiiert eine Leseanforderung
-      für das spezifische Element über die Schnittstelle <code>&lt;ExtendedDataRecordElementInterface&gt;</code>.
+      <strong>Réception de la requête :</strong> Le système de diagnostic initie une requête de lecture
+      pour l'élément spécifique via l'interface <code>&lt;ExtendedDataRecordElementInterface&gt;</code>.
     </li>
     <li>
-      <strong>Daten ermitteln und Struktur instanziieren:</strong> Die Anwendungslogik liest
-      die aktuellen Zustandsdaten des Fahrzeugsystems aus und instanziiert ein Objekt vom Typ
+      <strong>Détermination des données et instanciation de la structure :</strong> La logique applicative lit
+      les données d'état actuelles du système du véhicule et instancie un objet de type
       <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code>.
     </li>
     <li>
-      <strong>Ausgabefelder befüllen:</strong> Die ermittelten Messwerte, Zählerstände oder
-      Zustandsflags werden den entsprechenden Datenfeldern der Struktur zugewiesen.
+      <strong>Remplissage des champs de sortie :</strong> Les valeurs mesurées déterminées, les valeurs de compteurs ou
+      les indicateurs d'état sont assignés aux champs de données correspondants de la structure.
     </li>
     <li>
-      <strong>Ergebnis zurückliefern:</strong> Die befüllte Struktur wird als Rückgabewert
-      an die Diagnoseverwaltung übergeben, welche die Werte serialisiert und als Antwort auf
-      den Diagnose-Dienst an den Diagnosetester übermittelt.
+      <strong>Retour du résultat :</strong> La structure remplie est transmise en tant que valeur de retour
+      à la gestion du diagnostic, qui sérialise les valeurs et les transmet en réponse au
+      service de diagnostic au testeur de diagnostic.
     </li>
     <li>
-      <strong>Freigabe:</strong> Nach erfolgreicher Übergabe und Serialisierung der Nutzdaten
-      wird die Instanz am Ende des Gültigkeitsbereichs freigegeben.
+      <strong>Libération :</strong> Après transmission et sérialisation réussies des données utiles,
+      l'instance est libérée à la fin de la portée.
     </li>
   </ol>
   <!-- annahmen: 1) Vermutlich dient die Struktur als reiner Datentransfer-Container (Value Object), der Ausgabeparameter bündelt. – Begründung: Die Spezifikationsbeschreibung lautet 'Structure wrapping the out arguments for a ReadOutput'. 2) Die Instanziierung und Befüllung dürfte serverseitig in der implementierenden Diagnoseanwendung erfolgen. – Begründung: Typisches Aufrufmuster für Leseoperationen in AUTOSAR Adaptive diag. 3) Interpretation: Die Struktur besitzt keinen internen Zustand und wird nach Auswertung der Diagnosedaten verworfen. – Begründung: Kapselungsstrukturen für Out-Argumente folgen in C++ standardmäßig einfacher Wertsemantik ohne eigenständigen Lebenszyklus. -->
   <p class="ai-note">
-    Hinweis: Dieser Klassen-Leitfaden basiert auf den Strukturdefinitionen des Moduls diag in
-    AUTOSAR Adaptive Platform Release R25-11. Aussagen ohne expliziten Quellennachweis stellen
-    technische Schlussfolgerungen basierend auf den genannten Annahmen dar.
+    Remarque : ce guide de classe est basé sur les définitions structurelles du module diag dans
+    la version R25-11 d'AUTOSAR Adaptive Platform. Les affirmations sans référence explicite à une source constituent
+    des conclusions techniques fondées sur les hypothèses mentionnées.
   </p>
 
 <div class="ai-commentary-actions">
@@ -324,86 +323,85 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3d8265ab4cffb03f4c23657fcbb606154c2c223cc3333f15f72a7023091b4ff0" data-trace-output="83c37b642914a3d403cb67ec7902957f94456c98401f9f8e0c9e156ba8be9977" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;Contexte&lt;/h4&gt;
   &lt;p&gt;
-    Im Diagnosemodul der AUTOSAR Adaptive Platform (Release R25-11) nimmt die Datenstruktur
+    Dans le module de diagnostic de l'AUTOSAR Adaptive Platform (version R25-11), la structure de données
     &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;::&amp;lt;ExtendedDataRecordElementInterface&amp;gt;::&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;
-    die Rolle eines standardisierten Datenbehälters ein. Zweck dieser Struktur ist das Zusammenfassen
-    sämtlicher Ausgabeargumente, die bei einem Lesevorgang eines Extended-Data-Record-Elements anfallen.
-    Extended Data Records (EDR) dienen im fahrzeugdiagnostischen Umfeld dazu, erweiterte Fehler-
-    und Zustandsinformationen bereitzustellen, die einem bestimmten Diagnoseereignis oder
-    Diagnostic Trouble Code (DTC) zugeordnet sind.
+    joue le rôle d'un conteneur de données standardisé. L'objectif de cette structure est de regrouper
+    l'ensemble des arguments de sortie générés lors d'une opération de lecture d'un élément d'Extended Data Record.
+    Les Extended Data Records (EDR) servent, dans l'environnement du diagnostic de bord, à fournir des informations
+    étendues d'erreur et d'état associées à un événement de diagnostic spécifique ou à un
+    Diagnostic Trouble Code (DTC).
   &lt;/p&gt;
   &lt;p&gt;
-    An der Interaktion sind im diagnostischen Ablauf primär die diagnosefähige Anwendungssoftware,
-    die Schnittstelle &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; sowie die übergeordnete
-    Diagnoseverwaltung beteiligt. Da C++-Funktionssignaturen für asynchrone oder synchrone Abfragen
-    nur einen einzelnen Rückgabetyp unterstützen, kapselt diese Struktur alle Ausgabewerte in einer
-    semantischen Einheit. Vermutlich dient diese Struktur als reiner Datentransfer-Container
-    (Value Object bzw. Plain Old Data), der die typsichere Rückgabe von Datenelementen an das
-    Diagnosesubsystem vereinfacht.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Der Lebenszyklus der Struktur &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; ist
-    an den Ablauf des zugehörigen Leseaufrufs gekoppelt und folgt typischen C++-Wertsemantiken.
-    Die Instanziierung und Befüllung dürfte typischerweise serverseitig in der implementierenden
-    Diagnoseanwendung erfolgen, sobald die geforderten Record-Daten aus dem Speicher oder aus
-    internen Registern zusammengestellt wurden.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Nach der Belegung der enthaltenen Member-Variablen geht die Struktur in den Besitz der
-    aufrufenden Schicht über, beispielsweise als Ergebniswert eines asynchronen Aufrufmusters
-    oder als direkter Methodenrückgabewert. Interpretation: Aufgrund der Natur als reines
-    Transferobjekt besitzt die Struktur vermutlich keinen internen Zustand oder aktive
-    Zustandsübergänge und wird nach der Auswertung der enthaltenen Diagnosedaten durch den
-    Aufrufer wieder verworfen.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Instanzen der Struktur üblicherweise
-    nicht über Thread-Grenzen hinweg geteilt modifiziert werden. Eine Instanz wird im ausführenden
-    Kontext der Leseoperation erzeugt und kann anschließend thread-sicher übergeben werden, sofern
-    nach der Erzeugung keine weiteren konkurrierenden Schreibzugriffe stattfinden. Speicherverwaltung
-    und Zerstörung erfolgen automatisch gemäß den Standardregeln für automatische oder dynamische
-    Objektlebensdauern in C++.
+    Dans le déroulement du diagnostic, les principaux participants à l'interaction sont le logiciel d'application compatible avec le diagnostic,
+    l'interface &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; ainsi que la gestion
+    de diagnostic de niveau supérieur. Étant donné que les signatures de fonctions C++ pour les interrogations asynchrones ou synchrones
+    ne prennent en charge qu'un seul type de retour, cette structure encapsule toutes les valeurs de sortie dans une
+    unité sémantique. Vraisemblablement, cette structure sert de simple conteneur de transfert de données
+    (Value Object ou Plain Old Data), ce qui simplifie le retour sûr au niveau des types des éléments de données au
+    sous-système de diagnostic.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;Cycle de vie&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Nutzungspfad gliedert sich in die Bereitstellung, die Übertragung und die
-    Auswertung der diagnostischen Ausgabedaten:
+    Le cycle de vie de la structure &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; est
+    couplé au déroulement de l'appel de lecture associé et suit les sémantiques de valeur C++ classiques.
+    L'instanciation et le remplissage devraient généralement avoir lieu côté serveur dans l'application
+    de diagnostic de mise en œuvre dès que les données d'enregistrement requises ont été collectées à partir de la mémoire ou de
+    registres internes.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Après l'affectation des variables membres contenues, la structure passe sous la propriété de la
+    couche appelante, par exemple en tant que valeur de résultat d'un modèle d'appel asynchrone
+    ou en tant que valeur de retour directe de méthode. Interprétation : en raison de sa nature de simple
+    objet de transfert, la structure ne possède vraisemblablement aucun état interne ni transition d'état
+    active et est de nouveau détruite après l'évaluation des données de diagnostic contenues par
+    l'appelant.
+  &lt;/p&gt;
+  &lt;p&gt;
+    En ce qui concerne la concurrence, il convient de noter que les instances de la structure ne sont généralement
+    pas modifiées de manière partagée entre plusieurs threads. Une instance est créée dans le contexte
+    d'exécution de l'opération de lecture et peut ensuite être transmise de manière thread-safe, pour autant
+    qu'aucun autre accès en écriture concurrent n'ait lieu après sa création. La gestion de la mémoire
+    et la destruction s'effectuent automatiquement selon les règles standard relatives aux durées de vie automatiques ou dynamiques
+    des objets en C++.
+  &lt;/p&gt;
+
+  &lt;h4&gt;Parcours d'utilisation&lt;/h4&gt;
+  &lt;p&gt;
+    Le chemin d'utilisation typique s'articule autour de la mise à disposition, de la transmission et de
+    l'évaluation des données de sortie de diagnostic :
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Anforderung empfangen:&lt;/strong&gt; Das Diagnosesystem initiiert eine Leseanforderung
-      für das spezifische Element über die Schnittstelle &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;.
+      &lt;strong&gt;Réception de la requête :&lt;/strong&gt; Le système de diagnostic initie une requête de lecture
+      pour l'élément spécifique via l'interface &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Daten ermitteln und Struktur instanziieren:&lt;/strong&gt; Die Anwendungslogik liest
-      die aktuellen Zustandsdaten des Fahrzeugsystems aus und instanziiert ein Objekt vom Typ
+      &lt;strong&gt;Détermination des données et instanciation de la structure :&lt;/strong&gt; La logique applicative lit
+      les données d'état actuelles du système du véhicule et instancie un objet de type
       &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ausgabefelder befüllen:&lt;/strong&gt; Die ermittelten Messwerte, Zählerstände oder
-      Zustandsflags werden den entsprechenden Datenfeldern der Struktur zugewiesen.
+      &lt;strong&gt;Remplissage des champs de sortie :&lt;/strong&gt; Les valeurs mesurées déterminées, les valeurs de compteurs ou
+      les indicateurs d'état sont assignés aux champs de données correspondants de la structure.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ergebnis zurückliefern:&lt;/strong&gt; Die befüllte Struktur wird als Rückgabewert
-      an die Diagnoseverwaltung übergeben, welche die Werte serialisiert und als Antwort auf
-      den Diagnose-Dienst an den Diagnosetester übermittelt.
+      &lt;strong&gt;Retour du résultat :&lt;/strong&gt; La structure remplie est transmise en tant que valeur de retour
+      à la gestion du diagnostic, qui sérialise les valeurs et les transmet en réponse au
+      service de diagnostic au testeur de diagnostic.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Freigabe:&lt;/strong&gt; Nach erfolgreicher Übergabe und Serialisierung der Nutzdaten
-      wird die Instanz am Ende des Gültigkeitsbereichs freigegeben.
+      &lt;strong&gt;Libération :&lt;/strong&gt; Après transmission et sérialisation réussies des données utiles,
+      l'instance est libérée à la fin de la portée.
     &lt;/li&gt;
   &lt;/ol&gt;
   &lt;!-- annahmen: 1) Vermutlich dient die Struktur als reiner Datentransfer-Container (Value Object), der Ausgabeparameter bündelt. – Begründung: Die Spezifikationsbeschreibung lautet 'Structure wrapping the out arguments for a ReadOutput'. 2) Die Instanziierung und Befüllung dürfte serverseitig in der implementierenden Diagnoseanwendung erfolgen. – Begründung: Typisches Aufrufmuster für Leseoperationen in AUTOSAR Adaptive diag. 3) Interpretation: Die Struktur besitzt keinen internen Zustand und wird nach Auswertung der Diagnosedaten verworfen. – Begründung: Kapselungsstrukturen für Out-Argumente folgen in C++ standardmäßig einfacher Wertsemantik ohne eigenständigen Lebenszyklus. --&gt;
   &lt;p class="ai-note"&gt;
-    Hinweis: Dieser Klassen-Leitfaden basiert auf den Strukturdefinitionen des Moduls diag in
-    AUTOSAR Adaptive Platform Release R25-11. Aussagen ohne expliziten Quellennachweis stellen
-    technische Schlussfolgerungen basierend auf den genannten Annahmen dar.
+    Remarque : ce guide de classe est basé sur les définitions structurelles du module diag dans
+    la version R25-11 d'AUTOSAR Adaptive Platform. Les affirmations sans référence explicite à une source constituent
+    des conclusions techniques fondées sur les hypothèses mentionnées.
   &lt;/p&gt;
 
 

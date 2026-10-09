@@ -24,55 +24,54 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>875f4065bff9</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_PoolOptions_c9b7fd/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_core_PoolOptions_c9b7fd/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_PoolOptions_c9b7fd" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Struktur <code>ara::core::PoolOptions</code> stellt in der Adaptive Platform das Konfigurationskonstrukt für poolbasierte Speicherressourcen bereit. Gemäß der Spezifikation bildet sie das funktionale Pendant zu <code>std::pmr::pool_options</code> aus dem C++-Standard ab und wird über die Header-Datei <code>ara/core/memory_resource.h</code> zur Verfügung gestellt. Ihre primäre Rolle besteht darin, Allokationsparameter für Speicherpools zu bündeln, um das Laufzeit- und Fragmentierungsverhalten bei dynamischen Allokationen feingranular zu steuern. Interpretation: In typischen AUTOSAR-Adaptive-Anwendungen interagiert die Struktur dabei mit polymorphen Speicherressourcen, die auf Pool-Mechanismen aufsetzen, und dient als reines Konfigurationsobjekt beim Aufbau dieser Ressourcen.
+结构体 <code>ara::core::PoolOptions</code> 在 Adaptive Platform 中为基于池的内存资源提供配置构造。根据规范，它构成了 C++ 标准中 <code>std::pmr::pool_options</code> 的功能对等物，并通过头文件 <code>ara/core/memory_resource.h</code> 提供。其主要作用是捆绑内存池的分配参数，以对动态分配时的运行时间和碎片行为进行细粒度控制。Interpretation：在典型的 AUTOSAR Adaptive 应用程序中，该结构体与基于池机制的多态内存资源进行交互，并在构建这些资源时充当纯配置对象。
 </p>
 <p>
-Die Struktur umfasst zwei zentrale Einstellgrößen: <code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> und <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a>. Mit <code>max_blocks_per_chunk</code> wird die Obergrenze für die Anzahl von Speicherblöcken definiert, die ein Chunk innerhalb des Pools umfassen darf. Das Datenelement <code>largest_required_pool_block</code> legt die maximale Blockgröße fest, die noch über die internen Pools der Speicherressource bedient werden soll. Beide Parameter sind vom Typ <code>std::size_t</code> und standardmäßig mit dem Wert <code>0</code> initialisiert. Der Standardwert <code>0</code> signalisiert der verarbeitenden Speicherressource, dass implementierungsabhängige Standardwerte gewählt werden sollen.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als reine Wertstruktur besitzt <code>ara::core::PoolOptions</code> einen einfachen Lebenszyklus ohne eigene Zustandsübergänge. Die Erzeugung erfolgt regulär durch Wertinitialisierung auf dem Stack oder als eingebettetes Mitglied innerhalb einer umfassenderen Konfigurationsklasse. Da beide Felder direkt mit <code>0</code> vorbelegt sind (<a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a>, <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a>), befindet sich ein standardmäßig instanziiertes Objekt unmittelbar in einem konsistenten und sofort verwendbaren Grundzustand.
-</p>
-<p>
-Hinsichtlich der Besitzverhältnisse bindet <code>ara::core::PoolOptions</code> keine dynamischen Systemressourcen, Handles oder Speicherbereiche an sich. Es verwaltet ausschließlich numerische Konfigurationswerte. Interpretation: Die Lebensdauer einer Instanz muss daher nicht an die Lebensdauer der konfigurierten Speicherressource gekoppelt sein; die verarbeitende Ressource dürfte die Werte bei ihrer eigenen Initialisierung als Kopie übernehmen oder auswerten, sodass die <code>PoolOptions</code>-Instanz unmittelbar nach Übergabe verworfen werden kann. Die Zerstörung erfolgt trivial gemäß den Standard-Gültigkeitsregeln von C++ ohne gesonderte Freigabelogik.
-</p>
-<p>
-Bezüglich der Nebenläufigkeit implementiert <code>ara::core::PoolOptions</code> keine eigene Synchronisation. Werden Optionen vor der Weitergabe an andere Threads vollständig initialisiert und danach ausschließlich gelesen, ist der Zugriff aus mehreren Threads thread-sicher. Modifikationen an den Feldern während nebenläufiger Lese- oder Schreibzugriffe erfordern externe Synchronisation.
+该结构体包含两个核心设置量：<code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> 和 <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a>。通过 <code>max_blocks_per_chunk</code> 定义了池内一个分块（Chunk）允许包含的内存块数量上限。数据元素 <code>largest_required_pool_block</code> 指定了仍通过内存资源的内部池进行服务的最大块大小。两个参数均为类型 <code>std::size_t</code>，且默认初始化为值 <code>0</code>。默认值 <code>0</code> 向处理它的内存资源指示应选择依赖于实现的默认值。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>生命周期</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Definition der Speicheranforderungen, die Parametrisierung der Optionen und die anschließende Übergabe an eine Speicherressource:
+作为纯值结构体，<code>ara::core::PoolOptions</code> 具有简单的生命周期，没有自己的状态转换。创建通常通过栈上的值初始化进行，或者作为更广泛的配置类中的嵌入成员进行。由于两个字段都直接预置为 <code>0</code>（<a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a>、<a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a>），因此默认实例化的对象立即处于一致且立即可用的初始状态。
+</p>
+<p>
+在所有权关系方面，<code>ara::core::PoolOptions</code> 本身不绑定任何动态系统资源、句柄或内存区域。它仅管理数字配置值。Interpretation：因此，实例的生命周期不必与所配置的内存资源的生命周期耦合；处理它的资源很可能在其自身初始化时将这些值作为副本采用或进行评估，因此 <code>PoolOptions</code> 实例在传递后可立即丢弃。销毁按照 C++ 标准作用域规则简单进行，无需单独的释放逻辑。
+</p>
+<p>
+关于并发性，<code>ara::core::PoolOptions</code> 不实现自己的同步。如果在传递给其他线程之前选项已完全初始化且此后仅被读取，则来自多个线程的访问是线程安全的。在并发读写访问期间对字段进行修改需要外部同步。
+</p>
+
+<h4>使用路径</h4>
+<p>
+典型使用路径包括定义内存需求、对选项进行参数化以及随后传递给内存资源：
 </p>
 <ol>
-<li><strong>Instanziierung:</strong> Eine Instanz von <code>ara::core::PoolOptions</code> wird erzeugt. Werden keine Felder modifiziert, verbleiben <code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> und <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> auf dem Initialwert <code>0</code>, was der Anforderung der implementierungsspezifischen Standard-Heuristiken entspricht.</li>
-<li><strong>Konfiguration der Blockgrenze:</strong> Falls bekannt ist, welche maximale Objekt- oder Puffergröße über Pool-Allokatoren bedient werden soll, wird <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> auf diesen Schwellenwert gesetzt. Interpretation: Allokationen, welche diesen Wert überschreiten, dürften von der Speicherressource typischerweise an eine vorgeschaltete Upstream-Speicherressource weitergeleitet werden, anstatt aus reservierten Pools zu stammen.</li>
-<li><strong>Begrenzung des Chunk-Wachstums:</strong> Über <code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> wird festgelegt, wie viele Blöcke die Ressource maximal auf einmal aus dem Upstream-Speicher anfordern darf. Dies verhindert, dass bei fortdauerndem Allokationsbedarf unverhältnismäßig große zusammenhängende Speicherblöcke allokiert werden.</li>
-<li><strong>Übergabe an die Zielressource:</strong> Das konfigurierte Objekt wird als Argument an den Konstruktor der entsprechenden Pool-Speicherressource übergeben, welche die Konfigurationswerte ausliest und ihre internen Datenstrukturen entsprechend initialisiert.</li>
+<li><strong>实例化：</strong>创建 <code>ara::core::PoolOptions</code> 的实例。如果未修改任何字段，<code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> 和 <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> 将保持为初始值 <code>0</code>，这对应于实现特定默认启发式规则的要求。</li>
+<li><strong>配置块边界：</strong>如果已知通过池分配器提供服务的最大对象或缓冲区大小，则将 <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> 设置为此阈值。Interpretation：超过此值的分配通常可能由内存资源转发至上游（upstream）内存资源，而不是来自预留的池。</li>
+<li><strong>限制分块增长：</strong>通过 <code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> 指定资源一次最多可向上游内存请求多少个块。这可以防止在持续存在分配需求时分配不成比例的过大连续内存块。</li>
+<li><strong>传递给目标资源：</strong>将配置好的对象作为参数传递给相应池内存资源的构造函数，该资源读取配置值并相应地初始化其内部数据结构。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Da <code>ara::core::PoolOptions</code> als passive Datenstruktur definiert ist, treten bei der Instanziierung oder beim Modifizieren der Mitglieder keine Ausnahmen oder Fehlercodes auf. Fehlerszenarien ergeben sich primär aus fehlerhaften oder ungeeigneten Parameterkombinationen bei der anschließenden Verwendung durch die Speicherressource:
+由于 <code>ara::core::PoolOptions</code> 被定义为被动数据结构，因此在实例化或修改成员时不会发生异常或错误代码。错误场景主要源于随后由内存资源使用时错误或不适当的参数组合：
 </p>
 <ul>
-<li><strong>Extreme Werte:</strong> Das Setzen von extrem großen Werten für <code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> oder <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> kann bei der Initialisierung oder während des Betriebs der Speicherressource dazu führen, dass Upstream-Allokationen scheitern, weil das System den angeforderten zusammenhängenden Speicherbereich nicht bereitstellen kann.</li>
-<li><strong>Unpassend gewählte Blockgröße:</strong> Wird <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> zu klein gewählt, verfehlt der Pool seinen Zweck, da ein Großteil der Allokationsanfragen die Schwelle überschreitet und kontinuierlich den Upstream-Speicher beansprucht, was zu Fragmentierung oder Latenzen führen kann.</li>
-<li><strong>Standardwerte mit Wert Null:</strong> Der Wert <code>0</code> stellt explizit keinen Fehlerzustand dar, sondern ist die spezifizierte Voreinstellung (<a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a>, <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a>). Allerdings obliegt es der jeweiligen Plattformimplementierung, hierfür zweckmäßige Standardgrößen festzulegen.</li>
+<li><strong>极值：</strong>为 <code>max_blocks_per_chunk</code> <a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a> 或 <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> 设置极大值可能会在内存资源的初始化或运行期间导致上游分配失败，因为系统无法提供所请求的连续内存区域。</li>
+<li><strong>块大小选择不当：</strong>如果 <code>largest_required_pool_block</code> <a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a> 选得太小，内存池将失去其作用，因为大部分分配请求都会超过阈值并持续占用上游内存，从而可能导致碎片化或延迟。</li>
+<li><strong>零值默认值：</strong>值 <code>0</code> 明确不表示错误状态，而是指定的预设值（<a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027">[SWS_CORE_00027]</a>，<a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028">[SWS_CORE_00028]</a>）。不过，确定合适的默认大小属于各平台实现的职责。</li>
 </ul>
 <!-- annahmen:
 1) In typischen AUTOSAR-Adaptive-Anwendungen interagiert die Struktur mit polymorphen Speicherressourcen, die auf Pool-Mechanismen aufsetzen, und dient als Konfigurationsobjekt beim Aufbau dieser Ressourcen. – Begründung: Der Payload referenziert [mem.poly.pool_options.class] und [mem.res.pool], nennt aber keine konkreten Klassenbezeichner innerhalb des Moduls core.
 2) Die verarbeitende Ressource übernimmt die Werte bei ihrer Initialisierung als Kopie oder wertet sie aus, sodass die PoolOptions-Instanz danach nicht persistent vorgehalten werden muss. – Begründung: Es handelt sich um ein zustandsloses C++-PMR-Konfigurationsobjekt nach C++-Standardvorbild.
 3) Allokationen, die largest_required_pool_block überschreiten, werden typischerweise an eine Upstream-Speicherressource weitergereicht. – Begründung: Entspricht der Funktionsweise von [mem.res.pool] im C++-Standard, auf den der Payload verweist.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen aus R25-11 zu ara::core::PoolOptions.</p>
+<p class="ai-note">本指南基于 R25-11 中关于 ara::core::PoolOptions 的要求。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_PoolOptions_c9b7fd" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -450,52 +449,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="875f4065bff9eec153c7e947070ef4ddbd0fd1520557c669fd6e45d649d16193" data-trace-output="8276d1a484ba16529eda362947d49065037d94411517fdb80b3d6316d76b2304" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Struktur &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; stellt in der Adaptive Platform das Konfigurationskonstrukt für poolbasierte Speicherressourcen bereit. Gemäß der Spezifikation bildet sie das funktionale Pendant zu &lt;code&gt;std::pmr::pool_options&lt;/code&gt; aus dem C++-Standard ab und wird über die Header-Datei &lt;code&gt;ara/core/memory_resource.h&lt;/code&gt; zur Verfügung gestellt. Ihre primäre Rolle besteht darin, Allokationsparameter für Speicherpools zu bündeln, um das Laufzeit- und Fragmentierungsverhalten bei dynamischen Allokationen feingranular zu steuern. Interpretation: In typischen AUTOSAR-Adaptive-Anwendungen interagiert die Struktur dabei mit polymorphen Speicherressourcen, die auf Pool-Mechanismen aufsetzen, und dient als reines Konfigurationsobjekt beim Aufbau dieser Ressourcen.
+结构体 &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; 在 Adaptive Platform 中为基于池的内存资源提供配置构造。根据规范，它构成了 C++ 标准中 &lt;code&gt;std::pmr::pool_options&lt;/code&gt; 的功能对等物，并通过头文件 &lt;code&gt;ara/core/memory_resource.h&lt;/code&gt; 提供。其主要作用是捆绑内存池的分配参数，以对动态分配时的运行时间和碎片行为进行细粒度控制。Interpretation：在典型的 AUTOSAR Adaptive 应用程序中，该结构体与基于池机制的多态内存资源进行交互，并在构建这些资源时充当纯配置对象。
 &lt;/p&gt;
 &lt;p&gt;
-Die Struktur umfasst zwei zentrale Einstellgrößen: &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; und &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt;. Mit &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; wird die Obergrenze für die Anzahl von Speicherblöcken definiert, die ein Chunk innerhalb des Pools umfassen darf. Das Datenelement &lt;code&gt;largest_required_pool_block&lt;/code&gt; legt die maximale Blockgröße fest, die noch über die internen Pools der Speicherressource bedient werden soll. Beide Parameter sind vom Typ &lt;code&gt;std::size_t&lt;/code&gt; und standardmäßig mit dem Wert &lt;code&gt;0&lt;/code&gt; initialisiert. Der Standardwert &lt;code&gt;0&lt;/code&gt; signalisiert der verarbeitenden Speicherressource, dass implementierungsabhängige Standardwerte gewählt werden sollen.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als reine Wertstruktur besitzt &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; einen einfachen Lebenszyklus ohne eigene Zustandsübergänge. Die Erzeugung erfolgt regulär durch Wertinitialisierung auf dem Stack oder als eingebettetes Mitglied innerhalb einer umfassenderen Konfigurationsklasse. Da beide Felder direkt mit &lt;code&gt;0&lt;/code&gt; vorbelegt sind (&lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt;), befindet sich ein standardmäßig instanziiertes Objekt unmittelbar in einem konsistenten und sofort verwendbaren Grundzustand.
-&lt;/p&gt;
-&lt;p&gt;
-Hinsichtlich der Besitzverhältnisse bindet &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; keine dynamischen Systemressourcen, Handles oder Speicherbereiche an sich. Es verwaltet ausschließlich numerische Konfigurationswerte. Interpretation: Die Lebensdauer einer Instanz muss daher nicht an die Lebensdauer der konfigurierten Speicherressource gekoppelt sein; die verarbeitende Ressource dürfte die Werte bei ihrer eigenen Initialisierung als Kopie übernehmen oder auswerten, sodass die &lt;code&gt;PoolOptions&lt;/code&gt;-Instanz unmittelbar nach Übergabe verworfen werden kann. Die Zerstörung erfolgt trivial gemäß den Standard-Gültigkeitsregeln von C++ ohne gesonderte Freigabelogik.
-&lt;/p&gt;
-&lt;p&gt;
-Bezüglich der Nebenläufigkeit implementiert &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; keine eigene Synchronisation. Werden Optionen vor der Weitergabe an andere Threads vollständig initialisiert und danach ausschließlich gelesen, ist der Zugriff aus mehreren Threads thread-sicher. Modifikationen an den Feldern während nebenläufiger Lese- oder Schreibzugriffe erfordern externe Synchronisation.
+该结构体包含两个核心设置量：&lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; 和 &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt;。通过 &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; 定义了池内一个分块（Chunk）允许包含的内存块数量上限。数据元素 &lt;code&gt;largest_required_pool_block&lt;/code&gt; 指定了仍通过内存资源的内部池进行服务的最大块大小。两个参数均为类型 &lt;code&gt;std::size_t&lt;/code&gt;，且默认初始化为值 &lt;code&gt;0&lt;/code&gt;。默认值 &lt;code&gt;0&lt;/code&gt; 向处理它的内存资源指示应选择依赖于实现的默认值。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Definition der Speicheranforderungen, die Parametrisierung der Optionen und die anschließende Übergabe an eine Speicherressource:
+作为纯值结构体，&lt;code&gt;ara::core::PoolOptions&lt;/code&gt; 具有简单的生命周期，没有自己的状态转换。创建通常通过栈上的值初始化进行，或者作为更广泛的配置类中的嵌入成员进行。由于两个字段都直接预置为 &lt;code&gt;0&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt;），因此默认实例化的对象立即处于一致且立即可用的初始状态。
+&lt;/p&gt;
+&lt;p&gt;
+在所有权关系方面，&lt;code&gt;ara::core::PoolOptions&lt;/code&gt; 本身不绑定任何动态系统资源、句柄或内存区域。它仅管理数字配置值。Interpretation：因此，实例的生命周期不必与所配置的内存资源的生命周期耦合；处理它的资源很可能在其自身初始化时将这些值作为副本采用或进行评估，因此 &lt;code&gt;PoolOptions&lt;/code&gt; 实例在传递后可立即丢弃。销毁按照 C++ 标准作用域规则简单进行，无需单独的释放逻辑。
+&lt;/p&gt;
+&lt;p&gt;
+关于并发性，&lt;code&gt;ara::core::PoolOptions&lt;/code&gt; 不实现自己的同步。如果在传递给其他线程之前选项已完全初始化且此后仅被读取，则来自多个线程的访问是线程安全的。在并发读写访问期间对字段进行修改需要外部同步。
+&lt;/p&gt;
+
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;
+典型使用路径包括定义内存需求、对选项进行参数化以及随后传递给内存资源：
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; wird erzeugt. Werden keine Felder modifiziert, verbleiben &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; und &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; auf dem Initialwert &lt;code&gt;0&lt;/code&gt;, was der Anforderung der implementierungsspezifischen Standard-Heuristiken entspricht.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konfiguration der Blockgrenze:&lt;/strong&gt; Falls bekannt ist, welche maximale Objekt- oder Puffergröße über Pool-Allokatoren bedient werden soll, wird &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; auf diesen Schwellenwert gesetzt. Interpretation: Allokationen, welche diesen Wert überschreiten, dürften von der Speicherressource typischerweise an eine vorgeschaltete Upstream-Speicherressource weitergeleitet werden, anstatt aus reservierten Pools zu stammen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Begrenzung des Chunk-Wachstums:&lt;/strong&gt; Über &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; wird festgelegt, wie viele Blöcke die Ressource maximal auf einmal aus dem Upstream-Speicher anfordern darf. Dies verhindert, dass bei fortdauerndem Allokationsbedarf unverhältnismäßig große zusammenhängende Speicherblöcke allokiert werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe an die Zielressource:&lt;/strong&gt; Das konfigurierte Objekt wird als Argument an den Konstruktor der entsprechenden Pool-Speicherressource übergeben, welche die Konfigurationswerte ausliest und ihre internen Datenstrukturen entsprechend initialisiert.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;实例化：&lt;/strong&gt;创建 &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; 的实例。如果未修改任何字段，&lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; 和 &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; 将保持为初始值 &lt;code&gt;0&lt;/code&gt;，这对应于实现特定默认启发式规则的要求。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;配置块边界：&lt;/strong&gt;如果已知通过池分配器提供服务的最大对象或缓冲区大小，则将 &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; 设置为此阈值。Interpretation：超过此值的分配通常可能由内存资源转发至上游（upstream）内存资源，而不是来自预留的池。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;限制分块增长：&lt;/strong&gt;通过 &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; 指定资源一次最多可向上游内存请求多少个块。这可以防止在持续存在分配需求时分配不成比例的过大连续内存块。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;传递给目标资源：&lt;/strong&gt;将配置好的对象作为参数传递给相应池内存资源的构造函数，该资源读取配置值并相应地初始化其内部数据结构。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Da &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; als passive Datenstruktur definiert ist, treten bei der Instanziierung oder beim Modifizieren der Mitglieder keine Ausnahmen oder Fehlercodes auf. Fehlerszenarien ergeben sich primär aus fehlerhaften oder ungeeigneten Parameterkombinationen bei der anschließenden Verwendung durch die Speicherressource:
+由于 &lt;code&gt;ara::core::PoolOptions&lt;/code&gt; 被定义为被动数据结构，因此在实例化或修改成员时不会发生异常或错误代码。错误场景主要源于随后由内存资源使用时错误或不适当的参数组合：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Extreme Werte:&lt;/strong&gt; Das Setzen von extrem großen Werten für &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; oder &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; kann bei der Initialisierung oder während des Betriebs der Speicherressource dazu führen, dass Upstream-Allokationen scheitern, weil das System den angeforderten zusammenhängenden Speicherbereich nicht bereitstellen kann.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Unpassend gewählte Blockgröße:&lt;/strong&gt; Wird &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; zu klein gewählt, verfehlt der Pool seinen Zweck, da ein Großteil der Allokationsanfragen die Schwelle überschreitet und kontinuierlich den Upstream-Speicher beansprucht, was zu Fragmentierung oder Latenzen führen kann.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Standardwerte mit Wert Null:&lt;/strong&gt; Der Wert &lt;code&gt;0&lt;/code&gt; stellt explizit keinen Fehlerzustand dar, sondern ist die spezifizierte Voreinstellung (&lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt;). Allerdings obliegt es der jeweiligen Plattformimplementierung, hierfür zweckmäßige Standardgrößen festzulegen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;极值：&lt;/strong&gt;为 &lt;code&gt;max_blocks_per_chunk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt; 或 &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; 设置极大值可能会在内存资源的初始化或运行期间导致上游分配失败，因为系统无法提供所请求的连续内存区域。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;块大小选择不当：&lt;/strong&gt;如果 &lt;code&gt;largest_required_pool_block&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt; 选得太小，内存池将失去其作用，因为大部分分配请求都会超过阈值并持续占用上游内存，从而可能导致碎片化或延迟。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;零值默认值：&lt;/strong&gt;值 &lt;code&gt;0&lt;/code&gt; 明确不表示错误状态，而是指定的预设值（&lt;a class="spec-record-ref" data-req="SWS_CORE_00027" href="../spec/record.html?id=SWS_CORE_00027"&gt;[SWS_CORE_00027]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_CORE_00028" href="../spec/record.html?id=SWS_CORE_00028"&gt;[SWS_CORE_00028]&lt;/a&gt;）。不过，确定合适的默认大小属于各平台实现的职责。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen:
 1) In typischen AUTOSAR-Adaptive-Anwendungen interagiert die Struktur mit polymorphen Speicherressourcen, die auf Pool-Mechanismen aufsetzen, und dient als Konfigurationsobjekt beim Aufbau dieser Ressourcen. – Begründung: Der Payload referenziert [mem.poly.pool_options.class] und [mem.res.pool], nennt aber keine konkreten Klassenbezeichner innerhalb des Moduls core.
 2) Die verarbeitende Ressource übernimmt die Werte bei ihrer Initialisierung als Kopie oder wertet sie aus, sodass die PoolOptions-Instanz danach nicht persistent vorgehalten werden muss. – Begründung: Es handelt sich um ein zustandsloses C++-PMR-Konfigurationsobjekt nach C++-Standardvorbild.
 3) Allokationen, die largest_required_pool_block überschreiten, werden typischerweise an eine Upstream-Speicherressource weitergereicht. – Begründung: Entspricht der Funktionsweise von [mem.res.pool] im C++-Standard, auf den der Payload verweist.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen aus R25-11 zu ara::core::PoolOptions.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 R25-11 中关于 ara::core::PoolOptions 的要求。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

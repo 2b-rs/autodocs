@@ -24,60 +24,59 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>266ba2cf54aa</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_std_hash_ara_core_String_71fe0f/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_std_hash_ara_core_String_71fe0f/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_std_hash_ara_core_String_71fe0f" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-Die Template-Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code> stellt die funktionale Anbindung des AUTOSAR-Adaptive-Datentyps <code>ara::core::String</code> an das Hashing-Framework der C++-Standardbibliothek dar. Innerhalb des Moduls <strong>core</strong> im Release <strong>R25-11</strong> der Adaptive Platform übernimmt diese Struktur die Rolle eines standardisierten Funktionsobjekts. Gemäß der Typdefinition ist die Spezialisierung als <code>final</code> deklariert, was eine weitere Ableitung ausschließt.
+템플릿 특수화 <code>std::hash&lt;ara::core::String&gt;</code>은 AUTOSAR Adaptive 데이터 타입 <code>ara::core::String</code>을 C++ 표준 라이브러리의 해싱 프레임워크에 기능적으로 연결하는 역할을 합니다. Adaptive Platform의 릴리스 <strong>R25-11</strong> 내 <strong>core</strong> 모듈에서 이 구조체는 표준화된 함수 객체의 역할을 담당합니다. 타입 정의에 따르면 특수화는 <code>final</code>로 선언되어 추가적인 파생을 허용하지 않습니다.
 </p>
 <p>
-Der primäre Einsatzzweck liegt in der Bereitstellung einer deterministischen Abbildung von Zeichenketten auf ganzzahlige Hash-Werte des Typs <code>std::size_t</code>. Hierdurch wird <code>ara::core::String</code> als Schlüsseltyp in unordentlichen assoziativen Containern der Standardbibliothek wie <code>std::unordered_map</code> und <code>std::unordered_set</code> direkt verwendbar, ohne dass Anwendungsentwickler eigene Hash-Funktoren implementieren müssen. An der Interaktion sind im Wesentlichen drei Komponenten beteiligt:
+주요 사용 목적은 문자열을 <code>std::size_t</code> 타입의 정수형 해시 값으로 결정론적 매핑하는 기능을 제공하는 데 있습니다. 이를 통해 애플리케이션 개발자가 자체 해시 펑터를 구현할 필요 없이 <code>ara::core::String</code>을 <code>std::unordered_map</code> 및 <code>std::unordered_set</code>과 같은 표준 라이브러리의 정렬되지 않은 연관 컨테이너에서 키 타입으로 직접 사용할 수 있습니다. 상호 작용에는 주로 세 가지 컴포넌트가 관여합니다:
 </p>
 <ul>
-<li><strong>Aufrufende Container oder Algorithmen:</strong> Assoziative Datenstrukturen, welche Schlüssel verwalten und zur Zuweisung interner Buckets einen Hash-Wert anfordern.</li>
-<li><strong>Die Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code>:</strong> Das eigentliche Funktionsobjekt, welches den Aufrufoperator für den Schlüsseltyp bereitstellt.</li>
-<li><strong>Der Eingabetyp <code>ara::core::String</code>:</strong> Die zu analysierende Zeichenkette, deren Inhalt als Eingangsdatum für die Berechnung dient.</li>
+<li><strong>호출 컨테이너 또는 알고리즘:</strong> 키를 관리하고 내부 버킷 할당을 위해 해시 값을 요청하는 연관 데이터 구조.</li>
+<li><strong>특수화 <code>std::hash&lt;ara::core::String&gt;</code>:</strong> 키 타입에 대한 호출 연산자를 제공하는 실제 함수 객체.</li>
+<li><strong>입력 타입 <code>ara::core::String</code>:</strong> 그 내용이 계산을 위한 입력 데이터로 사용되는 분석 대상 문자열.</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
+<h4>수명 주기</h4>
 <p>
-Das Funktionsobjekt besitzt keinen veränderlichen Zustand und keine eigenen Ressourcen. Interpretation: Das Instanziieren von <code>std::hash&lt;ara::core::String&gt;</code> erfordert keine dynamische Speicherallokation und besitzt keinen internen Zustand, sodass Instanzen beliebig kopiert, zugewiesen oder als temporäre Werte erzeugt werden können.
+함수 객체는 변경 가능한 상태와 자체 리소스를 갖지 않습니다. 해석: <code>std::hash&lt;ara::core::String&gt;</code>의 인스턴스화에는 동적 메모리 할당이 필요하지 않으며 내부 상태가 없으므로 인스턴스를 자유롭게 복사, 할당하거나 임시 값으로 생성할 수 있습니다.
 </p>
 <p>
-In der praktischen Anwendung erfolgt die Erzeugung meist implizit durch den umschließenden Container bei dessen Konstruktion. Ebenso kann der Funktor bedarfsweise als flüchtiges temporäres Funktionsobjekt für einzelne Hash-Berechnungen instanziiert und nach Ausführung des Aufrufs unmittelbar wieder zerstört werden. Da keine dynamischen Betriebsmittel allokiert werden, ist der Zerstörungsvorgang trivial und ressourceneffizient.
+실제 애플리케이션에서 생성은 대개 컨테이너 생성 시 이를 감싸는 컨테이너에 의해 암시적으로 수행됩니다. 마찬가지로 개별 해시 계산을 위해 펑터를 임시 함수 객체로 필요에 따라 인스턴스화하고 호출 실행 직후 다시 소멸시킬 수도 있습니다. 동적 운영 리소스가 할당되지 않으므로 소멸 과정은 간단하고 리소스 효율적입니다.
 </p>
 <p>
-Hinsichtlich der Nebenläufigkeit und Thread-Sicherheit verhält sich die Spezialisierung unkritisch: Da der Funktor zustandslos ist, können mehrere Threads parallel denselben Funktor oder separate Instanzen aufrufen. Voraussetzung für nebenläufige Aufrufe ist lediglich, dass die als Argument übergebene Instanz von <code>ara::core::String</code> während des Lesezugriffs durch den Hashing-Vorgang nicht parallel von einem anderen Ausführungspfad modifiziert wird.
+동시성 및 스레드 안전성과 관련하여 이 특수화는 안전하게 동작합니다: 펑터가 상태 비저장이므로 여러 스레드가 동일한 펑터 또는 별도의 인스턴스를 병렬로 호출할 수 있습니다. 동시 호출을 위한 유일한 전제 조건은 인수로 전달된 <code>ara::core::String</code>의 인스턴스가 해싱 프로세스에 의해 읽기 접근되는 동안 다른 실행 경로에 의해 병렬로 수정되지 않아야 한다는 점입니다.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>사용 경로</h4>
 <p>
-Die Verwendung von <code>std::hash&lt;ara::core::String&gt;</code> erfolgt im Regelfall transparent über Standard-Container. Ein typischer Ablauf gestaltet sich wie folgt:
+<code>std::hash&lt;ara::core::String&gt;</code>의 사용은 일반적으로 표준 컨테이너를 통해 투명하게 이루어집니다. 일반적인 흐름은 다음과 같습니다:
 </p>
 <ol>
-<li><strong>Container-Deklaration:</strong> Ein Entwickler definiert eine Hashtabelle, beispielsweise <code>std::unordered_map&lt;ara::core::String, ValueType&gt;</code>. Das C++-Typensystem bindet über Argument-Dependent Lookup und Template-Matching automatisch die Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code> als Hash-Template-Argument ein.</li>
-<li><strong>Schlüsselübergabe:</strong> Beim Hinzufügen, Suchen oder Entfernen von Einträgen übergibt die Anwendungslogik eine Instanz von <code>ara::core::String</code> an die Methoden des Containers.</li>
-<li><strong>Berechnung des Hash-Werts:</strong> Der Container wendet den Aufrufoperator des Funktors auf den Schlüssel an. Als Hash-Algorithmus kommt vermutlich eine Implementierung zum Einsatz, die konsistente Hash-Werte über die Laufzeit eines Prozesses hinweg garantiert, wobei die genaue Hash-Streuung implementationsdefiniert sein dürfte.</li>
-<li><strong>Bucket-Indexierung:</strong> Der Container nutzt den zurückgegebenen ganzzahligen Wert zur Ermittlung des internen Speicher-Buckets und führt anschließend bei Bedarf Gleichheitsprüfungen über <code>operator==</code> durch.</li>
+<li><strong>컨테이너 선언:</strong> 개발자가 해시 테이블(예: <code>std::unordered_map&lt;ara::core::String, ValueType&gt;</code>)을 정의합니다. C++ 타입 시스템은 Argument-Dependent Lookup 및 템플릿 매칭을 통해 특수화 <code>std::hash&lt;ara::core::String&gt;</code>을 해시 템플릿 인수로 자동 바인딩합니다.</li>
+<li><strong>키 전달:</strong> 항목을 추가, 검색 또는 제거할 때 애플리케이션 로직은 <code>ara::core::String</code>의 인스턴스를 컨테이너 메서드에 전달합니다.</li>
+<li><strong>해시 값 계산:</strong> 컨테이너는 펑터의 호출 연산자를 키에 적용합니다. 해시 알고리즘으로는 프로세스 런타임 동안 일관된 해시 값을 보장하는 구현이 사용될 것으로 추정되며, 정확한 해시 분산은 구현 정의일 것으로 보입니다.</li>
+<li><strong>버킷 인덱싱:</strong> 컨테이너는 반환된 정수 값을 사용하여 내부 스토리지 버킷을 결정한 후 필요한 경우 <code>operator==</code>을 통한 동등성 검사를 수행합니다.</li>
 </ol>
 <p>
-Neben der automatisierten Einbindung in Container kann die Spezialisierung auch direkt zur manuellen Berechnung von Hash-Werten aufgerufen werden, beispielsweise zur Verteilung von Zeichenketten auf Worker-Threads oder zur Vorberechnung von Identifikatoren in anwendungsspezifischen Caches.
+컨테이너에 자동 통합되는 것 외에도 특수화를 직접 호출하여 해시 값을 수동으로 계산할 수도 있습니다(예: 워커 스레드 간 문자열 분산 또는 애플리케이션별 캐시에서 식별자 사전 계산).
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>오류 시나리오</h4>
 <p>
-Bei der Ausführung von <code>std::hash&lt;ara::core::String&gt;</code> sind die Vorbedingungen und Fehleraspekte an die allgemeinen Spezifikationen von Hash-Funktionen im C++-Standard angelehnt:
+<code>std::hash&lt;ara::core::String&gt;</code> 실행 시 사전 조건 및 오류 측면은 C++ 표준의 해시 함수 일반 명세를 따릅니다:
 </p>
 <ul>
-<li><strong>Gültigkeit der Eingabe:</strong> Vorbedingung jedes Aufrufs ist ein valides, initialisiertes <code>ara::core::String</code>-Objekt. Die Übergabe einer ungültigen Referenz oder eines Objekts mit beschädigtem Speicherbereich führt zu undefiniertem Verhalten.</li>
-<li><strong>Konsistenzgarantie:</strong> Für zwei Zeichenketten, die gemäß ihrem Gleichheitsoperator denselben Inhalt aufweisen, muss der berechnete Hash-Wert innerhalb desselben Programmlaufs identisch sein. Eine Verletzung dieser Eigenschaft würde zu unauffindbaren Schlüsseln in Containern führen.</li>
-<li><strong>Ausnahmeverhalten:</strong> Der Aufrufoperator dürfte als <code>noexcept</code> deklariert sein, analog zu den Anforderungen der C++-Standardbibliothek für Standard-Hash-Funktionen, da das Traversieren bestehender Zeichenketten keine auslösenden Fehlerbedingungen erzeugt.</li>
-<li><strong>Umgang mit Kollisionen:</strong> Eine identische Hash-Rückgabe für unterschiedliche Zeichenketten stellt keinen Fehlerfall des Funktors dar. Assoziative Container lösen derartige Kollisionen eigenständig durch Ausweichstrategien auf. Es werden keine Fehlertypen wie <code>ara::core::ErrorCode</code> zurückgegeben.</li>
+<li><strong>입력 유효성:</strong> 모든 호출의 사전 조건은 유효하고 초기화된 <code>ara::core::String</code> 객체입니다. 유효하지 않은 참조나 메모리 영역이 손상된 객체를 전달하면 정의되지 않은 동작이 발생합니다.</li>
+<li><strong>일관성 보장:</strong> 동등 연산자에 따라 동일한 내용을 갖는 두 문자열의 경우 계산된 해시 값은 동일한 프로그램 실행 내에서 동일해야 합니다. 이 속성을 위반하면 컨테이너에서 키를 찾을 수 없게 됩니다.</li>
+<li><strong>예외 동작:</strong> 기존 문자열 순회 시 예외를 유발하는 오류 조건이 발생하지 않으므로 표준 해시 함수에 대한 C++ 표준 라이브러리 요구사항과 유사하게 호출 연산자는 <code>noexcept</code>으로 선언될 것으로 보입니다.</li>
+<li><strong>충돌 처리:</strong> 서로 다른 문자열에 대해 동일한 해시가 반환되는 것은 펑터의 오류 사례가 아닙니다. 연관 컨테이너는 대체 전략을 통해 이러한 충돌을 자체적으로 해결합니다. <code>ara::core::ErrorCode</code>과 같은 오류 타입은 반환되지 않습니다.</li>
 </ul>
 <!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul core.</p>
+<p class="ai-note">이 가이드는 core 모듈에 대한 AUTOSAR Adaptive Platform 릴리스 R25-11의 명세 데이터를 기반으로 합니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_std_hash_ara_core_String_71fe0f" title="AI와 토론">💬 AI와 토론</button>
@@ -324,57 +323,56 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="266ba2cf54aa896dcbafbc7c353ac2f51ea55b778ce36c3d20d9a0295b5b9b37" data-trace-output="a9f9aa1e9e3e026d2f3f947a108cd02492ef2382e34db3879abacda87d02787d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; stellt die funktionale Anbindung des AUTOSAR-Adaptive-Datentyps &lt;code&gt;ara::core::String&lt;/code&gt; an das Hashing-Framework der C++-Standardbibliothek dar. Innerhalb des Moduls &lt;strong&gt;core&lt;/strong&gt; im Release &lt;strong&gt;R25-11&lt;/strong&gt; der Adaptive Platform übernimmt diese Struktur die Rolle eines standardisierten Funktionsobjekts. Gemäß der Typdefinition ist die Spezialisierung als &lt;code&gt;final&lt;/code&gt; deklariert, was eine weitere Ableitung ausschließt.
+템플릿 특수화 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;은 AUTOSAR Adaptive 데이터 타입 &lt;code&gt;ara::core::String&lt;/code&gt;을 C++ 표준 라이브러리의 해싱 프레임워크에 기능적으로 연결하는 역할을 합니다. Adaptive Platform의 릴리스 &lt;strong&gt;R25-11&lt;/strong&gt; 내 &lt;strong&gt;core&lt;/strong&gt; 모듈에서 이 구조체는 표준화된 함수 객체의 역할을 담당합니다. 타입 정의에 따르면 특수화는 &lt;code&gt;final&lt;/code&gt;로 선언되어 추가적인 파생을 허용하지 않습니다.
 &lt;/p&gt;
 &lt;p&gt;
-Der primäre Einsatzzweck liegt in der Bereitstellung einer deterministischen Abbildung von Zeichenketten auf ganzzahlige Hash-Werte des Typs &lt;code&gt;std::size_t&lt;/code&gt;. Hierdurch wird &lt;code&gt;ara::core::String&lt;/code&gt; als Schlüsseltyp in unordentlichen assoziativen Containern der Standardbibliothek wie &lt;code&gt;std::unordered_map&lt;/code&gt; und &lt;code&gt;std::unordered_set&lt;/code&gt; direkt verwendbar, ohne dass Anwendungsentwickler eigene Hash-Funktoren implementieren müssen. An der Interaktion sind im Wesentlichen drei Komponenten beteiligt:
+주요 사용 목적은 문자열을 &lt;code&gt;std::size_t&lt;/code&gt; 타입의 정수형 해시 값으로 결정론적 매핑하는 기능을 제공하는 데 있습니다. 이를 통해 애플리케이션 개발자가 자체 해시 펑터를 구현할 필요 없이 &lt;code&gt;ara::core::String&lt;/code&gt;을 &lt;code&gt;std::unordered_map&lt;/code&gt; 및 &lt;code&gt;std::unordered_set&lt;/code&gt;과 같은 표준 라이브러리의 정렬되지 않은 연관 컨테이너에서 키 타입으로 직접 사용할 수 있습니다. 상호 작용에는 주로 세 가지 컴포넌트가 관여합니다:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Aufrufende Container oder Algorithmen:&lt;/strong&gt; Assoziative Datenstrukturen, welche Schlüssel verwalten und zur Zuweisung interner Buckets einen Hash-Wert anfordern.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;:&lt;/strong&gt; Das eigentliche Funktionsobjekt, welches den Aufrufoperator für den Schlüsseltyp bereitstellt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Der Eingabetyp &lt;code&gt;ara::core::String&lt;/code&gt;:&lt;/strong&gt; Die zu analysierende Zeichenkette, deren Inhalt als Eingangsdatum für die Berechnung dient.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;호출 컨테이너 또는 알고리즘:&lt;/strong&gt; 키를 관리하고 내부 버킷 할당을 위해 해시 값을 요청하는 연관 데이터 구조.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;특수화 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;:&lt;/strong&gt; 키 타입에 대한 호출 연산자를 제공하는 실제 함수 객체.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;입력 타입 &lt;code&gt;ara::core::String&lt;/code&gt;:&lt;/strong&gt; 그 내용이 계산을 위한 입력 데이터로 사용되는 분석 대상 문자열.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Das Funktionsobjekt besitzt keinen veränderlichen Zustand und keine eigenen Ressourcen. Interpretation: Das Instanziieren von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; erfordert keine dynamische Speicherallokation und besitzt keinen internen Zustand, sodass Instanzen beliebig kopiert, zugewiesen oder als temporäre Werte erzeugt werden können.
+함수 객체는 변경 가능한 상태와 자체 리소스를 갖지 않습니다. 해석: &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;의 인스턴스화에는 동적 메모리 할당이 필요하지 않으며 내부 상태가 없으므로 인스턴스를 자유롭게 복사, 할당하거나 임시 값으로 생성할 수 있습니다.
 &lt;/p&gt;
 &lt;p&gt;
-In der praktischen Anwendung erfolgt die Erzeugung meist implizit durch den umschließenden Container bei dessen Konstruktion. Ebenso kann der Funktor bedarfsweise als flüchtiges temporäres Funktionsobjekt für einzelne Hash-Berechnungen instanziiert und nach Ausführung des Aufrufs unmittelbar wieder zerstört werden. Da keine dynamischen Betriebsmittel allokiert werden, ist der Zerstörungsvorgang trivial und ressourceneffizient.
+실제 애플리케이션에서 생성은 대개 컨테이너 생성 시 이를 감싸는 컨테이너에 의해 암시적으로 수행됩니다. 마찬가지로 개별 해시 계산을 위해 펑터를 임시 함수 객체로 필요에 따라 인스턴스화하고 호출 실행 직후 다시 소멸시킬 수도 있습니다. 동적 운영 리소스가 할당되지 않으므로 소멸 과정은 간단하고 리소스 효율적입니다.
 &lt;/p&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit und Thread-Sicherheit verhält sich die Spezialisierung unkritisch: Da der Funktor zustandslos ist, können mehrere Threads parallel denselben Funktor oder separate Instanzen aufrufen. Voraussetzung für nebenläufige Aufrufe ist lediglich, dass die als Argument übergebene Instanz von &lt;code&gt;ara::core::String&lt;/code&gt; während des Lesezugriffs durch den Hashing-Vorgang nicht parallel von einem anderen Ausführungspfad modifiziert wird.
+동시성 및 스레드 안전성과 관련하여 이 특수화는 안전하게 동작합니다: 펑터가 상태 비저장이므로 여러 스레드가 동일한 펑터 또는 별도의 인스턴스를 병렬로 호출할 수 있습니다. 동시 호출을 위한 유일한 전제 조건은 인수로 전달된 &lt;code&gt;ara::core::String&lt;/code&gt;의 인스턴스가 해싱 프로세스에 의해 읽기 접근되는 동안 다른 실행 경로에 의해 병렬로 수정되지 않아야 한다는 점입니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
 &lt;p&gt;
-Die Verwendung von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; erfolgt im Regelfall transparent über Standard-Container. Ein typischer Ablauf gestaltet sich wie folgt:
+&lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;의 사용은 일반적으로 표준 컨테이너를 통해 투명하게 이루어집니다. 일반적인 흐름은 다음과 같습니다:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Container-Deklaration:&lt;/strong&gt; Ein Entwickler definiert eine Hashtabelle, beispielsweise &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;. Das C++-Typensystem bindet über Argument-Dependent Lookup und Template-Matching automatisch die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; als Hash-Template-Argument ein.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schlüsselübergabe:&lt;/strong&gt; Beim Hinzufügen, Suchen oder Entfernen von Einträgen übergibt die Anwendungslogik eine Instanz von &lt;code&gt;ara::core::String&lt;/code&gt; an die Methoden des Containers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Berechnung des Hash-Werts:&lt;/strong&gt; Der Container wendet den Aufrufoperator des Funktors auf den Schlüssel an. Als Hash-Algorithmus kommt vermutlich eine Implementierung zum Einsatz, die konsistente Hash-Werte über die Laufzeit eines Prozesses hinweg garantiert, wobei die genaue Hash-Streuung implementationsdefiniert sein dürfte.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bucket-Indexierung:&lt;/strong&gt; Der Container nutzt den zurückgegebenen ganzzahligen Wert zur Ermittlung des internen Speicher-Buckets und führt anschließend bei Bedarf Gleichheitsprüfungen über &lt;code&gt;operator==&lt;/code&gt; durch.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;컨테이너 선언:&lt;/strong&gt; 개발자가 해시 테이블(예: &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;)을 정의합니다. C++ 타입 시스템은 Argument-Dependent Lookup 및 템플릿 매칭을 통해 특수화 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;을 해시 템플릿 인수로 자동 바인딩합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;키 전달:&lt;/strong&gt; 항목을 추가, 검색 또는 제거할 때 애플리케이션 로직은 &lt;code&gt;ara::core::String&lt;/code&gt;의 인스턴스를 컨테이너 메서드에 전달합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;해시 값 계산:&lt;/strong&gt; 컨테이너는 펑터의 호출 연산자를 키에 적용합니다. 해시 알고리즘으로는 프로세스 런타임 동안 일관된 해시 값을 보장하는 구현이 사용될 것으로 추정되며, 정확한 해시 분산은 구현 정의일 것으로 보입니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;버킷 인덱싱:&lt;/strong&gt; 컨테이너는 반환된 정수 값을 사용하여 내부 스토리지 버킷을 결정한 후 필요한 경우 &lt;code&gt;operator==&lt;/code&gt;을 통한 동등성 검사를 수행합니다.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Neben der automatisierten Einbindung in Container kann die Spezialisierung auch direkt zur manuellen Berechnung von Hash-Werten aufgerufen werden, beispielsweise zur Verteilung von Zeichenketten auf Worker-Threads oder zur Vorberechnung von Identifikatoren in anwendungsspezifischen Caches.
+컨테이너에 자동 통합되는 것 외에도 특수화를 직접 호출하여 해시 값을 수동으로 계산할 수도 있습니다(예: 워커 스레드 간 문자열 분산 또는 애플리케이션별 캐시에서 식별자 사전 계산).
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
 &lt;p&gt;
-Bei der Ausführung von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; sind die Vorbedingungen und Fehleraspekte an die allgemeinen Spezifikationen von Hash-Funktionen im C++-Standard angelehnt:
+&lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; 실행 시 사전 조건 및 오류 측면은 C++ 표준의 해시 함수 일반 명세를 따릅니다:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeit der Eingabe:&lt;/strong&gt; Vorbedingung jedes Aufrufs ist ein valides, initialisiertes &lt;code&gt;ara::core::String&lt;/code&gt;-Objekt. Die Übergabe einer ungültigen Referenz oder eines Objekts mit beschädigtem Speicherbereich führt zu undefiniertem Verhalten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konsistenzgarantie:&lt;/strong&gt; Für zwei Zeichenketten, die gemäß ihrem Gleichheitsoperator denselben Inhalt aufweisen, muss der berechnete Hash-Wert innerhalb desselben Programmlaufs identisch sein. Eine Verletzung dieser Eigenschaft würde zu unauffindbaren Schlüsseln in Containern führen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausnahmeverhalten:&lt;/strong&gt; Der Aufrufoperator dürfte als &lt;code&gt;noexcept&lt;/code&gt; deklariert sein, analog zu den Anforderungen der C++-Standardbibliothek für Standard-Hash-Funktionen, da das Traversieren bestehender Zeichenketten keine auslösenden Fehlerbedingungen erzeugt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Umgang mit Kollisionen:&lt;/strong&gt; Eine identische Hash-Rückgabe für unterschiedliche Zeichenketten stellt keinen Fehlerfall des Funktors dar. Assoziative Container lösen derartige Kollisionen eigenständig durch Ausweichstrategien auf. Es werden keine Fehlertypen wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; zurückgegeben.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;입력 유효성:&lt;/strong&gt; 모든 호출의 사전 조건은 유효하고 초기화된 &lt;code&gt;ara::core::String&lt;/code&gt; 객체입니다. 유효하지 않은 참조나 메모리 영역이 손상된 객체를 전달하면 정의되지 않은 동작이 발생합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;일관성 보장:&lt;/strong&gt; 동등 연산자에 따라 동일한 내용을 갖는 두 문자열의 경우 계산된 해시 값은 동일한 프로그램 실행 내에서 동일해야 합니다. 이 속성을 위반하면 컨테이너에서 키를 찾을 수 없게 됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;예외 동작:&lt;/strong&gt; 기존 문자열 순회 시 예외를 유발하는 오류 조건이 발생하지 않으므로 표준 해시 함수에 대한 C++ 표준 라이브러리 요구사항과 유사하게 호출 연산자는 &lt;code&gt;noexcept&lt;/code&gt;으로 선언될 것으로 보입니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;충돌 처리:&lt;/strong&gt; 서로 다른 문자열에 대해 동일한 해시가 반환되는 것은 펑터의 오류 사례가 아닙니다. 연관 컨테이너는 대체 전략을 통해 이러한 충돌을 자체적으로 해결합니다. &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;과 같은 오류 타입은 반환되지 않습니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul core.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 core 모듈에 대한 AUTOSAR Adaptive Platform 릴리스 R25-11의 명세 데이터를 기반으로 합니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

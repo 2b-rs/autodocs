@@ -24,55 +24,54 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>1a671cca9d56</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_size_const_T_ffccc0/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/classes/cl_ara_core_variant_size_const_T_ffccc0/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_size_const_T_ffccc0" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Die partielle Template-Spezialisierung <code>ara::core::variant_size&lt;const T&gt;</code> stellt ein Hilfstemplate zur Bestimmung der Anzahl von Alternativen innerhalb eines Varianten-Typs zur Übersetzungszeit bereit. Im Kontext des AUTOSAR-Adaptive-Moduls <code>core</code> dient das Template der Typ-Introspektion von Variantenstrukturen. Die Beschreibung im Spezifikationsbestand verweist auf die entsprechende Verwendung unter <em>[variant]</em>.
+The partial template specialization <code>ara::core::variant_size&lt;const T&gt;</code> provides a helper template for determining the number of alternatives within a variant type at compile time. In the context of the AUTOSAR Adaptive module <code>core</code>, the template serves for type introspection of variant structures. The description in the specification inventory refers to the corresponding usage under <em>[variant]</em>.
 </p>
 <p>
-Als primärer Interaktionspartner fungiert der zugrundeliegende Typ <code>T</code>, welcher typischerweise eine Ausprägung von <code>ara::core::variant</code> darstellt. Das Template erweitert die generelle Typabfrage um die Behandlung von <code>const</code>-qualifizierten Datentypen. Es ermöglicht generischen Template-Algorithmen, Metaprogrammierungsroutinen und compile-zeitlichen Prüfungen einen transparenten Zugriff auf die Dimensionsmetadaten einer Variante, unabhängig davon, ob der konkrete Argumenttyp als konstanter Typ vorliegt oder nicht.
+The underlying type <code>T</code>, which typically represents a variant of <code>ara::core::variant</code>, acts as the primary interaction partner. The template extends general type queries to handle <code>const</code>-qualified data types. It allows generic template algorithms, metaprogramming routines, and compile-time checks transparent access to the dimension metadata of a variant, regardless of whether the concrete argument type is a const type or not.
 </p>
 <p>
-Die Rolle der Spezialisierung ist rein deklarativ und introspektiv: Sie fungiert als Typmerkmal (Type Trait) und bildet eine Brücke zwischen der typspezifischen Varianten-Definition und generischem Metaprogrammierungs-Code, der auf Merkmale wie <code>variant_size_v</code> oder den direkten Zugriff auf statische Konstanten angewiesen ist.
+The role of the specialization is purely declarative and introspective: It acts as a type trait and forms a bridge between the type-specific variant definition and generic metaprogramming code that relies on traits such as <code>variant_size_v</code> or direct access to static constants.
 </p>
 
-<h4>Lebenszyklus und Instanziierung</h4>
+<h4>Lifecycle and Instantiation</h4>
 <p>
-Als reines Compile-Time-Konstrukt (Type Trait) besitzt <code>ara::core::variant_size&lt;const T&gt;</code> keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren keine dynamischen Speicherallokationen, keine Besitzverhältnisse und keine Zerstörungsphasen.
+As a pure compile-time construct (type trait), <code>ara::core::variant_size&lt;const T&gt;</code> has no dynamic lifecycle at runtime. There are no dynamic memory allocations, no ownership relationships, and no destruction phases.
 </p>
 <p>
-Der Lebenszyklus beschränkt sich vollständig auf die Phasen der statischen Code-Analyse und Übersetzung:
+The lifecycle is entirely confined to the phases of static code analysis and compilation:
 </p>
 <ul>
-<li><strong>Template-Spezialisierung:</strong> Sobald der Compiler auf einen Ausdruck stößt, der <code>ara::core::variant_size</code> mit einem <code>const</code>-qualifizierten Typen parametrisiert, greift diese Spezialisierung anstelle des primären Templates.</li>
-<li><strong>Konstanten-Auswertung:</strong> Die Spezialisierung leitet vermutlich den Wert direkt von der unqualifizierten Spezialisierung <code>ara::core::variant_size&lt;T&gt;</code> ab. Die Ermittlung erfolgt als integraler Bestandteil der Template-Instanziierung.</li>
-<li><strong>Laufzeitlosigkeit:</strong> Da das Konstrukt lediglich statische Member-Informationen zur Verfügung stellt, entstehen zur Laufzeit keine Instanzen, kein Speicherverbrauch im Objekt-Layout und keinerlei Nebenläufigkeitskonflikte.</li>
+<li><strong>Template specialization:</strong> As soon as the compiler encounters an expression that parameterizes <code>ara::core::variant_size</code> with a <code>const</code>-qualified type, this specialization takes effect instead of the primary template.</li>
+<li><strong>Constant evaluation:</strong> The specialization presumably derives the value directly from the unqualified specialization <code>ara::core::variant_size&lt;T&gt;</code>. The determination takes place as an integral part of template instantiation.</li>
+<li><strong>Runtimelessness:</strong> Since the construct merely provides static member information, no instances, no memory consumption in the object layout, and no concurrency conflicts arise at runtime.</li>
 </ul>
 
-<h4>Nutzungspfad zur Übersetzungszeit</h4>
+<h4>Usage Path at Compile Time</h4>
 <p>
-Die typische Verwendung von <code>ara::core::variant_size&lt;const T&gt;</code> erfolgt innerhalb von generischem C++-Code oder statischen Zusicherungen, bei denen Funktionen oder Klassenstrukturen typunabhängig mit konstanten Referenzen auf Varianten arbeiten.
+The typical use of <code>ara::core::variant_size&lt;const T&gt;</code> occurs within generic C++ code or static assertions where functions or class structures operate type-independently on const references to variants.
 </p>
 <ol>
-<li><strong>Übergabe eines konstanten Typs:</strong> Ein generischer Algorithmus erhält einen konstanten Referenztyp (beispielsweise <code>const MyVariant&amp;</code>) oder ein abgeleitetes Typlevel <code>const T</code>.</li>
-<li><strong>Abfrage der Alternativenanzahl:</strong> Über den Template-Ausdruck <code>ara::core::variant_size&lt;const T&gt;::value</code> (oder entsprechende Alias-Templates) fragt der metaprogrammierende Code die Anzahl der gespeicherten Typ-Alternativen ab.</li>
-<li><strong>Verarbeitung zur Compile-Zeit:</strong> Der resultierende ganzzahlige Wert fließt in Bedingungen wie <code>static_assert</code>, <code>std::integral_constant</code>-Ableitungen oder Template-Rekursionen ein, um Typindizes und Wertebereiche statisch zu validieren.</li>
+<li><strong>Passing a const type:</strong> A generic algorithm receives a const reference type (for example <code>const MyVariant&amp;</code>) or a derived type level <code>const T</code>.</li>
+<li><strong>Querying the number of alternatives:</strong> Via the template expression <code>ara::core::variant_size&lt;const T&gt;::value</code> (or corresponding alias templates), the metaprogramming code queries the number of stored type alternatives.</li>
+<li><strong>Processing at compile time:</strong> The resulting integral value flows into conditions such as <code>static_assert</code>, <code>std::integral_constant</code> derivations, or template recursions to statically validate type indices and value ranges.</li>
 </ol>
 <p>
-Interpretation: Durch die Spezialisierung wird sichergestellt, dass Entwickler und Bibliotheksfunktionen den Typ <code>T</code> nicht manuell von CV-Qualifizierern mittels Transformationstraits (wie <code>std::remove_const</code>) bereinigen müssen, bevor eine Abfrage der Variantengröße erfolgen kann.
+Interpretation: The specialization ensures that developers and library functions do not have to manually strip type <code>T</code> of CV qualifiers using transformation traits (such as <code>std::remove_const</code>) before a query of the variant size can take place.
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>Error Scenarios</h4>
 <p>
-Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, treten Fehler nicht in Form von Laufzeit-Ausnahmen oder AUTOSAR-Fehlercodes (wie <code>ara::core::ErrorCode</code>) auf. Fehlerszenarien manifestieren sich stattdessen ausnahmslos als Fehler während des Übersetzungsvorgangs.
+Since the class acts purely at compile time and offers no runtime methods, errors do not occur in the form of runtime exceptions or AUTOSAR error codes (such as <code>ara::core::ErrorCode</code>). Failure scenarios instead manifest without exception as errors during the compilation process.
 </p>
 <ul>
-<li><strong>Instanziierung mit inkompatiblen Typen:</strong> Wird <code>ara::core::variant_size&lt;const T&gt;</code> mit einem Typen instanziiert, der kein Varianten-Typ ist und für dessen unqualifizierten Basistyp <code>T</code> keine gültige Spezialisierung von <code>variant_size</code> existiert, schlägt die Template-Instanziierung fehl. Dies führt zu einem direkten Übersetzungsabbruch aufgrund fehlender Member.</li>
-<li><strong>Unvollständige Typen:</strong> Wird ein unvollständiger Typ (Forward Declaration) übergeben, bevor die vollständige Klassendefinition der Variante dem Compiler bekannt ist, kann der Compiler die Größe nicht auflösen, was ebenfalls in einem Übersetzungsfehler resultiert.</li>
-<li><strong>Falsche Typqualifizierung:</strong> Die Spezialisierung deckt ausschließlich <code>const T</code> ab. Liegt eine volatile Qualifizierung vor (z.&nbsp;B. <code>volatile T</code> oder <code>const volatile T</code>), greift diese Spezialisierung nicht, was je nach Vorhandensein weiterer Traits zu abweichendem Verhalten oder Compiler-Diagnosen führen dürfte.</li>
+<li><strong>Instantiation with incompatible types:</strong> If <code>ara::core::variant_size&lt;const T&gt;</code> is instantiated with a type that is not a variant type and for whose unqualified base type <code>T</code> no valid specialization of <code>variant_size</code> exists, template instantiation fails. This leads to a direct compilation abort due to missing members.</li>
+<li><strong>Incomplete types:</strong> If an incomplete type (forward declaration) is passed before the full class definition of the variant is known to the compiler, the compiler cannot resolve the size, which likewise results in a compilation error.</li>
+<li><strong>Incorrect type qualification:</strong> The specialization covers exclusively <code>const T</code>. If a volatile qualification is present (e.g. <code>volatile T</code> or <code>const volatile T</code>), this specialization does not take effect, which is expected to lead to diverging behavior or compiler diagnostics depending on the presence of further traits.</li>
 </ul>
 
 <!-- annahmen:
@@ -80,7 +79,7 @@ Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, t
 2) Bei Instanziierung mit inkompatiblen oder unvollständigen Typen wird ein Kompilierzeitfehler ausgelöst – Begründung: Typ-Traits für Varianten erfordern eine vollständige Definition des zugrundeliegenden Varianten-Typs.
 3) Die Auswertung erfolgt rein zur Übersetzungszeit ohne Laufzeit- und Speicheraufwand – Begründung: Die Syntax deklariert eine Struktur-Spezialisierung nach dem Muster klassischer Compile-Time-Type-Traits.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Releases R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf den bereitgestellten Spezifikationskontext.</p>
+<p class="ai-note">This guide is based on the structural metadata of the AUTOSAR Adaptive release R25-11. All technical statements rely exclusively on the provided specification context.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_variant_size_const_T_ffccc0" title="Discuss with AI">💬 Discuss with AI</button>
@@ -297,52 +296,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1a671cca9d566f7501ed0aabeb5137264be9e6ca8e35f74e29749a951ccc1808" data-trace-output="bd1f48c4f8ca1cf6058994bc158a597b9a7ecf182c9e8635814c1fabe07edb9f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Die partielle Template-Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; stellt ein Hilfstemplate zur Bestimmung der Anzahl von Alternativen innerhalb eines Varianten-Typs zur Übersetzungszeit bereit. Im Kontext des AUTOSAR-Adaptive-Moduls &lt;code&gt;core&lt;/code&gt; dient das Template der Typ-Introspektion von Variantenstrukturen. Die Beschreibung im Spezifikationsbestand verweist auf die entsprechende Verwendung unter &lt;em&gt;[variant]&lt;/em&gt;.
+The partial template specialization &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; provides a helper template for determining the number of alternatives within a variant type at compile time. In the context of the AUTOSAR Adaptive module &lt;code&gt;core&lt;/code&gt;, the template serves for type introspection of variant structures. The description in the specification inventory refers to the corresponding usage under &lt;em&gt;[variant]&lt;/em&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-Als primärer Interaktionspartner fungiert der zugrundeliegende Typ &lt;code&gt;T&lt;/code&gt;, welcher typischerweise eine Ausprägung von &lt;code&gt;ara::core::variant&lt;/code&gt; darstellt. Das Template erweitert die generelle Typabfrage um die Behandlung von &lt;code&gt;const&lt;/code&gt;-qualifizierten Datentypen. Es ermöglicht generischen Template-Algorithmen, Metaprogrammierungsroutinen und compile-zeitlichen Prüfungen einen transparenten Zugriff auf die Dimensionsmetadaten einer Variante, unabhängig davon, ob der konkrete Argumenttyp als konstanter Typ vorliegt oder nicht.
+The underlying type &lt;code&gt;T&lt;/code&gt;, which typically represents a variant of &lt;code&gt;ara::core::variant&lt;/code&gt;, acts as the primary interaction partner. The template extends general type queries to handle &lt;code&gt;const&lt;/code&gt;-qualified data types. It allows generic template algorithms, metaprogramming routines, and compile-time checks transparent access to the dimension metadata of a variant, regardless of whether the concrete argument type is a const type or not.
 &lt;/p&gt;
 &lt;p&gt;
-Die Rolle der Spezialisierung ist rein deklarativ und introspektiv: Sie fungiert als Typmerkmal (Type Trait) und bildet eine Brücke zwischen der typspezifischen Varianten-Definition und generischem Metaprogrammierungs-Code, der auf Merkmale wie &lt;code&gt;variant_size_v&lt;/code&gt; oder den direkten Zugriff auf statische Konstanten angewiesen ist.
+The role of the specialization is purely declarative and introspective: It acts as a type trait and forms a bridge between the type-specific variant definition and generic metaprogramming code that relies on traits such as &lt;code&gt;variant_size_v&lt;/code&gt; or direct access to static constants.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus und Instanziierung&lt;/h4&gt;
+&lt;h4&gt;Lifecycle and Instantiation&lt;/h4&gt;
 &lt;p&gt;
-Als reines Compile-Time-Konstrukt (Type Trait) besitzt &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren keine dynamischen Speicherallokationen, keine Besitzverhältnisse und keine Zerstörungsphasen.
+As a pure compile-time construct (type trait), &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; has no dynamic lifecycle at runtime. There are no dynamic memory allocations, no ownership relationships, and no destruction phases.
 &lt;/p&gt;
 &lt;p&gt;
-Der Lebenszyklus beschränkt sich vollständig auf die Phasen der statischen Code-Analyse und Übersetzung:
+The lifecycle is entirely confined to the phases of static code analysis and compilation:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Template-Spezialisierung:&lt;/strong&gt; Sobald der Compiler auf einen Ausdruck stößt, der &lt;code&gt;ara::core::variant_size&lt;/code&gt; mit einem &lt;code&gt;const&lt;/code&gt;-qualifizierten Typen parametrisiert, greift diese Spezialisierung anstelle des primären Templates.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konstanten-Auswertung:&lt;/strong&gt; Die Spezialisierung leitet vermutlich den Wert direkt von der unqualifizierten Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt; ab. Die Ermittlung erfolgt als integraler Bestandteil der Template-Instanziierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Laufzeitlosigkeit:&lt;/strong&gt; Da das Konstrukt lediglich statische Member-Informationen zur Verfügung stellt, entstehen zur Laufzeit keine Instanzen, kein Speicherverbrauch im Objekt-Layout und keinerlei Nebenläufigkeitskonflikte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Template specialization:&lt;/strong&gt; As soon as the compiler encounters an expression that parameterizes &lt;code&gt;ara::core::variant_size&lt;/code&gt; with a &lt;code&gt;const&lt;/code&gt;-qualified type, this specialization takes effect instead of the primary template.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Constant evaluation:&lt;/strong&gt; The specialization presumably derives the value directly from the unqualified specialization &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt;. The determination takes place as an integral part of template instantiation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Runtimelessness:&lt;/strong&gt; Since the construct merely provides static member information, no instances, no memory consumption in the object layout, and no concurrency conflicts arise at runtime.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad zur Übersetzungszeit&lt;/h4&gt;
+&lt;h4&gt;Usage Path at Compile Time&lt;/h4&gt;
 &lt;p&gt;
-Die typische Verwendung von &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; erfolgt innerhalb von generischem C++-Code oder statischen Zusicherungen, bei denen Funktionen oder Klassenstrukturen typunabhängig mit konstanten Referenzen auf Varianten arbeiten.
+The typical use of &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; occurs within generic C++ code or static assertions where functions or class structures operate type-independently on const references to variants.
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe eines konstanten Typs:&lt;/strong&gt; Ein generischer Algorithmus erhält einen konstanten Referenztyp (beispielsweise &lt;code&gt;const MyVariant&amp;amp;&lt;/code&gt;) oder ein abgeleitetes Typlevel &lt;code&gt;const T&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage der Alternativenanzahl:&lt;/strong&gt; Über den Template-Ausdruck &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;::value&lt;/code&gt; (oder entsprechende Alias-Templates) fragt der metaprogrammierende Code die Anzahl der gespeicherten Typ-Alternativen ab.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung zur Compile-Zeit:&lt;/strong&gt; Der resultierende ganzzahlige Wert fließt in Bedingungen wie &lt;code&gt;static_assert&lt;/code&gt;, &lt;code&gt;std::integral_constant&lt;/code&gt;-Ableitungen oder Template-Rekursionen ein, um Typindizes und Wertebereiche statisch zu validieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Passing a const type:&lt;/strong&gt; A generic algorithm receives a const reference type (for example &lt;code&gt;const MyVariant&amp;amp;&lt;/code&gt;) or a derived type level &lt;code&gt;const T&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Querying the number of alternatives:&lt;/strong&gt; Via the template expression &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;::value&lt;/code&gt; (or corresponding alias templates), the metaprogramming code queries the number of stored type alternatives.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Processing at compile time:&lt;/strong&gt; The resulting integral value flows into conditions such as &lt;code&gt;static_assert&lt;/code&gt;, &lt;code&gt;std::integral_constant&lt;/code&gt; derivations, or template recursions to statically validate type indices and value ranges.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: Durch die Spezialisierung wird sichergestellt, dass Entwickler und Bibliotheksfunktionen den Typ &lt;code&gt;T&lt;/code&gt; nicht manuell von CV-Qualifizierern mittels Transformationstraits (wie &lt;code&gt;std::remove_const&lt;/code&gt;) bereinigen müssen, bevor eine Abfrage der Variantengröße erfolgen kann.
+Interpretation: The specialization ensures that developers and library functions do not have to manually strip type &lt;code&gt;T&lt;/code&gt; of CV qualifiers using transformation traits (such as &lt;code&gt;std::remove_const&lt;/code&gt;) before a query of the variant size can take place.
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
 &lt;p&gt;
-Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, treten Fehler nicht in Form von Laufzeit-Ausnahmen oder AUTOSAR-Fehlercodes (wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;) auf. Fehlerszenarien manifestieren sich stattdessen ausnahmslos als Fehler während des Übersetzungsvorgangs.
+Since the class acts purely at compile time and offers no runtime methods, errors do not occur in the form of runtime exceptions or AUTOSAR error codes (such as &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;). Failure scenarios instead manifest without exception as errors during the compilation process.
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung mit inkompatiblen Typen:&lt;/strong&gt; Wird &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; mit einem Typen instanziiert, der kein Varianten-Typ ist und für dessen unqualifizierten Basistyp &lt;code&gt;T&lt;/code&gt; keine gültige Spezialisierung von &lt;code&gt;variant_size&lt;/code&gt; existiert, schlägt die Template-Instanziierung fehl. Dies führt zu einem direkten Übersetzungsabbruch aufgrund fehlender Member.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Typen:&lt;/strong&gt; Wird ein unvollständiger Typ (Forward Declaration) übergeben, bevor die vollständige Klassendefinition der Variante dem Compiler bekannt ist, kann der Compiler die Größe nicht auflösen, was ebenfalls in einem Übersetzungsfehler resultiert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Falsche Typqualifizierung:&lt;/strong&gt; Die Spezialisierung deckt ausschließlich &lt;code&gt;const T&lt;/code&gt; ab. Liegt eine volatile Qualifizierung vor (z.&amp;nbsp;B. &lt;code&gt;volatile T&lt;/code&gt; oder &lt;code&gt;const volatile T&lt;/code&gt;), greift diese Spezialisierung nicht, was je nach Vorhandensein weiterer Traits zu abweichendem Verhalten oder Compiler-Diagnosen führen dürfte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Instantiation with incompatible types:&lt;/strong&gt; If &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; is instantiated with a type that is not a variant type and for whose unqualified base type &lt;code&gt;T&lt;/code&gt; no valid specialization of &lt;code&gt;variant_size&lt;/code&gt; exists, template instantiation fails. This leads to a direct compilation abort due to missing members.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Incomplete types:&lt;/strong&gt; If an incomplete type (forward declaration) is passed before the full class definition of the variant is known to the compiler, the compiler cannot resolve the size, which likewise results in a compilation error.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Incorrect type qualification:&lt;/strong&gt; The specialization covers exclusively &lt;code&gt;const T&lt;/code&gt;. If a volatile qualification is present (e.g. &lt;code&gt;volatile T&lt;/code&gt; or &lt;code&gt;const volatile T&lt;/code&gt;), this specialization does not take effect, which is expected to lead to diverging behavior or compiler diagnostics depending on the presence of further traits.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -350,7 +348,7 @@ Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, t
 2) Bei Instanziierung mit inkompatiblen oder unvollständigen Typen wird ein Kompilierzeitfehler ausgelöst – Begründung: Typ-Traits für Varianten erfordern eine vollständige Definition des zugrundeliegenden Varianten-Typs.
 3) Die Auswertung erfolgt rein zur Übersetzungszeit ohne Laufzeit- und Speicheraufwand – Begründung: Die Syntax deklariert eine Struktur-Spezialisierung nach dem Muster klassischer Compile-Time-Type-Traits.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Releases R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf den bereitgestellten Spezifikationskontext.&lt;/p&gt;
+&lt;p class="ai-note"&gt;This guide is based on the structural metadata of the AUTOSAR Adaptive release R25-11. All technical statements rely exclusively on the provided specification context.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

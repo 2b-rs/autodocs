@@ -24,53 +24,52 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>00637bd8ea46</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_alternative_I_volatile_T_6ae672/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/classes/cl_ara_core_variant_alternative_I_volatile_T_6ae672/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_alternative_I_volatile_T_6ae672" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>السياق</h4>
 <p>
-Die Template-Struktur <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> fungiert als typbezogenes Metaprogrammierungs-Hilfskonstrukt innerhalb des Moduls <code>core</code> der AUTOSAR Adaptive Platform. Ihre Kernaufgabe besteht darin, zur Übersetzungszeit den Typ derjenigen Alternative zu ermitteln, die sich am nullbasierten Index <code>I</code> eines <code>volatile</code>-qualifizierten Variantentyps <code>T</code> befindet. Gemäß der Beschreibung richtet sich das Verhalten nach der korrespondierenden Verwendung von <code>[variant]</code> im C++-Standard.
+يعمل هيكل القالب <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> كبنية مساعدة للبرمجة الوصفية المتعلقة بالنوع داخل الوحدة <code>core</code> لـ AUTOSAR Adaptive Platform. وتتمثل مهمته الأساسية في تحديد نوع البديل الموجود عند الفهرس ذي القاعدة الصفرية <code>I</code> لنوع متغير <code>T</code> مؤهل بـ <code>volatile</code> في وقت الترجمة. ووفقًا للوصف، يسترشد السلوك بالاستخدام المقابل لـ <code>[variant]</code> في معيار C++.
 </p>
 <p>
-In generischen Bibliotheken interagiert diese partielle Spezialisierung eng mit <code>ara::core::variant</code> sowie anderen typinspektierenden Strukturen wie <code>variant_size</code>. Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante <code>ara::core::variant_alternative&lt;I, T&gt;</code> und qualifiziert das extrahierte Ergebnis anschließend mit <code>volatile</code>, um die cv-Qualifizierung des umschließenden Objekts konsistent auf die enthaltene Alternative zu übertragen.
+في المكتبات العامة، يتفاعل هذا التخصيص الجزئي بشكل وثيق مع <code>ara::core::variant</code> وهياكل استبطان الأنواع الأخرى مثل <code>variant_size</code>. تفسير: من المحتمل أن يفوض التخصيص داخليًا إلى المتغير غير المؤهل <code>ara::core::variant_alternative&lt;I, T&gt;</code> ثم يؤهل النتيجة المستخرجة بـ <code>volatile</code>، لنقل تأهيل cv للكائن الحاوي بشكل متسق إلى البديل المتضمن.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>دورة الحياة</h4>
 <p>
-Als reines Hilfskonstrukt für Metaprogrammierung besitzt <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> keinen Laufzeit-Lebenszyklus. Es existieren weder Instanzen im Arbeitsspeicher noch Konstruktoren, Zerstörungsphasen oder dynamische Speicherverwaltungen. Die Struktur operiert vollständig zur Übersetzungszeit im C++-Compiler:
+كبنية مساعدة بحتة للبرمجة الوصفية، لا يمتلك <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> أي دورة حياة في وقت التشغيل. ولا توجد مثيلات في الذاكرة ولا دوال بناء أو مراحل تدمير أو إدارة ديناميكية للذاكرة. ويعمل الهيكل بالكامل في وقت الترجمة داخل مترجم C++:
 </p>
 <ul>
-<li><strong>Instanziierung:</strong> Der Compiler instanziiert die partielle Spezialisierung, sobald im Code auf einen Member-Typ zugegriffen wird.</li>
-<li><strong>Auflösung:</strong> Während der semantischen Analyse prüft der Compiler die Gültigkeit des Index <code>I</code> und bindet den resultierenden Typ an das Member-Alias.</li>
-<li><strong>Abschluss:</strong> Nach der Codegenerierung verbleiben keinerlei Spuren des Traits im generierten Maschinenprogramm.</li>
+<li><strong>إنشاء المثيل:</strong> يقوم المترجم بإنشاء مثيل للتخصيص الجزئي بمجرد الوصول إلى نوع عضو في الكود.</li>
+<li><strong>التسوية:</strong> أثناء التحليل الدلالي، يتحقق المترجم من صلاحية الفهرس <code>I</code> ويربط النوع الناتج بالاسم المستعار للعضو.</li>
+<li><strong>الاكتمال:</strong> بعد إنشاء الكود، لا يتبقى أي أثر للسمة في برنامج الآلة المُنشأ.</li>
 </ul>
 <p>
-Themen der Nebenläufigkeit und Threadsicherheit entfallen zur Laufzeit vollkommen, da kein veränderlicher Speicherzustand vorliegt und Compile-Time-Transformationen inhärent seiteneffektfrei sind.
+تنتفي موضوعات التزامن وأمان الخيوط تمامًا في وقت التشغيل، نظرًا لعدم وجود حالة ذاكرة قابلة للتعديل ولأن تحويلات وقت الترجمة خالية بطبيعتها من الآثار الجانبية.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>مسار الاستخدام</h4>
 <p>
-Die Struktur wird typischerweise in generischen Algorithmen oder Metaprogrammierungs-Pipelines eingesetzt, wenn Typen aus <code>volatile</code>-qualifizierten Varianten extrahiert werden müssen:
+يُستخدم الهيكل عادةً في الخوارزميات العامة أو مسارات معالجة البرمجة الوصفية عند الحاجة إلى استخراج الأنواع من المتغيرات المؤهلة بـ <code>volatile</code>:
 </p>
 <ol>
-<li><strong>Angabe des Positionsindex:</strong> Der Entwickler übergibt den gewünschten Index <code>I</code> vom Typ <code>std::size_t</code> als statischen Template-Parameter.</li>
-<li><strong>Übergabe des Variantentyps:</strong> Ein <code>volatile</code>-qualifizierter Typ wird als Typargument <code>T</code> spezifiziert, beispielsweise <code>volatile ara::core::variant&lt;int, double, float&gt;</code>.</li>
-<li><strong>Typabfrage:</strong> Interpretation: Über den eingebetteten Typalias <code>type</code> (oder ein entsprechendes Alias-Template) wird der qualifizierte Alternativtyp abgefragt; bei Index 0 ergäbe dies im genannten Beispiel <code>volatile int</code>.</li>
-<li><strong>Verwendung in Signaturen:</strong> Der so extrahierte Typ wird als Rückgabe- oder Parametertyp generischer Zugriffsmethoden eingesetzt oder in statischen Assertionen weiterverarbeitet.</li>
+<li><strong>تحديد فهرس الموضع:</strong> يمرر المطور الفهرس المطلوب <code>I</code> من النوع <code>std::size_t</code> كمعلمة قالب ساكنة.</li>
+<li><strong>تمرير نوع المتغير:</strong> يتم تحديد نوع مؤهل بـ <code>volatile</code> كوسيط نوع <code>T</code>، على سبيل المثال <code>volatile ara::core::variant&lt;int, double, float&gt;</code>.</li>
+<li><strong>الاستعلام عن النوع:</strong> تفسير: عبر الاسم المستعار للنوع المضمن <code>type</code> (أو قالب اسم مستعار مطابق)، يتم الاستعلام عن نوع البديل المؤهل؛ عند الفهرس 0 ينتج في المثال المذكور <code>volatile int</code>.</li>
+<li><strong>الاستخدام في التواقيع:</strong> يُستخدم النوع المستخرج بهذه الطريقة كنوع إرجاع أو نوع معلمة لدوال الوصول العامة أو تتم معالجته بشكل أكبر في التوكيدات الساكنة.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>سيناريوهات الأخطاء</h4>
 <p>
-Fehlerszenarien bei der Verwendung von <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> führen nicht zu Laufzeitausnahmen oder Fehlercodes, sondern treten als statische Übersetzungsfehler auf:
+لا تؤدي سيناريوهات الخطأ عند استخدام <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> إلى استثناءات في وقت التشغيل أو رموز خطأ، بل تظهر كأخطاء ترجمة ساكنة:
 </p>
 <ul>
-<li><strong>Indexüberschreitung:</strong> Wird ein Wert für <code>I</code> gewählt, der größer oder gleich der Anzahl der Alternativen des Variantentyps <code>T</code> ist, schlägt die Typauflösung fehl. Interpretation: Der Compiler bricht die Übersetzung mit einem Fehler ab, da für diesen Index keine Spezialisierung oder Typdefinition existiert.</li>
-<li><strong>Inkompatibler Typ <code>T</code>:</strong> Wird ein Typ übergeben, der keine Variante darstellt und für den keine primäre Definition von <code>variant_alternative</code> greift, scheitert die Template-Instanziierung.</li>
-<li><strong>Einschränkungen von <code>volatile</code>:</strong> Bei der weiteren Verwendung des resultierenden Typs in modernen C++-Umgebungen sind eventuelle Restriktionen für flüchtige Operationen auf zusammengesetzten Typen zu beachten.</li>
+<li><strong>تجاوز الفهرس:</strong> إذا تم اختيار قيمة لـ <code>I</code> تكون أكبر من أو تساوي عدد بدائل نوع المتغير <code>T</code>، فستفشل تسوية النوع. تفسير: يقطع المترجم الترجمة مع ظهور خطأ، لعدم وجود تخصيص أو تعريف نوع لهذا الفهرس.</li>
+<li><strong>نوع غير متوافق <code>T</code>:</strong> إذا تم تمرير نوع لا يمثل متغيرًا ولا ينطبق عليه تعريف أساسي لـ <code>variant_alternative</code>، فسيَفشل إنشاء مثيل القالب.</li>
+<li><strong>قيود <code>volatile</code>:</strong> عند الاستخدام الإضافي للنوع الناتج في بيئات C++ الحديثة، يجب مراعاة القيود المحتملة للعمليات المتقلبة (volatile) على الأنواع المركبة.</li>
 </ul>
 
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform für das Release R25-11.</p>
+<p class="ai-note">يستند هذا الدليل إلى بيانات مواصفات AUTOSAR Adaptive Platform للإصدار R25-11.</p>
 <!-- annahmen: 1) Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante ara::core::variant_alternative<I, T> und fügt volatile hinzu – Begründung: Verhalten analog zur C++-Standardspezifikation [variant]. 2) Interpretation: Die Typabfrage erfolgt über das Member-Alias type – Begründung: Orientierung am Standardvorbild std::variant_alternative. 3) Interpretation: Ein ungültiger Index I führt zu einem harten Übersetzungsfehler – Begründung: Typische Ausprägung von Compile-Time-Traits ohne Fallback im ISO-C++-Standard. -->
 
 <div class="ai-commentary-actions">
@@ -288,50 +287,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="00637bd8ea46e06b9357992a4eaf1726caad26c9269792d822e322a3c0a38507" data-trace-output="0418ea16c07558e689e3bc8ce43471570ca62d8a3ef29ee523773ba2e0c51751" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Struktur &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; fungiert als typbezogenes Metaprogrammierungs-Hilfskonstrukt innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform. Ihre Kernaufgabe besteht darin, zur Übersetzungszeit den Typ derjenigen Alternative zu ermitteln, die sich am nullbasierten Index &lt;code&gt;I&lt;/code&gt; eines &lt;code&gt;volatile&lt;/code&gt;-qualifizierten Variantentyps &lt;code&gt;T&lt;/code&gt; befindet. Gemäß der Beschreibung richtet sich das Verhalten nach der korrespondierenden Verwendung von &lt;code&gt;[variant]&lt;/code&gt; im C++-Standard.
+يعمل هيكل القالب &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; كبنية مساعدة للبرمجة الوصفية المتعلقة بالنوع داخل الوحدة &lt;code&gt;core&lt;/code&gt; لـ AUTOSAR Adaptive Platform. وتتمثل مهمته الأساسية في تحديد نوع البديل الموجود عند الفهرس ذي القاعدة الصفرية &lt;code&gt;I&lt;/code&gt; لنوع متغير &lt;code&gt;T&lt;/code&gt; مؤهل بـ &lt;code&gt;volatile&lt;/code&gt; في وقت الترجمة. ووفقًا للوصف، يسترشد السلوك بالاستخدام المقابل لـ &lt;code&gt;[variant]&lt;/code&gt; في معيار C++.
 &lt;/p&gt;
 &lt;p&gt;
-In generischen Bibliotheken interagiert diese partielle Spezialisierung eng mit &lt;code&gt;ara::core::variant&lt;/code&gt; sowie anderen typinspektierenden Strukturen wie &lt;code&gt;variant_size&lt;/code&gt;. Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante &lt;code&gt;ara::core::variant_alternative&amp;lt;I, T&amp;gt;&lt;/code&gt; und qualifiziert das extrahierte Ergebnis anschließend mit &lt;code&gt;volatile&lt;/code&gt;, um die cv-Qualifizierung des umschließenden Objekts konsistent auf die enthaltene Alternative zu übertragen.
+في المكتبات العامة، يتفاعل هذا التخصيص الجزئي بشكل وثيق مع &lt;code&gt;ara::core::variant&lt;/code&gt; وهياكل استبطان الأنواع الأخرى مثل &lt;code&gt;variant_size&lt;/code&gt;. تفسير: من المحتمل أن يفوض التخصيص داخليًا إلى المتغير غير المؤهل &lt;code&gt;ara::core::variant_alternative&amp;lt;I, T&amp;gt;&lt;/code&gt; ثم يؤهل النتيجة المستخرجة بـ &lt;code&gt;volatile&lt;/code&gt;، لنقل تأهيل cv للكائن الحاوي بشكل متسق إلى البديل المتضمن.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;دورة الحياة&lt;/h4&gt;
 &lt;p&gt;
-Als reines Hilfskonstrukt für Metaprogrammierung besitzt &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; keinen Laufzeit-Lebenszyklus. Es existieren weder Instanzen im Arbeitsspeicher noch Konstruktoren, Zerstörungsphasen oder dynamische Speicherverwaltungen. Die Struktur operiert vollständig zur Übersetzungszeit im C++-Compiler:
+كبنية مساعدة بحتة للبرمجة الوصفية، لا يمتلك &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; أي دورة حياة في وقت التشغيل. ولا توجد مثيلات في الذاكرة ولا دوال بناء أو مراحل تدمير أو إدارة ديناميكية للذاكرة. ويعمل الهيكل بالكامل في وقت الترجمة داخل مترجم C++:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Der Compiler instanziiert die partielle Spezialisierung, sobald im Code auf einen Member-Typ zugegriffen wird.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auflösung:&lt;/strong&gt; Während der semantischen Analyse prüft der Compiler die Gültigkeit des Index &lt;code&gt;I&lt;/code&gt; und bindet den resultierenden Typ an das Member-Alias.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abschluss:&lt;/strong&gt; Nach der Codegenerierung verbleiben keinerlei Spuren des Traits im generierten Maschinenprogramm.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;إنشاء المثيل:&lt;/strong&gt; يقوم المترجم بإنشاء مثيل للتخصيص الجزئي بمجرد الوصول إلى نوع عضو في الكود.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التسوية:&lt;/strong&gt; أثناء التحليل الدلالي، يتحقق المترجم من صلاحية الفهرس &lt;code&gt;I&lt;/code&gt; ويربط النوع الناتج بالاسم المستعار للعضو.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الاكتمال:&lt;/strong&gt; بعد إنشاء الكود، لا يتبقى أي أثر للسمة في برنامج الآلة المُنشأ.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Themen der Nebenläufigkeit und Threadsicherheit entfallen zur Laufzeit vollkommen, da kein veränderlicher Speicherzustand vorliegt und Compile-Time-Transformationen inhärent seiteneffektfrei sind.
+تنتفي موضوعات التزامن وأمان الخيوط تمامًا في وقت التشغيل، نظرًا لعدم وجود حالة ذاكرة قابلة للتعديل ولأن تحويلات وقت الترجمة خالية بطبيعتها من الآثار الجانبية.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
 &lt;p&gt;
-Die Struktur wird typischerweise in generischen Algorithmen oder Metaprogrammierungs-Pipelines eingesetzt, wenn Typen aus &lt;code&gt;volatile&lt;/code&gt;-qualifizierten Varianten extrahiert werden müssen:
+يُستخدم الهيكل عادةً في الخوارزميات العامة أو مسارات معالجة البرمجة الوصفية عند الحاجة إلى استخراج الأنواع من المتغيرات المؤهلة بـ &lt;code&gt;volatile&lt;/code&gt;:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Angabe des Positionsindex:&lt;/strong&gt; Der Entwickler übergibt den gewünschten Index &lt;code&gt;I&lt;/code&gt; vom Typ &lt;code&gt;std::size_t&lt;/code&gt; als statischen Template-Parameter.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe des Variantentyps:&lt;/strong&gt; Ein &lt;code&gt;volatile&lt;/code&gt;-qualifizierter Typ wird als Typargument &lt;code&gt;T&lt;/code&gt; spezifiziert, beispielsweise &lt;code&gt;volatile ara::core::variant&amp;lt;int, double, float&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Typabfrage:&lt;/strong&gt; Interpretation: Über den eingebetteten Typalias &lt;code&gt;type&lt;/code&gt; (oder ein entsprechendes Alias-Template) wird der qualifizierte Alternativtyp abgefragt; bei Index 0 ergäbe dies im genannten Beispiel &lt;code&gt;volatile int&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verwendung in Signaturen:&lt;/strong&gt; Der so extrahierte Typ wird als Rückgabe- oder Parametertyp generischer Zugriffsmethoden eingesetzt oder in statischen Assertionen weiterverarbeitet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تحديد فهرس الموضع:&lt;/strong&gt; يمرر المطور الفهرس المطلوب &lt;code&gt;I&lt;/code&gt; من النوع &lt;code&gt;std::size_t&lt;/code&gt; كمعلمة قالب ساكنة.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تمرير نوع المتغير:&lt;/strong&gt; يتم تحديد نوع مؤهل بـ &lt;code&gt;volatile&lt;/code&gt; كوسيط نوع &lt;code&gt;T&lt;/code&gt;، على سبيل المثال &lt;code&gt;volatile ara::core::variant&amp;lt;int, double, float&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الاستعلام عن النوع:&lt;/strong&gt; تفسير: عبر الاسم المستعار للنوع المضمن &lt;code&gt;type&lt;/code&gt; (أو قالب اسم مستعار مطابق)، يتم الاستعلام عن نوع البديل المؤهل؛ عند الفهرس 0 ينتج في المثال المذكور &lt;code&gt;volatile int&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الاستخدام في التواقيع:&lt;/strong&gt; يُستخدم النوع المستخرج بهذه الطريقة كنوع إرجاع أو نوع معلمة لدوال الوصول العامة أو تتم معالجته بشكل أكبر في التوكيدات الساكنة.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;سيناريوهات الأخطاء&lt;/h4&gt;
 &lt;p&gt;
-Fehlerszenarien bei der Verwendung von &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; führen nicht zu Laufzeitausnahmen oder Fehlercodes, sondern treten als statische Übersetzungsfehler auf:
+لا تؤدي سيناريوهات الخطأ عند استخدام &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; إلى استثناءات في وقت التشغيل أو رموز خطأ، بل تظهر كأخطاء ترجمة ساكنة:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Indexüberschreitung:&lt;/strong&gt; Wird ein Wert für &lt;code&gt;I&lt;/code&gt; gewählt, der größer oder gleich der Anzahl der Alternativen des Variantentyps &lt;code&gt;T&lt;/code&gt; ist, schlägt die Typauflösung fehl. Interpretation: Der Compiler bricht die Übersetzung mit einem Fehler ab, da für diesen Index keine Spezialisierung oder Typdefinition existiert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Inkompatibler Typ &lt;code&gt;T&lt;/code&gt;:&lt;/strong&gt; Wird ein Typ übergeben, der keine Variante darstellt und für den keine primäre Definition von &lt;code&gt;variant_alternative&lt;/code&gt; greift, scheitert die Template-Instanziierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Einschränkungen von &lt;code&gt;volatile&lt;/code&gt;:&lt;/strong&gt; Bei der weiteren Verwendung des resultierenden Typs in modernen C++-Umgebungen sind eventuelle Restriktionen für flüchtige Operationen auf zusammengesetzten Typen zu beachten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تجاوز الفهرس:&lt;/strong&gt; إذا تم اختيار قيمة لـ &lt;code&gt;I&lt;/code&gt; تكون أكبر من أو تساوي عدد بدائل نوع المتغير &lt;code&gt;T&lt;/code&gt;، فستفشل تسوية النوع. تفسير: يقطع المترجم الترجمة مع ظهور خطأ، لعدم وجود تخصيص أو تعريف نوع لهذا الفهرس.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;نوع غير متوافق &lt;code&gt;T&lt;/code&gt;:&lt;/strong&gt; إذا تم تمرير نوع لا يمثل متغيرًا ولا ينطبق عليه تعريف أساسي لـ &lt;code&gt;variant_alternative&lt;/code&gt;، فسيَفشل إنشاء مثيل القالب.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;قيود &lt;code&gt;volatile&lt;/code&gt;:&lt;/strong&gt; عند الاستخدام الإضافي للنوع الناتج في بيئات C++ الحديثة، يجب مراعاة القيود المحتملة للعمليات المتقلبة (volatile) على الأنواع المركبة.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform für das Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;يستند هذا الدليل إلى بيانات مواصفات AUTOSAR Adaptive Platform للإصدار R25-11.&lt;/p&gt;
 &lt;!-- annahmen: 1) Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante ara::core::variant_alternative&lt;I, T&gt; und fügt volatile hinzu – Begründung: Verhalten analog zur C++-Standardspezifikation [variant]. 2) Interpretation: Die Typabfrage erfolgt über das Member-Alias type – Begründung: Orientierung am Standardvorbild std::variant_alternative. 3) Interpretation: Ein ungültiger Index I führt zu einem harten Übersetzungsfehler – Begründung: Typische Ausprägung von Compile-Time-Traits ohne Fallback im ISO-C++-Standard. --&gt;
 
 

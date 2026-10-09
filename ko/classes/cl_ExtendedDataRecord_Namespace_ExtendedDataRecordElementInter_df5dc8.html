@@ -24,89 +24,52 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>3d8265ab4cff</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>컨텍스트</h4>
   <p>
-    Im Diagnosemodul der AUTOSAR Adaptive Platform (Release R25-11) nimmt die Datenstruktur
-    <code>&lt;ExtendedDataRecord-Namespace&gt;::&lt;ExtendedDataRecordElementInterface&gt;::&lt;ExtendedDataRecordElement&gt;ReadOutput</code>
-    die Rolle eines standardisierten Datenbehälters ein. Zweck dieser Struktur ist das Zusammenfassen
-    sämtlicher Ausgabeargumente, die bei einem Lesevorgang eines Extended-Data-Record-Elements anfallen.
-    Extended Data Records (EDR) dienen im fahrzeugdiagnostischen Umfeld dazu, erweiterte Fehler-
-    und Zustandsinformationen bereitzustellen, die einem bestimmten Diagnoseereignis oder
-    Diagnostic Trouble Code (DTC) zugeordnet sind.
+    AUTOSAR Adaptive Platform(릴리스 R25-11)의 Diagnostics 모듈에서 데이터 구조체\n    <code>&lt;ExtendedDataRecord-Namespace&gt;::&lt;ExtendedDataRecordElementInterface&gt;::&lt;ExtendedDataRecordElement&gt;ReadOutput</code>은(는)\n    표준화된 데이터 컨테이너 역할을 수행합니다. 이 구조체의 목적은\n    Extended Data Record 요소의 읽기 프로세스 중에 발생하는 모든 출력 인수를\n    취합하는 것입니다. Extended Data Records(EDR)는 차량 진단 환경에서 특정 진단 이벤트 또는\n    Diagnostic Trouble Code(DTC)에 할당된 확장된 오류 및\n    상태 정보를 제공하는 역할을 합니다.
   </p>
   <p>
-    An der Interaktion sind im diagnostischen Ablauf primär die diagnosefähige Anwendungssoftware,
-    die Schnittstelle <code>&lt;ExtendedDataRecordElementInterface&gt;</code> sowie die übergeordnete
-    Diagnoseverwaltung beteiligt. Da C++-Funktionssignaturen für asynchrone oder synchrone Abfragen
-    nur einen einzelnen Rückgabetyp unterstützen, kapselt diese Struktur alle Ausgabewerte in einer
-    semantischen Einheit. Vermutlich dient diese Struktur als reiner Datentransfer-Container
-    (Value Object bzw. Plain Old Data), der die typsichere Rückgabe von Datenelementen an das
-    Diagnosesubsystem vereinfacht.
+    진단 흐름에서의 상호작용에는 주로 진단 가능 애플리케이션 소프트웨어,\n    인터페이스 <code>&lt;ExtendedDataRecordElementInterface&gt;</code> 및 상위\n    진단 관리가 관여합니다. 비동기 또는 동기 쿼리를 위한 C++ 함수 시그니처는\n    단 하나의 반환 타입만을 지원하므로, 이 구조체는 모든 출력 값을 하나의\n    의미론적 단위로 캡슐화합니다. 아마도 이 구조체는 진단 하위 시스템으로의 데이터 요소의\n    타입 안전한 반환을 단순화하는 순수 데이터 전송 컨테이너(Value Object 또는\n    Plain Old Data) 역할을 할 것으로 추정됩니다.
   </p>
 
-  <h4>Lebenszyklus</h4>
+  <h4>수명 주기</h4>
   <p>
-    Der Lebenszyklus der Struktur <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code> ist
-    an den Ablauf des zugehörigen Leseaufrufs gekoppelt und folgt typischen C++-Wertsemantiken.
-    Die Instanziierung und Befüllung dürfte typischerweise serverseitig in der implementierenden
-    Diagnoseanwendung erfolgen, sobald die geforderten Record-Daten aus dem Speicher oder aus
-    internen Registern zusammengestellt wurden.
+    구조체 <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code>의 라이프사이클은\n    관련 읽기 호출의 흐름에 결합되며 전형적인 C++ 값 시맨틱을 따릅니다.\n    인스턴스화 및 채우기는 일반적으로 메모리 또는 내부 레지스터에서 요청된\n    레코드 데이터가 조합되는 즉시 구현 진단 애플리케이션의 서버 측에서\n    이루어질 것으로 보입니다.
   </p>
   <p>
-    Nach der Belegung der enthaltenen Member-Variablen geht die Struktur in den Besitz der
-    aufrufenden Schicht über, beispielsweise als Ergebniswert eines asynchronen Aufrufmusters
-    oder als direkter Methodenrückgabewert. Interpretation: Aufgrund der Natur als reines
-    Transferobjekt besitzt die Struktur vermutlich keinen internen Zustand oder aktive
-    Zustandsübergänge und wird nach der Auswertung der enthaltenen Diagnosedaten durch den
-    Aufrufer wieder verworfen.
+    포함된 멤버 변수가 채워진 후 구조체는 비동기 호출 패턴의 결과 값이나\n    직접적인 메서드 반환값 등으로 호출 계층의 소유권으로\n    이전됩니다. 해석: 순수 전송 객체라는 특성상 이 구조체는 내부 상태나 활성\n    상태 전이를 갖지 않으며, 호출자가 포함된 진단 데이터를 평가한 후\n    다시 폐기될 것으로 추정됩니다.
   </p>
   <p>
-    Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Instanzen der Struktur üblicherweise
-    nicht über Thread-Grenzen hinweg geteilt modifiziert werden. Eine Instanz wird im ausführenden
-    Kontext der Leseoperation erzeugt und kann anschließend thread-sicher übergeben werden, sofern
-    nach der Erzeugung keine weiteren konkurrierenden Schreibzugriffe stattfinden. Speicherverwaltung
-    und Zerstörung erfolgen automatisch gemäß den Standardregeln für automatische oder dynamische
-    Objektlebensdauern in C++.
+    동시성과 관련하여, 구조체의 인스턴스는 일반적으로 스레드 경계를 넘어\n    공유되어 수정되지 않는다는 점에 유의해야 합니다. 인스턴스는 읽기 작업의\n    실행 컨텍스트에서 생성되며, 생성 후 추가적인 경쟁적 쓰기 접근이 발생하지 않는 한\n    스레드 안전하게 전달될 수 있습니다. 메모리 관리 및 소멸은 C++의 자동 또는 동적\n    객체 수명에 대한 표준 규칙에 따라 자동으로 수행됩니다.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>사용 경로</h4>
   <p>
-    Der typische Nutzungspfad gliedert sich in die Bereitstellung, die Übertragung und die
-    Auswertung der diagnostischen Ausgabedaten:
+    일반적인 사용 경로는 진단 출력 데이터의 제공, 전송 및\n    평가로 구성됩니다:
   </p>
   <ol>
     <li>
-      <strong>Anforderung empfangen:</strong> Das Diagnosesystem initiiert eine Leseanforderung
-      für das spezifische Element über die Schnittstelle <code>&lt;ExtendedDataRecordElementInterface&gt;</code>.
+      <strong>요청 수신:</strong> 진단 시스템이 인터페이스 <code>&lt;ExtendedDataRecordElementInterface&gt;</code>을(를) 통해\n      특정 요소에 대한 읽기 요청을 시작합니다.
     </li>
     <li>
-      <strong>Daten ermitteln und Struktur instanziieren:</strong> Die Anwendungslogik liest
-      die aktuellen Zustandsdaten des Fahrzeugsystems aus und instanziiert ein Objekt vom Typ
-      <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code>.
+      <strong>데이터 확인 및 구조체 인스턴스화:</strong> 애플리케이션 로직이\n      차량 시스템의 현재 상태 데이터를 읽어오고 <code>&lt;ExtendedDataRecordElement&gt;ReadOutput</code> 타입의\n      객체를 인스턴스화합니다.
     </li>
     <li>
-      <strong>Ausgabefelder befüllen:</strong> Die ermittelten Messwerte, Zählerstände oder
-      Zustandsflags werden den entsprechenden Datenfeldern der Struktur zugewiesen.
+      <strong>출력 필드 채우기:</strong> 확인된 측정값, 카운터 값 또는\n      상태 플래그가 구조체의 해당 데이터 필드에 할당됩니다.
     </li>
     <li>
-      <strong>Ergebnis zurückliefern:</strong> Die befüllte Struktur wird als Rückgabewert
-      an die Diagnoseverwaltung übergeben, welche die Werte serialisiert und als Antwort auf
-      den Diagnose-Dienst an den Diagnosetester übermittelt.
+      <strong>결과 반환:</strong> 채워진 구조체는 반환값으로서 진단 관리로 전달되며,\n      진단 관리는 값을 직렬화하여 진단 서비스에 대한 응답으로\n      진단 테스터에 전송합니다.
     </li>
     <li>
-      <strong>Freigabe:</strong> Nach erfolgreicher Übergabe und Serialisierung der Nutzdaten
-      wird die Instanz am Ende des Gültigkeitsbereichs freigegeben.
+      <strong>해제:</strong> 페이로드 데이터의 성공적인 전달 및 직렬화 후,\n      인스턴스는 스코프 끝에서 해제됩니다.
     </li>
   </ol>
   <!-- annahmen: 1) Vermutlich dient die Struktur als reiner Datentransfer-Container (Value Object), der Ausgabeparameter bündelt. – Begründung: Die Spezifikationsbeschreibung lautet 'Structure wrapping the out arguments for a ReadOutput'. 2) Die Instanziierung und Befüllung dürfte serverseitig in der implementierenden Diagnoseanwendung erfolgen. – Begründung: Typisches Aufrufmuster für Leseoperationen in AUTOSAR Adaptive diag. 3) Interpretation: Die Struktur besitzt keinen internen Zustand und wird nach Auswertung der Diagnosedaten verworfen. – Begründung: Kapselungsstrukturen für Out-Argumente folgen in C++ standardmäßig einfacher Wertsemantik ohne eigenständigen Lebenszyklus. -->
   <p class="ai-note">
-    Hinweis: Dieser Klassen-Leitfaden basiert auf den Strukturdefinitionen des Moduls diag in
-    AUTOSAR Adaptive Platform Release R25-11. Aussagen ohne expliziten Quellennachweis stellen
-    technische Schlussfolgerungen basierend auf den genannten Annahmen dar.
+    참고: 이 클래스 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 diag 모듈의\n    구조 정의를 기반으로 합니다. 명시적인 출처 언급이 없는 서술은\n    언급된 가정을 기반으로 한 기술적 결론입니다.
   </p>
 
 <div class="ai-commentary-actions">
@@ -324,86 +287,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3d8265ab4cffb03f4c23657fcbb606154c2c223cc3333f15f72a7023091b4ff0" data-trace-output="83c37b642914a3d403cb67ec7902957f94456c98401f9f8e0c9e156ba8be9977" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;컨텍스트&lt;/h4&gt;
   &lt;p&gt;
-    Im Diagnosemodul der AUTOSAR Adaptive Platform (Release R25-11) nimmt die Datenstruktur
-    &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;::&amp;lt;ExtendedDataRecordElementInterface&amp;gt;::&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;
-    die Rolle eines standardisierten Datenbehälters ein. Zweck dieser Struktur ist das Zusammenfassen
-    sämtlicher Ausgabeargumente, die bei einem Lesevorgang eines Extended-Data-Record-Elements anfallen.
-    Extended Data Records (EDR) dienen im fahrzeugdiagnostischen Umfeld dazu, erweiterte Fehler-
-    und Zustandsinformationen bereitzustellen, die einem bestimmten Diagnoseereignis oder
-    Diagnostic Trouble Code (DTC) zugeordnet sind.
+    AUTOSAR Adaptive Platform(릴리스 R25-11)의 Diagnostics 모듈에서 데이터 구조체\n    &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;::&amp;lt;ExtendedDataRecordElementInterface&amp;gt;::&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;은(는)\n    표준화된 데이터 컨테이너 역할을 수행합니다. 이 구조체의 목적은\n    Extended Data Record 요소의 읽기 프로세스 중에 발생하는 모든 출력 인수를\n    취합하는 것입니다. Extended Data Records(EDR)는 차량 진단 환경에서 특정 진단 이벤트 또는\n    Diagnostic Trouble Code(DTC)에 할당된 확장된 오류 및\n    상태 정보를 제공하는 역할을 합니다.
   &lt;/p&gt;
   &lt;p&gt;
-    An der Interaktion sind im diagnostischen Ablauf primär die diagnosefähige Anwendungssoftware,
-    die Schnittstelle &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; sowie die übergeordnete
-    Diagnoseverwaltung beteiligt. Da C++-Funktionssignaturen für asynchrone oder synchrone Abfragen
-    nur einen einzelnen Rückgabetyp unterstützen, kapselt diese Struktur alle Ausgabewerte in einer
-    semantischen Einheit. Vermutlich dient diese Struktur als reiner Datentransfer-Container
-    (Value Object bzw. Plain Old Data), der die typsichere Rückgabe von Datenelementen an das
-    Diagnosesubsystem vereinfacht.
+    진단 흐름에서의 상호작용에는 주로 진단 가능 애플리케이션 소프트웨어,\n    인터페이스 &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; 및 상위\n    진단 관리가 관여합니다. 비동기 또는 동기 쿼리를 위한 C++ 함수 시그니처는\n    단 하나의 반환 타입만을 지원하므로, 이 구조체는 모든 출력 값을 하나의\n    의미론적 단위로 캡슐화합니다. 아마도 이 구조체는 진단 하위 시스템으로의 데이터 요소의\n    타입 안전한 반환을 단순화하는 순수 데이터 전송 컨테이너(Value Object 또는\n    Plain Old Data) 역할을 할 것으로 추정됩니다.
   &lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+  &lt;h4&gt;수명 주기&lt;/h4&gt;
   &lt;p&gt;
-    Der Lebenszyklus der Struktur &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; ist
-    an den Ablauf des zugehörigen Leseaufrufs gekoppelt und folgt typischen C++-Wertsemantiken.
-    Die Instanziierung und Befüllung dürfte typischerweise serverseitig in der implementierenden
-    Diagnoseanwendung erfolgen, sobald die geforderten Record-Daten aus dem Speicher oder aus
-    internen Registern zusammengestellt wurden.
+    구조체 &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;의 라이프사이클은\n    관련 읽기 호출의 흐름에 결합되며 전형적인 C++ 값 시맨틱을 따릅니다.\n    인스턴스화 및 채우기는 일반적으로 메모리 또는 내부 레지스터에서 요청된\n    레코드 데이터가 조합되는 즉시 구현 진단 애플리케이션의 서버 측에서\n    이루어질 것으로 보입니다.
   &lt;/p&gt;
   &lt;p&gt;
-    Nach der Belegung der enthaltenen Member-Variablen geht die Struktur in den Besitz der
-    aufrufenden Schicht über, beispielsweise als Ergebniswert eines asynchronen Aufrufmusters
-    oder als direkter Methodenrückgabewert. Interpretation: Aufgrund der Natur als reines
-    Transferobjekt besitzt die Struktur vermutlich keinen internen Zustand oder aktive
-    Zustandsübergänge und wird nach der Auswertung der enthaltenen Diagnosedaten durch den
-    Aufrufer wieder verworfen.
+    포함된 멤버 변수가 채워진 후 구조체는 비동기 호출 패턴의 결과 값이나\n    직접적인 메서드 반환값 등으로 호출 계층의 소유권으로\n    이전됩니다. 해석: 순수 전송 객체라는 특성상 이 구조체는 내부 상태나 활성\n    상태 전이를 갖지 않으며, 호출자가 포함된 진단 데이터를 평가한 후\n    다시 폐기될 것으로 추정됩니다.
   &lt;/p&gt;
   &lt;p&gt;
-    Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Instanzen der Struktur üblicherweise
-    nicht über Thread-Grenzen hinweg geteilt modifiziert werden. Eine Instanz wird im ausführenden
-    Kontext der Leseoperation erzeugt und kann anschließend thread-sicher übergeben werden, sofern
-    nach der Erzeugung keine weiteren konkurrierenden Schreibzugriffe stattfinden. Speicherverwaltung
-    und Zerstörung erfolgen automatisch gemäß den Standardregeln für automatische oder dynamische
-    Objektlebensdauern in C++.
+    동시성과 관련하여, 구조체의 인스턴스는 일반적으로 스레드 경계를 넘어\n    공유되어 수정되지 않는다는 점에 유의해야 합니다. 인스턴스는 읽기 작업의\n    실행 컨텍스트에서 생성되며, 생성 후 추가적인 경쟁적 쓰기 접근이 발생하지 않는 한\n    스레드 안전하게 전달될 수 있습니다. 메모리 관리 및 소멸은 C++의 자동 또는 동적\n    객체 수명에 대한 표준 규칙에 따라 자동으로 수행됩니다.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;사용 경로&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Nutzungspfad gliedert sich in die Bereitstellung, die Übertragung und die
-    Auswertung der diagnostischen Ausgabedaten:
+    일반적인 사용 경로는 진단 출력 데이터의 제공, 전송 및\n    평가로 구성됩니다:
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Anforderung empfangen:&lt;/strong&gt; Das Diagnosesystem initiiert eine Leseanforderung
-      für das spezifische Element über die Schnittstelle &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;.
+      &lt;strong&gt;요청 수신:&lt;/strong&gt; 진단 시스템이 인터페이스 &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;을(를) 통해\n      특정 요소에 대한 읽기 요청을 시작합니다.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Daten ermitteln und Struktur instanziieren:&lt;/strong&gt; Die Anwendungslogik liest
-      die aktuellen Zustandsdaten des Fahrzeugsystems aus und instanziiert ein Objekt vom Typ
-      &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;.
+      &lt;strong&gt;데이터 확인 및 구조체 인스턴스화:&lt;/strong&gt; 애플리케이션 로직이\n      차량 시스템의 현재 상태 데이터를 읽어오고 &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; 타입의\n      객체를 인스턴스화합니다.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ausgabefelder befüllen:&lt;/strong&gt; Die ermittelten Messwerte, Zählerstände oder
-      Zustandsflags werden den entsprechenden Datenfeldern der Struktur zugewiesen.
+      &lt;strong&gt;출력 필드 채우기:&lt;/strong&gt; 확인된 측정값, 카운터 값 또는\n      상태 플래그가 구조체의 해당 데이터 필드에 할당됩니다.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ergebnis zurückliefern:&lt;/strong&gt; Die befüllte Struktur wird als Rückgabewert
-      an die Diagnoseverwaltung übergeben, welche die Werte serialisiert und als Antwort auf
-      den Diagnose-Dienst an den Diagnosetester übermittelt.
+      &lt;strong&gt;결과 반환:&lt;/strong&gt; 채워진 구조체는 반환값으로서 진단 관리로 전달되며,\n      진단 관리는 값을 직렬화하여 진단 서비스에 대한 응답으로\n      진단 테스터에 전송합니다.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Freigabe:&lt;/strong&gt; Nach erfolgreicher Übergabe und Serialisierung der Nutzdaten
-      wird die Instanz am Ende des Gültigkeitsbereichs freigegeben.
+      &lt;strong&gt;해제:&lt;/strong&gt; 페이로드 데이터의 성공적인 전달 및 직렬화 후,\n      인스턴스는 스코프 끝에서 해제됩니다.
     &lt;/li&gt;
   &lt;/ol&gt;
   &lt;!-- annahmen: 1) Vermutlich dient die Struktur als reiner Datentransfer-Container (Value Object), der Ausgabeparameter bündelt. – Begründung: Die Spezifikationsbeschreibung lautet 'Structure wrapping the out arguments for a ReadOutput'. 2) Die Instanziierung und Befüllung dürfte serverseitig in der implementierenden Diagnoseanwendung erfolgen. – Begründung: Typisches Aufrufmuster für Leseoperationen in AUTOSAR Adaptive diag. 3) Interpretation: Die Struktur besitzt keinen internen Zustand und wird nach Auswertung der Diagnosedaten verworfen. – Begründung: Kapselungsstrukturen für Out-Argumente folgen in C++ standardmäßig einfacher Wertsemantik ohne eigenständigen Lebenszyklus. --&gt;
   &lt;p class="ai-note"&gt;
-    Hinweis: Dieser Klassen-Leitfaden basiert auf den Strukturdefinitionen des Moduls diag in
-    AUTOSAR Adaptive Platform Release R25-11. Aussagen ohne expliziten Quellennachweis stellen
-    technische Schlussfolgerungen basierend auf den genannten Annahmen dar.
+    참고: 이 클래스 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 diag 모듈의\n    구조 정의를 기반으로 합니다. 명시적인 출처 언급이 없는 서술은\n    언급된 가정을 기반으로 한 기술적 결론입니다.
   &lt;/p&gt;
 
 

@@ -24,71 +24,70 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>9a850e4c469b</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_crypto_x509_CertSignRequest_04d18b/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/classes/cl_ara_crypto_x509_CertSignRequest_04d18b/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>السياق</h4>
 <p>
-In der AUTOSAR Adaptive Platform stellt das funktionale Modul <code>crypto</code> standardisierte kryptografische Schnittstellen für sicherheitsrelevante Fahrzeuganwendungen bereit. Innerhalb dieses Moduls und des dedizierten Namensraums <code>ara::crypto::x509</code> definiert die Klasse <code>ara::crypto::x509::CertSignRequest</code> eine Schnittstelle zur Repräsentation von Zertifikatssignierungsanforderungen (Certificate Signing Requests, CSR).
+في AUTOSAR Adaptive Platform، توفر الوحدة الوظيفية <code>crypto</code> واجهات تشفيرية قياسية لتطبيقات المركبات ذات الصلة بالأمان. وضمن هذه الوحدة وفضاء الأسماء المخصص <code>ara::crypto::x509</code>، تحدد الفئة <code>ara::crypto::x509::CertSignRequest</code> واجهة لتمثيل طلبات توقيع الشهادات (Certificate Signing Requests، CSR).
 </p>
 <p>
-In modernen Public-Key-Infrastrukturen (PKI) bilden Zertifikatssignierungsanforderungen das Bindeglied zwischen einem Schlüsselbesitzer und einer Zertifizierungsstelle (Certificate Authority, CA). Ein CSR kapselt den öffentlichen Schlüssel des Antragstellers zusammen mit Identitätsattributen und belegt den Besitz des korrespondierenden privaten Schlüssels. Die Schnittstelle <code>ara::crypto::x509::CertSignRequest</code> stellt das objektorientierte Gegenstück für diesen kryptografischen Standard in der Adaptive Platform dar.
+في البنى التحتية للمفاتيح العامة الحديثة (PKI)، تشكل طلبات توقيع الشهادات حلقة الوصل بين مالك المفتاح وهيئة إصدار الشهادات (Certificate Authority، CA). يغلّف CSR المفتاح العام لمقدم الطلب جنبًا إلى جنب مع سمات الهوية ويثبت ملكية المفتاح الخاص المقابل. تمثل الواجهة <code>ara::crypto::x509::CertSignRequest</code> النظير كائني التوجه لهذا المعيار التشفيري في Adaptive Platform.
 </p>
 <p>
-Aus der Klassendeklaration geht hervor, dass die Klasse öffentlich von <code>ara::crypto::Serializable</code> erbt: <code>class CertSignRequest : public ara::crypto::Serializable</code>. Durch diese Basisklasse wird <code>CertSignRequest</code> direkt an das Serialisierungsframework des Kryptomoduls angebunden. Interpretation: Als Schnittstellenobjekt für Zertifikatsanträge dürfte <code>ara::crypto::x509::CertSignRequest</code> primär dazu dienen, die Validierung und Übermittlung von CSR-Datenstrukturen softwareseitig zu kapseln.
+يتضح من تصريح الفئة أنها ترث علنًا من <code>ara::crypto::Serializable</code>: <code>class CertSignRequest : public ara::crypto::Serializable</code>. ومن خلال هذه الفئة الأساسية، ترتبط <code>CertSignRequest</code> مباشرة بإطار عمل التسلسل التسلسلي لوحدة التشفير. تفسير: ككائن واجهة لطلبات الشهادات، يُرجح أن تخدم <code>ara::crypto::x509::CertSignRequest</code> في المقام الأول تغليف التحقق من صحة هياكل بيانات CSR ونقلها برمجيًا.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>دورة الحياة</h4>
 <p>
-Der Lebenszyklus einer Instanz von <code>ara::crypto::x509::CertSignRequest</code> wird im AUTOSAR-Kryptokonzept über Smart Pointer verwaltet. Für die Interaktion mit konstanten Objekten definiert die Spezifikation eine standardisierte Zeigerdefinition:
+تتم إدارة دورة حياة مثيل <code>ara::crypto::x509::CertSignRequest</code> في مفهوم التشفير لـ AUTOSAR عبر المؤشرات الذكية. وللتفاعل مع الكائنات الثابتة، تحدد المواصفة تعريف مؤشر قياسي:
 </p>
 <ul>
 <li>
-Gemäß <a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a> deklariert die Klasse den Typalias <code>using Sptrc = std::shared_ptr&lt;const CertSignRequest&gt;;</code> im Header <code>ara/crypto/x509/cert_sign_request.h</code> als Smart Pointer auf das konstante Schnittstellenobjekt.
+وفقًا لـ <a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>، تصرح الفئة عن الاسم البديل للنوع <code>using Sptrc = std::shared_ptr&lt;const CertSignRequest&gt;;</code> في ملف الرأس <code>ara/crypto/x509/cert_sign_request.h</code> كمؤشر ذكي يشير إلى كائن الواجهة الثابت.
 </li>
 </ul>
 <p>
-Aus dieser Deklaration lassen sich wesentliche Aspekte für die Verwaltung und Nebenläufigkeit der Instanzen ableiten:
+يمكن من هذا التصريح استنتاج جوانب جوهرية لإدارة المثيلات وتزامنها:
 </p>
 <ul>
 <li>
-<strong>Gemeinsame Eigentümerschaft:</strong> Der Einsatz von <code>std::shared_ptr</code> ermöglicht eine flexible Weitergabe des Objekts an unterschiedliche Funktionseinheiten, etwa Verarbeitungsdienste oder Kommunikationsadapter, wobei die Lebensdauer automatisch über Referenzzählung gesteuert wird.
+<strong>الملكية المشتركة:</strong> يتيح استخدام <code>std::shared_ptr</code> التمرير المرن للكائن إلى وحدات وظيفية مختلفة، مثل خدمات المعالجة أو محولات الاتصال، حيث يتم التحكم في فترة العمر تلقائيًا عبر عد المراجع.
 </li>
 <li>
-<strong>Unveränderlichkeit:</strong> Da <code>Sptrc</code> (<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>) auf ein konstantes Interface zeigt, wird sichergestellt, dass Konsumenten die Eigenschaften des Signierungsantrags nach dessen Erstellung nicht mehr verändern können.
+<strong>عدم القابلية للتغيير:</strong> بما أن <code>Sptrc</code> (<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>) يشير إلى واجهة ثابتة، يتم ضمان عدم قدرة المستهلكين على تغيير خصائص طلب التوقيع بعد إنشائه.
 </li>
 <li>
-<strong>Zerstörung:</strong> Sobald die letzte <code>Sptrc</code>-Kopie freigegeben wird, erfolgt die automatische Zerstörung des Objekts und die Deallokation aller zugeordneten Ressourcen.
+<strong>الهدم:</strong> بمجرد تحرير آخر نسخة من <code>Sptrc</code>، يتم هدم الكائن تلقائيًا وإلغاء تخصيص جميع الموارد المرتبطة به.
 </li>
 <li>
-<strong>Nebenläufigkeit:</strong> Der ausschließliche Lesezugriff über die konstante Schnittstelle ermöglicht eine threadsichere Nutzung über mehrere Ausführungskontexte hinweg, ohne dass zusätzliche Synchronisationsmechanismen erforderlich sind.
+<strong>التزامن:</strong> يتيح الوصول للقراءة فقط عبر الواجهة الثابتة استخدامًا آمنًا للخيوط عبر سياقات تنفيذ متعددة، دون الحاجة إلى آليات تزامن إضافية.
 </li>
 </ul>
 
-<h4>Nutzungspfad</h4>
+<h4>مسار الاستخدام</h4>
 <p>
-Ein charakteristischer Verwendungsablauf von <code>ara::crypto::x509::CertSignRequest</code> gliedert sich in folgende logische Phasen:
+ينقسم مسار الاستخدام النموذجي لـ <code>ara::crypto::x509::CertSignRequest</code> إلى المراحل المنطقية التالية:
 </p>
 <ol>
 <li>
-<strong>Erzeugung:</strong> Eine Anwendung initiiert die Generierung eines neuen Schlüsselpaares und veranlasst die Erstellung eines korrespondierenden CSR-Objekts.
+<strong>الإنشاء:</strong> يبدأ تطبيق توليد زوج مفاتيح جديد ويطلب إنشاء كائن CSR المقابل.
 </li>
 <li>
-<strong>Kapselung und Bereitstellung:</strong> Das fertige Objekt wird als <code>CertSignRequest::Sptrc</code> (<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>) an konsumierende Komponenten übergeben, wodurch ein unveränderlicher Zustand garantiert ist.
+<strong>التغليف والتوفير:</strong> يُسلَّم الكائن الجاهز كـ <code>CertSignRequest::Sptrc</code> (<a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301">[SWS_CRYPT_40301]</a>) إلى المكونات المستهلكة، مما يضمن حالة غير قابلة للتغيير.
 </li>
 <li>
-<strong>Serialisierung:</strong> Über die Vererbung von <code>ara::crypto::Serializable</code> wird das CSR-Objekt in einen standardisierten Bytestrom überführt (Interpretation: vermutlich in das DER-kodierte Format gemäß PKCS#10).
+<strong>التسلسل:</strong> عبر التوارث من <code>ara::crypto::Serializable</code>، يُحوَّل كائن CSR إلى دفق بايتات قياسي (تفسير: يُفترض أن يكون بتنسيق مشفر وفق DER بناءً على PKCS#10).
 </li>
 <li>
-<strong>Versand und Zertifikatserhalt:</strong> Der Bytestrom wird über standardisierte Protokolle an eine externe Zertifizierungsstelle übermittelt, um im Gegenzug das signierte X.509-Zertifikat zu empfangen.
+<strong>الإرسال واستلام الشهادة:</strong> يُنقل دفق البايتات عبر بروتوكولات قياسية إلى هيئة خارجية لإصدار الشهادات، لاستلام شهادة X.509 الموقعة في المقابل.
 </li>
 </ol>
 <!-- annahmen:
 1) Als Schnittstelle für CSR-Objekte dürfte ara::crypto::x509::CertSignRequest die softwareseitige Kapselung und Validierung von Zertifikatsanträgen vor der Übermittlung bilden. – Begründung: Der Payload spezifiziert die Klasse als "Certificate Signing Request (CSR) object interface", nennt jedoch keine Fabrik- oder Inspektionsmethoden.
 2) Über ara::crypto::Serializable dürfte die Serialisierung in ein DER-kodiertes Format (PKCS#10) erfolgen. – Begründung: Die Klassensyntax weist die Vererbung von ara::crypto::Serializable aus, ohne ein konkretes Encoding festzulegen.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">يستند هذا الدليل إلى مواصفات AUTOSAR Adaptive Platform الإصدار R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_crypto_x509_CertSignRequest_04d18b" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -410,68 +409,67 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="9a850e4c469b6a56349c0d32ecf1ca13d1f493971ab22070b7883509d95383e4" data-trace-output="f47c719c2d486c81836757ec4294fed8ed3c77ce22411c973b7bf8ce0ba6e69a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
 &lt;p&gt;
-In der AUTOSAR Adaptive Platform stellt das funktionale Modul &lt;code&gt;crypto&lt;/code&gt; standardisierte kryptografische Schnittstellen für sicherheitsrelevante Fahrzeuganwendungen bereit. Innerhalb dieses Moduls und des dedizierten Namensraums &lt;code&gt;ara::crypto::x509&lt;/code&gt; definiert die Klasse &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; eine Schnittstelle zur Repräsentation von Zertifikatssignierungsanforderungen (Certificate Signing Requests, CSR).
+في AUTOSAR Adaptive Platform، توفر الوحدة الوظيفية &lt;code&gt;crypto&lt;/code&gt; واجهات تشفيرية قياسية لتطبيقات المركبات ذات الصلة بالأمان. وضمن هذه الوحدة وفضاء الأسماء المخصص &lt;code&gt;ara::crypto::x509&lt;/code&gt;، تحدد الفئة &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; واجهة لتمثيل طلبات توقيع الشهادات (Certificate Signing Requests، CSR).
 &lt;/p&gt;
 &lt;p&gt;
-In modernen Public-Key-Infrastrukturen (PKI) bilden Zertifikatssignierungsanforderungen das Bindeglied zwischen einem Schlüsselbesitzer und einer Zertifizierungsstelle (Certificate Authority, CA). Ein CSR kapselt den öffentlichen Schlüssel des Antragstellers zusammen mit Identitätsattributen und belegt den Besitz des korrespondierenden privaten Schlüssels. Die Schnittstelle &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; stellt das objektorientierte Gegenstück für diesen kryptografischen Standard in der Adaptive Platform dar.
+في البنى التحتية للمفاتيح العامة الحديثة (PKI)، تشكل طلبات توقيع الشهادات حلقة الوصل بين مالك المفتاح وهيئة إصدار الشهادات (Certificate Authority، CA). يغلّف CSR المفتاح العام لمقدم الطلب جنبًا إلى جنب مع سمات الهوية ويثبت ملكية المفتاح الخاص المقابل. تمثل الواجهة &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; النظير كائني التوجه لهذا المعيار التشفيري في Adaptive Platform.
 &lt;/p&gt;
 &lt;p&gt;
-Aus der Klassendeklaration geht hervor, dass die Klasse öffentlich von &lt;code&gt;ara::crypto::Serializable&lt;/code&gt; erbt: &lt;code&gt;class CertSignRequest : public ara::crypto::Serializable&lt;/code&gt;. Durch diese Basisklasse wird &lt;code&gt;CertSignRequest&lt;/code&gt; direkt an das Serialisierungsframework des Kryptomoduls angebunden. Interpretation: Als Schnittstellenobjekt für Zertifikatsanträge dürfte &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; primär dazu dienen, die Validierung und Übermittlung von CSR-Datenstrukturen softwareseitig zu kapseln.
+يتضح من تصريح الفئة أنها ترث علنًا من &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;: &lt;code&gt;class CertSignRequest : public ara::crypto::Serializable&lt;/code&gt;. ومن خلال هذه الفئة الأساسية، ترتبط &lt;code&gt;CertSignRequest&lt;/code&gt; مباشرة بإطار عمل التسلسل التسلسلي لوحدة التشفير. تفسير: ككائن واجهة لطلبات الشهادات، يُرجح أن تخدم &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; في المقام الأول تغليف التحقق من صحة هياكل بيانات CSR ونقلها برمجيًا.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;دورة الحياة&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus einer Instanz von &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; wird im AUTOSAR-Kryptokonzept über Smart Pointer verwaltet. Für die Interaktion mit konstanten Objekten definiert die Spezifikation eine standardisierte Zeigerdefinition:
+تتم إدارة دورة حياة مثيل &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; في مفهوم التشفير لـ AUTOSAR عبر المؤشرات الذكية. وللتفاعل مع الكائنات الثابتة، تحدد المواصفة تعريف مؤشر قياسي:
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-Gemäß &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt; deklariert die Klasse den Typalias &lt;code&gt;using Sptrc = std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;;&lt;/code&gt; im Header &lt;code&gt;ara/crypto/x509/cert_sign_request.h&lt;/code&gt; als Smart Pointer auf das konstante Schnittstellenobjekt.
+وفقًا لـ &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;، تصرح الفئة عن الاسم البديل للنوع &lt;code&gt;using Sptrc = std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;;&lt;/code&gt; في ملف الرأس &lt;code&gt;ara/crypto/x509/cert_sign_request.h&lt;/code&gt; كمؤشر ذكي يشير إلى كائن الواجهة الثابت.
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Aus dieser Deklaration lassen sich wesentliche Aspekte für die Verwaltung und Nebenläufigkeit der Instanzen ableiten:
+يمكن من هذا التصريح استنتاج جوانب جوهرية لإدارة المثيلات وتزامنها:
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;strong&gt;Gemeinsame Eigentümerschaft:&lt;/strong&gt; Der Einsatz von &lt;code&gt;std::shared_ptr&lt;/code&gt; ermöglicht eine flexible Weitergabe des Objekts an unterschiedliche Funktionseinheiten, etwa Verarbeitungsdienste oder Kommunikationsadapter, wobei die Lebensdauer automatisch über Referenzzählung gesteuert wird.
+&lt;strong&gt;الملكية المشتركة:&lt;/strong&gt; يتيح استخدام &lt;code&gt;std::shared_ptr&lt;/code&gt; التمرير المرن للكائن إلى وحدات وظيفية مختلفة، مثل خدمات المعالجة أو محولات الاتصال، حيث يتم التحكم في فترة العمر تلقائيًا عبر عد المراجع.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Unveränderlichkeit:&lt;/strong&gt; Da &lt;code&gt;Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) auf ein konstantes Interface zeigt, wird sichergestellt, dass Konsumenten die Eigenschaften des Signierungsantrags nach dessen Erstellung nicht mehr verändern können.
+&lt;strong&gt;عدم القابلية للتغيير:&lt;/strong&gt; بما أن &lt;code&gt;Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) يشير إلى واجهة ثابتة، يتم ضمان عدم قدرة المستهلكين على تغيير خصائص طلب التوقيع بعد إنشائه.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Zerstörung:&lt;/strong&gt; Sobald die letzte &lt;code&gt;Sptrc&lt;/code&gt;-Kopie freigegeben wird, erfolgt die automatische Zerstörung des Objekts und die Deallokation aller zugeordneten Ressourcen.
+&lt;strong&gt;الهدم:&lt;/strong&gt; بمجرد تحرير آخر نسخة من &lt;code&gt;Sptrc&lt;/code&gt;، يتم هدم الكائن تلقائيًا وإلغاء تخصيص جميع الموارد المرتبطة به.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Der ausschließliche Lesezugriff über die konstante Schnittstelle ermöglicht eine threadsichere Nutzung über mehrere Ausführungskontexte hinweg, ohne dass zusätzliche Synchronisationsmechanismen erforderlich sind.
+&lt;strong&gt;التزامن:&lt;/strong&gt; يتيح الوصول للقراءة فقط عبر الواجهة الثابتة استخدامًا آمنًا للخيوط عبر سياقات تنفيذ متعددة، دون الحاجة إلى آليات تزامن إضافية.
 &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
 &lt;p&gt;
-Ein charakteristischer Verwendungsablauf von &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; gliedert sich in folgende logische Phasen:
+ينقسم مسار الاستخدام النموذجي لـ &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; إلى المراحل المنطقية التالية:
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;strong&gt;Erzeugung:&lt;/strong&gt; Eine Anwendung initiiert die Generierung eines neuen Schlüsselpaares und veranlasst die Erstellung eines korrespondierenden CSR-Objekts.
+&lt;strong&gt;الإنشاء:&lt;/strong&gt; يبدأ تطبيق توليد زوج مفاتيح جديد ويطلب إنشاء كائن CSR المقابل.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Kapselung und Bereitstellung:&lt;/strong&gt; Das fertige Objekt wird als &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) an konsumierende Komponenten übergeben, wodurch ein unveränderlicher Zustand garantiert ist.
+&lt;strong&gt;التغليف والتوفير:&lt;/strong&gt; يُسلَّم الكائن الجاهز كـ &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) إلى المكونات المستهلكة، مما يضمن حالة غير قابلة للتغيير.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Serialisierung:&lt;/strong&gt; Über die Vererbung von &lt;code&gt;ara::crypto::Serializable&lt;/code&gt; wird das CSR-Objekt in einen standardisierten Bytestrom überführt (Interpretation: vermutlich in das DER-kodierte Format gemäß PKCS#10).
+&lt;strong&gt;التسلسل:&lt;/strong&gt; عبر التوارث من &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;، يُحوَّل كائن CSR إلى دفق بايتات قياسي (تفسير: يُفترض أن يكون بتنسيق مشفر وفق DER بناءً على PKCS#10).
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Versand und Zertifikatserhalt:&lt;/strong&gt; Der Bytestrom wird über standardisierte Protokolle an eine externe Zertifizierungsstelle übermittelt, um im Gegenzug das signierte X.509-Zertifikat zu empfangen.
+&lt;strong&gt;الإرسال واستلام الشهادة:&lt;/strong&gt; يُنقل دفق البايتات عبر بروتوكولات قياسية إلى هيئة خارجية لإصدار الشهادات، لاستلام شهادة X.509 الموقعة في المقابل.
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;!-- annahmen:
 1) Als Schnittstelle für CSR-Objekte dürfte ara::crypto::x509::CertSignRequest die softwareseitige Kapselung und Validierung von Zertifikatsanträgen vor der Übermittlung bilden. – Begründung: Der Payload spezifiziert die Klasse als "Certificate Signing Request (CSR) object interface", nennt jedoch keine Fabrik- oder Inspektionsmethoden.
 2) Über ara::crypto::Serializable dürfte die Serialisierung in ein DER-kodiertes Format (PKCS#10) erfolgen. – Begründung: Die Klassensyntax weist die Vererbung von ara::crypto::Serializable aus, ohne ein konkretes Encoding festzulegen.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;يستند هذا الدليل إلى مواصفات AUTOSAR Adaptive Platform الإصدار R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

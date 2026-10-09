@@ -20,30 +20,29 @@
   <span class="ai-badge-label">GENERADO POR IA</span>
   <span class="ai-review-state">no revisado</span>
   <span class="ai-trace-meta">Modelo: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperatura: nicht steuerbar · Prompt: <code>2dbc936761fb</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedencia: perfil, hash de prompt, hash de salida, ejecuciones, revisión">Procedencia</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/es/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedencia: perfil, hash de prompt, hash de salida, ejecuciones, revisión">Procedencia</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_phm_ara_phm_9fbd40" data-view-mode="editor" title="Abrir editor de curación y expediente" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curar</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Nota editorial:</strong> Esta guía técnica se encuentra actualmente en proceso de traducción. A continuación se muestra la versión de referencia original.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>ara::phm</code> stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.</p>
-<p>Die Architektur im Namespace stützt sich auf vier zentrale Klassen:</p>
+<h4>Contexto</h4>
+<p>El espacio de nombres <code>ara::phm</code> proporciona la interfaz de programación para Platform Health Management (PHM) en AUTOSAR Adaptive Platform. Su responsabilidad principal radica en la supervisión funcional de procesos y aplicaciones en cuanto a actividad (liveness), plazos temporales y flujos lógicos de programas, así como en la coordinación de reacciones ante errores.</p>
+<p>La arquitectura en el espacio de nombres se basa en cuatro clases centrales:</p>
 <ul>
-<li><code>SupervisedEntity</code>: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.</li>
-<li><code>RecoveryAction</code>: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.</li>
-<li><code>PhmErrorDomain</code>: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.</li>
-<li><code>PhmException</code>: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.</li>
+<li><code>SupervisedEntity</code>: Representa la entidad de software supervisada dentro de una aplicación, la cual notifica información de estado.</li>
+<li><code>RecoveryAction</code>: Clase base abstracta para acciones de recuperación que se ejecutan cuando se detectan errores.</li>
+<li><code>PhmErrorDomain</code>: Define el dominio de errores para los mensajes de error del subsistema.</li>
+<li><code>PhmException</code>: Tipo de excepción estándar para casos excepcionales en Platform Health Management.</li>
 </ul>
-<p>Die Überwachungsmethoden werden über die Enumeration <code>TypeOfSupervision</code> spezifiziert <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. Hierbei unterscheidet die Plattform zwischen <code>kAliveSupervision</code> (Lebenszeichenüberwachung), <code>kDeadlineSupervision</code> (Einhaltung definierter Zeitintervalle) und <code>kLogicalSupervision</code> (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.</p>
+<p>Los métodos de supervisión se especifican a través de la enumeración <code>TypeOfSupervision</code> <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. Aquí, la plataforma distingue entre <code>kAliveSupervision</code> (supervisión de signos vitales), <code>kDeadlineSupervision</code> (cumplimiento de intervalos de tiempo definidos) y <code>kLogicalSupervision</code> (verificación del orden correcto de los puntos de flujo de control). El PHM interactúa estrechamente con el demonio PHM, así como con el State Management de Adaptive Platform.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert <code>ElementarySupervisionStatus</code> den Zustand einer einzelnen Überwachungsfunktion <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
+<h4>Ciclo de vida</h4>
+<p>El ciclo de vida de la supervisión se representa mediante consultas y transiciones de estado multietapa. En el nivel más bajo, <code>ElementarySupervisionStatus</code> define el estado de una función de supervisión individual <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
 <ul>
-<li><code>kDeactivated</code>: Die elementare Überwachung ist inaktiv.</li>
-<li><code>kOK</code>: Die Überwachung ist aktiv und es liegt kein Fehler vor.</li>
-<li><code>kFailed</code>: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.</li>
-<li><code>kExpired</code>: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.</li>
+<li><code>kDeactivated</code>: La supervisión elemental está inactiva.</li>
+<li><code>kOK</code>: La supervisión está activa y no hay ningún error.</li>
+<li><code>kFailed</code>: Se ha registrado un error, pero todavía se encuentra dentro de la ventana de tolerancia o antirrebote.</li>
+<li><code>kExpired</code>: Se ha calificado definitivamente un error tras expirar la ventana de tolerancia.</li>
 </ul>
-<p>Zur Bewertung des Gesamtzustands aggregiert <code>GlobalSupervisionStatus</code> die Resultate korrespondierender elementarer Überwachungen <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. Der globale Zustand wechselt dabei von <code>kDeactivated</code> nach <code>kOK</code>, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über <code>kFailed</code> und <code>kExpired</code> bis hin zu <code>kStopped</code>, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.</p>
+<p>Para evaluar el estado general, <code>GlobalSupervisionStatus</code> agrega los resultados de las correspondientes supervisiones elementales <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. El estado global cambia de <code>kDeactivated</code> a <code>kOK</code> tan pronto como al menos una supervisión elemental está activa y sin errores. Si se producen errores, el estado escala a través de <code>kFailed</code> y <code>kExpired</code> hasta <code>kStopped</code>, siempre que se supere el período de gracia tras la calificación del error.</p>
 <div class="diagram" id="diag-global-supervision"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)">
 <title>GlobalSupervisionStatus</title>
@@ -115,31 +114,31 @@
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
+<p class="diagram-note">Diagrama de estados: estados de supervisión agregados y transiciones probables en el ciclo de supervisión global. Fuentes: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:</p>
+<h4>Ruta de uso</h4>
+<p>El procedimiento típico para la protección de una aplicación adaptativa comprende varias fases sucesivas:</p>
 <ol>
-<li><strong>Konfiguration und Anbindung:</strong> Die Anwendung instanziiert eine <code>SupervisedEntity</code> für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus <code>TypeOfSupervision</code> (<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> oder <code>kLogicalSupervision</code>) zugeordnet <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
-<li><strong>Zyklische Ausführung und Meldung:</strong> Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben <code>ElementarySupervisionStatus</code> und <code>GlobalSupervisionStatus</code> im Status <code>kOK</code> <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
-<li><strong>Reaktionsabwicklung:</strong> Wird ein Überwachungsfehler qualifiziert (Übergang zu <code>kExpired</code> bzw. <code>kStopped</code>), wird eine abgeleitete Instanz von <code>RecoveryAction</code> herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.</li>
+<li><strong>Configuración y conexión:</strong> la aplicación instancia una <code>SupervisedEntity</code> para los componentes que se van a supervisar en cada caso. Los parámetros de supervisión se asignan a los modos de <code>TypeOfSupervision</code> (<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> o <code>kLogicalSupervision</code>) <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
+<li><strong>Ejecución cíclica y notificación:</strong> durante el funcionamiento normal, la entidad notifica puntos de control al subsistema. Mientras se cumplan los requisitos, <code>ElementarySupervisionStatus</code> y <code>GlobalSupervisionStatus</code> permanecen en el estado <code>kOK</code> <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
+<li><strong>Procesamiento de la reacción:</strong> si se califica un error de supervisión (transición a <code>kExpired</code> o <code>kStopped</code>), se recurre a una instancia derivada de <code>RecoveryAction</code> para iniciar medidas correctivas como reinicios o cambios de estado.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlerzustände und Ausnahmebedingungen im Namespace <code>ara::phm</code> werden über standardisierte Fehlerstrukturen abgewickelt:</p>
+<h4>Escenarios de error</h4>
+<p>Los estados de error y las condiciones de excepción en el espacio de nombres <code>ara::phm</code> se gestionan mediante estructuras de error estandarizadas:</p>
 <ul>
-<li>Die Fehlerdomäne kann über die freie Funktion <code>GetPhmDomain()</code> bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
-<li>Konkrete Fehlerursachen werden über die Enumeration <code>PhmErrc</code> typisiert <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
+<li>El dominio de errores se puede obtener a través de la función libre <code>GetPhmDomain()</code>; la llamada es segura para subprocesos y no lanza excepciones <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
+<li>Las causas concretas de los errores se tipifican a través de la enumeración <code>PhmErrc</code> <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
   <ul>
-  <li><code>kOfferFailed</code>: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.</li>
-  <li><code>kSMCanNotHandleRecovery</code>: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.</li>
-  <li><code>kServiceNotReady</code>: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.</li>
+  <li><code>kOfferFailed</code>: el servicio no se pudo ofrecer porque falló la conexión con el demonio de PHM.</li>
+  <li><code>kSMCanNotHandleRecovery</code>: State Management no puede realizar la recuperación; Platform Health Management asume la escalada y controla el watchdog.</li>
+  <li><code>kServiceNotReady</code>: ya se está procesando una operación paralela de habilitación o deshabilitación.</li>
   </ul>
 </li>
-<li>Mit der Hilfsfunktion <code>MakeErrorCode()</code> werden Fehlermeldungen vom Typ <code>ara::core::ErrorCode</code> unter Kombination eines <code>PhmErrc</code> und herstellerspezifischer Zusatzdaten erzeugt <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird <code>PhmException</code> geworfen.</li>
+<li>Con la función auxiliar <code>MakeErrorCode()</code> se generan mensajes de error del tipo <code>ara::core::ErrorCode</code> combinando un <code>PhmErrc</code> y datos adicionales específicos del fabricante <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. En caso de errores graves que requieran un tratamiento de excepciones, se lanza <code>PhmException</code>.</li>
 </ul>
 <!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">Esta guía se basa exclusivamente en la especificación AUTOSAR Adaptive Platform Release R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_phm_ara_phm_9fbd40" title="Discutir con IA">💬 Discutir con IA</button>
@@ -870,27 +869,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="2dbc936761fb64b98a9037f5e9f9ab5cef60d528e14abcc64ef715a78921ef83" data-trace-output="adf8edc9a987c4e41c3a797151bc26a7e6d0712e1e9ec4162917bbbc99f85417" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Nota editorial:&lt;/strong&gt; Esta guía técnica se encuentra actualmente en proceso de traducción. A continuación se muestra la versión de referencia original.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;ara::phm&lt;/code&gt; stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.&lt;/p&gt;
-&lt;p&gt;Die Architektur im Namespace stützt sich auf vier zentrale Klassen:&lt;/p&gt;
+&lt;h4&gt;Contexto&lt;/h4&gt;
+&lt;p&gt;El espacio de nombres &lt;code&gt;ara::phm&lt;/code&gt; proporciona la interfaz de programación para Platform Health Management (PHM) en AUTOSAR Adaptive Platform. Su responsabilidad principal radica en la supervisión funcional de procesos y aplicaciones en cuanto a actividad (liveness), plazos temporales y flujos lógicos de programas, así como en la coordinación de reacciones ante errores.&lt;/p&gt;
+&lt;p&gt;La arquitectura en el espacio de nombres se basa en cuatro clases centrales:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: Representa la entidad de software supervisada dentro de una aplicación, la cual notifica información de estado.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: Clase base abstracta para acciones de recuperación que se ejecutan cuando se detectan errores.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: Define el dominio de errores para los mensajes de error del subsistema.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Tipo de excepción estándar para casos excepcionales en Platform Health Management.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Die Überwachungsmethoden werden über die Enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; spezifiziert &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Hierbei unterscheidet die Plattform zwischen &lt;code&gt;kAliveSupervision&lt;/code&gt; (Lebenszeichenüberwachung), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (Einhaltung definierter Zeitintervalle) und &lt;code&gt;kLogicalSupervision&lt;/code&gt; (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.&lt;/p&gt;
+&lt;p&gt;Los métodos de supervisión se especifican a través de la enumeración &lt;code&gt;TypeOfSupervision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Aquí, la plataforma distingue entre &lt;code&gt;kAliveSupervision&lt;/code&gt; (supervisión de signos vitales), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (cumplimiento de intervalos de tiempo definidos) y &lt;code&gt;kLogicalSupervision&lt;/code&gt; (verificación del orden correcto de los puntos de flujo de control). El PHM interactúa estrechamente con el demonio PHM, así como con el State Management de Adaptive Platform.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; den Zustand einer einzelnen Überwachungsfunktion &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
+&lt;h4&gt;Ciclo de vida&lt;/h4&gt;
+&lt;p&gt;El ciclo de vida de la supervisión se representa mediante consultas y transiciones de estado multietapa. En el nivel más bajo, &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; define el estado de una función de supervisión individual &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: Die elementare Überwachung ist inaktiv.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: Die Überwachung ist aktiv und es liegt kein Fehler vor.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: La supervisión elemental está inactiva.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: La supervisión está activa y no hay ningún error.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: Se ha registrado un error, pero todavía se encuentra dentro de la ventana de tolerancia o antirrebote.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: Se ha calificado definitivamente un error tras expirar la ventana de tolerancia.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Zur Bewertung des Gesamtzustands aggregiert &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; die Resultate korrespondierender elementarer Überwachungen &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. Der globale Zustand wechselt dabei von &lt;code&gt;kDeactivated&lt;/code&gt; nach &lt;code&gt;kOK&lt;/code&gt;, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über &lt;code&gt;kFailed&lt;/code&gt; und &lt;code&gt;kExpired&lt;/code&gt; bis hin zu &lt;code&gt;kStopped&lt;/code&gt;, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.&lt;/p&gt;
+&lt;p&gt;Para evaluar el estado general, &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; agrega los resultados de las correspondientes supervisiones elementales &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. El estado global cambia de &lt;code&gt;kDeactivated&lt;/code&gt; a &lt;code&gt;kOK&lt;/code&gt; tan pronto como al menos una supervisión elemental está activa y sin errores. Si se producen errores, el estado escala a través de &lt;code&gt;kFailed&lt;/code&gt; y &lt;code&gt;kExpired&lt;/code&gt; hasta &lt;code&gt;kStopped&lt;/code&gt;, siempre que se supere el período de gracia tras la calificación del error.&lt;/p&gt;
 &lt;div class="diagram" id="diag-global-supervision"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
 &lt;title&gt;GlobalSupervisionStatus&lt;/title&gt;
@@ -962,31 +960,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Diagrama de estados: estados de supervisión agregados y transiciones probables en el ciclo de supervisión global. Fuentes: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:&lt;/p&gt;
+&lt;h4&gt;Ruta de uso&lt;/h4&gt;
+&lt;p&gt;El procedimiento típico para la protección de una aplicación adaptativa comprende varias fases sucesivas:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Konfiguration und Anbindung:&lt;/strong&gt; Die Anwendung instanziiert eine &lt;code&gt;SupervisedEntity&lt;/code&gt; für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; oder &lt;code&gt;kLogicalSupervision&lt;/code&gt;) zugeordnet &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zyklische Ausführung und Meldung:&lt;/strong&gt; Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; und &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; im Status &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reaktionsabwicklung:&lt;/strong&gt; Wird ein Überwachungsfehler qualifiziert (Übergang zu &lt;code&gt;kExpired&lt;/code&gt; bzw. &lt;code&gt;kStopped&lt;/code&gt;), wird eine abgeleitete Instanz von &lt;code&gt;RecoveryAction&lt;/code&gt; herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Configuración y conexión:&lt;/strong&gt; la aplicación instancia una &lt;code&gt;SupervisedEntity&lt;/code&gt; para los componentes que se van a supervisar en cada caso. Los parámetros de supervisión se asignan a los modos de &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; o &lt;code&gt;kLogicalSupervision&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ejecución cíclica y notificación:&lt;/strong&gt; durante el funcionamiento normal, la entidad notifica puntos de control al subsistema. Mientras se cumplan los requisitos, &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; y &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; permanecen en el estado &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Procesamiento de la reacción:&lt;/strong&gt; si se califica un error de supervisión (transición a &lt;code&gt;kExpired&lt;/code&gt; o &lt;code&gt;kStopped&lt;/code&gt;), se recurre a una instancia derivada de &lt;code&gt;RecoveryAction&lt;/code&gt; para iniciar medidas correctivas como reinicios o cambios de estado.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlerzustände und Ausnahmebedingungen im Namespace &lt;code&gt;ara::phm&lt;/code&gt; werden über standardisierte Fehlerstrukturen abgewickelt:&lt;/p&gt;
+&lt;h4&gt;Escenarios de error&lt;/h4&gt;
+&lt;p&gt;Los estados de error y las condiciones de excepción en el espacio de nombres &lt;code&gt;ara::phm&lt;/code&gt; se gestionan mediante estructuras de error estandarizadas:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Die Fehlerdomäne kann über die freie Funktion &lt;code&gt;GetPhmDomain()&lt;/code&gt; bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Konkrete Fehlerursachen werden über die Enumeration &lt;code&gt;PhmErrc&lt;/code&gt; typisiert &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
+&lt;li&gt;El dominio de errores se puede obtener a través de la función libre &lt;code&gt;GetPhmDomain()&lt;/code&gt;; la llamada es segura para subprocesos y no lanza excepciones &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Las causas concretas de los errores se tipifican a través de la enumeración &lt;code&gt;PhmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
   &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: el servicio no se pudo ofrecer porque falló la conexión con el demonio de PHM.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: State Management no puede realizar la recuperación; Platform Health Management asume la escalada y controla el watchdog.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: ya se está procesando una operación paralela de habilitación o deshabilitación.&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;Mit der Hilfsfunktion &lt;code&gt;MakeErrorCode()&lt;/code&gt; werden Fehlermeldungen vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; unter Kombination eines &lt;code&gt;PhmErrc&lt;/code&gt; und herstellerspezifischer Zusatzdaten erzeugt &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird &lt;code&gt;PhmException&lt;/code&gt; geworfen.&lt;/li&gt;
+&lt;li&gt;Con la función auxiliar &lt;code&gt;MakeErrorCode()&lt;/code&gt; se generan mensajes de error del tipo &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; combinando un &lt;code&gt;PhmErrc&lt;/code&gt; y datos adicionales específicos del fabricante &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. En caso de errores graves que requieran un tratamiento de excepciones, se lanza &lt;code&gt;PhmException&lt;/code&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Esta guía se basa exclusivamente en la especificación AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

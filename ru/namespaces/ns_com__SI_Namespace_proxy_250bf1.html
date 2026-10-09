@@ -20,53 +20,52 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>c45b35af67f2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_proxy_250bf1/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ru/namespaces/ns_com__SI_Namespace_proxy_250bf1/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_proxy_250bf1" data-view-mode="editor" title="Открыть редактор курации и досье" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Курировать</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Контекст</h4>
 <p>
-Der Namespace <code>&lt;SI-Namespace&gt;::proxy</code> kapselt die clientseitigen Schnittstellen und Kommunikationsartefakte eines definierten Service Interface (<code>&lt;SI&gt;</code>) innerhalb des Funktionsclusters Communication Management (<code>com</code>) der AUTOSAR Adaptive Platform. Im Zentrum dieses Namespace steht die generierte Proxy-Klasse <code>&lt;SI&gt;Proxy</code>. Sie dient anwendungsinternen Software-Komponenten als Stellvertreter (Proxy-Muster), um Dienstleistungen einer bereitgestellten Service-Instanz in Anspruch zu nehmen.
+Пространство имен <code>&lt;SI-Namespace&gt;::proxy</code> инкапсулирует клиентские интерфейсы и коммуникационные артефакты определенного Service Interface (<code>&lt;SI&gt;</code>) внутри функционального кластера Communication Management (<code>com</code>) в AUTOSAR Adaptive Platform. В центре этого пространства имен находится сгенерированный класс прокси <code>&lt;SI&gt;Proxy</code>. Он служит для внутриприкладных программных компонентов представителем (паттерн «прокси»), позволяющим задействовать сервисы предоставленного экземпляра сервиса.
 </p>
 <p>
-Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Schnittstellen für Methodenaufrufe, Event-Abonnements und Feldzugriffe. Anwendungskomponenten interagieren direkt mit <code>&lt;SI&gt;Proxy</code>, ohne Details über die zugrundeliegende Interprozess- oder Netzwerkkommunikation kennen zu müssen. Das Kommunikationsmanagement transformiert diese Aufrufe in anbindungsspezifische Protokolle. Vermutlich fungiert <code>&lt;SI&gt;Proxy</code> als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform.
+Основная обязанность пространства имен заключается в предоставлении типобезопасных интерфейсов для вызовов методов, подписок на события и обращений к полям. Компоненты приложения взаимодействуют напрямую с <code>&lt;SI&gt;Proxy</code>, не нуждаясь в знании деталей базовой межпроцессной или сетевой коммуникации. Communication Management преобразует эти вызовы в специфичные для привязки протоколы. Вероятно, <code>&lt;SI&gt;Proxy</code> выступает прямым мостом между предметно-ориентированными интерфейсами Service Interface и обобщенными механизмами среды выполнения платформы.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>Жизненный цикл</h4>
 <p>
-Der Lebenszyklus von Instanzen im Namespace <code>&lt;SI-Namespace&gt;::proxy</code> ist eng an die Verfügbarkeit korrespondierender Service-Instanzen auf Plattformebene gekoppelt. Typischerweise durchläuft ein Proxy folgende Phasen:
+Жизненный цикл экземпляров в пространстве имен <code>&lt;SI-Namespace&gt;::proxy</code> тесно связан с доступностью соответствующих экземпляров сервиса на уровне платформы. Как правило, прокси проходит следующие фазы:
 </p>
 <ul>
-<li><strong>Auffinden und Handle-Auflösung:</strong> Vor der Konstruktion einer Instanz von <code>&lt;SI&gt;Proxy</code> ermittelt die Anwendung über Mechanismen des Service Discovery ein gültiges Dienst-Handle (<code>HandleType</code>).</li>
-<li><strong>Instanziierung:</strong> Mit der Übergabe eines spezifischen Handles an den Konstruktor wird das Proxy-Objekt gebunden. Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein, sodass eine Zerstörung oder Ungültigkeit der Service-Verbindung den Proxy unbrauchbar macht.</li>
-<li><strong>Betrieb und Ereignisverwaltung:</strong> Während der Betriebsphase verwaltet der Proxy aktive Subskriptionen, Puffer für empfangene Event-Daten sowie asynchrone Zukunftsobjekte für Methodenrückgaben.</li>
-<li><strong>Freigabe und Zerstörung:</strong> Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Zerstörung des Proxy-Objekts werden alle bestehenden Abonnements und Kanalbindungen bereinigt, um Ressourcenlecks zu verhindern.</li>
+<li><strong>Поиск и разрешение дескриптора:</strong> перед конструированием экземпляра <code>&lt;SI&gt;Proxy</code> приложение с помощью механизмов Service Discovery определяет валидный дескриптор сервиса (<code>HandleType</code>).</li>
+<li><strong>Инстанцирование:</strong> с передачей специфического дескриптора в конструктор происходит связывание объекта прокси. Жизненный цикл экземпляра прокси, вероятно, привязан к валидности базового дескриптора сервиса, так что уничтожение или недействительность соединения сервиса делает прокси непригодным для использования.</li>
+<li><strong>Эксплуатация и управление событиями:</strong> во время фазы эксплуатации прокси управляет активными подписками, буферами для полученных данных событий, а также асинхронными объектами future для возвращаемых методами значений.</li>
+<li><strong>Освобождение и уничтожение:</strong> при выходе из области видимости или при явном уничтожении объекта прокси все существующие подписки и привязки каналов очищаются во избежание утечек ресурсов.</li>
 </ul>
 <p>
-Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Methodenaufrufe oder Event-Abfragen über <code>&lt;SI&gt;Proxy</code> potenziell nebenläufig aus unterschiedlichen Threads einer Anwendung erfolgen können, sofern das zugrundeliegende Anwendungsdesign dies vorsieht.
+В отношении параллелизма следует учитывать, что вызовы методов или опросы событий через <code>&lt;SI&gt;Proxy</code> потенциально могут выполняться параллельно из разных потоков приложения, если это предусмотрено базовым дизайном приложения.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Путь использования</h4>
 <p>
-Der typische Nutzungspfad für Komponenten, die auf den Namespace <code>&lt;SI-Namespace&gt;::proxy</code> zugreifen, folgt einem standardisierten Ablauf zur Diensteinbindung:
+Типичный путь использования для компонентов, обращающихся к пространству имен <code>&lt;SI-Namespace&gt;::proxy</code>, следует стандартизированному процессу интеграции сервисов:
 </p>
 <ol>
-<li><strong>Dienstsuche initiieren:</strong> Die Anwendung startet eine synchrone oder asynchrone Suche nach Instanzen des Service Interface <code>&lt;SI&gt;</code> über die entsprechenden Schnittstellen der Plattform.</li>
-<li><strong>Handle-Auswahl:</strong> Nach erfolgreicher Entdeckung wählt die Konsumentenseite ein passendes Instanz-Handle aus der Trefferliste aus.</li>
-<li><strong>Proxy-Erzeugung:</strong> Die Anwendung instanziiert <code>&lt;SI&gt;Proxy</code> unter Verwendung des gewählten Handles.</li>
-<li><strong>Event-Subskription und Feld-Registrierung:</strong> Für asynchrone Ereignisse abonniert der Client die gewünschten Events über die Sub-Objekte des Proxys. Gegebenenfalls werden Callbacks oder Polling-Strategien registriert.</li>
-<li><strong>Dienstaufruf:</strong> Der Client initiiert Methodenaufrufe über den Proxy, welche asynchron Zukunftsobjekte zurückliefern, oder greift auf Felder lesend bzw. schreibend zu.</li>
-<li><strong>Bereinigung:</strong> Nach Abschluss der Interaktionen werden Abonnements beendet und der Proxy zerstört.</li>
+<li><strong>Инициирование поиска сервиса:</strong> приложение запускает синхронный или асинхронный поиск экземпляров Service Interface <code>&lt;SI&gt;</code> через соответствующие интерфейсы платформы.</li>
+<li><strong>Выбор дескриптора:</strong> после успешного обнаружения сторона потребителя выбирает подходящий дескриптор экземпляра из списка совпадений.</li>
+<li><strong>Создание прокси:</strong> приложение инстанцирует <code>&lt;SI&gt;Proxy</code> с использованием выбранного дескриптора.</li>
+<li><strong>Подписка на события и регистрация полей:</strong> для асинхронных событий клиент подписывается на требуемые события через подобъекты прокси. При необходимости регистрируются функции обратного вызова или стратегии опроса.</li>
+<li><strong>Вызов сервиса:</strong> клиент инициирует вызовы методов через прокси, которые асинхронно возвращают объекты future, либо осуществляет доступ к полям для чтения или записи.</li>
+<li><strong>Очистка:</strong> после завершения взаимодействий подписки прекращаются, а прокси уничтожается.</li>
 </ol>
 <p>
-Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben, da Methodenaufrufe ohne gebundene Service-Instanz semantisch ungültig sind.
+Интерпретация: типичный путь использования, по-видимому, строго предписывает последовательность из поиска дескриптора, инстанцирования прокси и последующей обработки коммуникации, поскольку вызовы методов без привязанного экземпляра сервиса семантически некорректны.
 </p>
 <!-- annahmen:
 1) Vermutlich fungiert <SI>Proxy als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform. – Begründung: Der Payload enthält ausschließlich den Klassennamen ohne detaillierte Architekturbeschreibung.
 2) Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein. – Begründung: Der Payload enthält keine Spezifikationsanforderungen zur Handle-Lebensdauer.
 3) Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben. – Begründung: Ablaufdetails fehlen im Payload.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11. Da im Payload keine Spezifikations-Records oder Dokumentstellen hinterlegt sind, wurden funktionale Zusammenhänge neutral anhand der architekturellen Rolle von Service-Interface-Proxies abgeleitet.</p>
+<p class="ai-note">Данное руководство основано на доступных метаданных релиза R25-11. Поскольку в полезных данных не были зафиксированы записи спецификации или ссылки на документы, функциональные взаимосвязи были выведены нейтрально на основе архитектурной роли прокси интерфейса сервиса.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_proxy_250bf1" title="Обсудить с ИИ">💬 Обсудить с ИИ</button>
@@ -320,50 +319,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="c45b35af67f2780069a8e137cc3559c43776878f655dca887d03a5f4aaa241b6" data-trace-output="a5d895c4cf9d89f81827b3cee2c0f8869e01edd608a3fa8008e9decb51cf22b5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Контекст&lt;/h4&gt;
 &lt;p&gt;
-Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; kapselt die clientseitigen Schnittstellen und Kommunikationsartefakte eines definierten Service Interface (&lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt;) innerhalb des Funktionsclusters Communication Management (&lt;code&gt;com&lt;/code&gt;) der AUTOSAR Adaptive Platform. Im Zentrum dieses Namespace steht die generierte Proxy-Klasse &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;. Sie dient anwendungsinternen Software-Komponenten als Stellvertreter (Proxy-Muster), um Dienstleistungen einer bereitgestellten Service-Instanz in Anspruch zu nehmen.
+Пространство имен &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; инкапсулирует клиентские интерфейсы и коммуникационные артефакты определенного Service Interface (&lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt;) внутри функционального кластера Communication Management (&lt;code&gt;com&lt;/code&gt;) в AUTOSAR Adaptive Platform. В центре этого пространства имен находится сгенерированный класс прокси &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;. Он служит для внутриприкладных программных компонентов представителем (паттерн «прокси»), позволяющим задействовать сервисы предоставленного экземпляра сервиса.
 &lt;/p&gt;
 &lt;p&gt;
-Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Schnittstellen für Methodenaufrufe, Event-Abonnements und Feldzugriffe. Anwendungskomponenten interagieren direkt mit &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;, ohne Details über die zugrundeliegende Interprozess- oder Netzwerkkommunikation kennen zu müssen. Das Kommunikationsmanagement transformiert diese Aufrufe in anbindungsspezifische Protokolle. Vermutlich fungiert &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform.
+Основная обязанность пространства имен заключается в предоставлении типобезопасных интерфейсов для вызовов методов, подписок на события и обращений к полям. Компоненты приложения взаимодействуют напрямую с &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;, не нуждаясь в знании деталей базовой межпроцессной или сетевой коммуникации. Communication Management преобразует эти вызовы в специфичные для привязки протоколы. Вероятно, &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; выступает прямым мостом между предметно-ориентированными интерфейсами Service Interface и обобщенными механизмами среды выполнения платформы.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;Жизненный цикл&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus von Instanzen im Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; ist eng an die Verfügbarkeit korrespondierender Service-Instanzen auf Plattformebene gekoppelt. Typischerweise durchläuft ein Proxy folgende Phasen:
+Жизненный цикл экземпляров в пространстве имен &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; тесно связан с доступностью соответствующих экземпляров сервиса на уровне платформы. Как правило, прокси проходит следующие фазы:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Auffinden und Handle-Auflösung:&lt;/strong&gt; Vor der Konstruktion einer Instanz von &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; ermittelt die Anwendung über Mechanismen des Service Discovery ein gültiges Dienst-Handle (&lt;code&gt;HandleType&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Mit der Übergabe eines spezifischen Handles an den Konstruktor wird das Proxy-Objekt gebunden. Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein, sodass eine Zerstörung oder Ungültigkeit der Service-Verbindung den Proxy unbrauchbar macht.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Betrieb und Ereignisverwaltung:&lt;/strong&gt; Während der Betriebsphase verwaltet der Proxy aktive Subskriptionen, Puffer für empfangene Event-Daten sowie asynchrone Zukunftsobjekte für Methodenrückgaben.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Freigabe und Zerstörung:&lt;/strong&gt; Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Zerstörung des Proxy-Objekts werden alle bestehenden Abonnements und Kanalbindungen bereinigt, um Ressourcenlecks zu verhindern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Поиск и разрешение дескриптора:&lt;/strong&gt; перед конструированием экземпляра &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; приложение с помощью механизмов Service Discovery определяет валидный дескриптор сервиса (&lt;code&gt;HandleType&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Инстанцирование:&lt;/strong&gt; с передачей специфического дескриптора в конструктор происходит связывание объекта прокси. Жизненный цикл экземпляра прокси, вероятно, привязан к валидности базового дескриптора сервиса, так что уничтожение или недействительность соединения сервиса делает прокси непригодным для использования.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Эксплуатация и управление событиями:&lt;/strong&gt; во время фазы эксплуатации прокси управляет активными подписками, буферами для полученных данных событий, а также асинхронными объектами future для возвращаемых методами значений.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Освобождение и уничтожение:&lt;/strong&gt; при выходе из области видимости или при явном уничтожении объекта прокси все существующие подписки и привязки каналов очищаются во избежание утечек ресурсов.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Methodenaufrufe oder Event-Abfragen über &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; potenziell nebenläufig aus unterschiedlichen Threads einer Anwendung erfolgen können, sofern das zugrundeliegende Anwendungsdesign dies vorsieht.
+В отношении параллелизма следует учитывать, что вызовы методов или опросы событий через &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; потенциально могут выполняться параллельно из разных потоков приложения, если это предусмотрено базовым дизайном приложения.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Путь использования&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad für Komponenten, die auf den Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; zugreifen, folgt einem standardisierten Ablauf zur Diensteinbindung:
+Типичный путь использования для компонентов, обращающихся к пространству имен &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt;, следует стандартизированному процессу интеграции сервисов:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Dienstsuche initiieren:&lt;/strong&gt; Die Anwendung startet eine synchrone oder asynchrone Suche nach Instanzen des Service Interface &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; über die entsprechenden Schnittstellen der Plattform.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Handle-Auswahl:&lt;/strong&gt; Nach erfolgreicher Entdeckung wählt die Konsumentenseite ein passendes Instanz-Handle aus der Trefferliste aus.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Proxy-Erzeugung:&lt;/strong&gt; Die Anwendung instanziiert &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; unter Verwendung des gewählten Handles.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Event-Subskription und Feld-Registrierung:&lt;/strong&gt; Für asynchrone Ereignisse abonniert der Client die gewünschten Events über die Sub-Objekte des Proxys. Gegebenenfalls werden Callbacks oder Polling-Strategien registriert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienstaufruf:&lt;/strong&gt; Der Client initiiert Methodenaufrufe über den Proxy, welche asynchron Zukunftsobjekte zurückliefern, oder greift auf Felder lesend bzw. schreibend zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereinigung:&lt;/strong&gt; Nach Abschluss der Interaktionen werden Abonnements beendet und der Proxy zerstört.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Инициирование поиска сервиса:&lt;/strong&gt; приложение запускает синхронный или асинхронный поиск экземпляров Service Interface &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; через соответствующие интерфейсы платформы.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Выбор дескриптора:&lt;/strong&gt; после успешного обнаружения сторона потребителя выбирает подходящий дескриптор экземпляра из списка совпадений.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Создание прокси:&lt;/strong&gt; приложение инстанцирует &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; с использованием выбранного дескриптора.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Подписка на события и регистрация полей:&lt;/strong&gt; для асинхронных событий клиент подписывается на требуемые события через подобъекты прокси. При необходимости регистрируются функции обратного вызова или стратегии опроса.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Вызов сервиса:&lt;/strong&gt; клиент инициирует вызовы методов через прокси, которые асинхронно возвращают объекты future, либо осуществляет доступ к полям для чтения или записи.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Очистка:&lt;/strong&gt; после завершения взаимодействий подписки прекращаются, а прокси уничтожается.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben, da Methodenaufrufe ohne gebundene Service-Instanz semantisch ungültig sind.
+Интерпретация: типичный путь использования, по-видимому, строго предписывает последовательность из поиска дескриптора, инстанцирования прокси и последующей обработки коммуникации, поскольку вызовы методов без привязанного экземпляра сервиса семантически некорректны.
 &lt;/p&gt;
 &lt;!-- annahmen:
 1) Vermutlich fungiert &lt;SI&gt;Proxy als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform. – Begründung: Der Payload enthält ausschließlich den Klassennamen ohne detaillierte Architekturbeschreibung.
 2) Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein. – Begründung: Der Payload enthält keine Spezifikationsanforderungen zur Handle-Lebensdauer.
 3) Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben. – Begründung: Ablaufdetails fehlen im Payload.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11. Da im Payload keine Spezifikations-Records oder Dokumentstellen hinterlegt sind, wurden funktionale Zusammenhänge neutral anhand der architekturellen Rolle von Service-Interface-Proxies abgeleitet.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Данное руководство основано на доступных метаданных релиза R25-11. Поскольку в полезных данных не были зафиксированы записи спецификации или ссылки на документы, функциональные взаимосвязи были выведены нейтрально на основе архитектурной роли прокси интерфейса сервиса.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

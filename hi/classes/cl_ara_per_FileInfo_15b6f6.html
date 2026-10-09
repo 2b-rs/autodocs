@@ -24,81 +24,80 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>d885f8f1d000</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_per_FileInfo_15b6f6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/hi/classes/cl_ara_per_FileInfo_15b6f6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_per_FileInfo_15b6f6" data-view-mode="editor" title="क्यूरेशन संपादक और ऑडिट डोजियर खोलें" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ क्यूरेट करें</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>संदर्भ</h4>
   <p>
-    Die Struktur <code>ara::per::FileInfo</code> ist Bestandteil des Persistenzmoduls (<code>per</code>) der AUTOSAR Adaptive Platform und wird über die Header-Datei <code>ara/per/file_storage.h</code> definiert. Sie fungiert als passives Datenübertragungsobjekt (Value Object), dessen Zweck darin besteht, zusätzliche Dateiinformationen und Statusattribute strukturiert bereitzustellen. Instanzen dieser Struktur werden von der Funktion <code>GetFileInfo</code> zurückgegeben, um Metadaten einer verwalteten Datei an die aufrufende Anwendungssoftware zu übermitteln.
+    संरचना <code>ara::per::FileInfo</code> AUTOSAR Adaptive Platform के पर्सिस्टेंस मॉड्यूल (<code>per</code>) का हिस्सा है और इसे हेडर फ़ाइल <code>ara/per/file_storage.h</code> के माध्यम से परिभाषित किया गया है। यह एक निष्क्रिय डेटा ट्रांसफर ऑब्जेक्ट (Value Object) के रूप में कार्य करता है, जिसका उद्देश्य अतिरिक्त फ़ाइल जानकारी और स्थिति विशेषताओं को संरचित तरीके से प्रदान करना है। प्रबंधित फ़ाइल के मेटाडेटा को कॉलिंग एप्लिकेशन सॉफ़्टवेयर तक प्रेषित करने के लिए इस संरचना के इंस्टैंस फ़ंक्शन <code>GetFileInfo</code> द्वारा लौटाए जाते हैं।
   </p>
   <p>
-    Innerhalb der Modularchitektur nimmt <code>ara::per::FileInfo</code> die Rolle eines reinen Informationsträgers zwischen der Persistenzschicht und der Anwendungslogik ein. Sie fasst zeitliche Kenndaten und Statusinformationen zu einer Datei zusammen:
-  </p>
-  <ul>
-    <li>
-      <strong>Erstellungszeitpunkt:</strong> Das Datenelement <code>creationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441">[SWS_PER_00441]</a>) dokumentiert den Zeitpunkt der Dateierstellung als 64-Bit-Ganzzahl (<code>std::uint64_t</code>) in Nanosekunden seit Mitternacht des 01.01.1970 UTC.
-    </li>
-    <li>
-      <strong>Modifikationszeitpunkt:</strong> Das Datenelement <code>modificationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442">[SWS_PER_00442]</a>) erfasst den Zeitpunkt der letzten inhaltlichen Änderung der Datei im identischen Zeitformat.
-    </li>
-    <li>
-      <strong>Zugriffszeitpunkt:</strong> Das Datenelement <code>accessTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443">[SWS_PER_00443]</a>) speichert den Zeitpunkt des letzten Lese- oder Schreibzugriffs auf die Datei in Nanosekunden seit Beginn der Unix-Epoche.
-    </li>
-    <li>
-      <strong>Erstellungsstatus:</strong> Das Attribut <code>fileCreationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444">[SWS_PER_00444]</a>) vom Typ <code>FileCreationState</code> liefert Informationen darüber, auf welche Weise und durch wen die Datei ursprünglich erstellt wurde.
-    </li>
-    <li>
-      <strong>Modifikationsstatus:</strong> Das Attribut <code>fileModificationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445">[SWS_PER_00445]</a>) vom Typ <code>FileModificationState</code> gibt Auskunft darüber, wie und durch wen die Datei zuletzt modifiziert wurde.
-    </li>
-  </ul>
-  <p>
-    <code>ara::per::FileInfo</code> kapselt dabei rein beschreibende Attribute einer Datei. Die Struktur verwaltet keine offenen Dateideskriptoren, puffert keine Dateiinhalte und stellt keine eigenen Ein- oder Ausgabeoperationen bereit.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Als C++-Struktur (<code>struct</code>) folgt <code>ara::per::FileInfo</code> den Regeln regulärer Wertesemantik. Der Lebenszyklus einer Instanz beginnt üblicherweise nicht durch manuelle Konstruktion in der Anwendung, sondern durch die Rückgabe aus dem Persistenz-Subsystem beim Aufruf von <code>GetFileInfo</code>. Interpretation: Die Funktion <code>GetFileInfo</code> dürfte vermutlich eine Abfragemethode einer Dateispeicher-Abstraktion in <code>ara/per/file_storage.h</code> darstellen, welche die Metadaten des Dateisystems ermittelt und in eine initialisierte Instanz von <code>FileInfo</code> überträgt.
-  </p>
-  <p>
-    Mit der Rückgabe geht das Eigentum an der Struktur vollständig auf den Aufrufer über. Da <code>FileInfo</code> weder Zeiger auf dynamische Speicherbereiche noch verbindungsspezifische System-Ressourcen hält, existieren keine geteilten Besitzverhältnisse (Shared Ownership). Die Instanz kann innerhalb des Anwendungscodes uneingeschränkt kopiert oder verschoben werden.
-  </p>
-  <p>
-    Hinsichtlich des internen Verhaltens besitzt <code>FileInfo</code> keine Zustandsmaschine. Die enthaltenen Werte bilden einen statischen Schnappschuss (Snapshot) der Dateiattribute zum Abfragezeitpunkt ab. Nachträgliche Schreib- oder Lesezugriffe auf die reale Datei aktualisieren bereits bestehende <code>FileInfo</code>-Objekte nicht automatisch; für aktuelle Informationen muss <code>GetFileInfo</code> erneut aufgerufen werden.
-  </p>
-  <p>
-    Die Zerstörung einer Instanz erfolgt deterministisch beim Verlassen des Gültigkeitsbereichs (Scope) im Stack oder bei Zerstörung des umschließenden Objekts. Spezielle Schließroutinen oder Freigabeaufrufe sind nicht erforderlich. Für den nebenläufigen Betrieb gilt: Da es sich um ein passives Datenobjekt handelt, können mehrere Threads simultan lesend auf dieselbe Instanz zugreifen. Modifikationen an einer Instanz müssen bei threadübergreifender Verwendung durch anwendungseigene Synchronisationsmechanismen abgesichert werden.
-  </p>
-
-  <h4>Nutzungspfad</h4>
-  <p>
-    Der typische Ablauf bei der Verwendung von <code>ara::per::FileInfo</code> gliedert sich in die Abfrage der Dateiinformationen, die Auswertung der administrativen Erzeugungs- und Modifikationszustände sowie die Analyse der Zeitstempel.
-  </p>
-  <p>
-    Die Anwendung stößt über die Schnittstellen des Persistenzmoduls (Header <code>ara/per/file_storage.h</code>) den Aufruf von <code>GetFileInfo</code> für einen gewünschten Dateipfad oder Datei-Identifier an. Als Ergebnis erhält sie die befüllte <code>FileInfo</code>-Struktur.
-  </p>
-  <p>
-    Anschließend prüft die Anwendungslogik die Statusattribute. Über <code>fileCreationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444">[SWS_PER_00444]</a>) und <code>fileModificationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445">[SWS_PER_00445]</a>) wird der Kontext der Datei ermittelt. Interpretation: Bei <code>FileCreationState</code> und <code>FileModificationState</code> dürfte es sich vermutlich um Enumerationen handeln, die anzeigen, ob eine Datei regulär durch die Applikation, im Rahmen einer Werksinitialisierung oder durch ein Update erzeugt beziehungsweise überschrieben wurde.
-  </p>
-  <p>
-    Daraufhin werden die zeitlichen Attribute ausgewertet. Anhand der Werte von <code>creationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441">[SWS_PER_00441]</a>), <code>modificationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442">[SWS_PER_00442]</a>) und <code>accessTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443">[SWS_PER_00443]</a>) können zentrale Prüfungen vorgenommen werden:
+    मॉड्यूल आर्किटेक्चर के भीतर, <code>ara::per::FileInfo</code> पर्सिस्टेंस लेयर और एप्लिकेशन लॉजिक के बीच एक शुद्ध सूचना वाहक की भूमिका निभाता है। यह किसी फ़ाइल से संबंधित समय संबंधी विशेषताओं और स्थिति जानकारी को सारांशित करता है:
   </p>
   <ul>
     <li>
-      <strong>Modifikationskontrolle:</strong> Ein Abgleich zwischen <code>creationTime</code> und <code>modificationTime</code> zeigt auf, ob die Datei seit ihrer Erstellung verändert wurde.
+      <strong>निर्माण का समय:</strong> डेटा तत्व <code>creationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441">[SWS_PER_00441]</a>) फ़ाइल निर्माण के समय को 01.01.1970 UTC की मध्यरात्रि से नैनोसेकंड में 64-बिट पूर्णांक (<code>std::uint64_t</code>) के रूप में प्रलेखित करता है।
     </li>
     <li>
-      <strong>Cache-Invalidierung:</strong> Anhand von <code>modificationTime</code> kann die Anwendung beurteilen, ob ein im Hauptspeicher gehaltener Datenstand noch der persistenten Datei entspricht oder neu geladen werden muss.
+      <strong>संशोधन का समय:</strong> डेटा तत्व <code>modificationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442">[SWS_PER_00442]</a>) फ़ाइल की सामग्री में अंतिम संशोधन के समय को समान समय प्रारूप में रिकॉर्ड करता है।
     </li>
     <li>
-      <strong>Bereinigungsstrategien:</strong> Durch Gegenüberstellung von <code>accessTime</code> mit einer aktuellen Zeitreferenz lassen sich veraltete Dateien für Bereinigungs- oder Archivierungsläufe identifizieren.
+      <strong>एक्सेस का समय:</strong> डेटा तत्व <code>accessTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443">[SWS_PER_00443]</a>) यूनिक्स युग की शुरुआत से नैनोसेकंड में फ़ाइल पर अंतिम रीड या राइट एक्सेस का समय संग्रहीत करता है।
+    </li>
+    <li>
+      <strong>निर्माण स्थिति:</strong> <code>FileCreationState</code> प्रकार का एट्रिब्यूट <code>fileCreationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444">[SWS_PER_00444]</a>) इस बारे में जानकारी प्रदान करता है कि फ़ाइल मूल रूप से किस प्रकार और किसके द्वारा बनाई गई थी।
+    </li>
+    <li>
+      <strong>संशोधन स्थिति:</strong> <code>FileModificationState</code> प्रकार का एट्रिब्यूट <code>fileModificationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445">[SWS_PER_00445]</a>) इस बारे में जानकारी प्रदान करता है कि फ़ाइल को अंतिम बार कैसे और किसके द्वारा संशोधित किया गया था।
     </li>
   </ul>
   <p>
-    Interpretation: Obwohl die Spezifikation Zeitpunkte in Nanosekunden seit dem 01.01.1970 UTC vorgibt, dürfte die tatsächlich erzielbare zeitliche Auflösung und Genauigkeit in der Praxis von den Eigenschaften des zugrunde liegenden Betriebssystems und Dateisystems abhängen.
+    <code>ara::per::FileInfo</code> किसी फ़ाइल के विशुद्ध रूप से वर्णनात्मक एट्रिब्यूट्स को एनकैप्सुलेट करता है। यह संरचना किसी भी खुले फ़ाइल डिस्क्रिप्टर को प्रबंधित नहीं करती है, फ़ाइल सामग्री को बफ़र नहीं करती है और कोई स्वयं के इनपुट या आउटपुट ऑपरेशन प्रदान नहीं करती है।
+  </p>
+
+  <h4>जीवनचक्र</h4>
+  <p>
+    एक C++ संरचना (<code>struct</code>) के रूप में, <code>ara::per::FileInfo</code> नियमित वैल्यू सिमेंटिक्स के नियमों का पालन करती है। किसी इंस्टैंस का जीवनकाल आमतौर पर एप्लिकेशन में मैन्युअल निर्माण द्वारा शुरू नहीं होता है, बल्कि <code>GetFileInfo</code> को कॉल करते समय पर्सिस्टेंस सबसिस्टम से रिटर्न वैल्यू के रूप में शुरू होता है। व्याख्या: फ़ंक्शन <code>GetFileInfo</code> संभवतः <code>ara/per/file_storage.h</code> में फ़ाइल स्टोरेज एब्स्ट्रैक्शन की एक क्वेरी विधि का प्रतिनिधित्व करता है, जो फ़ाइल सिस्टम के मेटाडेटा को निर्धारित करता है और इसे <code>FileInfo</code> के एक इनिशियलाइज़्ड इंस्टैंस में स्थानांतरित करता है।
+  </p>
+  <p>
+    रिटर्न के साथ, संरचना का स्वामित्व पूरी तरह से कॉलर को स्थानांतरित हो जाता है। चूँकि <code>FileInfo</code> न तो डायनेमिक मेमोरी क्षेत्रों के लिए पॉइंटर्स रखता है और न ही कनेक्शन-विशिष्ट सिस्टम संसाधन, इसलिए कोई साझा स्वामित्व (Shared Ownership) मौजूद नहीं है। इंस्टेंस को एप्लिकेशन कोड के भीतर बिना किसी प्रतिबंध के कॉपी या मूव किया जा सकता है।
+  </p>
+  <p>
+    आंतरिक व्यवहार के संबंध में, <code>FileInfo</code> में कोई स्टेट मशीन नहीं होती है। समाहित मान क्वेरी के समय फ़ाइल विशेषताओं का एक स्थिर स्नैपशॉट (Snapshot) दर्शाते हैं। वास्तविक फ़ाइल पर बाद के राइट या रीड एक्सेस पहले से मौजूद <code>FileInfo</code> ऑब्जेक्ट्स को स्वचालित रूप से अपडेट नहीं करते हैं; नवीनतम जानकारी के लिए <code>GetFileInfo</code> को पुनः कॉल किया जाना चाहिए।
+  </p>
+  <p>
+    किसी इंस्टेंस का विनाश स्टैक में स्कोप (Scope) से बाहर निकलने पर या संलग्न ऑब्जेक्ट के विनाश पर नियतात्मक रूप से होता है। विशेष क्लोज़ रूटीन या रिलीज़ कॉल की आवश्यकता नहीं होती है। समवर्ती संचालन के लिए: चूँकि यह एक निष्क्रिय डेटा ऑब्जेक्ट है, इसलिए कई थ्रेड एक ही इंस्टेंस को एक साथ रीड एक्सेस कर सकते हैं। थ्रेड्स के बीच उपयोग किए जाने पर किसी इंस्टेंस में संशोधनों को एप्लिकेशन के स्वयं के सिंक्रोनाइज़ेशन तंत्रों द्वारा सुरक्षित किया जाना चाहिए।
+  </p>
+
+  <h4>उपयोग पथ</h4>
+  <p>
+    <code>ara::per::FileInfo</code> के उपयोग का विशिष्ट क्रम फ़ाइल जानकारी को क्वेरी करने, प्रशासनिक निर्माण और संशोधन स्थितियों का मूल्यांकन करने तथा टाइमस्टैम्प के विश्लेषण में विभाजित है।
+  </p>
+  <p>
+    एप्लिकेशन पर्सिस्टेंस मॉड्यूल (हेडर <code>ara/per/file_storage.h</code>) के इंटरफ़ेस के माध्यम से किसी वांछित फ़ाइल पाथ या फ़ाइल आइडेंटिफ़ायर के लिए <code>GetFileInfo</code> का कॉल शुरू करता है। परिणाम के रूप में, यह भरी हुई <code>FileInfo</code> संरचना प्राप्त करता है।
+  </p>
+  <p>
+    इसके बाद एप्लिकेशन लॉजिक स्थिति विशेषताओं की जाँच करता है। <code>fileCreationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444">[SWS_PER_00444]</a>) और <code>fileModificationState</code> (<a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445">[SWS_PER_00445]</a>) के माध्यम से फ़ाइल का संदर्भ निर्धारित किया जाता है। व्याख्या: <code>FileCreationState</code> और <code>FileModificationState</code> संभवतः ऐसे इन्यूमरेशन हैं, जो यह दर्शाते हैं कि कोई फ़ाइल एप्लिकेशन द्वारा नियमित रूप से, फ़ैक्टरी इनिशियलाइज़ेशन के हिस्से के रूप में या किसी अपडेट द्वारा बनाई गई थी अथवा ओवरराइट की गई थी।
+  </p>
+  <p>
+    इसके बाद समय संबंधी विशेषताओं का मूल्यांकन किया जाता है। <code>creationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441">[SWS_PER_00441]</a>), <code>modificationTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442">[SWS_PER_00442]</a>) और <code>accessTime</code> (<a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443">[SWS_PER_00443]</a>) के मानों के आधार पर केंद्रीय जाँचें की जा सकती हैं:
+  </p>
+  <ul>
+    <li>
+      <strong>संशोधन नियंत्रण:</strong> <code>creationTime</code> और <code>modificationTime</code> के बीच तुलना दर्शाती है कि क्या फ़ाइल को इसके निर्माण के बाद से संशोधित किया गया है।
+    </li>
+    <li>
+      <strong>कैश अमान्यकरण:</strong> <code>modificationTime</code> के आधार पर, एप्लिकेशन यह आकलन कर सकता है कि मुख्य मेमोरी में रखी गई डेटा स्थिति अभी भी पर्सिस्टेंट फ़ाइल से मेल खाती है या इसे पुनः लोड किया जाना चाहिए।
+    </li>
+    <li>
+      <strong>सफ़ाई रणनीतियाँ:</strong> वर्तमान समय संदर्भ के साथ <code>accessTime</code> की तुलना करके, सफ़ाई या संग्रह रनों के लिए पुरानी फ़ाइलों की पहचान की जा सकती है।
+    </li>
+  </ul>
+  <p>
+    व्याख्या: यद्यपि विनिर्देश 01.01.1970 UTC से नैनोसेकंड में समय बिंदुओं को निर्दिष्ट करता है, लेकिन व्यवहार में वास्तव में प्राप्त करने योग्य समय रिज़ॉल्यूशन और सटीकता संभवतः अंतर्निहित ऑपरेटिंग सिस्टम और फ़ाइल सिस्टम की विशेषताओं पर निर्भर करती है।
   </p>
   <!-- annahmen: 1) GetFileInfo als Zugriffsmethode einer Speicherabstraktion – Begründung: Der Payload nennt GetFileInfo als Quelle von FileInfo im Kontext von ara/per/file_storage.h, spezifiziert die Schnittstellensignatur jedoch nicht weiter. 2) FileCreationState und FileModificationState als Enumerationstypen – Begründung: Der Payload deklariert die Typnamen FileCreationState und FileModificationState, ohne deren Typdefinition oder Wertebereich offenzulegen. 3) Reale Zeitstempelgenauigkeit plattformabhängig – Begründung: SWS_PER_00441 bis SWS_PER_00443 definieren ganzzahlige Nanosekunden, die tatsächliche Granularität wird jedoch durch das darunterliegende Dateisystem bestimmt. -->
-  <p class="ai-note">Dieser Klassen-Leitfaden wurde durch ein KI-System auf Basis der Spezifikation AUTOSAR Adaptive Platform R25-11 für das Modul per generiert.</p>
+  <p class="ai-note">यह क्लास गाइड एक AI सिस्टम द्वारा मॉड्यूल per के लिए AUTOSAR Adaptive Platform R25-11 विनिर्देश के आधार पर तैयार किया गया था।</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_per_FileInfo_15b6f6" title="एआई से चर्चा करें">💬 एआई से चर्चा करें</button>
@@ -685,78 +684,77 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="d885f8f1d000da1e979a6093374632e17f20afe77249d950d2284673bec44587" data-trace-output="7af32fee792e1313754d0932a0a29a6688276e7e2a6f0294cb1710d0b2f6125b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;संदर्भ&lt;/h4&gt;
   &lt;p&gt;
-    Die Struktur &lt;code&gt;ara::per::FileInfo&lt;/code&gt; ist Bestandteil des Persistenzmoduls (&lt;code&gt;per&lt;/code&gt;) der AUTOSAR Adaptive Platform und wird über die Header-Datei &lt;code&gt;ara/per/file_storage.h&lt;/code&gt; definiert. Sie fungiert als passives Datenübertragungsobjekt (Value Object), dessen Zweck darin besteht, zusätzliche Dateiinformationen und Statusattribute strukturiert bereitzustellen. Instanzen dieser Struktur werden von der Funktion &lt;code&gt;GetFileInfo&lt;/code&gt; zurückgegeben, um Metadaten einer verwalteten Datei an die aufrufende Anwendungssoftware zu übermitteln.
+    संरचना &lt;code&gt;ara::per::FileInfo&lt;/code&gt; AUTOSAR Adaptive Platform के पर्सिस्टेंस मॉड्यूल (&lt;code&gt;per&lt;/code&gt;) का हिस्सा है और इसे हेडर फ़ाइल &lt;code&gt;ara/per/file_storage.h&lt;/code&gt; के माध्यम से परिभाषित किया गया है। यह एक निष्क्रिय डेटा ट्रांसफर ऑब्जेक्ट (Value Object) के रूप में कार्य करता है, जिसका उद्देश्य अतिरिक्त फ़ाइल जानकारी और स्थिति विशेषताओं को संरचित तरीके से प्रदान करना है। प्रबंधित फ़ाइल के मेटाडेटा को कॉलिंग एप्लिकेशन सॉफ़्टवेयर तक प्रेषित करने के लिए इस संरचना के इंस्टैंस फ़ंक्शन &lt;code&gt;GetFileInfo&lt;/code&gt; द्वारा लौटाए जाते हैं।
   &lt;/p&gt;
   &lt;p&gt;
-    Innerhalb der Modularchitektur nimmt &lt;code&gt;ara::per::FileInfo&lt;/code&gt; die Rolle eines reinen Informationsträgers zwischen der Persistenzschicht und der Anwendungslogik ein. Sie fasst zeitliche Kenndaten und Statusinformationen zu einer Datei zusammen:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Erstellungszeitpunkt:&lt;/strong&gt; Das Datenelement &lt;code&gt;creationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;) dokumentiert den Zeitpunkt der Dateierstellung als 64-Bit-Ganzzahl (&lt;code&gt;std::uint64_t&lt;/code&gt;) in Nanosekunden seit Mitternacht des 01.01.1970 UTC.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Modifikationszeitpunkt:&lt;/strong&gt; Das Datenelement &lt;code&gt;modificationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;) erfasst den Zeitpunkt der letzten inhaltlichen Änderung der Datei im identischen Zeitformat.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Zugriffszeitpunkt:&lt;/strong&gt; Das Datenelement &lt;code&gt;accessTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;) speichert den Zeitpunkt des letzten Lese- oder Schreibzugriffs auf die Datei in Nanosekunden seit Beginn der Unix-Epoche.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Erstellungsstatus:&lt;/strong&gt; Das Attribut &lt;code&gt;fileCreationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;) vom Typ &lt;code&gt;FileCreationState&lt;/code&gt; liefert Informationen darüber, auf welche Weise und durch wen die Datei ursprünglich erstellt wurde.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Modifikationsstatus:&lt;/strong&gt; Das Attribut &lt;code&gt;fileModificationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;) vom Typ &lt;code&gt;FileModificationState&lt;/code&gt; gibt Auskunft darüber, wie und durch wen die Datei zuletzt modifiziert wurde.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    &lt;code&gt;ara::per::FileInfo&lt;/code&gt; kapselt dabei rein beschreibende Attribute einer Datei. Die Struktur verwaltet keine offenen Dateideskriptoren, puffert keine Dateiinhalte und stellt keine eigenen Ein- oder Ausgabeoperationen bereit.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Als C++-Struktur (&lt;code&gt;struct&lt;/code&gt;) folgt &lt;code&gt;ara::per::FileInfo&lt;/code&gt; den Regeln regulärer Wertesemantik. Der Lebenszyklus einer Instanz beginnt üblicherweise nicht durch manuelle Konstruktion in der Anwendung, sondern durch die Rückgabe aus dem Persistenz-Subsystem beim Aufruf von &lt;code&gt;GetFileInfo&lt;/code&gt;. Interpretation: Die Funktion &lt;code&gt;GetFileInfo&lt;/code&gt; dürfte vermutlich eine Abfragemethode einer Dateispeicher-Abstraktion in &lt;code&gt;ara/per/file_storage.h&lt;/code&gt; darstellen, welche die Metadaten des Dateisystems ermittelt und in eine initialisierte Instanz von &lt;code&gt;FileInfo&lt;/code&gt; überträgt.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Mit der Rückgabe geht das Eigentum an der Struktur vollständig auf den Aufrufer über. Da &lt;code&gt;FileInfo&lt;/code&gt; weder Zeiger auf dynamische Speicherbereiche noch verbindungsspezifische System-Ressourcen hält, existieren keine geteilten Besitzverhältnisse (Shared Ownership). Die Instanz kann innerhalb des Anwendungscodes uneingeschränkt kopiert oder verschoben werden.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Hinsichtlich des internen Verhaltens besitzt &lt;code&gt;FileInfo&lt;/code&gt; keine Zustandsmaschine. Die enthaltenen Werte bilden einen statischen Schnappschuss (Snapshot) der Dateiattribute zum Abfragezeitpunkt ab. Nachträgliche Schreib- oder Lesezugriffe auf die reale Datei aktualisieren bereits bestehende &lt;code&gt;FileInfo&lt;/code&gt;-Objekte nicht automatisch; für aktuelle Informationen muss &lt;code&gt;GetFileInfo&lt;/code&gt; erneut aufgerufen werden.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Die Zerstörung einer Instanz erfolgt deterministisch beim Verlassen des Gültigkeitsbereichs (Scope) im Stack oder bei Zerstörung des umschließenden Objekts. Spezielle Schließroutinen oder Freigabeaufrufe sind nicht erforderlich. Für den nebenläufigen Betrieb gilt: Da es sich um ein passives Datenobjekt handelt, können mehrere Threads simultan lesend auf dieselbe Instanz zugreifen. Modifikationen an einer Instanz müssen bei threadübergreifender Verwendung durch anwendungseigene Synchronisationsmechanismen abgesichert werden.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-  &lt;p&gt;
-    Der typische Ablauf bei der Verwendung von &lt;code&gt;ara::per::FileInfo&lt;/code&gt; gliedert sich in die Abfrage der Dateiinformationen, die Auswertung der administrativen Erzeugungs- und Modifikationszustände sowie die Analyse der Zeitstempel.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Die Anwendung stößt über die Schnittstellen des Persistenzmoduls (Header &lt;code&gt;ara/per/file_storage.h&lt;/code&gt;) den Aufruf von &lt;code&gt;GetFileInfo&lt;/code&gt; für einen gewünschten Dateipfad oder Datei-Identifier an. Als Ergebnis erhält sie die befüllte &lt;code&gt;FileInfo&lt;/code&gt;-Struktur.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Anschließend prüft die Anwendungslogik die Statusattribute. Über &lt;code&gt;fileCreationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;) und &lt;code&gt;fileModificationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;) wird der Kontext der Datei ermittelt. Interpretation: Bei &lt;code&gt;FileCreationState&lt;/code&gt; und &lt;code&gt;FileModificationState&lt;/code&gt; dürfte es sich vermutlich um Enumerationen handeln, die anzeigen, ob eine Datei regulär durch die Applikation, im Rahmen einer Werksinitialisierung oder durch ein Update erzeugt beziehungsweise überschrieben wurde.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Daraufhin werden die zeitlichen Attribute ausgewertet. Anhand der Werte von &lt;code&gt;creationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;), &lt;code&gt;modificationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;) und &lt;code&gt;accessTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;) können zentrale Prüfungen vorgenommen werden:
+    मॉड्यूल आर्किटेक्चर के भीतर, &lt;code&gt;ara::per::FileInfo&lt;/code&gt; पर्सिस्टेंस लेयर और एप्लिकेशन लॉजिक के बीच एक शुद्ध सूचना वाहक की भूमिका निभाता है। यह किसी फ़ाइल से संबंधित समय संबंधी विशेषताओं और स्थिति जानकारी को सारांशित करता है:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Modifikationskontrolle:&lt;/strong&gt; Ein Abgleich zwischen &lt;code&gt;creationTime&lt;/code&gt; und &lt;code&gt;modificationTime&lt;/code&gt; zeigt auf, ob die Datei seit ihrer Erstellung verändert wurde.
+      &lt;strong&gt;निर्माण का समय:&lt;/strong&gt; डेटा तत्व &lt;code&gt;creationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;) फ़ाइल निर्माण के समय को 01.01.1970 UTC की मध्यरात्रि से नैनोसेकंड में 64-बिट पूर्णांक (&lt;code&gt;std::uint64_t&lt;/code&gt;) के रूप में प्रलेखित करता है।
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Cache-Invalidierung:&lt;/strong&gt; Anhand von &lt;code&gt;modificationTime&lt;/code&gt; kann die Anwendung beurteilen, ob ein im Hauptspeicher gehaltener Datenstand noch der persistenten Datei entspricht oder neu geladen werden muss.
+      &lt;strong&gt;संशोधन का समय:&lt;/strong&gt; डेटा तत्व &lt;code&gt;modificationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;) फ़ाइल की सामग्री में अंतिम संशोधन के समय को समान समय प्रारूप में रिकॉर्ड करता है।
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Bereinigungsstrategien:&lt;/strong&gt; Durch Gegenüberstellung von &lt;code&gt;accessTime&lt;/code&gt; mit einer aktuellen Zeitreferenz lassen sich veraltete Dateien für Bereinigungs- oder Archivierungsläufe identifizieren.
+      &lt;strong&gt;एक्सेस का समय:&lt;/strong&gt; डेटा तत्व &lt;code&gt;accessTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;) यूनिक्स युग की शुरुआत से नैनोसेकंड में फ़ाइल पर अंतिम रीड या राइट एक्सेस का समय संग्रहीत करता है।
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;निर्माण स्थिति:&lt;/strong&gt; &lt;code&gt;FileCreationState&lt;/code&gt; प्रकार का एट्रिब्यूट &lt;code&gt;fileCreationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;) इस बारे में जानकारी प्रदान करता है कि फ़ाइल मूल रूप से किस प्रकार और किसके द्वारा बनाई गई थी।
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;संशोधन स्थिति:&lt;/strong&gt; &lt;code&gt;FileModificationState&lt;/code&gt; प्रकार का एट्रिब्यूट &lt;code&gt;fileModificationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;) इस बारे में जानकारी प्रदान करता है कि फ़ाइल को अंतिम बार कैसे और किसके द्वारा संशोधित किया गया था।
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Interpretation: Obwohl die Spezifikation Zeitpunkte in Nanosekunden seit dem 01.01.1970 UTC vorgibt, dürfte die tatsächlich erzielbare zeitliche Auflösung und Genauigkeit in der Praxis von den Eigenschaften des zugrunde liegenden Betriebssystems und Dateisystems abhängen.
+    &lt;code&gt;ara::per::FileInfo&lt;/code&gt; किसी फ़ाइल के विशुद्ध रूप से वर्णनात्मक एट्रिब्यूट्स को एनकैप्सुलेट करता है। यह संरचना किसी भी खुले फ़ाइल डिस्क्रिप्टर को प्रबंधित नहीं करती है, फ़ाइल सामग्री को बफ़र नहीं करती है और कोई स्वयं के इनपुट या आउटपुट ऑपरेशन प्रदान नहीं करती है।
+  &lt;/p&gt;
+
+  &lt;h4&gt;जीवनचक्र&lt;/h4&gt;
+  &lt;p&gt;
+    एक C++ संरचना (&lt;code&gt;struct&lt;/code&gt;) के रूप में, &lt;code&gt;ara::per::FileInfo&lt;/code&gt; नियमित वैल्यू सिमेंटिक्स के नियमों का पालन करती है। किसी इंस्टैंस का जीवनकाल आमतौर पर एप्लिकेशन में मैन्युअल निर्माण द्वारा शुरू नहीं होता है, बल्कि &lt;code&gt;GetFileInfo&lt;/code&gt; को कॉल करते समय पर्सिस्टेंस सबसिस्टम से रिटर्न वैल्यू के रूप में शुरू होता है। व्याख्या: फ़ंक्शन &lt;code&gt;GetFileInfo&lt;/code&gt; संभवतः &lt;code&gt;ara/per/file_storage.h&lt;/code&gt; में फ़ाइल स्टोरेज एब्स्ट्रैक्शन की एक क्वेरी विधि का प्रतिनिधित्व करता है, जो फ़ाइल सिस्टम के मेटाडेटा को निर्धारित करता है और इसे &lt;code&gt;FileInfo&lt;/code&gt; के एक इनिशियलाइज़्ड इंस्टैंस में स्थानांतरित करता है।
+  &lt;/p&gt;
+  &lt;p&gt;
+    रिटर्न के साथ, संरचना का स्वामित्व पूरी तरह से कॉलर को स्थानांतरित हो जाता है। चूँकि &lt;code&gt;FileInfo&lt;/code&gt; न तो डायनेमिक मेमोरी क्षेत्रों के लिए पॉइंटर्स रखता है और न ही कनेक्शन-विशिष्ट सिस्टम संसाधन, इसलिए कोई साझा स्वामित्व (Shared Ownership) मौजूद नहीं है। इंस्टेंस को एप्लिकेशन कोड के भीतर बिना किसी प्रतिबंध के कॉपी या मूव किया जा सकता है।
+  &lt;/p&gt;
+  &lt;p&gt;
+    आंतरिक व्यवहार के संबंध में, &lt;code&gt;FileInfo&lt;/code&gt; में कोई स्टेट मशीन नहीं होती है। समाहित मान क्वेरी के समय फ़ाइल विशेषताओं का एक स्थिर स्नैपशॉट (Snapshot) दर्शाते हैं। वास्तविक फ़ाइल पर बाद के राइट या रीड एक्सेस पहले से मौजूद &lt;code&gt;FileInfo&lt;/code&gt; ऑब्जेक्ट्स को स्वचालित रूप से अपडेट नहीं करते हैं; नवीनतम जानकारी के लिए &lt;code&gt;GetFileInfo&lt;/code&gt; को पुनः कॉल किया जाना चाहिए।
+  &lt;/p&gt;
+  &lt;p&gt;
+    किसी इंस्टेंस का विनाश स्टैक में स्कोप (Scope) से बाहर निकलने पर या संलग्न ऑब्जेक्ट के विनाश पर नियतात्मक रूप से होता है। विशेष क्लोज़ रूटीन या रिलीज़ कॉल की आवश्यकता नहीं होती है। समवर्ती संचालन के लिए: चूँकि यह एक निष्क्रिय डेटा ऑब्जेक्ट है, इसलिए कई थ्रेड एक ही इंस्टेंस को एक साथ रीड एक्सेस कर सकते हैं। थ्रेड्स के बीच उपयोग किए जाने पर किसी इंस्टेंस में संशोधनों को एप्लिकेशन के स्वयं के सिंक्रोनाइज़ेशन तंत्रों द्वारा सुरक्षित किया जाना चाहिए।
+  &lt;/p&gt;
+
+  &lt;h4&gt;उपयोग पथ&lt;/h4&gt;
+  &lt;p&gt;
+    &lt;code&gt;ara::per::FileInfo&lt;/code&gt; के उपयोग का विशिष्ट क्रम फ़ाइल जानकारी को क्वेरी करने, प्रशासनिक निर्माण और संशोधन स्थितियों का मूल्यांकन करने तथा टाइमस्टैम्प के विश्लेषण में विभाजित है।
+  &lt;/p&gt;
+  &lt;p&gt;
+    एप्लिकेशन पर्सिस्टेंस मॉड्यूल (हेडर &lt;code&gt;ara/per/file_storage.h&lt;/code&gt;) के इंटरफ़ेस के माध्यम से किसी वांछित फ़ाइल पाथ या फ़ाइल आइडेंटिफ़ायर के लिए &lt;code&gt;GetFileInfo&lt;/code&gt; का कॉल शुरू करता है। परिणाम के रूप में, यह भरी हुई &lt;code&gt;FileInfo&lt;/code&gt; संरचना प्राप्त करता है।
+  &lt;/p&gt;
+  &lt;p&gt;
+    इसके बाद एप्लिकेशन लॉजिक स्थिति विशेषताओं की जाँच करता है। &lt;code&gt;fileCreationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;) और &lt;code&gt;fileModificationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;) के माध्यम से फ़ाइल का संदर्भ निर्धारित किया जाता है। व्याख्या: &lt;code&gt;FileCreationState&lt;/code&gt; और &lt;code&gt;FileModificationState&lt;/code&gt; संभवतः ऐसे इन्यूमरेशन हैं, जो यह दर्शाते हैं कि कोई फ़ाइल एप्लिकेशन द्वारा नियमित रूप से, फ़ैक्टरी इनिशियलाइज़ेशन के हिस्से के रूप में या किसी अपडेट द्वारा बनाई गई थी अथवा ओवरराइट की गई थी।
+  &lt;/p&gt;
+  &lt;p&gt;
+    इसके बाद समय संबंधी विशेषताओं का मूल्यांकन किया जाता है। &lt;code&gt;creationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;), &lt;code&gt;modificationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;) और &lt;code&gt;accessTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;) के मानों के आधार पर केंद्रीय जाँचें की जा सकती हैं:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;
+      &lt;strong&gt;संशोधन नियंत्रण:&lt;/strong&gt; &lt;code&gt;creationTime&lt;/code&gt; और &lt;code&gt;modificationTime&lt;/code&gt; के बीच तुलना दर्शाती है कि क्या फ़ाइल को इसके निर्माण के बाद से संशोधित किया गया है।
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;कैश अमान्यकरण:&lt;/strong&gt; &lt;code&gt;modificationTime&lt;/code&gt; के आधार पर, एप्लिकेशन यह आकलन कर सकता है कि मुख्य मेमोरी में रखी गई डेटा स्थिति अभी भी पर्सिस्टेंट फ़ाइल से मेल खाती है या इसे पुनः लोड किया जाना चाहिए।
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;सफ़ाई रणनीतियाँ:&lt;/strong&gt; वर्तमान समय संदर्भ के साथ &lt;code&gt;accessTime&lt;/code&gt; की तुलना करके, सफ़ाई या संग्रह रनों के लिए पुरानी फ़ाइलों की पहचान की जा सकती है।
+    &lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;
+    व्याख्या: यद्यपि विनिर्देश 01.01.1970 UTC से नैनोसेकंड में समय बिंदुओं को निर्दिष्ट करता है, लेकिन व्यवहार में वास्तव में प्राप्त करने योग्य समय रिज़ॉल्यूशन और सटीकता संभवतः अंतर्निहित ऑपरेटिंग सिस्टम और फ़ाइल सिस्टम की विशेषताओं पर निर्भर करती है।
   &lt;/p&gt;
   &lt;!-- annahmen: 1) GetFileInfo als Zugriffsmethode einer Speicherabstraktion – Begründung: Der Payload nennt GetFileInfo als Quelle von FileInfo im Kontext von ara/per/file_storage.h, spezifiziert die Schnittstellensignatur jedoch nicht weiter. 2) FileCreationState und FileModificationState als Enumerationstypen – Begründung: Der Payload deklariert die Typnamen FileCreationState und FileModificationState, ohne deren Typdefinition oder Wertebereich offenzulegen. 3) Reale Zeitstempelgenauigkeit plattformabhängig – Begründung: SWS_PER_00441 bis SWS_PER_00443 definieren ganzzahlige Nanosekunden, die tatsächliche Granularität wird jedoch durch das darunterliegende Dateisystem bestimmt. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde durch ein KI-System auf Basis der Spezifikation AUTOSAR Adaptive Platform R25-11 für das Modul per generiert.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;यह क्लास गाइड एक AI सिस्टम द्वारा मॉड्यूल per के लिए AUTOSAR Adaptive Platform R25-11 विनिर्देश के आधार पर तैयार किया गया था।&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

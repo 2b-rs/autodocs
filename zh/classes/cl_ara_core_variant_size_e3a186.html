@@ -24,38 +24,37 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>bd2b4e205bab</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_size_e3a186/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_core_variant_size_e3a186/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_size_e3a186" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
-  <p>Das Template <code>ara::core::variant_size</code> stellt innerhalb der AUTOSAR Adaptive Platform im Modul <code>core</code> ein Metaprogrammierungs-Hilfsmittel zur Typprüfung und Compile-Zeit-Reflektion bereit. Entsprechend der Spezifikationsbeschreibung orientiert sich die Funktionalität an der analogen Verwendung im C++-Standard für Variants (<em>„As per corresponding usage in [variant]“</em>). Die primäre Verantwortlichkeit des Traits besteht darin, die Anzahl der Alternativen, die ein Variant-Typ aufnehmen kann, zur Übersetzungszeit statisch verfügbar zu machen.</p>
-  <p>In modernen C++-Architekturen auf Basis der Adaptive Platform fungiert <code>ara::core::variant_size</code> als Interaktionspartner für generische Algorithmen, Template-Metaprogrammierung und Typ-Traits, die mit typvarianten Datenstrukturen wie <code>ara::core::variant</code> arbeiten. Interpretation: Da das Trait dem Standardmuster aus dem Bereich der C++-Standardbibliothek folgt, dürfte es vor allem Schnittstellen unterstützen, die zustandslose Typprüfungen, statische Fallunterscheidungen oder compile-zeitliche Schleifen über Variant-Alternativen abwickeln, ohne dass zur Laufzeit Instanzen erzeugt werden müssen.</p>
+  <h4>上下文</h4>
+  <p>模板 <code>ara::core::variant_size</code> 在 AUTOSAR Adaptive Platform 的模块 <code>core</code> 中提供了用于类型检查和编译时反射的元编程辅助工具。根据规范描述，其功能参考了 C++ 标准中变体的类似用法（<em>“As per corresponding usage in [variant]”</em>）。该 trait 的主要职责是使变体类型可以容纳的替代项数量在编译时静态可用。</p>
+  <p>在基于 Adaptive Platform 的现代 C++ 架构中，<code>ara::core::variant_size</code> 充当处理类型变体数据结构（如 <code>ara::core::variant</code>）的泛型算法、模板元编程和类型 trait 的交互对象。Interpretation：由于该 trait 遵循 C++ 标准库领域的标准模式，因此它应该主要支持处理无状态类型检查、静态条件分支或在变体替代项上进行编译时循环的接口，而无需在运行时创建实例。</p>
 
-  <h4>Lebenszyklus</h4>
-  <p>Als reines Template-Konstrukt ohne Laufzeit-Zustand besitzt <code>ara::core::variant_size</code> keinen klassischen dynamischen Lebenszyklus. Es existieren weder dynamische Speicherallokationen noch Besitzverhältnisse an Systemressourcen oder Betriebssystem-Handles. Das Struktur-Template wird ausschließlich während der semantischen Analyse des Compilers instanziiert und nach Abschluss der Übersetzung vollständig verworfen.</p>
-  <p>Daraus ergeben sich eindeutige Eigenschaften bezüglich Nebenläufigkeit und Instanziierung: Da zur Laufzeit keine Instanzen, veränderlichen Daten oder gemeinsamen Speicherbereiche existieren, entfallen Aspekte wie Thread-Sicherheit, Datensynchronisation oder Lebensdauerbeschränkungen. Die Verwendung von <code>ara::core::variant_size</code> ist von Natur aus reentrant und zustandslos, da alle Auswertungen deterministisch im Compiler ablaufen.</p>
+  <h4>生命周期</h4>
+  <p>作为没有运行时状态的纯模板构造，<code>ara::core::variant_size</code> 没有传统的动态生命周期。既不存在动态内存分配，也不存在对系统资源或操作系统句柄的所有权关系。结构模板仅在编译器的语义分析期间被实例化，并在编译完成后完全废弃。</p>
+  <p>由此产生了关于并发和实例化的明确特性：由于在运行时不存在实例、可变数据或共享内存区域，因此不存在线程安全、数据同步或生命周期限制等问题。<code>ara::core::variant_size</code> 的使用天生具有可重入性且是无状态的，因为所有求值都在编译器中确定性地运行。</p>
 
-  <h4>Nutzungspfad</h4>
-  <p>Die typische Verwendung von <code>ara::core::variant_size</code> erfolgt im Rahmen generischer Template-Funktionen oder Metaprogrammierungsmuster, bei denen zur Übersetzungszeit die Anzahl der verwalteten Typen einer Variante ermittelt werden muss. Der Entwickler übergibt den zu untersuchenden Variant-Typ als Template-Parameter <code>T</code> an <code>ara::core::variant_size&lt;T&gt;</code>.</p>
-  <p>Interpretation: Typischerweise dürfte das Template Spezialisierungen für konkrete Variant-Typen sowie deren cv-qualifizierte Varianten bereitstellen und den numerischen Zählwert über ein statisches Konstanten-Mitglied wie <code>value</code> (analog zu <code>std::integral_constant</code>) zur Verfügung stellen. Ein typischer Ablauf gestaltet sich wie folgt:</p>
+  <h4>使用路径</h4>
+  <p><code>ara::core::variant_size</code> 的典型用法发生在泛型模板函数或元编程模式的上下文中，在这些上下文中必须在编译时确定变体的受管类型数量。开发者将要检查的变体类型作为模板参数 <code>T</code> 传递给 <code>ara::core::variant_size&lt;T&gt;</code>。</p>
+  <p>Interpretation：通常，该模板应该为具体的变体类型及其 cv 限定变体提供特化，并通过诸如 <code>value</code> 之类的静态常量成员（类似于 <code>std::integral_constant</code>）提供数值计数。典型流程如下所示：</p>
   <ul>
-    <li><strong>Typparametrisierung:</strong> Ein generischer Algorithmus erhält einen Parametertyp <code>T</code>, der einen Variant-Typ darstellen soll.</li>
-    <li><strong>Statische Abfrage:</strong> Der Code greift auf die Konstante <code>ara::core::variant_size&lt;T&gt;::value</code> zu, um die genaue Anzahl alternativer Typen zu ermitteln.</li>
-    <li><strong>Bedingte Übersetzung:</strong> Auf Basis des ermittelten Werts werden statische Zusicherungen (<code>static_assert</code>), SFINAE-Konstrukte oder <code>if constexpr</code>-Verzweigungen ausgeführt, um beispielsweise generische Deserialisierungen, Index-Validierungen oder Typ-Transformationen abzusichern.</li>
+    <li><strong>类型参数化：</strong>泛型算法接收旨在表示变体类型的参数类型 <code>T</code>。</li>
+    <li><strong>静态查询：</strong>代码访问常量 <code>ara::core::variant_size&lt;T&gt;::value</code> 以确定替代类型的确切数量。</li>
+    <li><strong>条件编译：</strong>基于确定的值，执行静态断言（<code>static_assert</code>）、SFINAE 构造或 <code>if constexpr</code> 分支，例如以保护泛型反序列化、索引验证或类型转换。</li>
   </ul>
-  <p>Durch diesen Compile-Zeit-Pfad entstehen zur Laufzeit keinerlei zusätzliche Instruktionen oder Performance-Overheads, was den harten Echtzeitanforderungen sicherheitskritischer automobiler Anwendungen entgegenkommt.</p>
+  <p>通过这种编译时路径，在运行时不会产生任何额外的指令或性能开销，这满足了安全关键型汽车应用的严苛硬实时要求。</p>
 
-  <h4>Fehlerszenarien</h4>
-  <p>Da <code>ara::core::variant_size</code> auf Compile-Zeit-Ebene agiert, existieren keine Laufzeit-Fehlercodes, Ausnahmen (Exceptions) oder Rückgabewerte im Sinne des AUTOSAR-Fehlerbehandlungsmodells (<code>ara::core::Result</code>). Mögliche Fehlersituationen beschränken sich vollständig auf die Phase der Übersetzung.</p>
-  <p>Interpretation: Wird das Trait mit einem Typ instanziiert, der kein gültiger Variant-Typ ist oder für den keine explizite Spezialisierung existiert, dürfte dies zu einem direkten Übersetzungsfehler (Compile-Time Error) oder zu einem Fehlschlag bei der Template-Argument-Substitution (SFINAE) führen. Entwickler müssen daher sicherstellen, dass dem Template ausschließlich vollständig deklarierte und kompatible Typen übergeben werden, um unvollständige Typdefinitionen oder Compilerabbrüche zu vermeiden.</p>
+  <h4>错误场景</h4>
+  <p>由于 <code>ara::core::variant_size</code> 在编译时级别运行，因此在 AUTOSAR 错误处理模型（<code>ara::core::Result</code>）的意义上不存在运行时错误代码、异常（Exception）或返回值。可能的错误情况完全局限于编译阶段。</p>
+  <p>Interpretation：如果使用不是有效变体类型或不存在显式特化的类型来实例化该 trait，这可能会导致直接编译错误（Compile-Time Error）或模板实参替换失败（SFINAE）。因此，开发者必须确保仅向模板传递完全声明且兼容的类型，以避免不完整的类型定义或编译器中止。</p>
 
   <!-- annahmen:
   1) Da der Payload die Beschreibung "As per corresponding usage in [variant]" angibt, dürfte sich ara::core::variant_size semantisch an dem C++-Standard std::variant_size orientieren und zur Compile-Zeit die Anzahl der Alternativen eines Variant-Typs ermitteln. – Begründung: Payload verweist explizit auf [variant]; das C++-Standard-Trait std::variant_size erfüllt exakt diesen Zweck.
   2) Das Trait dürfte typischerweise als Spezialisierung für Variant-Typen bereitgestellt werden und den Zählwert über ein statisches Mitglied value bereitstellen. – Begründung: Standardkonformes Idiom für Größen-Traits in C++ und AUTOSAR Adaptive Core.
   3) Bei der Anwendung auf inkompatible Typen dürfte ein Compile-Time-Fehler oder SFINAE-Fehlschlag auftreten. – Begründung: Metaprogrammierungsstrukturen besitzen keine Laufzeitfehlerbehandlung, Fehler manifestieren sich zur Übersetzungszeit.
   -->
-  <p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf die bereitgestellten Metadaten des Moduls core.</p>
+  <p class="ai-note">本指南基于 AUTOSAR Adaptive Platform R25-11 的规范数据。所有专业技术陈述均完全基于所提供的 core 模块的元数据。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_variant_size_e3a186" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -272,35 +271,34 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="bd2b4e205bab35b2ae0c3dabdb6f9874dbc830169f21955a2642bad270459459" data-trace-output="775442ebac3d8ec8192e546c62e05d4d2d48892d6f214bad3e430a8fd68f22b4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
-  &lt;p&gt;Das Template &lt;code&gt;ara::core::variant_size&lt;/code&gt; stellt innerhalb der AUTOSAR Adaptive Platform im Modul &lt;code&gt;core&lt;/code&gt; ein Metaprogrammierungs-Hilfsmittel zur Typprüfung und Compile-Zeit-Reflektion bereit. Entsprechend der Spezifikationsbeschreibung orientiert sich die Funktionalität an der analogen Verwendung im C++-Standard für Variants (&lt;em&gt;„As per corresponding usage in [variant]“&lt;/em&gt;). Die primäre Verantwortlichkeit des Traits besteht darin, die Anzahl der Alternativen, die ein Variant-Typ aufnehmen kann, zur Übersetzungszeit statisch verfügbar zu machen.&lt;/p&gt;
-  &lt;p&gt;In modernen C++-Architekturen auf Basis der Adaptive Platform fungiert &lt;code&gt;ara::core::variant_size&lt;/code&gt; als Interaktionspartner für generische Algorithmen, Template-Metaprogrammierung und Typ-Traits, die mit typvarianten Datenstrukturen wie &lt;code&gt;ara::core::variant&lt;/code&gt; arbeiten. Interpretation: Da das Trait dem Standardmuster aus dem Bereich der C++-Standardbibliothek folgt, dürfte es vor allem Schnittstellen unterstützen, die zustandslose Typprüfungen, statische Fallunterscheidungen oder compile-zeitliche Schleifen über Variant-Alternativen abwickeln, ohne dass zur Laufzeit Instanzen erzeugt werden müssen.&lt;/p&gt;
+  &lt;h4&gt;上下文&lt;/h4&gt;
+  &lt;p&gt;模板 &lt;code&gt;ara::core::variant_size&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的模块 &lt;code&gt;core&lt;/code&gt; 中提供了用于类型检查和编译时反射的元编程辅助工具。根据规范描述，其功能参考了 C++ 标准中变体的类似用法（&lt;em&gt;“As per corresponding usage in [variant]”&lt;/em&gt;）。该 trait 的主要职责是使变体类型可以容纳的替代项数量在编译时静态可用。&lt;/p&gt;
+  &lt;p&gt;在基于 Adaptive Platform 的现代 C++ 架构中，&lt;code&gt;ara::core::variant_size&lt;/code&gt; 充当处理类型变体数据结构（如 &lt;code&gt;ara::core::variant&lt;/code&gt;）的泛型算法、模板元编程和类型 trait 的交互对象。Interpretation：由于该 trait 遵循 C++ 标准库领域的标准模式，因此它应该主要支持处理无状态类型检查、静态条件分支或在变体替代项上进行编译时循环的接口，而无需在运行时创建实例。&lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;Als reines Template-Konstrukt ohne Laufzeit-Zustand besitzt &lt;code&gt;ara::core::variant_size&lt;/code&gt; keinen klassischen dynamischen Lebenszyklus. Es existieren weder dynamische Speicherallokationen noch Besitzverhältnisse an Systemressourcen oder Betriebssystem-Handles. Das Struktur-Template wird ausschließlich während der semantischen Analyse des Compilers instanziiert und nach Abschluss der Übersetzung vollständig verworfen.&lt;/p&gt;
-  &lt;p&gt;Daraus ergeben sich eindeutige Eigenschaften bezüglich Nebenläufigkeit und Instanziierung: Da zur Laufzeit keine Instanzen, veränderlichen Daten oder gemeinsamen Speicherbereiche existieren, entfallen Aspekte wie Thread-Sicherheit, Datensynchronisation oder Lebensdauerbeschränkungen. Die Verwendung von &lt;code&gt;ara::core::variant_size&lt;/code&gt; ist von Natur aus reentrant und zustandslos, da alle Auswertungen deterministisch im Compiler ablaufen.&lt;/p&gt;
+  &lt;h4&gt;生命周期&lt;/h4&gt;
+  &lt;p&gt;作为没有运行时状态的纯模板构造，&lt;code&gt;ara::core::variant_size&lt;/code&gt; 没有传统的动态生命周期。既不存在动态内存分配，也不存在对系统资源或操作系统句柄的所有权关系。结构模板仅在编译器的语义分析期间被实例化，并在编译完成后完全废弃。&lt;/p&gt;
+  &lt;p&gt;由此产生了关于并发和实例化的明确特性：由于在运行时不存在实例、可变数据或共享内存区域，因此不存在线程安全、数据同步或生命周期限制等问题。&lt;code&gt;ara::core::variant_size&lt;/code&gt; 的使用天生具有可重入性且是无状态的，因为所有求值都在编译器中确定性地运行。&lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-  &lt;p&gt;Die typische Verwendung von &lt;code&gt;ara::core::variant_size&lt;/code&gt; erfolgt im Rahmen generischer Template-Funktionen oder Metaprogrammierungsmuster, bei denen zur Übersetzungszeit die Anzahl der verwalteten Typen einer Variante ermittelt werden muss. Der Entwickler übergibt den zu untersuchenden Variant-Typ als Template-Parameter &lt;code&gt;T&lt;/code&gt; an &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-  &lt;p&gt;Interpretation: Typischerweise dürfte das Template Spezialisierungen für konkrete Variant-Typen sowie deren cv-qualifizierte Varianten bereitstellen und den numerischen Zählwert über ein statisches Konstanten-Mitglied wie &lt;code&gt;value&lt;/code&gt; (analog zu &lt;code&gt;std::integral_constant&lt;/code&gt;) zur Verfügung stellen. Ein typischer Ablauf gestaltet sich wie folgt:&lt;/p&gt;
+  &lt;h4&gt;使用路径&lt;/h4&gt;
+  &lt;p&gt;&lt;code&gt;ara::core::variant_size&lt;/code&gt; 的典型用法发生在泛型模板函数或元编程模式的上下文中，在这些上下文中必须在编译时确定变体的受管类型数量。开发者将要检查的变体类型作为模板参数 &lt;code&gt;T&lt;/code&gt; 传递给 &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt;。&lt;/p&gt;
+  &lt;p&gt;Interpretation：通常，该模板应该为具体的变体类型及其 cv 限定变体提供特化，并通过诸如 &lt;code&gt;value&lt;/code&gt; 之类的静态常量成员（类似于 &lt;code&gt;std::integral_constant&lt;/code&gt;）提供数值计数。典型流程如下所示：&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Typparametrisierung:&lt;/strong&gt; Ein generischer Algorithmus erhält einen Parametertyp &lt;code&gt;T&lt;/code&gt;, der einen Variant-Typ darstellen soll.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Statische Abfrage:&lt;/strong&gt; Der Code greift auf die Konstante &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;::value&lt;/code&gt; zu, um die genaue Anzahl alternativer Typen zu ermitteln.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Bedingte Übersetzung:&lt;/strong&gt; Auf Basis des ermittelten Werts werden statische Zusicherungen (&lt;code&gt;static_assert&lt;/code&gt;), SFINAE-Konstrukte oder &lt;code&gt;if constexpr&lt;/code&gt;-Verzweigungen ausgeführt, um beispielsweise generische Deserialisierungen, Index-Validierungen oder Typ-Transformationen abzusichern.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;类型参数化：&lt;/strong&gt;泛型算法接收旨在表示变体类型的参数类型 &lt;code&gt;T&lt;/code&gt;。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;静态查询：&lt;/strong&gt;代码访问常量 &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;::value&lt;/code&gt; 以确定替代类型的确切数量。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;条件编译：&lt;/strong&gt;基于确定的值，执行静态断言（&lt;code&gt;static_assert&lt;/code&gt;）、SFINAE 构造或 &lt;code&gt;if constexpr&lt;/code&gt; 分支，例如以保护泛型反序列化、索引验证或类型转换。&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;Durch diesen Compile-Zeit-Pfad entstehen zur Laufzeit keinerlei zusätzliche Instruktionen oder Performance-Overheads, was den harten Echtzeitanforderungen sicherheitskritischer automobiler Anwendungen entgegenkommt.&lt;/p&gt;
+  &lt;p&gt;通过这种编译时路径，在运行时不会产生任何额外的指令或性能开销，这满足了安全关键型汽车应用的严苛硬实时要求。&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-  &lt;p&gt;Da &lt;code&gt;ara::core::variant_size&lt;/code&gt; auf Compile-Zeit-Ebene agiert, existieren keine Laufzeit-Fehlercodes, Ausnahmen (Exceptions) oder Rückgabewerte im Sinne des AUTOSAR-Fehlerbehandlungsmodells (&lt;code&gt;ara::core::Result&lt;/code&gt;). Mögliche Fehlersituationen beschränken sich vollständig auf die Phase der Übersetzung.&lt;/p&gt;
-  &lt;p&gt;Interpretation: Wird das Trait mit einem Typ instanziiert, der kein gültiger Variant-Typ ist oder für den keine explizite Spezialisierung existiert, dürfte dies zu einem direkten Übersetzungsfehler (Compile-Time Error) oder zu einem Fehlschlag bei der Template-Argument-Substitution (SFINAE) führen. Entwickler müssen daher sicherstellen, dass dem Template ausschließlich vollständig deklarierte und kompatible Typen übergeben werden, um unvollständige Typdefinitionen oder Compilerabbrüche zu vermeiden.&lt;/p&gt;
+  &lt;h4&gt;错误场景&lt;/h4&gt;
+  &lt;p&gt;由于 &lt;code&gt;ara::core::variant_size&lt;/code&gt; 在编译时级别运行，因此在 AUTOSAR 错误处理模型（&lt;code&gt;ara::core::Result&lt;/code&gt;）的意义上不存在运行时错误代码、异常（Exception）或返回值。可能的错误情况完全局限于编译阶段。&lt;/p&gt;
+  &lt;p&gt;Interpretation：如果使用不是有效变体类型或不存在显式特化的类型来实例化该 trait，这可能会导致直接编译错误（Compile-Time Error）或模板实参替换失败（SFINAE）。因此，开发者必须确保仅向模板传递完全声明且兼容的类型，以避免不完整的类型定义或编译器中止。&lt;/p&gt;
 
   &lt;!-- annahmen:
   1) Da der Payload die Beschreibung "As per corresponding usage in [variant]" angibt, dürfte sich ara::core::variant_size semantisch an dem C++-Standard std::variant_size orientieren und zur Compile-Zeit die Anzahl der Alternativen eines Variant-Typs ermitteln. – Begründung: Payload verweist explizit auf [variant]; das C++-Standard-Trait std::variant_size erfüllt exakt diesen Zweck.
   2) Das Trait dürfte typischerweise als Spezialisierung für Variant-Typen bereitgestellt werden und den Zählwert über ein statisches Mitglied value bereitstellen. – Begründung: Standardkonformes Idiom für Größen-Traits in C++ und AUTOSAR Adaptive Core.
   3) Bei der Anwendung auf inkompatible Typen dürfte ein Compile-Time-Fehler oder SFINAE-Fehlschlag auftreten. – Begründung: Metaprogrammierungsstrukturen besitzen keine Laufzeitfehlerbehandlung, Fehler manifestieren sich zur Übersetzungszeit.
   --&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf die bereitgestellten Metadaten des Moduls core.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive Platform R25-11 的规范数据。所有专业技术陈述均完全基于所提供的 core 模块的元数据。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

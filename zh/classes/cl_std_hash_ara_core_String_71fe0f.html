@@ -24,60 +24,59 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>266ba2cf54aa</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_std_hash_ara_core_String_71fe0f/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_std_hash_ara_core_String_71fe0f/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_std_hash_ara_core_String_71fe0f" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Template-Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code> stellt die funktionale Anbindung des AUTOSAR-Adaptive-Datentyps <code>ara::core::String</code> an das Hashing-Framework der C++-Standardbibliothek dar. Innerhalb des Moduls <strong>core</strong> im Release <strong>R25-11</strong> der Adaptive Platform übernimmt diese Struktur die Rolle eines standardisierten Funktionsobjekts. Gemäß der Typdefinition ist die Spezialisierung als <code>final</code> deklariert, was eine weitere Ableitung ausschließt.
+模板特化 <code>std::hash&lt;ara::core::String&gt;</code> 代表 AUTOSAR Adaptive 数据类型 <code>ara::core::String</code> 与 C++ 标准库哈希框架的功能连接。在 Adaptive Platform 的版本 <strong>R25-11</strong> 中模块 <strong>core</strong> 内部，该结构承担标准化函数对象的角色。根据类型定义，该特化被声明为 <code>final</code>，从而排除了进一步派生。
 </p>
 <p>
-Der primäre Einsatzzweck liegt in der Bereitstellung einer deterministischen Abbildung von Zeichenketten auf ganzzahlige Hash-Werte des Typs <code>std::size_t</code>. Hierdurch wird <code>ara::core::String</code> als Schlüsseltyp in unordentlichen assoziativen Containern der Standardbibliothek wie <code>std::unordered_map</code> und <code>std::unordered_set</code> direkt verwendbar, ohne dass Anwendungsentwickler eigene Hash-Funktoren implementieren müssen. An der Interaktion sind im Wesentlichen drei Komponenten beteiligt:
+其主要用途在于提供字符串到 <code>std::size_t</code> 类型整数散列值的确定性映射。由此，无需应用程序开发人员实现自定义哈希仿函数，<code>ara::core::String</code> 即可在标准库的无序关联容器（如 <code>std::unordered_map</code> 和 <code>std::unordered_set</code>）中直接用作键类型。交互主要涉及三个组件：
 </p>
 <ul>
-<li><strong>Aufrufende Container oder Algorithmen:</strong> Assoziative Datenstrukturen, welche Schlüssel verwalten und zur Zuweisung interner Buckets einen Hash-Wert anfordern.</li>
-<li><strong>Die Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code>:</strong> Das eigentliche Funktionsobjekt, welches den Aufrufoperator für den Schlüsseltyp bereitstellt.</li>
-<li><strong>Der Eingabetyp <code>ara::core::String</code>:</strong> Die zu analysierende Zeichenkette, deren Inhalt als Eingangsdatum für die Berechnung dient.</li>
+<li><strong>调用容器或算法：</strong>管理键并请求哈希值以分配内部桶的关联数据结构。</li>
+<li><strong>特化 <code>std::hash&lt;ara::core::String&gt;</code>：</strong>为键类型提供调用运算符的实际函数对象。</li>
+<li><strong>输入类型 <code>ara::core::String</code>：</strong>待分析的字符串，其内容用作计算的输入数据。</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
+<h4>生命周期</h4>
 <p>
-Das Funktionsobjekt besitzt keinen veränderlichen Zustand und keine eigenen Ressourcen. Interpretation: Das Instanziieren von <code>std::hash&lt;ara::core::String&gt;</code> erfordert keine dynamische Speicherallokation und besitzt keinen internen Zustand, sodass Instanzen beliebig kopiert, zugewiesen oder als temporäre Werte erzeugt werden können.
+该函数对象不具有可变状态，也不拥有自己的资源。解释：实例化 <code>std::hash&lt;ara::core::String&gt;</code> 不需要动态内存分配，也不具有内部状态，因此实例可以任意复制、赋值或作为临时值创建。
 </p>
 <p>
-In der praktischen Anwendung erfolgt die Erzeugung meist implizit durch den umschließenden Container bei dessen Konstruktion. Ebenso kann der Funktor bedarfsweise als flüchtiges temporäres Funktionsobjekt für einzelne Hash-Berechnungen instanziiert und nach Ausführung des Aufrufs unmittelbar wieder zerstört werden. Da keine dynamischen Betriebsmittel allokiert werden, ist der Zerstörungsvorgang trivial und ressourceneffizient.
+在实际应用中，创建通常由外围容器在其构造时隐式进行。同样，该仿函数也可以根据需要针对单次哈希计算被实例化为瞬态临时函数对象，并在调用执行后立即再次销毁。由于未分配动态系统资源，因此销毁过程是平凡且资源高效的。
 </p>
 <p>
-Hinsichtlich der Nebenläufigkeit und Thread-Sicherheit verhält sich die Spezialisierung unkritisch: Da der Funktor zustandslos ist, können mehrere Threads parallel denselben Funktor oder separate Instanzen aufrufen. Voraussetzung für nebenläufige Aufrufe ist lediglich, dass die als Argument übergebene Instanz von <code>ara::core::String</code> während des Lesezugriffs durch den Hashing-Vorgang nicht parallel von einem anderen Ausführungspfad modifiziert wird.
+关于并发和线程安全，该特化的表现并不严苛：由于仿函数是无状态的，多个线程可以并行调用同一个仿函数或单独的实例。并发调用的先决条件仅为：作为实参传递的 <code>ara::core::String</code> 实例在哈希过程进行读取访问期间，未被其他执行路径并行修改。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>使用路径</h4>
 <p>
-Die Verwendung von <code>std::hash&lt;ara::core::String&gt;</code> erfolgt im Regelfall transparent über Standard-Container. Ein typischer Ablauf gestaltet sich wie folgt:
+<code>std::hash&lt;ara::core::String&gt;</code> 的使用通常通过标准容器透明进行。典型流程如下：
 </p>
 <ol>
-<li><strong>Container-Deklaration:</strong> Ein Entwickler definiert eine Hashtabelle, beispielsweise <code>std::unordered_map&lt;ara::core::String, ValueType&gt;</code>. Das C++-Typensystem bindet über Argument-Dependent Lookup und Template-Matching automatisch die Spezialisierung <code>std::hash&lt;ara::core::String&gt;</code> als Hash-Template-Argument ein.</li>
-<li><strong>Schlüsselübergabe:</strong> Beim Hinzufügen, Suchen oder Entfernen von Einträgen übergibt die Anwendungslogik eine Instanz von <code>ara::core::String</code> an die Methoden des Containers.</li>
-<li><strong>Berechnung des Hash-Werts:</strong> Der Container wendet den Aufrufoperator des Funktors auf den Schlüssel an. Als Hash-Algorithmus kommt vermutlich eine Implementierung zum Einsatz, die konsistente Hash-Werte über die Laufzeit eines Prozesses hinweg garantiert, wobei die genaue Hash-Streuung implementationsdefiniert sein dürfte.</li>
-<li><strong>Bucket-Indexierung:</strong> Der Container nutzt den zurückgegebenen ganzzahligen Wert zur Ermittlung des internen Speicher-Buckets und führt anschließend bei Bedarf Gleichheitsprüfungen über <code>operator==</code> durch.</li>
+<li><strong>容器声明：</strong>开发人员定义哈希表，例如 <code>std::unordered_map&lt;ara::core::String, ValueType&gt;</code>。C++ 类型系统通过依赖于实参的名字查找（ADL）和模板匹配自动将特化 <code>std::hash&lt;ara::core::String&gt;</code> 作为哈希模板实参绑定。</li>
+<li><strong>传递键：</strong>在添加、查找或移除条目时，应用程序逻辑将 <code>ara::core::String</code> 的实例传递给容器的方法。</li>
+<li><strong>计算哈希值：</strong>容器对键应用仿函数的调用运算符。作为哈希算法，推测采用在进程运行期内保证一致哈希值的实现，其中确切的哈希分布可能是由实现定义的。</li>
+<li><strong>桶索引确定：</strong>容器利用返回的整数值确定内部存储桶，随后在需要时通过 <code>operator==</code> 执行相等性检查。</li>
 </ol>
 <p>
-Neben der automatisierten Einbindung in Container kann die Spezialisierung auch direkt zur manuellen Berechnung von Hash-Werten aufgerufen werden, beispielsweise zur Verteilung von Zeichenketten auf Worker-Threads oder zur Vorberechnung von Identifikatoren in anwendungsspezifischen Caches.
+除了自动集成到容器中之外，该特化也可以直接用于手动计算哈希值，例如用于将字符串分配到工作线程，或在特定于应用程序的缓存中预先计算标识符。
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Bei der Ausführung von <code>std::hash&lt;ara::core::String&gt;</code> sind die Vorbedingungen und Fehleraspekte an die allgemeinen Spezifikationen von Hash-Funktionen im C++-Standard angelehnt:
+执行 <code>std::hash&lt;ara::core::String&gt;</code> 时，前置条件和错误方面基于 C++ 标准中对哈希函数的通用规范：
 </p>
 <ul>
-<li><strong>Gültigkeit der Eingabe:</strong> Vorbedingung jedes Aufrufs ist ein valides, initialisiertes <code>ara::core::String</code>-Objekt. Die Übergabe einer ungültigen Referenz oder eines Objekts mit beschädigtem Speicherbereich führt zu undefiniertem Verhalten.</li>
-<li><strong>Konsistenzgarantie:</strong> Für zwei Zeichenketten, die gemäß ihrem Gleichheitsoperator denselben Inhalt aufweisen, muss der berechnete Hash-Wert innerhalb desselben Programmlaufs identisch sein. Eine Verletzung dieser Eigenschaft würde zu unauffindbaren Schlüsseln in Containern führen.</li>
-<li><strong>Ausnahmeverhalten:</strong> Der Aufrufoperator dürfte als <code>noexcept</code> deklariert sein, analog zu den Anforderungen der C++-Standardbibliothek für Standard-Hash-Funktionen, da das Traversieren bestehender Zeichenketten keine auslösenden Fehlerbedingungen erzeugt.</li>
-<li><strong>Umgang mit Kollisionen:</strong> Eine identische Hash-Rückgabe für unterschiedliche Zeichenketten stellt keinen Fehlerfall des Funktors dar. Assoziative Container lösen derartige Kollisionen eigenständig durch Ausweichstrategien auf. Es werden keine Fehlertypen wie <code>ara::core::ErrorCode</code> zurückgegeben.</li>
+<li><strong>输入的有效性：</strong>每次调用的前置条件都是一个有效的、已初始化的 <code>ara::core::String</code> 对象。传递无效引用或内存区域损坏的对象会导致未定义行为。</li>
+<li><strong>一致性保证：</strong>对于根据其相等运算符具有相同内容的两个字符串，在同一程序运行中计算出的哈希值必须相同。违反该属性将导致容器中无法找到键。</li>
+<li><strong>异常行为：</strong>类似于 C++ 标准库对标准哈希函数的要求，该调用运算符很可能被声明为 <code>noexcept</code>，因为遍历现有字符串不会产生引发错误的条件。</li>
+<li><strong>冲突处理：</strong>针对不同字符串返回相同的哈希值不代表仿函数出错。关联容器通过回退策略独立解决此类冲突。不返回如 <code>ara::core::ErrorCode</code> 类的错误类型。</li>
 </ul>
 <!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul core.</p>
+<p class="ai-note">本指南基于 AUTOSAR Adaptive Platform 版本 R25-11 针对模块 core 的规范数据。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_std_hash_ara_core_String_71fe0f" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -324,57 +323,56 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="266ba2cf54aa896dcbafbc7c353ac2f51ea55b778ce36c3d20d9a0295b5b9b37" data-trace-output="a9f9aa1e9e3e026d2f3f947a108cd02492ef2382e34db3879abacda87d02787d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; stellt die funktionale Anbindung des AUTOSAR-Adaptive-Datentyps &lt;code&gt;ara::core::String&lt;/code&gt; an das Hashing-Framework der C++-Standardbibliothek dar. Innerhalb des Moduls &lt;strong&gt;core&lt;/strong&gt; im Release &lt;strong&gt;R25-11&lt;/strong&gt; der Adaptive Platform übernimmt diese Struktur die Rolle eines standardisierten Funktionsobjekts. Gemäß der Typdefinition ist die Spezialisierung als &lt;code&gt;final&lt;/code&gt; deklariert, was eine weitere Ableitung ausschließt.
+模板特化 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; 代表 AUTOSAR Adaptive 数据类型 &lt;code&gt;ara::core::String&lt;/code&gt; 与 C++ 标准库哈希框架的功能连接。在 Adaptive Platform 的版本 &lt;strong&gt;R25-11&lt;/strong&gt; 中模块 &lt;strong&gt;core&lt;/strong&gt; 内部，该结构承担标准化函数对象的角色。根据类型定义，该特化被声明为 &lt;code&gt;final&lt;/code&gt;，从而排除了进一步派生。
 &lt;/p&gt;
 &lt;p&gt;
-Der primäre Einsatzzweck liegt in der Bereitstellung einer deterministischen Abbildung von Zeichenketten auf ganzzahlige Hash-Werte des Typs &lt;code&gt;std::size_t&lt;/code&gt;. Hierdurch wird &lt;code&gt;ara::core::String&lt;/code&gt; als Schlüsseltyp in unordentlichen assoziativen Containern der Standardbibliothek wie &lt;code&gt;std::unordered_map&lt;/code&gt; und &lt;code&gt;std::unordered_set&lt;/code&gt; direkt verwendbar, ohne dass Anwendungsentwickler eigene Hash-Funktoren implementieren müssen. An der Interaktion sind im Wesentlichen drei Komponenten beteiligt:
+其主要用途在于提供字符串到 &lt;code&gt;std::size_t&lt;/code&gt; 类型整数散列值的确定性映射。由此，无需应用程序开发人员实现自定义哈希仿函数，&lt;code&gt;ara::core::String&lt;/code&gt; 即可在标准库的无序关联容器（如 &lt;code&gt;std::unordered_map&lt;/code&gt; 和 &lt;code&gt;std::unordered_set&lt;/code&gt;）中直接用作键类型。交互主要涉及三个组件：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Aufrufende Container oder Algorithmen:&lt;/strong&gt; Assoziative Datenstrukturen, welche Schlüssel verwalten und zur Zuweisung interner Buckets einen Hash-Wert anfordern.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;:&lt;/strong&gt; Das eigentliche Funktionsobjekt, welches den Aufrufoperator für den Schlüsseltyp bereitstellt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Der Eingabetyp &lt;code&gt;ara::core::String&lt;/code&gt;:&lt;/strong&gt; Die zu analysierende Zeichenkette, deren Inhalt als Eingangsdatum für die Berechnung dient.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;调用容器或算法：&lt;/strong&gt;管理键并请求哈希值以分配内部桶的关联数据结构。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;特化 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;：&lt;/strong&gt;为键类型提供调用运算符的实际函数对象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;输入类型 &lt;code&gt;ara::core::String&lt;/code&gt;：&lt;/strong&gt;待分析的字符串，其内容用作计算的输入数据。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Das Funktionsobjekt besitzt keinen veränderlichen Zustand und keine eigenen Ressourcen. Interpretation: Das Instanziieren von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; erfordert keine dynamische Speicherallokation und besitzt keinen internen Zustand, sodass Instanzen beliebig kopiert, zugewiesen oder als temporäre Werte erzeugt werden können.
+该函数对象不具有可变状态，也不拥有自己的资源。解释：实例化 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; 不需要动态内存分配，也不具有内部状态，因此实例可以任意复制、赋值或作为临时值创建。
 &lt;/p&gt;
 &lt;p&gt;
-In der praktischen Anwendung erfolgt die Erzeugung meist implizit durch den umschließenden Container bei dessen Konstruktion. Ebenso kann der Funktor bedarfsweise als flüchtiges temporäres Funktionsobjekt für einzelne Hash-Berechnungen instanziiert und nach Ausführung des Aufrufs unmittelbar wieder zerstört werden. Da keine dynamischen Betriebsmittel allokiert werden, ist der Zerstörungsvorgang trivial und ressourceneffizient.
+在实际应用中，创建通常由外围容器在其构造时隐式进行。同样，该仿函数也可以根据需要针对单次哈希计算被实例化为瞬态临时函数对象，并在调用执行后立即再次销毁。由于未分配动态系统资源，因此销毁过程是平凡且资源高效的。
 &lt;/p&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit und Thread-Sicherheit verhält sich die Spezialisierung unkritisch: Da der Funktor zustandslos ist, können mehrere Threads parallel denselben Funktor oder separate Instanzen aufrufen. Voraussetzung für nebenläufige Aufrufe ist lediglich, dass die als Argument übergebene Instanz von &lt;code&gt;ara::core::String&lt;/code&gt; während des Lesezugriffs durch den Hashing-Vorgang nicht parallel von einem anderen Ausführungspfad modifiziert wird.
+关于并发和线程安全，该特化的表现并不严苛：由于仿函数是无状态的，多个线程可以并行调用同一个仿函数或单独的实例。并发调用的先决条件仅为：作为实参传递的 &lt;code&gt;ara::core::String&lt;/code&gt; 实例在哈希过程进行读取访问期间，未被其他执行路径并行修改。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
 &lt;p&gt;
-Die Verwendung von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; erfolgt im Regelfall transparent über Standard-Container. Ein typischer Ablauf gestaltet sich wie folgt:
+&lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; 的使用通常通过标准容器透明进行。典型流程如下：
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Container-Deklaration:&lt;/strong&gt; Ein Entwickler definiert eine Hashtabelle, beispielsweise &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;. Das C++-Typensystem bindet über Argument-Dependent Lookup und Template-Matching automatisch die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; als Hash-Template-Argument ein.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schlüsselübergabe:&lt;/strong&gt; Beim Hinzufügen, Suchen oder Entfernen von Einträgen übergibt die Anwendungslogik eine Instanz von &lt;code&gt;ara::core::String&lt;/code&gt; an die Methoden des Containers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Berechnung des Hash-Werts:&lt;/strong&gt; Der Container wendet den Aufrufoperator des Funktors auf den Schlüssel an. Als Hash-Algorithmus kommt vermutlich eine Implementierung zum Einsatz, die konsistente Hash-Werte über die Laufzeit eines Prozesses hinweg garantiert, wobei die genaue Hash-Streuung implementationsdefiniert sein dürfte.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bucket-Indexierung:&lt;/strong&gt; Der Container nutzt den zurückgegebenen ganzzahligen Wert zur Ermittlung des internen Speicher-Buckets und führt anschließend bei Bedarf Gleichheitsprüfungen über &lt;code&gt;operator==&lt;/code&gt; durch.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;容器声明：&lt;/strong&gt;开发人员定义哈希表，例如 &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;。C++ 类型系统通过依赖于实参的名字查找（ADL）和模板匹配自动将特化 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; 作为哈希模板实参绑定。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;传递键：&lt;/strong&gt;在添加、查找或移除条目时，应用程序逻辑将 &lt;code&gt;ara::core::String&lt;/code&gt; 的实例传递给容器的方法。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;计算哈希值：&lt;/strong&gt;容器对键应用仿函数的调用运算符。作为哈希算法，推测采用在进程运行期内保证一致哈希值的实现，其中确切的哈希分布可能是由实现定义的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;桶索引确定：&lt;/strong&gt;容器利用返回的整数值确定内部存储桶，随后在需要时通过 &lt;code&gt;operator==&lt;/code&gt; 执行相等性检查。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Neben der automatisierten Einbindung in Container kann die Spezialisierung auch direkt zur manuellen Berechnung von Hash-Werten aufgerufen werden, beispielsweise zur Verteilung von Zeichenketten auf Worker-Threads oder zur Vorberechnung von Identifikatoren in anwendungsspezifischen Caches.
+除了自动集成到容器中之外，该特化也可以直接用于手动计算哈希值，例如用于将字符串分配到工作线程，或在特定于应用程序的缓存中预先计算标识符。
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Bei der Ausführung von &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; sind die Vorbedingungen und Fehleraspekte an die allgemeinen Spezifikationen von Hash-Funktionen im C++-Standard angelehnt:
+执行 &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; 时，前置条件和错误方面基于 C++ 标准中对哈希函数的通用规范：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeit der Eingabe:&lt;/strong&gt; Vorbedingung jedes Aufrufs ist ein valides, initialisiertes &lt;code&gt;ara::core::String&lt;/code&gt;-Objekt. Die Übergabe einer ungültigen Referenz oder eines Objekts mit beschädigtem Speicherbereich führt zu undefiniertem Verhalten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konsistenzgarantie:&lt;/strong&gt; Für zwei Zeichenketten, die gemäß ihrem Gleichheitsoperator denselben Inhalt aufweisen, muss der berechnete Hash-Wert innerhalb desselben Programmlaufs identisch sein. Eine Verletzung dieser Eigenschaft würde zu unauffindbaren Schlüsseln in Containern führen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausnahmeverhalten:&lt;/strong&gt; Der Aufrufoperator dürfte als &lt;code&gt;noexcept&lt;/code&gt; deklariert sein, analog zu den Anforderungen der C++-Standardbibliothek für Standard-Hash-Funktionen, da das Traversieren bestehender Zeichenketten keine auslösenden Fehlerbedingungen erzeugt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Umgang mit Kollisionen:&lt;/strong&gt; Eine identische Hash-Rückgabe für unterschiedliche Zeichenketten stellt keinen Fehlerfall des Funktors dar. Assoziative Container lösen derartige Kollisionen eigenständig durch Ausweichstrategien auf. Es werden keine Fehlertypen wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; zurückgegeben.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;输入的有效性：&lt;/strong&gt;每次调用的前置条件都是一个有效的、已初始化的 &lt;code&gt;ara::core::String&lt;/code&gt; 对象。传递无效引用或内存区域损坏的对象会导致未定义行为。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;一致性保证：&lt;/strong&gt;对于根据其相等运算符具有相同内容的两个字符串，在同一程序运行中计算出的哈希值必须相同。违反该属性将导致容器中无法找到键。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;异常行为：&lt;/strong&gt;类似于 C++ 标准库对标准哈希函数的要求，该调用运算符很可能被声明为 &lt;code&gt;noexcept&lt;/code&gt;，因为遍历现有字符串不会产生引发错误的条件。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;冲突处理：&lt;/strong&gt;针对不同字符串返回相同的哈希值不代表仿函数出错。关联容器通过回退策略独立解决此类冲突。不返回如 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 类的错误类型。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul core.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive Platform 版本 R25-11 针对模块 core 的规范数据。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

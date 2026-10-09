@@ -24,37 +24,36 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>5f09d1956600</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>السياق</h4>
 <p>
-Die Datenstruktur <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> übernimmt im Modul <code>diag</code> der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation <code>RequestResult</code> einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+يتولى هيكل البيانات <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> في الوحدة <code>diag</code> من AUTOSAR Adaptive Platform مهمة تجميع كافة معلمات الإخراج للعملية <code>RequestResult</code> لروتين التشخيص في حزمة واحدة. وعند تنفيذ روتينات التشخيص عبر خدمات التشخيص القياسية، توجد غالبًا بيانات نتائج خاصة بالتطبيق إلى جانب حالة التنفيذ المجردة، والتي يجب إرسالها إلى نظام إدارة التشخيص. وبدلاً من تمرير عدة قيم إرجاع منفصلة بشكل فردي عبر قوائم المعلمات، يغلف هذا الهيكل جميع وسيطات الإخراج في نوع بيانات مشترك.
 </p>
 <p>
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als C++-Struktur (<code>struct</code>) besitzt <code>&lt;RoutineInterface&gt;RequestResultOutput</code> den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von <code>RequestResult</code>, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-</p>
-<p>
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+كأطراف تفاعل أساسية هنا، يعمل مكون التطبيق المحدد، الذي ينفذ روتين التشخيص، بالإضافة إلى بيئة وقت التشغيل لوحدة التشخيص. ويعمل الهيكل كواجهة منمطة بين المنطق الداخلي للتطبيق والبنية التحتية المُنشأة. ويُرجح أن تتطابق حقول هيكل البيانات هذا مع وسيطات الإخراج لروتين التشخيص المحددة في نموذج AUTOSAR المعني، مما يضمن تمثيلاً مباشرًا لمخرجات التشخيص المحددة.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>دورة الحياة</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+كهيكل C++ (<code>struct</code>)، يمتلك <code>&lt;RoutineInterface&gt;RequestResultOutput</code> دورة حياة نوع القيمة التقليدي (Value Type). ويتم إنشاء المثيل عادةً في سياق تنفيذ <code>RequestResult</code> بمجرد أن يحدد الروتين الخاص بالتطبيق نتائجه. حيث ينشئ التطبيق مثيلًا محليًا للهيكل، ويملأ الأعضاء المحددة فيه بقيم النتائج الحالية، ويسلم الهيكل الجاهز إلى الجهة المستدعية.
+</p>
+<p>
+فيما يتعلق بحقوق الملكية، لا يخضع الكائن لأي تبعيات معقدة: فهو لا يحتفظ بحقوق ملكية مشتركة لخدمات خارجية ولا يدير موارد نظام طويلة الأمد. ويُفترض أن الهيكل يُنشأ بواسطة روتين التطبيق ثم تتم إعادته إلى إطار عمل التشخيص عبر التمرير المنتظم للقيمة أو دلالات النقل (Move). وبعد المعالجة الإضافية أو التسلسل بواسطة البنية التحتية للتشخيص، تنتهي دورة حياة الكائن بانتظام عبر الاستدعاء التلقائي للمُدمر عند مغادرة نطاق الصلاحية المقابل. ولا توجد حالة داخلية خاصة به بخلاف بيانات الحمولة المضمنة؛ وبالتالي لا توجد انتقالات حالة منفصلة أو مراحل لآلة حالة.
+</p>
+
+<h4>مسار الاستخدام</h4>
+<p>
+ينقسم مسار الاستخدام النموذجي إلى مراحل التهيئة، والملء، والإرجاع:
 </p>
 <ul>
-<li><strong>Vorbereitung:</strong> Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.</li>
-<li><strong>Erzeugung und Zuweisung:</strong> Die Anwendungskomponente deklariert eine Instanz von <code>&lt;RoutineInterface&gt;RequestResultOutput</code> und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.</li>
-<li><strong>Rückmeldung:</strong> Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.</li>
+<li><strong>التحضير:</strong> يستقبل التطبيق عبر واجهة الروتين المُنشأة طلبًا لتوفير النتيجة المتوسطة أو النهائية لروتين تشخيص قيد التشغيل.</li>
+<li><strong>الإنشاء والتعيين:</strong> يصرح مكون التطبيق عن مثيل لـ <code>&lt;RoutineInterface&gt;RequestResultOutput</code> ويعين قيم القياس أو أعلام الحالة أو بيانات الروتين الأخرى المحددة إلى الحقول المعنية.</li>
+<li><strong>الإفادة:</strong> تتم إعادة الهيكل المكتمل ملؤه كنتيجة للاستدعاء، بحيث يمكن للنظام الفرعي للتشخيص إدراج قيم الإخراج في بروتوكول التشخيص الناتج.</li>
 </ul>
 <p>
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+تفسير: ينقل إطار عمل التشخيص عادةً المثيلات الممتلئة بالقيمة أو عبر دلالات النقل (Move)، حيث لا يلزم إدارة موارد معقدة نظراً لكونه هيكل بيانات نقي. وبما أن الهيكل مصمم في المقام الأول كناقل سلبي للبيانات، فإنه لا يحتوي في حد ذاته على تزامن متزامن؛ وإذا وصلت خيوط متعددة بالتوازي إلى نفس المثيل، فإن التنسيق الآمن للخيوط يقع على عاتق منطق التطبيق المستدعي.
 </p>
 
 <!-- annahmen:
@@ -62,7 +61,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.</p>
+<p class="ai-note">يعتمد هذا الدليل حصريًا على البيانات الوصفية للمواصفات الخاصة بـ AUTOSAR Adaptive الإصدار R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -279,34 +278,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5f09d1956600abe96f1cf76dbb99c3220413956c6723afdf9c79be1c5417c7ff" data-trace-output="2590cbb2aa4504dea4cf3ca53bae4121d11a631c0d4129c11343f8e147cff677" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; übernimmt im Modul &lt;code&gt;diag&lt;/code&gt; der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation &lt;code&gt;RequestResult&lt;/code&gt; einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+يتولى هيكل البيانات &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; في الوحدة &lt;code&gt;diag&lt;/code&gt; من AUTOSAR Adaptive Platform مهمة تجميع كافة معلمات الإخراج للعملية &lt;code&gt;RequestResult&lt;/code&gt; لروتين التشخيص في حزمة واحدة. وعند تنفيذ روتينات التشخيص عبر خدمات التشخيص القياسية، توجد غالبًا بيانات نتائج خاصة بالتطبيق إلى جانب حالة التنفيذ المجردة، والتي يجب إرسالها إلى نظام إدارة التشخيص. وبدلاً من تمرير عدة قيم إرجاع منفصلة بشكل فردي عبر قوائم المعلمات، يغلف هذا الهيكل جميع وسيطات الإخراج في نوع بيانات مشترك.
 &lt;/p&gt;
 &lt;p&gt;
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als C++-Struktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von &lt;code&gt;RequestResult&lt;/code&gt;, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-&lt;/p&gt;
-&lt;p&gt;
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+كأطراف تفاعل أساسية هنا، يعمل مكون التطبيق المحدد، الذي ينفذ روتين التشخيص، بالإضافة إلى بيئة وقت التشغيل لوحدة التشخيص. ويعمل الهيكل كواجهة منمطة بين المنطق الداخلي للتطبيق والبنية التحتية المُنشأة. ويُرجح أن تتطابق حقول هيكل البيانات هذا مع وسيطات الإخراج لروتين التشخيص المحددة في نموذج AUTOSAR المعني، مما يضمن تمثيلاً مباشرًا لمخرجات التشخيص المحددة.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;دورة الحياة&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+كهيكل C++ (&lt;code&gt;struct&lt;/code&gt;)، يمتلك &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; دورة حياة نوع القيمة التقليدي (Value Type). ويتم إنشاء المثيل عادةً في سياق تنفيذ &lt;code&gt;RequestResult&lt;/code&gt; بمجرد أن يحدد الروتين الخاص بالتطبيق نتائجه. حيث ينشئ التطبيق مثيلًا محليًا للهيكل، ويملأ الأعضاء المحددة فيه بقيم النتائج الحالية، ويسلم الهيكل الجاهز إلى الجهة المستدعية.
+&lt;/p&gt;
+&lt;p&gt;
+فيما يتعلق بحقوق الملكية، لا يخضع الكائن لأي تبعيات معقدة: فهو لا يحتفظ بحقوق ملكية مشتركة لخدمات خارجية ولا يدير موارد نظام طويلة الأمد. ويُفترض أن الهيكل يُنشأ بواسطة روتين التطبيق ثم تتم إعادته إلى إطار عمل التشخيص عبر التمرير المنتظم للقيمة أو دلالات النقل (Move). وبعد المعالجة الإضافية أو التسلسل بواسطة البنية التحتية للتشخيص، تنتهي دورة حياة الكائن بانتظام عبر الاستدعاء التلقائي للمُدمر عند مغادرة نطاق الصلاحية المقابل. ولا توجد حالة داخلية خاصة به بخلاف بيانات الحمولة المضمنة؛ وبالتالي لا توجد انتقالات حالة منفصلة أو مراحل لآلة حالة.
+&lt;/p&gt;
+
+&lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
+&lt;p&gt;
+ينقسم مسار الاستخدام النموذجي إلى مراحل التهيئة، والملء، والإرجاع:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Vorbereitung:&lt;/strong&gt; Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Zuweisung:&lt;/strong&gt; Die Anwendungskomponente deklariert eine Instanz von &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التحضير:&lt;/strong&gt; يستقبل التطبيق عبر واجهة الروتين المُنشأة طلبًا لتوفير النتيجة المتوسطة أو النهائية لروتين تشخيص قيد التشغيل.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الإنشاء والتعيين:&lt;/strong&gt; يصرح مكون التطبيق عن مثيل لـ &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; ويعين قيم القياس أو أعلام الحالة أو بيانات الروتين الأخرى المحددة إلى الحقول المعنية.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الإفادة:&lt;/strong&gt; تتم إعادة الهيكل المكتمل ملؤه كنتيجة للاستدعاء، بحيث يمكن للنظام الفرعي للتشخيص إدراج قيم الإخراج في بروتوكول التشخيص الناتج.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+تفسير: ينقل إطار عمل التشخيص عادةً المثيلات الممتلئة بالقيمة أو عبر دلالات النقل (Move)، حيث لا يلزم إدارة موارد معقدة نظراً لكونه هيكل بيانات نقي. وبما أن الهيكل مصمم في المقام الأول كناقل سلبي للبيانات، فإنه لا يحتوي في حد ذاته على تزامن متزامن؛ وإذا وصلت خيوط متعددة بالتوازي إلى نفس المثيل، فإن التنسيق الآمن للخيوط يقع على عاتق منطق التطبيق المستدعي.
 &lt;/p&gt;
 
 &lt;!-- annahmen:
@@ -314,7 +312,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;يعتمد هذا الدليل حصريًا على البيانات الوصفية للمواصفات الخاصة بـ AUTOSAR Adaptive الإصدار R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

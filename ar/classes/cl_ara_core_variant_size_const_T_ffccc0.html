@@ -24,55 +24,54 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>1a671cca9d56</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_size_const_T_ffccc0/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/classes/cl_ara_core_variant_size_const_T_ffccc0/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_size_const_T_ffccc0" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>السياق</h4>
 <p>
-Die partielle Template-Spezialisierung <code>ara::core::variant_size&lt;const T&gt;</code> stellt ein Hilfstemplate zur Bestimmung der Anzahl von Alternativen innerhalb eines Varianten-Typs zur Übersetzungszeit bereit. Im Kontext des AUTOSAR-Adaptive-Moduls <code>core</code> dient das Template der Typ-Introspektion von Variantenstrukturen. Die Beschreibung im Spezifikationsbestand verweist auf die entsprechende Verwendung unter <em>[variant]</em>.
+يوفر تخصيص القالب الجزئي <code>ara::core::variant_size&lt;const T&gt;</code> قالبًا مساعدًا لتحديد عدد البدائل داخل نوع متغير في وقت الترجمة. وفي سياق وحدة AUTOSAR Adaptive‏ <code>core</code>، يعمل القالب لاستبطان نوع هياكل المتغيرات. ويشير الوصف الوارد في محتوى المواصفات إلى الاستخدام المقابل تحت <em>[variant]</em>.
 </p>
 <p>
-Als primärer Interaktionspartner fungiert der zugrundeliegende Typ <code>T</code>, welcher typischerweise eine Ausprägung von <code>ara::core::variant</code> darstellt. Das Template erweitert die generelle Typabfrage um die Behandlung von <code>const</code>-qualifizierten Datentypen. Es ermöglicht generischen Template-Algorithmen, Metaprogrammierungsroutinen und compile-zeitlichen Prüfungen einen transparenten Zugriff auf die Dimensionsmetadaten einer Variante, unabhängig davon, ob der konkrete Argumenttyp als konstanter Typ vorliegt oder nicht.
+يعمل النوع الأساسي <code>T</code> كطرف تفاعل رئيسي، والذي يمثل عادةً شكلاً من أشكال <code>ara::core::variant</code>. ويوسع القالب الاستعلام العام عن النوع ليشمل معالجة أنواع البيانات المؤهلة بـ <code>const</code>. وهو يتيح لخوارزميات القوالب العامة وإجراءات البرمجة الوصفية وعمليات التحقق في وقت الترجمة وصولاً شفافًا إلى بيانات أبعاد المتغير، بغض النظر عما إذا كان نوع المعامل المحدد موجودًا كنوع ثابت أم لا.
 </p>
 <p>
-Die Rolle der Spezialisierung ist rein deklarativ und introspektiv: Sie fungiert als Typmerkmal (Type Trait) und bildet eine Brücke zwischen der typspezifischen Varianten-Definition und generischem Metaprogrammierungs-Code, der auf Merkmale wie <code>variant_size_v</code> oder den direkten Zugriff auf statische Konstanten angewiesen ist.
+دور التخصيص تصريحي واستبطاني بحت: فهو يعمل كسمة نوع (Type Trait) ويشكل جسراً بين تعريف المتغير المحدد للنوع وكود البرمجة الوصفية العام، الذي يعتمد على سمات مثل <code>variant_size_v</code> أو الوصول المباشر إلى الثوابت الساكنة.
 </p>
 
-<h4>Lebenszyklus und Instanziierung</h4>
+<h4>دورة الحياة وإنشاء المثيل</h4>
 <p>
-Als reines Compile-Time-Konstrukt (Type Trait) besitzt <code>ara::core::variant_size&lt;const T&gt;</code> keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren keine dynamischen Speicherallokationen, keine Besitzverhältnisse und keine Zerstörungsphasen.
+بصفته بنية وقت ترجمة بحتة (سمة نوع)، لا يمتلك <code>ara::core::variant_size&lt;const T&gt;</code> دورة حياة ديناميكية في وقت التشغيل. ولا توجد تخصيصات ديناميكية للذاكرة ولا علاقات ملكية ولا مراحل تدمير.
 </p>
 <p>
-Der Lebenszyklus beschränkt sich vollständig auf die Phasen der statischen Code-Analyse und Übersetzung:
+تقتصر دورة الحياة بالكامل على مراحل تحليل الكود الساكن والترجمة:
 </p>
 <ul>
-<li><strong>Template-Spezialisierung:</strong> Sobald der Compiler auf einen Ausdruck stößt, der <code>ara::core::variant_size</code> mit einem <code>const</code>-qualifizierten Typen parametrisiert, greift diese Spezialisierung anstelle des primären Templates.</li>
-<li><strong>Konstanten-Auswertung:</strong> Die Spezialisierung leitet vermutlich den Wert direkt von der unqualifizierten Spezialisierung <code>ara::core::variant_size&lt;T&gt;</code> ab. Die Ermittlung erfolgt als integraler Bestandteil der Template-Instanziierung.</li>
-<li><strong>Laufzeitlosigkeit:</strong> Da das Konstrukt lediglich statische Member-Informationen zur Verfügung stellt, entstehen zur Laufzeit keine Instanzen, kein Speicherverbrauch im Objekt-Layout und keinerlei Nebenläufigkeitskonflikte.</li>
+<li><strong>تخصيص القالب:</strong> بمجرد أن يواجه المترجم تعبيرًا يجعل <code>ara::core::variant_size</code> ذا معلمات بنوع مؤهل بـ <code>const</code>، فإن هذا التخصيص يحل محل القالب الأساسي.</li>
+<li><strong>تقييم الثابت:</strong> من المحتمل أن يشتق التخصيص القيمة مباشرة من التخصيص غير المؤهل <code>ara::core::variant_size&lt;T&gt;</code>. ويتم التحديد كجزء لا يتجزأ من إنشاء مثيل القالب.</li>
+<li><strong>انعدام وقت التشغيل:</strong> نظرًا لأن البنية لا توفر سوى معلومات الأعضاء الساكنة، فلا تنشأ أي مثيلات في وقت التشغيل، ولا يحدث استهلاك للذاكرة في تخطيط الكائن، ولا تنشأ أي تعارضات تزامن على الإطلاق.</li>
 </ul>
 
-<h4>Nutzungspfad zur Übersetzungszeit</h4>
+<h4>مسار الاستخدام في وقت الترجمة</h4>
 <p>
-Die typische Verwendung von <code>ara::core::variant_size&lt;const T&gt;</code> erfolgt innerhalb von generischem C++-Code oder statischen Zusicherungen, bei denen Funktionen oder Klassenstrukturen typunabhängig mit konstanten Referenzen auf Varianten arbeiten.
+يحدث الاستخدام النموذجي لـ <code>ara::core::variant_size&lt;const T&gt;</code> داخل كود C++ العام أو التوكيدات الساكنة، حيث تعمل الدوال أو هياكل الفئات بشكل مستقل عن النوع مع مراجع ثابتة إلى المتغيرات.
 </p>
 <ol>
-<li><strong>Übergabe eines konstanten Typs:</strong> Ein generischer Algorithmus erhält einen konstanten Referenztyp (beispielsweise <code>const MyVariant&amp;</code>) oder ein abgeleitetes Typlevel <code>const T</code>.</li>
-<li><strong>Abfrage der Alternativenanzahl:</strong> Über den Template-Ausdruck <code>ara::core::variant_size&lt;const T&gt;::value</code> (oder entsprechende Alias-Templates) fragt der metaprogrammierende Code die Anzahl der gespeicherten Typ-Alternativen ab.</li>
-<li><strong>Verarbeitung zur Compile-Zeit:</strong> Der resultierende ganzzahlige Wert fließt in Bedingungen wie <code>static_assert</code>, <code>std::integral_constant</code>-Ableitungen oder Template-Rekursionen ein, um Typindizes und Wertebereiche statisch zu validieren.</li>
+<li><strong>تمرير نوع ثابت:</strong> تتلقى خوارزمية عامة نوع مرجع ثابت (على سبيل المثال <code>const MyVariant&amp;</code>) أو مستوى نوع مشتق <code>const T</code>.</li>
+<li><strong>الاستعلام عن عدد البدائل:</strong> عبر تعبير القالب <code>ara::core::variant_size&lt;const T&gt;::value</code> (أو قوالب الأسماء المستعارة المقابلة)، يستعلم كود البرمجة الوصفية عن عدد بدائل الأنواع المخزنة.</li>
+<li><strong>المعالجة في وقت الترجمة:</strong> تتدفق القيمة الصحيحة الناتجة في شروط مثل <code>static_assert</code> أو اشتقاقات <code>std::integral_constant</code> أو التكرار العودي للقوالب للتحقق ساكنًا من فهارس الأنواع ونطاقات القيم.</li>
 </ol>
 <p>
-Interpretation: Durch die Spezialisierung wird sichergestellt, dass Entwickler und Bibliotheksfunktionen den Typ <code>T</code> nicht manuell von CV-Qualifizierern mittels Transformationstraits (wie <code>std::remove_const</code>) bereinigen müssen, bevor eine Abfrage der Variantengröße erfolgen kann.
+تفسير: يضمن التخصيص عدم اضطرار المطورين ودوال المكتبات إلى تنظيف النوع <code>T</code> يدويًا من مؤهلات CV باستخدام سمات التحويل (مثل <code>std::remove_const</code>) قبل التمكن من إجراء استعلام عن حجم المتغير.
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>سيناريوهات الأخطاء</h4>
 <p>
-Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, treten Fehler nicht in Form von Laufzeit-Ausnahmen oder AUTOSAR-Fehlercodes (wie <code>ara::core::ErrorCode</code>) auf. Fehlerszenarien manifestieren sich stattdessen ausnahmslos als Fehler während des Übersetzungsvorgangs.
+نظرًا لأن الفئة تعمل في وقت الترجمة فقط ولا تقدم أي دوال لوقت التشغيل، فإن الأخطاء لا تظهر في شكل استثناءات وقت التشغيل أو رموز أخطاء AUTOSAR (مثل <code>ara::core::ErrorCode</code>). وبدلاً من ذلك، تظهر سيناريوهات الخطأ دون استثناء كأخطاء أثناء عملية الترجمة.
 </p>
 <ul>
-<li><strong>Instanziierung mit inkompatiblen Typen:</strong> Wird <code>ara::core::variant_size&lt;const T&gt;</code> mit einem Typen instanziiert, der kein Varianten-Typ ist und für dessen unqualifizierten Basistyp <code>T</code> keine gültige Spezialisierung von <code>variant_size</code> existiert, schlägt die Template-Instanziierung fehl. Dies führt zu einem direkten Übersetzungsabbruch aufgrund fehlender Member.</li>
-<li><strong>Unvollständige Typen:</strong> Wird ein unvollständiger Typ (Forward Declaration) übergeben, bevor die vollständige Klassendefinition der Variante dem Compiler bekannt ist, kann der Compiler die Größe nicht auflösen, was ebenfalls in einem Übersetzungsfehler resultiert.</li>
-<li><strong>Falsche Typqualifizierung:</strong> Die Spezialisierung deckt ausschließlich <code>const T</code> ab. Liegt eine volatile Qualifizierung vor (z.&nbsp;B. <code>volatile T</code> oder <code>const volatile T</code>), greift diese Spezialisierung nicht, was je nach Vorhandensein weiterer Traits zu abweichendem Verhalten oder Compiler-Diagnosen führen dürfte.</li>
+<li><strong>إنشاء مثيل بأنواع غير متوافقة:</strong> إذا تم إنشاء مثيل لـ <code>ara::core::variant_size&lt;const T&gt;</code> بنوع لا يمثل نوع متغير ولا يوجد تخصيص صالح لـ <code>variant_size</code> لنوعه الأساسي غير المؤهل <code>T</code>، فسيفشل إنشاء مثيل القالب. ويؤدي هذا إلى إنهاء مباشر للترجمة بسبب فقدان الأعضاء.</li>
+<li><strong>أنواع غير مكتملة:</strong> إذا تم تمرير نوع غير مكتمل (Forward Declaration) قبل أن يتعرف المترجم على تعريف الفئة الكامل للمتغير، فلن يتمكن المترجم من تحديد الحجم، مما يؤدي أيضًا إلى خطأ في الترجمة.</li>
+<li><strong>تأهيل نوع خاطئ:</strong> يغطي التخصيص <code>const T</code> فقط. وإذا كان هناك تأهيل متقلب (volatile) (على سبيل المثال <code>volatile T</code> أو <code>const volatile T</code>)، فلن ينطبق هذا التخصيص، وهو ما يُتوقع أن يؤدي إلى سلوك مختلف أو تشخيصات من المترجم اعتمادًا على وجود سمات أخرى.</li>
 </ul>
 
 <!-- annahmen:
@@ -80,7 +79,7 @@ Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, t
 2) Bei Instanziierung mit inkompatiblen oder unvollständigen Typen wird ein Kompilierzeitfehler ausgelöst – Begründung: Typ-Traits für Varianten erfordern eine vollständige Definition des zugrundeliegenden Varianten-Typs.
 3) Die Auswertung erfolgt rein zur Übersetzungszeit ohne Laufzeit- und Speicheraufwand – Begründung: Die Syntax deklariert eine Struktur-Spezialisierung nach dem Muster klassischer Compile-Time-Type-Traits.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Releases R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf den bereitgestellten Spezifikationskontext.</p>
+<p class="ai-note">يستند هذا الدليل إلى البيانات الوصفية الهيكلية لإصدار AUTOSAR Adaptive R25-11. وتعتمد جميع البيانات الفنية حصريًا على سياق المواصفات المقدم.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_variant_size_const_T_ffccc0" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -297,52 +296,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1a671cca9d566f7501ed0aabeb5137264be9e6ca8e35f74e29749a951ccc1808" data-trace-output="bd1f48c4f8ca1cf6058994bc158a597b9a7ecf182c9e8635814c1fabe07edb9f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
 &lt;p&gt;
-Die partielle Template-Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; stellt ein Hilfstemplate zur Bestimmung der Anzahl von Alternativen innerhalb eines Varianten-Typs zur Übersetzungszeit bereit. Im Kontext des AUTOSAR-Adaptive-Moduls &lt;code&gt;core&lt;/code&gt; dient das Template der Typ-Introspektion von Variantenstrukturen. Die Beschreibung im Spezifikationsbestand verweist auf die entsprechende Verwendung unter &lt;em&gt;[variant]&lt;/em&gt;.
+يوفر تخصيص القالب الجزئي &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; قالبًا مساعدًا لتحديد عدد البدائل داخل نوع متغير في وقت الترجمة. وفي سياق وحدة AUTOSAR Adaptive‏ &lt;code&gt;core&lt;/code&gt;، يعمل القالب لاستبطان نوع هياكل المتغيرات. ويشير الوصف الوارد في محتوى المواصفات إلى الاستخدام المقابل تحت &lt;em&gt;[variant]&lt;/em&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-Als primärer Interaktionspartner fungiert der zugrundeliegende Typ &lt;code&gt;T&lt;/code&gt;, welcher typischerweise eine Ausprägung von &lt;code&gt;ara::core::variant&lt;/code&gt; darstellt. Das Template erweitert die generelle Typabfrage um die Behandlung von &lt;code&gt;const&lt;/code&gt;-qualifizierten Datentypen. Es ermöglicht generischen Template-Algorithmen, Metaprogrammierungsroutinen und compile-zeitlichen Prüfungen einen transparenten Zugriff auf die Dimensionsmetadaten einer Variante, unabhängig davon, ob der konkrete Argumenttyp als konstanter Typ vorliegt oder nicht.
+يعمل النوع الأساسي &lt;code&gt;T&lt;/code&gt; كطرف تفاعل رئيسي، والذي يمثل عادةً شكلاً من أشكال &lt;code&gt;ara::core::variant&lt;/code&gt;. ويوسع القالب الاستعلام العام عن النوع ليشمل معالجة أنواع البيانات المؤهلة بـ &lt;code&gt;const&lt;/code&gt;. وهو يتيح لخوارزميات القوالب العامة وإجراءات البرمجة الوصفية وعمليات التحقق في وقت الترجمة وصولاً شفافًا إلى بيانات أبعاد المتغير، بغض النظر عما إذا كان نوع المعامل المحدد موجودًا كنوع ثابت أم لا.
 &lt;/p&gt;
 &lt;p&gt;
-Die Rolle der Spezialisierung ist rein deklarativ und introspektiv: Sie fungiert als Typmerkmal (Type Trait) und bildet eine Brücke zwischen der typspezifischen Varianten-Definition und generischem Metaprogrammierungs-Code, der auf Merkmale wie &lt;code&gt;variant_size_v&lt;/code&gt; oder den direkten Zugriff auf statische Konstanten angewiesen ist.
+دور التخصيص تصريحي واستبطاني بحت: فهو يعمل كسمة نوع (Type Trait) ويشكل جسراً بين تعريف المتغير المحدد للنوع وكود البرمجة الوصفية العام، الذي يعتمد على سمات مثل &lt;code&gt;variant_size_v&lt;/code&gt; أو الوصول المباشر إلى الثوابت الساكنة.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus und Instanziierung&lt;/h4&gt;
+&lt;h4&gt;دورة الحياة وإنشاء المثيل&lt;/h4&gt;
 &lt;p&gt;
-Als reines Compile-Time-Konstrukt (Type Trait) besitzt &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren keine dynamischen Speicherallokationen, keine Besitzverhältnisse und keine Zerstörungsphasen.
+بصفته بنية وقت ترجمة بحتة (سمة نوع)، لا يمتلك &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; دورة حياة ديناميكية في وقت التشغيل. ولا توجد تخصيصات ديناميكية للذاكرة ولا علاقات ملكية ولا مراحل تدمير.
 &lt;/p&gt;
 &lt;p&gt;
-Der Lebenszyklus beschränkt sich vollständig auf die Phasen der statischen Code-Analyse und Übersetzung:
+تقتصر دورة الحياة بالكامل على مراحل تحليل الكود الساكن والترجمة:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Template-Spezialisierung:&lt;/strong&gt; Sobald der Compiler auf einen Ausdruck stößt, der &lt;code&gt;ara::core::variant_size&lt;/code&gt; mit einem &lt;code&gt;const&lt;/code&gt;-qualifizierten Typen parametrisiert, greift diese Spezialisierung anstelle des primären Templates.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konstanten-Auswertung:&lt;/strong&gt; Die Spezialisierung leitet vermutlich den Wert direkt von der unqualifizierten Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt; ab. Die Ermittlung erfolgt als integraler Bestandteil der Template-Instanziierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Laufzeitlosigkeit:&lt;/strong&gt; Da das Konstrukt lediglich statische Member-Informationen zur Verfügung stellt, entstehen zur Laufzeit keine Instanzen, kein Speicherverbrauch im Objekt-Layout und keinerlei Nebenläufigkeitskonflikte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تخصيص القالب:&lt;/strong&gt; بمجرد أن يواجه المترجم تعبيرًا يجعل &lt;code&gt;ara::core::variant_size&lt;/code&gt; ذا معلمات بنوع مؤهل بـ &lt;code&gt;const&lt;/code&gt;، فإن هذا التخصيص يحل محل القالب الأساسي.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تقييم الثابت:&lt;/strong&gt; من المحتمل أن يشتق التخصيص القيمة مباشرة من التخصيص غير المؤهل &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt;. ويتم التحديد كجزء لا يتجزأ من إنشاء مثيل القالب.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;انعدام وقت التشغيل:&lt;/strong&gt; نظرًا لأن البنية لا توفر سوى معلومات الأعضاء الساكنة، فلا تنشأ أي مثيلات في وقت التشغيل، ولا يحدث استهلاك للذاكرة في تخطيط الكائن، ولا تنشأ أي تعارضات تزامن على الإطلاق.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad zur Übersetzungszeit&lt;/h4&gt;
+&lt;h4&gt;مسار الاستخدام في وقت الترجمة&lt;/h4&gt;
 &lt;p&gt;
-Die typische Verwendung von &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; erfolgt innerhalb von generischem C++-Code oder statischen Zusicherungen, bei denen Funktionen oder Klassenstrukturen typunabhängig mit konstanten Referenzen auf Varianten arbeiten.
+يحدث الاستخدام النموذجي لـ &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; داخل كود C++ العام أو التوكيدات الساكنة، حيث تعمل الدوال أو هياكل الفئات بشكل مستقل عن النوع مع مراجع ثابتة إلى المتغيرات.
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe eines konstanten Typs:&lt;/strong&gt; Ein generischer Algorithmus erhält einen konstanten Referenztyp (beispielsweise &lt;code&gt;const MyVariant&amp;amp;&lt;/code&gt;) oder ein abgeleitetes Typlevel &lt;code&gt;const T&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage der Alternativenanzahl:&lt;/strong&gt; Über den Template-Ausdruck &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;::value&lt;/code&gt; (oder entsprechende Alias-Templates) fragt der metaprogrammierende Code die Anzahl der gespeicherten Typ-Alternativen ab.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung zur Compile-Zeit:&lt;/strong&gt; Der resultierende ganzzahlige Wert fließt in Bedingungen wie &lt;code&gt;static_assert&lt;/code&gt;, &lt;code&gt;std::integral_constant&lt;/code&gt;-Ableitungen oder Template-Rekursionen ein, um Typindizes und Wertebereiche statisch zu validieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تمرير نوع ثابت:&lt;/strong&gt; تتلقى خوارزمية عامة نوع مرجع ثابت (على سبيل المثال &lt;code&gt;const MyVariant&amp;amp;&lt;/code&gt;) أو مستوى نوع مشتق &lt;code&gt;const T&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الاستعلام عن عدد البدائل:&lt;/strong&gt; عبر تعبير القالب &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;::value&lt;/code&gt; (أو قوالب الأسماء المستعارة المقابلة)، يستعلم كود البرمجة الوصفية عن عدد بدائل الأنواع المخزنة.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;المعالجة في وقت الترجمة:&lt;/strong&gt; تتدفق القيمة الصحيحة الناتجة في شروط مثل &lt;code&gt;static_assert&lt;/code&gt; أو اشتقاقات &lt;code&gt;std::integral_constant&lt;/code&gt; أو التكرار العودي للقوالب للتحقق ساكنًا من فهارس الأنواع ونطاقات القيم.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: Durch die Spezialisierung wird sichergestellt, dass Entwickler und Bibliotheksfunktionen den Typ &lt;code&gt;T&lt;/code&gt; nicht manuell von CV-Qualifizierern mittels Transformationstraits (wie &lt;code&gt;std::remove_const&lt;/code&gt;) bereinigen müssen, bevor eine Abfrage der Variantengröße erfolgen kann.
+تفسير: يضمن التخصيص عدم اضطرار المطورين ودوال المكتبات إلى تنظيف النوع &lt;code&gt;T&lt;/code&gt; يدويًا من مؤهلات CV باستخدام سمات التحويل (مثل &lt;code&gt;std::remove_const&lt;/code&gt;) قبل التمكن من إجراء استعلام عن حجم المتغير.
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;سيناريوهات الأخطاء&lt;/h4&gt;
 &lt;p&gt;
-Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, treten Fehler nicht in Form von Laufzeit-Ausnahmen oder AUTOSAR-Fehlercodes (wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;) auf. Fehlerszenarien manifestieren sich stattdessen ausnahmslos als Fehler während des Übersetzungsvorgangs.
+نظرًا لأن الفئة تعمل في وقت الترجمة فقط ولا تقدم أي دوال لوقت التشغيل، فإن الأخطاء لا تظهر في شكل استثناءات وقت التشغيل أو رموز أخطاء AUTOSAR (مثل &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;). وبدلاً من ذلك، تظهر سيناريوهات الخطأ دون استثناء كأخطاء أثناء عملية الترجمة.
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung mit inkompatiblen Typen:&lt;/strong&gt; Wird &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; mit einem Typen instanziiert, der kein Varianten-Typ ist und für dessen unqualifizierten Basistyp &lt;code&gt;T&lt;/code&gt; keine gültige Spezialisierung von &lt;code&gt;variant_size&lt;/code&gt; existiert, schlägt die Template-Instanziierung fehl. Dies führt zu einem direkten Übersetzungsabbruch aufgrund fehlender Member.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Typen:&lt;/strong&gt; Wird ein unvollständiger Typ (Forward Declaration) übergeben, bevor die vollständige Klassendefinition der Variante dem Compiler bekannt ist, kann der Compiler die Größe nicht auflösen, was ebenfalls in einem Übersetzungsfehler resultiert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Falsche Typqualifizierung:&lt;/strong&gt; Die Spezialisierung deckt ausschließlich &lt;code&gt;const T&lt;/code&gt; ab. Liegt eine volatile Qualifizierung vor (z.&amp;nbsp;B. &lt;code&gt;volatile T&lt;/code&gt; oder &lt;code&gt;const volatile T&lt;/code&gt;), greift diese Spezialisierung nicht, was je nach Vorhandensein weiterer Traits zu abweichendem Verhalten oder Compiler-Diagnosen führen dürfte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;إنشاء مثيل بأنواع غير متوافقة:&lt;/strong&gt; إذا تم إنشاء مثيل لـ &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; بنوع لا يمثل نوع متغير ولا يوجد تخصيص صالح لـ &lt;code&gt;variant_size&lt;/code&gt; لنوعه الأساسي غير المؤهل &lt;code&gt;T&lt;/code&gt;، فسيفشل إنشاء مثيل القالب. ويؤدي هذا إلى إنهاء مباشر للترجمة بسبب فقدان الأعضاء.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;أنواع غير مكتملة:&lt;/strong&gt; إذا تم تمرير نوع غير مكتمل (Forward Declaration) قبل أن يتعرف المترجم على تعريف الفئة الكامل للمتغير، فلن يتمكن المترجم من تحديد الحجم، مما يؤدي أيضًا إلى خطأ في الترجمة.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;تأهيل نوع خاطئ:&lt;/strong&gt; يغطي التخصيص &lt;code&gt;const T&lt;/code&gt; فقط. وإذا كان هناك تأهيل متقلب (volatile) (على سبيل المثال &lt;code&gt;volatile T&lt;/code&gt; أو &lt;code&gt;const volatile T&lt;/code&gt;)، فلن ينطبق هذا التخصيص، وهو ما يُتوقع أن يؤدي إلى سلوك مختلف أو تشخيصات من المترجم اعتمادًا على وجود سمات أخرى.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -350,7 +348,7 @@ Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, t
 2) Bei Instanziierung mit inkompatiblen oder unvollständigen Typen wird ein Kompilierzeitfehler ausgelöst – Begründung: Typ-Traits für Varianten erfordern eine vollständige Definition des zugrundeliegenden Varianten-Typs.
 3) Die Auswertung erfolgt rein zur Übersetzungszeit ohne Laufzeit- und Speicheraufwand – Begründung: Die Syntax deklariert eine Struktur-Spezialisierung nach dem Muster klassischer Compile-Time-Type-Traits.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Releases R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf den bereitgestellten Spezifikationskontext.&lt;/p&gt;
+&lt;p class="ai-note"&gt;يستند هذا الدليل إلى البيانات الوصفية الهيكلية لإصدار AUTOSAR Adaptive R25-11. وتعتمد جميع البيانات الفنية حصريًا على سياق المواصفات المقدم.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

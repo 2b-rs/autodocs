@@ -24,49 +24,48 @@
   <span class="ai-badge-label">GERADO POR IA</span>
   <span class="ai-review-state">não revisado</span>
   <span class="ai-trace-meta">Modelo: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperatura: nicht steuerbar · Prompt: <code>5cb7fb8ac08a</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_in_place_index_t_c66f81/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedência: perfil, hash de prompt, hash de saída, execuções, revisão">Procedência</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/pt/classes/cl_ara_core_in_place_index_t_c66f81/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedência: perfil, hash de prompt, hash de saída, execuções, revisão">Procedência</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_in_place_index_t_c66f81" data-view-mode="editor" title="Abrir editor de curadoria e dossiê" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curar</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Nota editorial:</strong> Este guia técnico está atualmente em processo de tradução. A versão de referência original é exibida abaixo.</div>
-<h4>Kontext</h4>
+<h4>Contexto</h4>
 <p>
-Die Klassenvorlage <code>ara::core::in_place_index_t</code> dient innerhalb des Moduls <code>core</code> der AUTOSAR Adaptive Platform als typbasierte Markierung zur Unterscheidung von Konstruktionspfaden bei varianten Datenstrukturen. Konkret kennzeichnet dieser Typ eine Operation, die ein Objekt direkt an Ort und Stelle („in-place“) konstruiert, anstatt temporäre Instanzen zu erzeugen und diese anschließend zu kopieren oder zu verschieben.
+O template de classe <code>ara::core::in_place_index_t</code> serve, dentro do módulo <code>core</code> da AUTOSAR Adaptive Platform, como marcador baseado em tipo para a distinção de caminhos de construção em estruturas de dados variantes. Concretamente, este tipo identifica uma operação que constrói um objeto diretamente no local («in-place»), em vez de gerar instâncias temporárias e subsequentemente copiá-las ou movê-las.
 </p>
 <p>
-Als primärer Interaktionspartner fungiert die Container-Klasse <code>ara::core::Variant</code>. Instanzen von <code>ara::core::in_place_index_t</code> werden an ausgewählte Konstruktoren von <code>ara::core::Variant</code> übergeben, um die eindeutige Absicht zu signalisieren, dass der an der durch den Template-Parameter <code>Index</code> spezifizierten Position enthaltene Typ unmittelbar im Speicherbereich der Variante initialisiert werden soll. Dadurch wird ein Kopiervorgang des Zielobjekts vollständig vermieden, was insbesondere für ressourceneffiziente oder nicht kopierbare Typen im sicherheitskritischen Kontext der AUTOSAR Adaptive Platform von zentraler Bedeutung ist.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Die Erzeugung einer Instanz von <code>ara::core::in_place_index_t</code> erfolgt über den expliziten Standardkonstruktor, der als <code>explicit in_place_index_t() noexcept = default;</code> spezifiziert ist <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. Für die Nutzung muss die Header-Datei <code>ara/core/utility.h</code> eingebunden werden <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>.
-</p>
-<p>
-Da <code>ara::core::in_place_index_t</code> als reiner Tag-Typ konzipiert ist, besitzt er keine dynamischen Ressourcen oder inneren Zustandsvariablen. Instanzen dieses Typs werden typischerweise als reine Funktionsargumente temporär auf dem Aufrufstapel erzeugt oder als konstante Ausdrücke instanziiert. Die Zerstörung des Objekts ist trivial und erfordert keinerlei Bereinigungsschritte. Bezüglich der Nebenläufigkeit ist die Instanziierung und Übergabe des Tag-Typs inhärent thread-sicher, da keine veränderlichen geteilten Daten existieren.
+Como parceiro primário de interação atua a classe de contêiner <code>ara::core::Variant</code>. Instâncias de <code>ara::core::in_place_index_t</code> são passadas para construtores selecionados de <code>ara::core::Variant</code> a fim de sinalizar a intenção inequívoca de que o tipo contido na posição especificada pelo parâmetro de template <code>Index</code> deve ser inicializado diretamente na área de memória da variante. Com isso, evita-se completamente uma operação de cópia do objeto de destino, o que é de importância central especialmente para tipos eficientes em termos de recursos ou não copiáveis no contexto de segurança crítica da AUTOSAR Adaptive Platform.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Ciclo de vida</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Festlegung des Zielindex zur Übersetzungszeit, die Instanziierung des Tags und die In-Place-Konstruktion innerhalb der Variante:
+A criação de uma instância de <code>ara::core::in_place_index_t</code> ocorre por meio do construtor padrão explícito, que é especificado como <code>explicit in_place_index_t() noexcept = default;</code> <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. Para a utilização, o arquivo de cabeçalho <code>ara/core/utility.h</code> deve ser incluído <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>.
+</p>
+<p>
+Como <code>ara::core::in_place_index_t</code> é concebido como um tipo de tag puro, ele não possui recursos dinâmicos ou variáveis de estado internas. Instâncias deste tipo são geradas tipicamente como meros argumentos de função de forma temporária na pilha de chamadas ou instanciadas como expressões constantes. A destruição do objeto é trivial e não requer nenhuma etapa de limpeza. Quanto à concorrência, a instanciação e o repasse do tipo de tag são inerentemente thread-safe, pois não existem dados compartilhados mutáveis.
+</p>
+
+<h4>Caminho de utilização</h4>
+<p>
+O fluxo típico de uso divide-se na definição do índice de destino em tempo de compilação, na instanciação da tag e na construção in-place dentro da variante:
 </p>
 <ul>
-  <li><strong>Indexauswahl zur Übersetzungszeit:</strong> Der Entwickler bestimmt anhand der Typenliste von <code>ara::core::Variant</code> den nullbasierten Positionsindex des Zieltyps, der innerhalb des Speicherbereichs der Variante instanziiert werden soll.</li>
-  <li><strong>Übergabe an den Konstruktor:</strong> Eine Instanz von <code>ara::core::in_place_index_t&lt;Index&gt;</code> wird zusammen mit den Konstruktorargumenten für das Zieldatum an den entsprechenden Konstruktor von <code>ara::core::Variant</code> übergeben. Durch die explizite Markierung wird verhindert, dass der Konstruktor versehentlich mit einer impliziten Typkonvertierung verwechselt wird.</li>
-  <li><strong>Direkte Konstruktion:</strong> Die Variante verwendet die übergebenen Argumente, um das innere Objekt ohne Kopiervorgang („without any copying taking place“) direkt am vorgesehenen Speicherort zu erzeugen. Vermutlich dient dieser Mechanismus als funktionale Entsprechung zum Standard-C++-Typ <code>std::in_place_index_t</code>.</li>
+  <li><strong>Seleção de índice em tempo de compilação:</strong> o desenvolvedor determina, com base na lista de tipos de <code>ara::core::Variant</code>, o índice de posição baseado em zero do tipo de destino que deve ser instanciado dentro da área de memória da variante.</li>
+  <li><strong>Passagem para o construtor:</strong> uma instância de <code>ara::core::in_place_index_t&lt;Index&gt;</code> é passada para o construtor correspondente de <code>ara::core::Variant</code> juntamente com os argumentos de construtor para o dado de destino. Por meio da marcação explícita, evita-se que o construtor seja inadvertidamente confundido com uma conversão implícita de tipos.</li>
+  <li><strong>Construção direta:</strong> a variante utiliza os argumentos passados para criar o objeto interno diretamente no local de memória previsto, sem nenhuma operação de cópia («without any copying taking place»). Presumivelmente, esse mecanismo serve como correspondente funcional ao tipo padrão de C++ <code>std::in_place_index_t</code>.</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
+<h4>Cenários de erro</h4>
 <p>
-Hinsichtlich der Exception-Sicherheit ist der Standardkonstruktor von <code>ara::core::in_place_index_t</code> als <code>exception safe</code> spezifiziert und mit dem Spezifizierer <code>noexcept</code> versehen <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. Die Erzeugung des Tag-Objekts selbst kann daher unter keinen Umständen eine Ausnahme werfen oder Laufzeitfehler auslösen.
+No que tange à segurança contra exceções, o construtor padrão de <code>ara::core::in_place_index_t</code> é especificado como <code>exception safe</code> e provido com o especificador <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. A criação do próprio objeto de tag não pode, portanto, sob nenhuma circunstância, lançar uma exceção ou desencadear erros em tempo de execução.
 </p>
 <p>
-Fehlerszenarien bei der Verwendung verlagern sich somit vollständig auf die umgebende Logik:
+Cenários de erro durante o uso deslocam-se, portanto, integralmente para a lógica circundante:
 </p>
 <ul>
-  <li>Wird für den Template-Parameter <code>Index</code> ein Wert gewählt, der außerhalb des gültigen Indexbereichs der Zielvariante liegt, führt dies zu einem Kompilierungsfehler bei der Instanziierung der Konstruktor-Überladung.</li>
-  <li>Treten während der eigentlichen In-Place-Konstruktion des Zieltyps innerhalb der Variante Ausnahmen auf, unterliegen diese den Ausnahme- und Garantierichtlinien des konstruierten Nutztyps sowie von <code>ara::core::Variant</code>, berühren jedoch nicht die Stabilität von <code>ara::core::in_place_index_t</code>.</li>
+  <li>Se for escolhido para o parâmetro de template <code>Index</code> um valor que esteja fora da faixa válida de índices da variante de destino, isso resulta em um erro de compilação na instanciação da sobrecarga do construtor.</li>
+  <li>Caso ocorram exceções durante a construção in-place propriamente dita do tipo de destino dentro da variante, estas ficam sujeitas às diretrizes de exceção e garantia do tipo útil construído, bem como de <code>ara::core::Variant</code>, mas não afetam a estabilidade de <code>ara::core::in_place_index_t</code>.</li>
 </ul>
 <!-- annahmen: 1) ara::core::in_place_index_t fungiert vermutlich als direkte funktionale Entsprechung zu std::in_place_index_t aus C++17 – Begründung: Name, Template-Struktur mit std::size_t Index und die beschriebene Interaktion mit Variant entsprechen exakt dem C++-Standardmuster. -->
-<p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">Este guia baseia-se na especificação da AUTOSAR Adaptive Platform Release R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_in_place_index_t_c66f81" title="Discutir com IA">💬 Discutir com IA</button>
@@ -374,46 +373,45 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5cb7fb8ac08ae9261f8be040812295f2a571ab76e69ed1dd8dfd00fe2e0fa712" data-trace-output="a64a304f4666342fec883f7a82684f15b04929ec153dffb3e5986a125a5ed437" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Nota editorial:&lt;/strong&gt; Este guia técnico está atualmente em processo de tradução. A versão de referência original é exibida abaixo.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Contexto&lt;/h4&gt;
 &lt;p&gt;
-Die Klassenvorlage &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; dient innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform als typbasierte Markierung zur Unterscheidung von Konstruktionspfaden bei varianten Datenstrukturen. Konkret kennzeichnet dieser Typ eine Operation, die ein Objekt direkt an Ort und Stelle („in-place“) konstruiert, anstatt temporäre Instanzen zu erzeugen und diese anschließend zu kopieren oder zu verschieben.
+O template de classe &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; serve, dentro do módulo &lt;code&gt;core&lt;/code&gt; da AUTOSAR Adaptive Platform, como marcador baseado em tipo para a distinção de caminhos de construção em estruturas de dados variantes. Concretamente, este tipo identifica uma operação que constrói um objeto diretamente no local («in-place»), em vez de gerar instâncias temporárias e subsequentemente copiá-las ou movê-las.
 &lt;/p&gt;
 &lt;p&gt;
-Als primärer Interaktionspartner fungiert die Container-Klasse &lt;code&gt;ara::core::Variant&lt;/code&gt;. Instanzen von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; werden an ausgewählte Konstruktoren von &lt;code&gt;ara::core::Variant&lt;/code&gt; übergeben, um die eindeutige Absicht zu signalisieren, dass der an der durch den Template-Parameter &lt;code&gt;Index&lt;/code&gt; spezifizierten Position enthaltene Typ unmittelbar im Speicherbereich der Variante initialisiert werden soll. Dadurch wird ein Kopiervorgang des Zielobjekts vollständig vermieden, was insbesondere für ressourceneffiziente oder nicht kopierbare Typen im sicherheitskritischen Kontext der AUTOSAR Adaptive Platform von zentraler Bedeutung ist.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Die Erzeugung einer Instanz von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; erfolgt über den expliziten Standardkonstruktor, der als &lt;code&gt;explicit in_place_index_t() noexcept = default;&lt;/code&gt; spezifiziert ist &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. Für die Nutzung muss die Header-Datei &lt;code&gt;ara/core/utility.h&lt;/code&gt; eingebunden werden &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-Da &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; als reiner Tag-Typ konzipiert ist, besitzt er keine dynamischen Ressourcen oder inneren Zustandsvariablen. Instanzen dieses Typs werden typischerweise als reine Funktionsargumente temporär auf dem Aufrufstapel erzeugt oder als konstante Ausdrücke instanziiert. Die Zerstörung des Objekts ist trivial und erfordert keinerlei Bereinigungsschritte. Bezüglich der Nebenläufigkeit ist die Instanziierung und Übergabe des Tag-Typs inhärent thread-sicher, da keine veränderlichen geteilten Daten existieren.
+Como parceiro primário de interação atua a classe de contêiner &lt;code&gt;ara::core::Variant&lt;/code&gt;. Instâncias de &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; são passadas para construtores selecionados de &lt;code&gt;ara::core::Variant&lt;/code&gt; a fim de sinalizar a intenção inequívoca de que o tipo contido na posição especificada pelo parâmetro de template &lt;code&gt;Index&lt;/code&gt; deve ser inicializado diretamente na área de memória da variante. Com isso, evita-se completamente uma operação de cópia do objeto de destino, o que é de importância central especialmente para tipos eficientes em termos de recursos ou não copiáveis no contexto de segurança crítica da AUTOSAR Adaptive Platform.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Ciclo de vida&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Festlegung des Zielindex zur Übersetzungszeit, die Instanziierung des Tags und die In-Place-Konstruktion innerhalb der Variante:
+A criação de uma instância de &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; ocorre por meio do construtor padrão explícito, que é especificado como &lt;code&gt;explicit in_place_index_t() noexcept = default;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. Para a utilização, o arquivo de cabeçalho &lt;code&gt;ara/core/utility.h&lt;/code&gt; deve ser incluído &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+Como &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; é concebido como um tipo de tag puro, ele não possui recursos dinâmicos ou variáveis de estado internas. Instâncias deste tipo são geradas tipicamente como meros argumentos de função de forma temporária na pilha de chamadas ou instanciadas como expressões constantes. A destruição do objeto é trivial e não requer nenhuma etapa de limpeza. Quanto à concorrência, a instanciação e o repasse do tipo de tag são inerentemente thread-safe, pois não existem dados compartilhados mutáveis.
+&lt;/p&gt;
+
+&lt;h4&gt;Caminho de utilização&lt;/h4&gt;
+&lt;p&gt;
+O fluxo típico de uso divide-se na definição do índice de destino em tempo de compilação, na instanciação da tag e na construção in-place dentro da variante:
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Indexauswahl zur Übersetzungszeit:&lt;/strong&gt; Der Entwickler bestimmt anhand der Typenliste von &lt;code&gt;ara::core::Variant&lt;/code&gt; den nullbasierten Positionsindex des Zieltyps, der innerhalb des Speicherbereichs der Variante instanziiert werden soll.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Übergabe an den Konstruktor:&lt;/strong&gt; Eine Instanz von &lt;code&gt;ara::core::in_place_index_t&amp;lt;Index&amp;gt;&lt;/code&gt; wird zusammen mit den Konstruktorargumenten für das Zieldatum an den entsprechenden Konstruktor von &lt;code&gt;ara::core::Variant&lt;/code&gt; übergeben. Durch die explizite Markierung wird verhindert, dass der Konstruktor versehentlich mit einer impliziten Typkonvertierung verwechselt wird.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Direkte Konstruktion:&lt;/strong&gt; Die Variante verwendet die übergebenen Argumente, um das innere Objekt ohne Kopiervorgang („without any copying taking place“) direkt am vorgesehenen Speicherort zu erzeugen. Vermutlich dient dieser Mechanismus als funktionale Entsprechung zum Standard-C++-Typ &lt;code&gt;std::in_place_index_t&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Seleção de índice em tempo de compilação:&lt;/strong&gt; o desenvolvedor determina, com base na lista de tipos de &lt;code&gt;ara::core::Variant&lt;/code&gt;, o índice de posição baseado em zero do tipo de destino que deve ser instanciado dentro da área de memória da variante.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Passagem para o construtor:&lt;/strong&gt; uma instância de &lt;code&gt;ara::core::in_place_index_t&amp;lt;Index&amp;gt;&lt;/code&gt; é passada para o construtor correspondente de &lt;code&gt;ara::core::Variant&lt;/code&gt; juntamente com os argumentos de construtor para o dado de destino. Por meio da marcação explícita, evita-se que o construtor seja inadvertidamente confundido com uma conversão implícita de tipos.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Construção direta:&lt;/strong&gt; a variante utiliza os argumentos passados para criar o objeto interno diretamente no local de memória previsto, sem nenhuma operação de cópia («without any copying taking place»). Presumivelmente, esse mecanismo serve como correspondente funcional ao tipo padrão de C++ &lt;code&gt;std::in_place_index_t&lt;/code&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Cenários de erro&lt;/h4&gt;
 &lt;p&gt;
-Hinsichtlich der Exception-Sicherheit ist der Standardkonstruktor von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; als &lt;code&gt;exception safe&lt;/code&gt; spezifiziert und mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; versehen &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. Die Erzeugung des Tag-Objekts selbst kann daher unter keinen Umständen eine Ausnahme werfen oder Laufzeitfehler auslösen.
+No que tange à segurança contra exceções, o construtor padrão de &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; é especificado como &lt;code&gt;exception safe&lt;/code&gt; e provido com o especificador &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. A criação do próprio objeto de tag não pode, portanto, sob nenhuma circunstância, lançar uma exceção ou desencadear erros em tempo de execução.
 &lt;/p&gt;
 &lt;p&gt;
-Fehlerszenarien bei der Verwendung verlagern sich somit vollständig auf die umgebende Logik:
+Cenários de erro durante o uso deslocam-se, portanto, integralmente para a lógica circundante:
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;Wird für den Template-Parameter &lt;code&gt;Index&lt;/code&gt; ein Wert gewählt, der außerhalb des gültigen Indexbereichs der Zielvariante liegt, führt dies zu einem Kompilierungsfehler bei der Instanziierung der Konstruktor-Überladung.&lt;/li&gt;
-  &lt;li&gt;Treten während der eigentlichen In-Place-Konstruktion des Zieltyps innerhalb der Variante Ausnahmen auf, unterliegen diese den Ausnahme- und Garantierichtlinien des konstruierten Nutztyps sowie von &lt;code&gt;ara::core::Variant&lt;/code&gt;, berühren jedoch nicht die Stabilität von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Se for escolhido para o parâmetro de template &lt;code&gt;Index&lt;/code&gt; um valor que esteja fora da faixa válida de índices da variante de destino, isso resulta em um erro de compilação na instanciação da sobrecarga do construtor.&lt;/li&gt;
+  &lt;li&gt;Caso ocorram exceções durante a construção in-place propriamente dita do tipo de destino dentro da variante, estas ficam sujeitas às diretrizes de exceção e garantia do tipo útil construído, bem como de &lt;code&gt;ara::core::Variant&lt;/code&gt;, mas não afetam a estabilidade de &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) ara::core::in_place_index_t fungiert vermutlich als direkte funktionale Entsprechung zu std::in_place_index_t aus C++17 – Begründung: Name, Template-Struktur mit std::size_t Index und die beschriebene Interaktion mit Variant entsprechen exakt dem C++-Standardmuster. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Este guia baseia-se na especificação da AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

@@ -24,42 +24,41 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>3378124aad4c</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_size_volatile_T_e7f22e/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_core_variant_size_volatile_T_e7f22e/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_size_volatile_T_e7f22e" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Template-Klasse <code>ara::core::variant_size&lt; volatile T &gt;</code> stellt im Modul <code>core</code> der AUTOSAR Adaptive Platform (Release R25-11) eine spezialisierte Hilfsstruktur für die statische Typanalyse und Template-Metaprogrammierung bereit. Es handelt sich um eine partielle Spezialisierung der generischen Klassen-Schablone <code>ara::core::variant_size</code>, die spezifisch für Typen mit dem Qualifizierer <code>volatile</code> ausgelegt ist. Die Spezifikation verweist hinsichtlich der Semantik und Verwendung direkt auf die Definition von Varianten in der C++-Standardbibliothek unter <code>[variant]</code>.</p>
-<p>Die primäre Aufgabe dieser Spezialisierung besteht darin, zur Übersetzungszeit konsistente Typinformationen über die Anzahl der in einem typisierten Varianten-Konstrukt (beispielsweise <code>ara::core::variant</code>) definierten Alternativen bereitzustellen. Im Typsystem von C++ führt das Hinzufügen von Typ-Qualifizierern wie <code>volatile</code> zu einem eigenständigen Typ. Ohne eine entsprechende explizite Spezialisierung würde die Abfrage von <code>ara::core::variant_size</code> für einen Typ <code>volatile T</code> fehlschlagen, da das primäre Template für unqualifizierte Typen den modifizierten Typ nicht automatisch auflöst. Die Spezialisierung für <code>volatile T</code> stellt sicher, dass generische Bibliotheken und Algorithmen auch dann fehlerfrei arbeiten, wenn Typen in hardwarenahen oder nebenläufigen Kontexten mit dem Qualifizierer <code>volatile</code> versehen sind.</p>
-<p>Zu den Interaktionspartnern gehören generische Schnittstellen, Metaprogrammierungs-Hilfsmittel, statische Zusicherungen sowie Algorithmen, die zur Übersetzungszeit Varianten verarbeiten. In Anlehnung an das Verhalten in <code>[variant]</code> dürfte diese Spezialisierung eine statische integrale Konstante <code>value</code> bereitstellen, welche die exakte Anzahl der Typ-Alternativen des zugrunde liegenden Typs <code>T</code> abbildet.</p>
+<h4>컨텍스트</h4>
+<p>템플릿 클래스 <code>ara::core::variant_size&lt; volatile T &gt;</code>은 AUTOSAR Adaptive Platform(릴리스 R25-11)의 <code>core</code> 모듈에서 정적 타입 분석 및 템플릿 메타프로그래밍을 위한 특수 헬퍼 구조체를 제공합니다. 이는 <code>volatile</code> 한정자가 있는 타입을 위해 특별히 설계된 제네릭 클래스 템플릿 <code>ara::core::variant_size</code>의 부분 특수화입니다. 규격은 의미론 및 사용법과 관련하여 <code>[variant]</code>의 C++ 표준 라이브러리 variant 정의를 직접 참조합니다.</p>
+<p>이 특수화의 기본 과제는 컴파일 시점에 타입이 지정된 variant 구조체(예: <code>ara::core::variant</code>)에 정의된 대안의 개수에 대한 일관된 타입 정보를 제공하는 것입니다. C++의 타입 시스템에서 <code>volatile</code>과 같은 타입 한정자를 추가하면 독립된 타입이 됩니다. 해당 명시적 특수화가 없으면 한정되지 않은 타입에 대한 기본 템플릿이 수정된 타입을 자동으로 확인하지 못하므로, 타입 <code>volatile T</code>에 대한 <code>ara::core::variant_size</code> 조회가 실패하게 됩니다. <code>volatile T</code>에 대한 특수화는 하드웨어 근접 컨텍스트나 동시성 컨텍스트에서 타입에 <code>volatile</code> 한정자가 지정되어 있더라도 제네릭 라이브러리와 알고리즘이 오류 없이 작동하도록 보장합니다.</p>
+<p>상호작용 대상에는 제네릭 인터페이스, 메타프로그래밍 유틸리티, 정적 어서션 및 컴파일 시점에 variant를 처리하는 알고리즘이 포함됩니다. <code>[variant]</code>의 동작과 유사하게, 이 특수화는 기반 타입 <code>T</code>의 타입 대안의 정확한 개수를 매핑하는 정적 정수 상수 <code>value</code>을 제공할 것으로 추정됩니다.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Da <code>ara::core::variant_size&lt; volatile T &gt;</code> als reines Typ-Trait für die Template-Metaprogrammierung fungiert, besitzt die Struktur keinen dynamischen Lebenszyklus zur Laufzeit. Sämtliche Mechanismen werden ausschließlich während der Übersetzungsphase durch den C++-Compiler durchlaufen:</p>
+<h4>수명 주기</h4>
+<p><code>ara::core::variant_size&lt; volatile T &gt;</code>은 템플릿 메타프로그래밍을 위한 순수 타입 트레이트로 작동하므로 구조체는 런타임에 동적 수명 주기를 갖지 않습니다. 모든 메커니즘은 컴파일 단계에서 C++ 컴파일러를 통해서만 실행됩니다:</p>
 <ul>
-<li><strong>Erzeugung und Instanziierung:</strong> Es findet keine Allokation von Arbeitsspeicher auf dem Heap oder Stack statt. Die Instanziierung erfolgt bedarfsgesteuert durch den Compiler, sobald im Quellcode ein Ausdruck ausgewertet wird, der die Spezialisierung für einen konkreten Typ <code>volatile T</code> anfordert.</li>
-<li><strong>Zustand und Besitzverhältnisse:</strong> Die Struktur verwaltet keinerlei dynamische Daten oder Ressourcen. Vermutlich ist die Klasse vollständig zustandslos und definiert lediglich integrale Compile-Time-Konstanten sowie Typ-Aliase.</li>
-<li><strong>Zerstörung:</strong> Ein Destruktor wird zur Programmlaufzeit nicht aufgerufen, da keine realen Klasseninstanzen im Speicher existieren.</li>
-<li><strong>Nebenläufigkeit:</strong> Da alle bereitgestellten Metadaten bereits während der Kompilierung als konstante Ausdrücke ausgewertet werden, existieren zur Laufzeit keine Abhängigkeiten von Threads, Sperrmechanismen oder Synchronisationsobjekten.</li>
+<li><strong>생성 및 인스턴스화:</strong> 힙이나 스택에 메모리 할당이 발생하지 않습니다. 구체적인 타입 <code>volatile T</code>에 대한 특수화를 요청하는 표현식이 소스 코드에서 평가되는 즉시 컴파일러에 의해 온디맨드로 인스턴스화가 수행됩니다.</li>
+<li><strong>상태 및 소유권:</strong> 구조체는 어떠한 동적 데이터나 리소스도 관리하지 않습니다. 클래스는 완전히 상태 비저장이며 정수형 컴파일 타임 상수 및 타입 별칭만 정의할 것으로 추정됩니다.</li>
+<li><strong>소멸:</strong> 메모리에 실제 클래스 인스턴스가 존재하지 않으므로 프로그램 런타임에 소멸자가 호출되지 않습니다.</li>
+<li><strong>동시성:</strong> 제공되는 모든 메타데이터가 컴파일 도중에 이미 상수 표현식으로 평가되므로 런타임에는 스레드, 잠금 메커니즘 또는 동기화 객체에 대한 의존성이 존재하지 않습니다.</li>
 </ul>
 
-<h4>Nutzungspfad</h4>
-<p>Die Anwendung von <code>ara::core::variant_size&lt; volatile T &gt;</code> erfolgt typischerweise innerhalb generischer Funktionen, Typ-Prüfungen oder statischer Verifikationsroutinen. Ein üblicher Ablauf zur statischen Analyse gestaltet sich wie folgt:</p>
+<h4>사용 경로</h4>
+<p><code>ara::core::variant_size&lt; volatile T &gt;</code>의 적용은 일반적으로 제네릭 함수, 타입 검사 또는 정적 검증 루틴 내에서 이루어집니다. 정적 분석을 위한 일반적인 흐름은 다음과 같습니다:</p>
 <ol>
-<li><strong>Typübergabe:</strong> Eine generische Funktion oder Metaprogrammierungs-Komponente erhält einen Varianten-Typ, der beispielsweise aufgrund hardwarenaher Schnittstellenkonfigurationen als <code>volatile</code> qualifiziert ist.</li>
-<li><strong>Abfrage der Alternativen-Anzahl:</strong> Der Algorithmus greift auf die Konstante <code>ara::core::variant_size&lt; volatile T &gt;::value</code> zu, um die Gesamtzahl der enthaltenen Typ-Alternativen zu ermitteln.</li>
-<li><strong>Statische Prüfung und Verzweigung:</strong> Der ermittelte Wert wird in <code>static_assert</code>-Prüfungen, SFINAE-Bedingungen oder <code>if constexpr</code>-Konstrukten eingesetzt, um beispielsweise sicherzustellen, dass die Variante nicht leer ist oder um typsichere Index-Berechnungen durchzuführen.</li>
+<li><strong>타입 전달:</strong> 제네릭 함수 또는 메타프로그래밍 컴포넌트가 예를 들어 하드웨어 근접 인터페이스 구성으로 인해 <code>volatile</code>으로 한정된 variant 타입을 수신합니다.</li>
+<li><strong>대안 개수 조회:</strong> 알고리즘이 상수 <code>ara::core::variant_size&lt; volatile T &gt;::value</code>에 접근하여 포함된 타입 대안의 총 개수를 확인합니다.</li>
+<li><strong>정적 검사 및 분기:</strong> 확인된 값은 <code>static_assert</code> 검사, SFINAE 조건 또는 <code>if constexpr</code> 구조체에 적용되어, 예를 들어 variant가 비어 있지 않은지 확인하거나 타입 안전 인덱스 계산을 수행합니다.</li>
 </ol>
-<p>Die Spezialisierung stellt sicher, dass die Typabfrage für <code>volatile T</code> mit derselben Syntax durchgeführt werden kann wie für den unqualifizierten Typ <code>T</code>.</p>
+<p>이 특수화는 <code>volatile T</code>에 대한 타입 조회를 한정되지 않은 타입 <code>T</code>과 동일한 구문으로 수행할 수 있도록 보장합니다.</p>
 
-<h4>Fehlerszenarien</h4>
-<p>Weil die Auswertung von <code>ara::core::variant_size&lt; volatile T &gt;</code> vollständig zur Übersetzungszeit stattfindet, treten keine klassischen Laufzeit-Fehler auf. Es werden keine Fehlercodes über <code>ara::core::ErrorCode</code> zurückgegeben und keine Ausnahmen ausgelöst. Fehlersituationen beschränken sich auf die Übersetzungsebene:</p>
+<h4>오류 시나리오</h4>
+<p><code>ara::core::variant_size&lt; volatile T &gt;</code>의 평가는 전적으로 컴파일 시점에 이루어지므로 전통적인 런타임 오류는 발생하지 않습니다. <code>ara::core::ErrorCode</code>을 통한 오류 코드가 반환되지 않으며 예외도 발생하지 않습니다. 오류 상황은 컴파일 수준으로 제한됩니다:</p>
 <ul>
-<li><strong>Ungültiger Basistyp:</strong> Wird die Spezialisierung mit einem Basistyp <code>T</code> instanziiert, der kein gültiger Varianten-Typ ist, führt dies vermutlich zu einem Abbruch der Übersetzung aufgrund eines unvollständigen Typs oder fehlender Deklarationen.</li>
-<li><strong>Fehlerhafte Template-Argumente:</strong> Die Übergabe von Nicht-Typen oder unvollständigen Vorwärtsdeklarationen anstelle eines vollständigen Typs löst Syntax- und Semantikfehler im Compiler aus.</li>
-<li><strong>Semantische Risiken des volatile-Qualifizierers:</strong> Obwohl die Metadaten-Abfrage über dieses Trait syntaktisch unterstützt wird, ist die praktische Verwendung von <code>volatile</code> auf komplexen Varianten-Typen in modernem C++ oft fehleranfällig. Die Spezialisierung garantiert lediglich die Verfügbarkeit der Größeninformation, schützt jedoch nicht vor logischen Problemen bei Zugriffen auf volatile-Objekte.</li>
+<li><strong>유효하지 않은 기본 타입:</strong> 유효한 variant 타입이 아닌 기본 타입 <code>T</code>으로 특수화를 인스턴스화하면 불완전한 타입 또는 누락된 선언으로 인해 컴파일이 중단될 것으로 추정됩니다.</li>
+<li><strong>잘못된 템플릿 인수:</strong> 완전한 타입 대신 비-타입이나 불완전한 전방 선언을 전달하면 컴파일러에서 구문 및 의미론적 오류가 발생합니다.</li>
+<li><strong>volatile 한정자의 의미론적 위험:</strong> 이 트레이트를 통한 메타데이터 조회가 구문적으로 지원되더라도 모던 C++의 복잡한 variant 타입에서 <code>volatile</code>의 실제 사용은 오류가 발생하기 쉽습니다. 특수화는 크기 정보의 가용성만 보장할 뿐, volatile 객체 접근 시의 논리적 문제로부터 보호하지는 않습니다.</li>
 </ul>
 <!-- annahmen: 1) ara::core::variant_size< volatile T > erbt vermutlich analog zu ISO-C++ [variant] von ara::core::variant_size<T> und stellt die Konstante value bereit – Begründung: Der Spezifikations-Payload verweist explizit auf die entsprechende Nutzung in [variant]. 2) Als reines Metaprogrammierungs-Trait besitzt die Spezialisierung vermutlich keinen Laufzeit-Zustand oder dynamischen Lebenszyklus – Begründung: Typ-Traits in C++ und AUTOSAR Core sind reine Compile-Time-Konstrukte. 3) Fehlerszenarien manifestieren sich vermutlich ausschließlich als Übersetzungsfehler und nicht über ara::core::ErrorCode – Begründung: Statische Typ-Traits besitzen keine Laufzeit-Schnittstellen zur Fehlerberichterstattung. -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsdaten aus Release R25-11. Da für diese Spezialisierung im Spezifikations-Payload keine separaten Requirements oder Dokumentstellen hinterlegt sind, wurden fachliche Interpretationen auf Basis der Standard-C++-Spezifikation [variant] ausgewiesen.</p>
+<p class="ai-note">이 가이드는 R25-11 릴리스의 규격 데이터에만 기반합니다. 규격 페이로드에 이 특수화에 대한 별도의 요구사항이나 문서 위치가 정의되어 있지 않으므로, 표준 C++ 규격 [variant]를 기반으로 기술적 해석이 명시되었습니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_variant_size_volatile_T_e7f22e" title="AI와 토론">💬 AI와 토론</button>
@@ -276,39 +275,38 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3378124aad4ce954a4f9afa285e105a20f0f1c960d464151910f1d09fc62af24" data-trace-output="072bff962b77ffc2743e191e04d549d4fe3d3706633ff6d1809dc6cfaac8cf27" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Template-Klasse &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) eine spezialisierte Hilfsstruktur für die statische Typanalyse und Template-Metaprogrammierung bereit. Es handelt sich um eine partielle Spezialisierung der generischen Klassen-Schablone &lt;code&gt;ara::core::variant_size&lt;/code&gt;, die spezifisch für Typen mit dem Qualifizierer &lt;code&gt;volatile&lt;/code&gt; ausgelegt ist. Die Spezifikation verweist hinsichtlich der Semantik und Verwendung direkt auf die Definition von Varianten in der C++-Standardbibliothek unter &lt;code&gt;[variant]&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Die primäre Aufgabe dieser Spezialisierung besteht darin, zur Übersetzungszeit konsistente Typinformationen über die Anzahl der in einem typisierten Varianten-Konstrukt (beispielsweise &lt;code&gt;ara::core::variant&lt;/code&gt;) definierten Alternativen bereitzustellen. Im Typsystem von C++ führt das Hinzufügen von Typ-Qualifizierern wie &lt;code&gt;volatile&lt;/code&gt; zu einem eigenständigen Typ. Ohne eine entsprechende explizite Spezialisierung würde die Abfrage von &lt;code&gt;ara::core::variant_size&lt;/code&gt; für einen Typ &lt;code&gt;volatile T&lt;/code&gt; fehlschlagen, da das primäre Template für unqualifizierte Typen den modifizierten Typ nicht automatisch auflöst. Die Spezialisierung für &lt;code&gt;volatile T&lt;/code&gt; stellt sicher, dass generische Bibliotheken und Algorithmen auch dann fehlerfrei arbeiten, wenn Typen in hardwarenahen oder nebenläufigen Kontexten mit dem Qualifizierer &lt;code&gt;volatile&lt;/code&gt; versehen sind.&lt;/p&gt;
-&lt;p&gt;Zu den Interaktionspartnern gehören generische Schnittstellen, Metaprogrammierungs-Hilfsmittel, statische Zusicherungen sowie Algorithmen, die zur Übersetzungszeit Varianten verarbeiten. In Anlehnung an das Verhalten in &lt;code&gt;[variant]&lt;/code&gt; dürfte diese Spezialisierung eine statische integrale Konstante &lt;code&gt;value&lt;/code&gt; bereitstellen, welche die exakte Anzahl der Typ-Alternativen des zugrunde liegenden Typs &lt;code&gt;T&lt;/code&gt; abbildet.&lt;/p&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
+&lt;p&gt;템플릿 클래스 &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt;은 AUTOSAR Adaptive Platform(릴리스 R25-11)의 &lt;code&gt;core&lt;/code&gt; 모듈에서 정적 타입 분석 및 템플릿 메타프로그래밍을 위한 특수 헬퍼 구조체를 제공합니다. 이는 &lt;code&gt;volatile&lt;/code&gt; 한정자가 있는 타입을 위해 특별히 설계된 제네릭 클래스 템플릿 &lt;code&gt;ara::core::variant_size&lt;/code&gt;의 부분 특수화입니다. 규격은 의미론 및 사용법과 관련하여 &lt;code&gt;[variant]&lt;/code&gt;의 C++ 표준 라이브러리 variant 정의를 직접 참조합니다.&lt;/p&gt;
+&lt;p&gt;이 특수화의 기본 과제는 컴파일 시점에 타입이 지정된 variant 구조체(예: &lt;code&gt;ara::core::variant&lt;/code&gt;)에 정의된 대안의 개수에 대한 일관된 타입 정보를 제공하는 것입니다. C++의 타입 시스템에서 &lt;code&gt;volatile&lt;/code&gt;과 같은 타입 한정자를 추가하면 독립된 타입이 됩니다. 해당 명시적 특수화가 없으면 한정되지 않은 타입에 대한 기본 템플릿이 수정된 타입을 자동으로 확인하지 못하므로, 타입 &lt;code&gt;volatile T&lt;/code&gt;에 대한 &lt;code&gt;ara::core::variant_size&lt;/code&gt; 조회가 실패하게 됩니다. &lt;code&gt;volatile T&lt;/code&gt;에 대한 특수화는 하드웨어 근접 컨텍스트나 동시성 컨텍스트에서 타입에 &lt;code&gt;volatile&lt;/code&gt; 한정자가 지정되어 있더라도 제네릭 라이브러리와 알고리즘이 오류 없이 작동하도록 보장합니다.&lt;/p&gt;
+&lt;p&gt;상호작용 대상에는 제네릭 인터페이스, 메타프로그래밍 유틸리티, 정적 어서션 및 컴파일 시점에 variant를 처리하는 알고리즘이 포함됩니다. &lt;code&gt;[variant]&lt;/code&gt;의 동작과 유사하게, 이 특수화는 기반 타입 &lt;code&gt;T&lt;/code&gt;의 타입 대안의 정확한 개수를 매핑하는 정적 정수 상수 &lt;code&gt;value&lt;/code&gt;을 제공할 것으로 추정됩니다.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Da &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; als reines Typ-Trait für die Template-Metaprogrammierung fungiert, besitzt die Struktur keinen dynamischen Lebenszyklus zur Laufzeit. Sämtliche Mechanismen werden ausschließlich während der Übersetzungsphase durch den C++-Compiler durchlaufen:&lt;/p&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt;은 템플릿 메타프로그래밍을 위한 순수 타입 트레이트로 작동하므로 구조체는 런타임에 동적 수명 주기를 갖지 않습니다. 모든 메커니즘은 컴파일 단계에서 C++ 컴파일러를 통해서만 실행됩니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Instanziierung:&lt;/strong&gt; Es findet keine Allokation von Arbeitsspeicher auf dem Heap oder Stack statt. Die Instanziierung erfolgt bedarfsgesteuert durch den Compiler, sobald im Quellcode ein Ausdruck ausgewertet wird, der die Spezialisierung für einen konkreten Typ &lt;code&gt;volatile T&lt;/code&gt; anfordert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zustand und Besitzverhältnisse:&lt;/strong&gt; Die Struktur verwaltet keinerlei dynamische Daten oder Ressourcen. Vermutlich ist die Klasse vollständig zustandslos und definiert lediglich integrale Compile-Time-Konstanten sowie Typ-Aliase.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Ein Destruktor wird zur Programmlaufzeit nicht aufgerufen, da keine realen Klasseninstanzen im Speicher existieren.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Da alle bereitgestellten Metadaten bereits während der Kompilierung als konstante Ausdrücke ausgewertet werden, existieren zur Laufzeit keine Abhängigkeiten von Threads, Sperrmechanismen oder Synchronisationsobjekten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;생성 및 인스턴스화:&lt;/strong&gt; 힙이나 스택에 메모리 할당이 발생하지 않습니다. 구체적인 타입 &lt;code&gt;volatile T&lt;/code&gt;에 대한 특수화를 요청하는 표현식이 소스 코드에서 평가되는 즉시 컴파일러에 의해 온디맨드로 인스턴스화가 수행됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;상태 및 소유권:&lt;/strong&gt; 구조체는 어떠한 동적 데이터나 리소스도 관리하지 않습니다. 클래스는 완전히 상태 비저장이며 정수형 컴파일 타임 상수 및 타입 별칭만 정의할 것으로 추정됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;소멸:&lt;/strong&gt; 메모리에 실제 클래스 인스턴스가 존재하지 않으므로 프로그램 런타임에 소멸자가 호출되지 않습니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;동시성:&lt;/strong&gt; 제공되는 모든 메타데이터가 컴파일 도중에 이미 상수 표현식으로 평가되므로 런타임에는 스레드, 잠금 메커니즘 또는 동기화 객체에 대한 의존성이 존재하지 않습니다.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die Anwendung von &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; erfolgt typischerweise innerhalb generischer Funktionen, Typ-Prüfungen oder statischer Verifikationsroutinen. Ein üblicher Ablauf zur statischen Analyse gestaltet sich wie folgt:&lt;/p&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt;의 적용은 일반적으로 제네릭 함수, 타입 검사 또는 정적 검증 루틴 내에서 이루어집니다. 정적 분석을 위한 일반적인 흐름은 다음과 같습니다:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Typübergabe:&lt;/strong&gt; Eine generische Funktion oder Metaprogrammierungs-Komponente erhält einen Varianten-Typ, der beispielsweise aufgrund hardwarenaher Schnittstellenkonfigurationen als &lt;code&gt;volatile&lt;/code&gt; qualifiziert ist.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage der Alternativen-Anzahl:&lt;/strong&gt; Der Algorithmus greift auf die Konstante &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;::value&lt;/code&gt; zu, um die Gesamtzahl der enthaltenen Typ-Alternativen zu ermitteln.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Statische Prüfung und Verzweigung:&lt;/strong&gt; Der ermittelte Wert wird in &lt;code&gt;static_assert&lt;/code&gt;-Prüfungen, SFINAE-Bedingungen oder &lt;code&gt;if constexpr&lt;/code&gt;-Konstrukten eingesetzt, um beispielsweise sicherzustellen, dass die Variante nicht leer ist oder um typsichere Index-Berechnungen durchzuführen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;타입 전달:&lt;/strong&gt; 제네릭 함수 또는 메타프로그래밍 컴포넌트가 예를 들어 하드웨어 근접 인터페이스 구성으로 인해 &lt;code&gt;volatile&lt;/code&gt;으로 한정된 variant 타입을 수신합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;대안 개수 조회:&lt;/strong&gt; 알고리즘이 상수 &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;::value&lt;/code&gt;에 접근하여 포함된 타입 대안의 총 개수를 확인합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;정적 검사 및 분기:&lt;/strong&gt; 확인된 값은 &lt;code&gt;static_assert&lt;/code&gt; 검사, SFINAE 조건 또는 &lt;code&gt;if constexpr&lt;/code&gt; 구조체에 적용되어, 예를 들어 variant가 비어 있지 않은지 확인하거나 타입 안전 인덱스 계산을 수행합니다.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Die Spezialisierung stellt sicher, dass die Typabfrage für &lt;code&gt;volatile T&lt;/code&gt; mit derselben Syntax durchgeführt werden kann wie für den unqualifizierten Typ &lt;code&gt;T&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;이 특수화는 &lt;code&gt;volatile T&lt;/code&gt;에 대한 타입 조회를 한정되지 않은 타입 &lt;code&gt;T&lt;/code&gt;과 동일한 구문으로 수행할 수 있도록 보장합니다.&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Weil die Auswertung von &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; vollständig zur Übersetzungszeit stattfindet, treten keine klassischen Laufzeit-Fehler auf. Es werden keine Fehlercodes über &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; zurückgegeben und keine Ausnahmen ausgelöst. Fehlersituationen beschränken sich auf die Übersetzungsebene:&lt;/p&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt;의 평가는 전적으로 컴파일 시점에 이루어지므로 전통적인 런타임 오류는 발생하지 않습니다. &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;을 통한 오류 코드가 반환되지 않으며 예외도 발생하지 않습니다. 오류 상황은 컴파일 수준으로 제한됩니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Ungültiger Basistyp:&lt;/strong&gt; Wird die Spezialisierung mit einem Basistyp &lt;code&gt;T&lt;/code&gt; instanziiert, der kein gültiger Varianten-Typ ist, führt dies vermutlich zu einem Abbruch der Übersetzung aufgrund eines unvollständigen Typs oder fehlender Deklarationen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fehlerhafte Template-Argumente:&lt;/strong&gt; Die Übergabe von Nicht-Typen oder unvollständigen Vorwärtsdeklarationen anstelle eines vollständigen Typs löst Syntax- und Semantikfehler im Compiler aus.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Semantische Risiken des volatile-Qualifizierers:&lt;/strong&gt; Obwohl die Metadaten-Abfrage über dieses Trait syntaktisch unterstützt wird, ist die praktische Verwendung von &lt;code&gt;volatile&lt;/code&gt; auf komplexen Varianten-Typen in modernem C++ oft fehleranfällig. Die Spezialisierung garantiert lediglich die Verfügbarkeit der Größeninformation, schützt jedoch nicht vor logischen Problemen bei Zugriffen auf volatile-Objekte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;유효하지 않은 기본 타입:&lt;/strong&gt; 유효한 variant 타입이 아닌 기본 타입 &lt;code&gt;T&lt;/code&gt;으로 특수화를 인스턴스화하면 불완전한 타입 또는 누락된 선언으로 인해 컴파일이 중단될 것으로 추정됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;잘못된 템플릿 인수:&lt;/strong&gt; 완전한 타입 대신 비-타입이나 불완전한 전방 선언을 전달하면 컴파일러에서 구문 및 의미론적 오류가 발생합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;volatile 한정자의 의미론적 위험:&lt;/strong&gt; 이 트레이트를 통한 메타데이터 조회가 구문적으로 지원되더라도 모던 C++의 복잡한 variant 타입에서 &lt;code&gt;volatile&lt;/code&gt;의 실제 사용은 오류가 발생하기 쉽습니다. 특수화는 크기 정보의 가용성만 보장할 뿐, volatile 객체 접근 시의 논리적 문제로부터 보호하지는 않습니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) ara::core::variant_size&lt; volatile T &gt; erbt vermutlich analog zu ISO-C++ [variant] von ara::core::variant_size&lt;T&gt; und stellt die Konstante value bereit – Begründung: Der Spezifikations-Payload verweist explizit auf die entsprechende Nutzung in [variant]. 2) Als reines Metaprogrammierungs-Trait besitzt die Spezialisierung vermutlich keinen Laufzeit-Zustand oder dynamischen Lebenszyklus – Begründung: Typ-Traits in C++ und AUTOSAR Core sind reine Compile-Time-Konstrukte. 3) Fehlerszenarien manifestieren sich vermutlich ausschließlich als Übersetzungsfehler und nicht über ara::core::ErrorCode – Begründung: Statische Typ-Traits besitzen keine Laufzeit-Schnittstellen zur Fehlerberichterstattung. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsdaten aus Release R25-11. Da für diese Spezialisierung im Spezifikations-Payload keine separaten Requirements oder Dokumentstellen hinterlegt sind, wurden fachliche Interpretationen auf Basis der Standard-C++-Spezifikation [variant] ausgewiesen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 R25-11 릴리스의 규격 데이터에만 기반합니다. 규격 페이로드에 이 특수화에 대한 별도의 요구사항이나 문서 위치가 정의되어 있지 않으므로, 표준 C++ 규격 [variant]를 기반으로 기술적 해석이 명시되었습니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

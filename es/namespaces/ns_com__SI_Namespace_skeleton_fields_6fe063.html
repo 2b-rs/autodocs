@@ -20,29 +20,28 @@
   <span class="ai-badge-label">GENERADO POR IA</span>
   <span class="ai-review-state">no revisado</span>
   <span class="ai-trace-meta">Modelo: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperatura: nicht steuerbar · Prompt: <code>e1d25af99427</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_skeleton_fields_6fe063/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedencia: perfil, hash de prompt, hash de salida, ejecuciones, revisión">Procedencia</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/es/namespaces/ns_com__SI_Namespace_skeleton_fields_6fe063/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedencia: perfil, hash de prompt, hash de salida, ejecuciones, revisión">Procedencia</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063" data-view-mode="editor" title="Abrir editor de curación y expediente" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curar</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Nota editorial:</strong> Esta guía técnica se encuentra actualmente en proceso de traducción. A continuación se muestra la versión de referencia original.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>&lt;SI-Namespace&gt;::skeleton::fields</code> ist Bestandteil des Moduls <code>com</code> in der AUTOSAR Adaptive Platform (Release R25-11). Er kapselt die serverseitigen Repräsentationen für alle Felder, die in einem Service-Interface modelliert sind. Für jedes im jeweiligen <code>ServiceInterface</code> in der Rolle als Feld definierte Element wird eine spezifische Skeleton-Feldklasse <code>&lt;Field&gt;</code> bereitgestellt. Diese Klassen dienen als Schnittstelle zwischen der konkreten Service-Implementierung (Skeleton) und der Kommunikationsinfrastruktur, um Datenwerte bereitzustellen, Aktualisierungen an Abonnenten zu melden und optionale Lese- oder Schreibanfragen zu handhaben.</p>
+<h4>Contexto</h4>
+<p>El namespace <code>&lt;SI-Namespace&gt;::skeleton::fields</code> forma parte del módulo <code>com</code> en AUTOSAR Adaptive Platform (Release R25-11). Encapsula las representaciones del lado del servidor para todos los campos modelados en una Service Interface. Para cada elemento definido en la respectiva <code>ServiceInterface</code> en el rol de campo, se proporciona una clase de campo de skeleton específica <code>&lt;Field&gt;</code>. Estas clases sirven como interfaz entre la implementación concreta del servicio (skeleton) y la infraestructura de comunicación a fin de proporcionar valores de datos, notificar actualizaciones a los suscriptores y gestionar solicitudes opcionales de lectura o escritura.</p>
 
-<h4>Lebenszyklus und Besitzverhältnisse</h4>
-<p>Die Instanzen der Skeleton-Feldklassen <code>&lt;Field&gt;</code> sind fest an den Lebenszyklus des übergeordneten Service-Skeletons gebunden. Sie werden bei der Instanziierung der Service-Skeleton-Klasse erzeugt und verbleiben in deren Besitz. Solange die Service-Instanz aktiv angeboten wird, verwalten die Feldinstanzen den aktuellen Zustand des modellierten Feldes sowie die Registrierungen für Benachrichtigungen oder Zugriffs-Handler. Mit der Zerstörung des Service-Skeletons enden auch die Lebensdauer und Gültigkeit der zugehörigen Feldinstanzen.</p>
+<h4>Ciclo de vida y relaciones de propiedad</h4>
+<p>Las instancias de las clases de campo de skeleton <code>&lt;Field&gt;</code> están estrictamente vinculadas al ciclo de vida del skeleton de servicio de nivel superior. Se crean al instanciarse la clase de skeleton de servicio y permanecen bajo su posesión. Mientras la instancia de servicio se ofrezca activamente, las instancias de campo gestionan el estado actual del campo modelado, así como los registros para notificaciones o manejadores de acceso. Con la destrucción del skeleton de servicio finalizan también la vida útil y la validez de las instancias de campo asociadas.</p>
 
-<h4>Nutzungspfad</h4>
-<p>Die typische Interaktion mit Elementen aus <code>&lt;SI-Namespace&gt;::skeleton::fields</code> erfolgt innerhalb der Service-Implementierung:</p>
+<h4>Ruta de uso</h4>
+<p>La interacción típica con elementos de <code>&lt;SI-Namespace&gt;::skeleton::fields</code> tiene lugar dentro de la implementación del servicio:</p>
 <ol>
-<li><strong>Bereitstellung:</strong> Das Skeleton instanziiert die generierten Feldobjekte <code>&lt;Field&gt;</code> als Teil seiner Member-Struktur.</li>
-<li><strong>Initialisierung:</strong> Das Skeleton setzt den Initialwert des Feldes bzw. registriert gegebenenfalls Handler für Zugriffe (Get/Set), sofern das Feld diese Operationen unterstützt.</li>
-<li><strong>Aktualisierung:</strong> Ändert sich der interne Zustand im Service, aktualisiert das Skeleton den Feldwert über die Klasse <code>&lt;Field&gt;</code>, wodurch registrierte Abonnenten auf Proxy-Seite über die Kommunikationsschicht benachrichtigt werden können.</li>
+<li><strong>Provisión:</strong> el skeleton instancia los objetos de campo generados <code>&lt;Field&gt;</code> como parte de su estructura de miembros.</li>
+<li><strong>Inicialización:</strong> el skeleton establece el valor inicial del campo o registra, en su caso, manejadores para accesos (Get/Set), siempre que el campo admita dichas operaciones.</li>
+<li><strong>Actualización:</strong> si el estado interno en el servicio cambia, el skeleton actualiza el valor del campo a través de la clase <code>&lt;Field&gt;</code>, lo que permite notificar a los suscriptores registrados en el lado del proxy a través de la capa de comunicación.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlerszenarien betreffen primär den Lebenszyklus und ungültige Aufrufe während Übergangsphasen. Ein Zugriff auf ein Feld vor der vollständigen Initialisierung des Skeletons oder nach Beginn des Herunterfahrens der Service-Instanz führt zu undefiniertem Verhalten oder Kommunikationsfehlern. Zudem müssen Zugriffs-Handler sicherstellen, dass Anfragen konsistent beantwortet und Fehlerzustände der Anwendungslogik ordnungsgemäß an die Kommunikationsschicht übermittelt werden.</p>
+<h4>Escenarios de error</h4>
+<p>Los escenarios de error atañen primordialmente al ciclo de vida y a llamadas no válidas durante fases de transición. Un acceso a un campo antes de la inicialización completa del skeleton o tras iniciarse el apagado de la instancia de servicio provoca un comportamiento indefinido o errores de comunicación. Además, los manejadores de acceso deben garantizar que las solicitudes se respondan de forma consistente y que los estados de error de la lógica de aplicación se transmitan adecuadamente a la capa de comunicación.</p>
 
 <!-- annahmen: 1) Die Feldklassen <Field> sind Member des jeweiligen Service-Skeletons und teilen dessen Lebenszyklus. – Begründung: Der Payload belegt <Field> als "Service skeleton Field class, one for each Field defined in the ServiceInterface in the role field." 2) Das Feld unterstützt Wertaktualisierungen sowie optionale Get/Set-Operationen. – Begründung: Typische AUTOSAR-Adaptive-Feldsemantik für Service-Interfaces. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11. Weiterführende normative Anforderungen liegen für diesen Namespace im aktuellen Datenbestand nicht vor.</p>
+<p class="ai-note">Esta guía se basa en los metadatos estructurales del Release R25-11. En los datos actuales no constan requisitos normativos adicionales para este namespace.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_skeleton_fields_6fe063" title="Discutir con IA">💬 Discutir con IA</button>
@@ -282,26 +281,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="e1d25af99427509cd8d40c014e3c1247d3e5e029559e940fd6eb247b5e615d2b" data-trace-output="52b08989c4647bcf14e167d50e1938a4aef77a967cad5d85e714afc1e94c003c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Nota editorial:&lt;/strong&gt; Esta guía técnica se encuentra actualmente en proceso de traducción. A continuación se muestra la versión de referencia original.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;com&lt;/code&gt; in der AUTOSAR Adaptive Platform (Release R25-11). Er kapselt die serverseitigen Repräsentationen für alle Felder, die in einem Service-Interface modelliert sind. Für jedes im jeweiligen &lt;code&gt;ServiceInterface&lt;/code&gt; in der Rolle als Feld definierte Element wird eine spezifische Skeleton-Feldklasse &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; bereitgestellt. Diese Klassen dienen als Schnittstelle zwischen der konkreten Service-Implementierung (Skeleton) und der Kommunikationsinfrastruktur, um Datenwerte bereitzustellen, Aktualisierungen an Abonnenten zu melden und optionale Lese- oder Schreibanfragen zu handhaben.&lt;/p&gt;
+&lt;h4&gt;Contexto&lt;/h4&gt;
+&lt;p&gt;El namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; forma parte del módulo &lt;code&gt;com&lt;/code&gt; en AUTOSAR Adaptive Platform (Release R25-11). Encapsula las representaciones del lado del servidor para todos los campos modelados en una Service Interface. Para cada elemento definido en la respectiva &lt;code&gt;ServiceInterface&lt;/code&gt; en el rol de campo, se proporciona una clase de campo de skeleton específica &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;. Estas clases sirven como interfaz entre la implementación concreta del servicio (skeleton) y la infraestructura de comunicación a fin de proporcionar valores de datos, notificar actualizaciones a los suscriptores y gestionar solicitudes opcionales de lectura o escritura.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus und Besitzverhältnisse&lt;/h4&gt;
-&lt;p&gt;Die Instanzen der Skeleton-Feldklassen &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; sind fest an den Lebenszyklus des übergeordneten Service-Skeletons gebunden. Sie werden bei der Instanziierung der Service-Skeleton-Klasse erzeugt und verbleiben in deren Besitz. Solange die Service-Instanz aktiv angeboten wird, verwalten die Feldinstanzen den aktuellen Zustand des modellierten Feldes sowie die Registrierungen für Benachrichtigungen oder Zugriffs-Handler. Mit der Zerstörung des Service-Skeletons enden auch die Lebensdauer und Gültigkeit der zugehörigen Feldinstanzen.&lt;/p&gt;
+&lt;h4&gt;Ciclo de vida y relaciones de propiedad&lt;/h4&gt;
+&lt;p&gt;Las instancias de las clases de campo de skeleton &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; están estrictamente vinculadas al ciclo de vida del skeleton de servicio de nivel superior. Se crean al instanciarse la clase de skeleton de servicio y permanecen bajo su posesión. Mientras la instancia de servicio se ofrezca activamente, las instancias de campo gestionan el estado actual del campo modelado, así como los registros para notificaciones o manejadores de acceso. Con la destrucción del skeleton de servicio finalizan también la vida útil y la validez de las instancias de campo asociadas.&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die typische Interaktion mit Elementen aus &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; erfolgt innerhalb der Service-Implementierung:&lt;/p&gt;
+&lt;h4&gt;Ruta de uso&lt;/h4&gt;
+&lt;p&gt;La interacción típica con elementos de &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; tiene lugar dentro de la implementación del servicio:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellung:&lt;/strong&gt; Das Skeleton instanziiert die generierten Feldobjekte &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; als Teil seiner Member-Struktur.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Das Skeleton setzt den Initialwert des Feldes bzw. registriert gegebenenfalls Handler für Zugriffe (Get/Set), sofern das Feld diese Operationen unterstützt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Aktualisierung:&lt;/strong&gt; Ändert sich der interne Zustand im Service, aktualisiert das Skeleton den Feldwert über die Klasse &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;, wodurch registrierte Abonnenten auf Proxy-Seite über die Kommunikationsschicht benachrichtigt werden können.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Provisión:&lt;/strong&gt; el skeleton instancia los objetos de campo generados &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; como parte de su estructura de miembros.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Inicialización:&lt;/strong&gt; el skeleton establece el valor inicial del campo o registra, en su caso, manejadores para accesos (Get/Set), siempre que el campo admita dichas operaciones.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Actualización:&lt;/strong&gt; si el estado interno en el servicio cambia, el skeleton actualiza el valor del campo a través de la clase &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;, lo que permite notificar a los suscriptores registrados en el lado del proxy a través de la capa de comunicación.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlerszenarien betreffen primär den Lebenszyklus und ungültige Aufrufe während Übergangsphasen. Ein Zugriff auf ein Feld vor der vollständigen Initialisierung des Skeletons oder nach Beginn des Herunterfahrens der Service-Instanz führt zu undefiniertem Verhalten oder Kommunikationsfehlern. Zudem müssen Zugriffs-Handler sicherstellen, dass Anfragen konsistent beantwortet und Fehlerzustände der Anwendungslogik ordnungsgemäß an die Kommunikationsschicht übermittelt werden.&lt;/p&gt;
+&lt;h4&gt;Escenarios de error&lt;/h4&gt;
+&lt;p&gt;Los escenarios de error atañen primordialmente al ciclo de vida y a llamadas no válidas durante fases de transición. Un acceso a un campo antes de la inicialización completa del skeleton o tras iniciarse el apagado de la instancia de servicio provoca un comportamiento indefinido o errores de comunicación. Además, los manejadores de acceso deben garantizar que las solicitudes se respondan de forma consistente y que los estados de error de la lógica de aplicación se transmitan adecuadamente a la capa de comunicación.&lt;/p&gt;
 
 &lt;!-- annahmen: 1) Die Feldklassen &lt;Field&gt; sind Member des jeweiligen Service-Skeletons und teilen dessen Lebenszyklus. – Begründung: Der Payload belegt &lt;Field&gt; als "Service skeleton Field class, one for each Field defined in the ServiceInterface in the role field." 2) Das Feld unterstützt Wertaktualisierungen sowie optionale Get/Set-Operationen. – Begründung: Typische AUTOSAR-Adaptive-Feldsemantik für Service-Interfaces. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des Releases R25-11. Weiterführende normative Anforderungen liegen für diesen Namespace im aktuellen Datenbestand nicht vor.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Esta guía se basa en los metadatos estructurales del Release R25-11. En los datos actuales no constan requisitos normativos adicionales para este namespace.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

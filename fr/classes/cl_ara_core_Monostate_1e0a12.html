@@ -24,47 +24,46 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>b22ce7de55b7</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_Monostate_1e0a12/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/fr/classes/cl_ara_core_Monostate_1e0a12/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_Monostate_1e0a12" data-view-mode="editor" title="Ouvrir l'éditeur de modération et dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Modérer</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>Contexte</h4>
   <p>
-    Der Typ <code>ara::core::Monostate</code> stellt im Modul <code>core</code> der AUTOSAR Adaptive Platform einen zustandslosen Einheitstyp (Unit Type) dar. Laut Spezifikationsbeschreibung dient die Struktur dem korrespondierenden Einsatz in Verbindung mit Varianten-Typen (<code>[variant]</code>). In typisierten Unions bzw. Summentypen wie Variantenstrukturen wird ein dedizierter Typ benötigt, wenn ein Zustand repräsentiert werden soll, der keine Nutzdaten trägt.
+    Le type <code>ara::core::Monostate</code> représente dans le module <code>core</code> de l'AUTOSAR Adaptive Platform un type unité (unit type) sans état. Selon la description de la spécification, la structure est destinée à être utilisée conjointement avec des types variants (<code>[variant]</code>). Dans les unions typées ou les types sommes tels que les structures variantes, un type dédié est requis lorsqu'un état ne portant aucune donnée utile doit être représenté.
   </p>
   <p>
-    Als Kernkomponente des Basissystems interagiert <code>ara::core::Monostate</code> primär mit generischen Datenstrukturen zur Typauswahl. Interpretation: Die Definition als <code>struct Monostate final</code> dürfte sicherstellen, dass dieser Typ ausschließlich als distinkter Stellvertretertyp verwendet wird und keine abgeleiteten Spezialisierungen gestattet sind. Durch seine Existenz ermöglicht er es generischen Schnittstellen, eine leere Alternative explizit auf Typebene modellieren zu können, ohne auf zeigerbasierte Nullwerte oder unüberprüfte Sentinel-Werte zurückgreifen zu müssen.
+    En tant que composant central du système de base, <code>ara::core::Monostate</code> interagit principalement avec des structures de données génériques pour la sélection de type. Interprétation : la définition en tant que <code>struct Monostate final</code> devrait garantir que ce type est exclusivement utilisé comme un type substitut distinct et qu'aucune spécialisation dérivée n'est autorisée. Grâce à son existence, il permet aux interfaces génériques de modéliser explicitement une alternative vide au niveau des types, sans devoir recourir à des valeurs nulles basées sur des pointeurs ou à des sentinelles non vérifiées.
   </p>
 
-  <h4>Lebenszyklus</h4>
+  <h4>Cycle de vie</h4>
   <p>
-    Der Lebenszyklus von <code>ara::core::Monostate</code> ist trivial und an die Lebensdauer des Kontextes gebunden, in den die Struktur eingebettet wird. Da es sich um eine leere Datenstruktur handelt, belegt eine Instanz zur Laufzeit lediglich den minimalen, durch das C++-Objektmodell vorgeschriebenen Speicherplatz zur Wahrung einer eindeutigen Objektadresse, transportiert jedoch keinen dynamischen Zustand.
+    Le cycle de vie de <code>ara::core::Monostate</code> est trivial et lié à la durée de vie du contexte dans lequel la structure est intégrée. Comme il s'agit d'une structure de données vide, une instance n'occupe à l'exécution que l'espace mémoire minimal prescrit par le modèle objet C++ pour garantir une adresse d'objet unique, sans transporter aucun état dynamique.
   </p>
   <p>
-    Hinsichtlich der Erzeugung und Zerstörung gelten folgende Eigenschaften:
+    Concernant la création et la destruction, les propriétés suivantes s'appliquent :
   </p>
   <ul>
-    <li><strong>Erzeugung:</strong> Instanzen können ohne zusätzliche Parameter konstruiert werden. Sie besitzen weder Ressourcen noch Zeiger auf externe Komponenten.</li>
-    <li><strong>Zustandsmodell:</strong> Es existieren keine internen Zustandsübergänge. Alle Instanzen dieses Typs sind zueinander äquivalent, da kein interner Status existiert, der voneinander abweichen könnte.</li>
-    <li><strong>Besitzverhältnisse:</strong> <code>ara::core::Monostate</code> verwaltet keine dynamisch allokierten Ressourcen. Der Besitz liegt immer direkt bei der umgebenden Datenstruktur oder auf dem Stack des Aufrufers.</li>
-    <li><strong>Nebenläufigkeit:</strong> Da Instanzen keinen veränderlichen Zustand besitzen, sind Lese- und Kopiervorgänge thread-sicher, sofern keine Datenrennen auf den übergeordneten Speicherbereichen vorliegen.</li>
+    <li><strong>Création :</strong> les instances peuvent être construites sans paramètres supplémentaires. Elles ne possèdent ni ressources ni pointeurs vers des composants externes.</li>
+    <li><strong>Modèle d'état :</strong> il n'existe aucune transition d'état interne. Toutes les instances de ce type sont équivalentes entre elles, car aucun statut interne susceptible de diverger n'existe.</li>
+    <li><strong>Relations de possession :</strong> <code>ara::core::Monostate</code> ne gère aucune ressource allouée dynamiquement. La possession incombe toujours directement à la structure de données englobante ou à la pile de l'appelant.</li>
+    <li><strong>Concurrence :</strong> étant donné que les instances ne possèdent aucun état mutable, les opérations de lecture et de copie sont thread-safe, tant qu'aucune concurrence critique sur les données n'affecte les zones mémoire sous-jacentes.</li>
   </ul>
   <p>
-    Vermutlich ist das Verhalten des Typs vollständig an das aus dem C++-Standard bekannte <code>std::monostate</code> angelehnt, um nahtlos mit Move- und Copy-Semantiken generischer Container zusammenzuspielen. Die Zerstörung erfordert keine Bereinigungsaktionen und erfolgt trivial.
+    Le comportement de ce type est probablement entièrement inspiré de celui de <code>std::monostate</code> issu du standard C++, afin d'interagir harmonieusement avec la sémantique de déplacement et de copie des conteneurs génériques. La destruction ne requiert aucune action de nettoyage et s'effectue de manière triviale.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>Parcours d'utilisation</h4>
   <p>
-    Der typische Ablauf bei der Verwendung von <code>ara::core::Monostate</code> orientiert sich an der Modellierung von optionalen Zuständen oder Default-Konstruierbarkeit in Varianten:
+    Le déroulement typique lors de l'utilisation de <code>ara::core::Monostate</code> s'oriente vers la modélisation d'états optionnels ou la constructibilité par défaut dans les variants :
   </p>
   <ol>
-    <li><strong>Typdefinition:</strong> Eine Variantenstruktur wird so typisiert, dass <code>ara::core::Monostate</code> als erste Alternative deklariert wird, wenn der Standardkonstruktor der Variante einen leeren oder inaktiven Zustand abbilden soll.</li>
-    <li><strong>Initialisierung:</strong> Bei der Standardkonstruktion der Variante nimmt diese den Zustand von <code>ara::core::Monostate</code> an, ohne dass hierfür Nutzdaten initialisiert werden müssen.</li>
-    <li><strong>Zustandsprüfung:</strong> Vor der Verarbeitung prüft die verarbeitende Logik, ob die Variante derzeit den Typ <code>ara::core::Monostate</code> hält, was fachlich das Fehlen eines konkreten Nutzdatenwertes anzeigt.</li>
-    <li><strong>Überschreiben:</strong> Sobald ein fachlicher Wert verfügbar ist, wird die Variante mit dem entsprechenden Nutzlasttyp belegt, wodurch der Monostate-Zustand verlassen wird.</li>
+    <li><strong>Définition de type :</strong> une structure variante est typée de manière à déclarer <code>ara::core::Monostate</code> comme première alternative lorsque le constructeur par défaut de la variante doit représenter un état vide ou inactif.</li>
+    <li><strong>Initialisation :</strong> lors de la construction par défaut de la variante, celle-ci prend l'état de <code>ara::core::Monostate</code> sans qu'aucune donnée utile ne doive être initialisée.</li>
+    <li><strong>Vérification de l'état :</strong> avant le traitement, la logique applicative vérifie si la variante contient actuellement le type <code>ara::core::Monostate</code>, ce qui indique sur le plan fonctionnel l'absence d'une valeur concrète de donnée utile.</li>
+    <li><strong>Écrasement :</strong> dès qu'une valeur fonctionnelle est disponible, la variante reçoit le type de charge utile correspondant, quittant ainsi l'état monostate.</li>
   </ol>
   <p>
-    Interpretation: Der Typ dürfte vor allem dann zum Einsatz kommen, wenn die übrigen Alternativen einer Variante keinen parameterlosen Konstruktor besitzen und somit eine explizite leere Initialisierungsform zwingend erforderlich ist.
+    Interprétation : le type devrait principalement être utilisé lorsque les autres alternatives d'une variante ne possèdent aucun constructeur sans paramètre et qu'une forme d'initialisation vide explicite s'avère donc impérative.
   </p>
 
   <!-- annahmen:
@@ -74,7 +73,7 @@
   -->
 
   <p class="ai-note">
-    Dieser Leitfaden basiert auf den strukturellen Metadaten und Typbeschreibungen der AUTOSAR Adaptive Platform Release R25-11.
+    Ce guide repose sur les métadonnées structurelles et les descriptions de types de l'AUTOSAR Adaptive Platform Release R25-11.
   </p>
 
 <div class="ai-commentary-actions">
@@ -292,44 +291,43 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="b22ce7de55b730ee369384666b1096e6a9d4b56f5f2e55ddc0acd6ed53d83b2b" data-trace-output="de91c3135fa173accf498c66a3a1d072f50aef34adc8321f4c870e679c99014f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;Contexte&lt;/h4&gt;
   &lt;p&gt;
-    Der Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform einen zustandslosen Einheitstyp (Unit Type) dar. Laut Spezifikationsbeschreibung dient die Struktur dem korrespondierenden Einsatz in Verbindung mit Varianten-Typen (&lt;code&gt;[variant]&lt;/code&gt;). In typisierten Unions bzw. Summentypen wie Variantenstrukturen wird ein dedizierter Typ benötigt, wenn ein Zustand repräsentiert werden soll, der keine Nutzdaten trägt.
+    Le type &lt;code&gt;ara::core::Monostate&lt;/code&gt; représente dans le module &lt;code&gt;core&lt;/code&gt; de l'AUTOSAR Adaptive Platform un type unité (unit type) sans état. Selon la description de la spécification, la structure est destinée à être utilisée conjointement avec des types variants (&lt;code&gt;[variant]&lt;/code&gt;). Dans les unions typées ou les types sommes tels que les structures variantes, un type dédié est requis lorsqu'un état ne portant aucune donnée utile doit être représenté.
   &lt;/p&gt;
   &lt;p&gt;
-    Als Kernkomponente des Basissystems interagiert &lt;code&gt;ara::core::Monostate&lt;/code&gt; primär mit generischen Datenstrukturen zur Typauswahl. Interpretation: Die Definition als &lt;code&gt;struct Monostate final&lt;/code&gt; dürfte sicherstellen, dass dieser Typ ausschließlich als distinkter Stellvertretertyp verwendet wird und keine abgeleiteten Spezialisierungen gestattet sind. Durch seine Existenz ermöglicht er es generischen Schnittstellen, eine leere Alternative explizit auf Typebene modellieren zu können, ohne auf zeigerbasierte Nullwerte oder unüberprüfte Sentinel-Werte zurückgreifen zu müssen.
+    En tant que composant central du système de base, &lt;code&gt;ara::core::Monostate&lt;/code&gt; interagit principalement avec des structures de données génériques pour la sélection de type. Interprétation : la définition en tant que &lt;code&gt;struct Monostate final&lt;/code&gt; devrait garantir que ce type est exclusivement utilisé comme un type substitut distinct et qu'aucune spécialisation dérivée n'est autorisée. Grâce à son existence, il permet aux interfaces génériques de modéliser explicitement une alternative vide au niveau des types, sans devoir recourir à des valeurs nulles basées sur des pointeurs ou à des sentinelles non vérifiées.
   &lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+  &lt;h4&gt;Cycle de vie&lt;/h4&gt;
   &lt;p&gt;
-    Der Lebenszyklus von &lt;code&gt;ara::core::Monostate&lt;/code&gt; ist trivial und an die Lebensdauer des Kontextes gebunden, in den die Struktur eingebettet wird. Da es sich um eine leere Datenstruktur handelt, belegt eine Instanz zur Laufzeit lediglich den minimalen, durch das C++-Objektmodell vorgeschriebenen Speicherplatz zur Wahrung einer eindeutigen Objektadresse, transportiert jedoch keinen dynamischen Zustand.
+    Le cycle de vie de &lt;code&gt;ara::core::Monostate&lt;/code&gt; est trivial et lié à la durée de vie du contexte dans lequel la structure est intégrée. Comme il s'agit d'une structure de données vide, une instance n'occupe à l'exécution que l'espace mémoire minimal prescrit par le modèle objet C++ pour garantir une adresse d'objet unique, sans transporter aucun état dynamique.
   &lt;/p&gt;
   &lt;p&gt;
-    Hinsichtlich der Erzeugung und Zerstörung gelten folgende Eigenschaften:
+    Concernant la création et la destruction, les propriétés suivantes s'appliquent :
   &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Instanzen können ohne zusätzliche Parameter konstruiert werden. Sie besitzen weder Ressourcen noch Zeiger auf externe Komponenten.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Zustandsmodell:&lt;/strong&gt; Es existieren keine internen Zustandsübergänge. Alle Instanzen dieses Typs sind zueinander äquivalent, da kein interner Status existiert, der voneinander abweichen könnte.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Besitzverhältnisse:&lt;/strong&gt; &lt;code&gt;ara::core::Monostate&lt;/code&gt; verwaltet keine dynamisch allokierten Ressourcen. Der Besitz liegt immer direkt bei der umgebenden Datenstruktur oder auf dem Stack des Aufrufers.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Da Instanzen keinen veränderlichen Zustand besitzen, sind Lese- und Kopiervorgänge thread-sicher, sofern keine Datenrennen auf den übergeordneten Speicherbereichen vorliegen.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Création :&lt;/strong&gt; les instances peuvent être construites sans paramètres supplémentaires. Elles ne possèdent ni ressources ni pointeurs vers des composants externes.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Modèle d'état :&lt;/strong&gt; il n'existe aucune transition d'état interne. Toutes les instances de ce type sont équivalentes entre elles, car aucun statut interne susceptible de diverger n'existe.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Relations de possession :&lt;/strong&gt; &lt;code&gt;ara::core::Monostate&lt;/code&gt; ne gère aucune ressource allouée dynamiquement. La possession incombe toujours directement à la structure de données englobante ou à la pile de l'appelant.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Concurrence :&lt;/strong&gt; étant donné que les instances ne possèdent aucun état mutable, les opérations de lecture et de copie sont thread-safe, tant qu'aucune concurrence critique sur les données n'affecte les zones mémoire sous-jacentes.&lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Vermutlich ist das Verhalten des Typs vollständig an das aus dem C++-Standard bekannte &lt;code&gt;std::monostate&lt;/code&gt; angelehnt, um nahtlos mit Move- und Copy-Semantiken generischer Container zusammenzuspielen. Die Zerstörung erfordert keine Bereinigungsaktionen und erfolgt trivial.
+    Le comportement de ce type est probablement entièrement inspiré de celui de &lt;code&gt;std::monostate&lt;/code&gt; issu du standard C++, afin d'interagir harmonieusement avec la sémantique de déplacement et de copie des conteneurs génériques. La destruction ne requiert aucune action de nettoyage et s'effectue de manière triviale.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;Parcours d'utilisation&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Ablauf bei der Verwendung von &lt;code&gt;ara::core::Monostate&lt;/code&gt; orientiert sich an der Modellierung von optionalen Zuständen oder Default-Konstruierbarkeit in Varianten:
+    Le déroulement typique lors de l'utilisation de &lt;code&gt;ara::core::Monostate&lt;/code&gt; s'oriente vers la modélisation d'états optionnels ou la constructibilité par défaut dans les variants :
   &lt;/p&gt;
   &lt;ol&gt;
-    &lt;li&gt;&lt;strong&gt;Typdefinition:&lt;/strong&gt; Eine Variantenstruktur wird so typisiert, dass &lt;code&gt;ara::core::Monostate&lt;/code&gt; als erste Alternative deklariert wird, wenn der Standardkonstruktor der Variante einen leeren oder inaktiven Zustand abbilden soll.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Bei der Standardkonstruktion der Variante nimmt diese den Zustand von &lt;code&gt;ara::core::Monostate&lt;/code&gt; an, ohne dass hierfür Nutzdaten initialisiert werden müssen.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Zustandsprüfung:&lt;/strong&gt; Vor der Verarbeitung prüft die verarbeitende Logik, ob die Variante derzeit den Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; hält, was fachlich das Fehlen eines konkreten Nutzdatenwertes anzeigt.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Überschreiben:&lt;/strong&gt; Sobald ein fachlicher Wert verfügbar ist, wird die Variante mit dem entsprechenden Nutzlasttyp belegt, wodurch der Monostate-Zustand verlassen wird.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Définition de type :&lt;/strong&gt; une structure variante est typée de manière à déclarer &lt;code&gt;ara::core::Monostate&lt;/code&gt; comme première alternative lorsque le constructeur par défaut de la variante doit représenter un état vide ou inactif.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Initialisation :&lt;/strong&gt; lors de la construction par défaut de la variante, celle-ci prend l'état de &lt;code&gt;ara::core::Monostate&lt;/code&gt; sans qu'aucune donnée utile ne doive être initialisée.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Vérification de l'état :&lt;/strong&gt; avant le traitement, la logique applicative vérifie si la variante contient actuellement le type &lt;code&gt;ara::core::Monostate&lt;/code&gt;, ce qui indique sur le plan fonctionnel l'absence d'une valeur concrète de donnée utile.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Écrasement :&lt;/strong&gt; dès qu'une valeur fonctionnelle est disponible, la variante reçoit le type de charge utile correspondant, quittant ainsi l'état monostate.&lt;/li&gt;
   &lt;/ol&gt;
   &lt;p&gt;
-    Interpretation: Der Typ dürfte vor allem dann zum Einsatz kommen, wenn die übrigen Alternativen einer Variante keinen parameterlosen Konstruktor besitzen und somit eine explizite leere Initialisierungsform zwingend erforderlich ist.
+    Interprétation : le type devrait principalement être utilisé lorsque les autres alternatives d'une variante ne possèdent aucun constructeur sans paramètre et qu'une forme d'initialisation vide explicite s'avère donc impérative.
   &lt;/p&gt;
 
   &lt;!-- annahmen:
@@ -339,7 +337,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
   --&gt;
 
   &lt;p class="ai-note"&gt;
-    Dieser Leitfaden basiert auf den strukturellen Metadaten und Typbeschreibungen der AUTOSAR Adaptive Platform Release R25-11.
+    Ce guide repose sur les métadonnées structurelles et les descriptions de types de l'AUTOSAR Adaptive Platform Release R25-11.
   &lt;/p&gt;
 
 

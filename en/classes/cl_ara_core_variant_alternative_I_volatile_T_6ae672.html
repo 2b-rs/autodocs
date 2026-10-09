@@ -24,53 +24,52 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>00637bd8ea46</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_alternative_I_volatile_T_6ae672/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/classes/cl_ara_core_variant_alternative_I_volatile_T_6ae672/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_alternative_I_volatile_T_6ae672" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Die Template-Struktur <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> fungiert als typbezogenes Metaprogrammierungs-Hilfskonstrukt innerhalb des Moduls <code>core</code> der AUTOSAR Adaptive Platform. Ihre Kernaufgabe besteht darin, zur Übersetzungszeit den Typ derjenigen Alternative zu ermitteln, die sich am nullbasierten Index <code>I</code> eines <code>volatile</code>-qualifizierten Variantentyps <code>T</code> befindet. Gemäß der Beschreibung richtet sich das Verhalten nach der korrespondierenden Verwendung von <code>[variant]</code> im C++-Standard.
+The template structure <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> acts as a type-related metaprogramming utility construct within the <code>core</code> module of the AUTOSAR Adaptive Platform. Its core responsibility is to determine, at compile time, the type of the alternative located at the zero-based index <code>I</code> of a <code>volatile</code>-qualified variant type <code>T</code>. According to the description, the behavior follows the corresponding usage of <code>[variant]</code> in the C++ standard.
 </p>
 <p>
-In generischen Bibliotheken interagiert diese partielle Spezialisierung eng mit <code>ara::core::variant</code> sowie anderen typinspektierenden Strukturen wie <code>variant_size</code>. Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante <code>ara::core::variant_alternative&lt;I, T&gt;</code> und qualifiziert das extrahierte Ergebnis anschließend mit <code>volatile</code>, um die cv-Qualifizierung des umschließenden Objekts konsistent auf die enthaltene Alternative zu übertragen.
+In generic libraries, this partial specialization interacts closely with <code>ara::core::variant</code> as well as other type-inspecting structures like <code>variant_size</code>. Interpretation: The specialization presumably delegates internally to the unqualified variant <code>ara::core::variant_alternative&lt;I, T&gt;</code> and subsequently qualifies the extracted result with <code>volatile</code> to consistently propagate the cv-qualification of the enclosing object to the contained alternative.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>Lifecycle</h4>
 <p>
-Als reines Hilfskonstrukt für Metaprogrammierung besitzt <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> keinen Laufzeit-Lebenszyklus. Es existieren weder Instanzen im Arbeitsspeicher noch Konstruktoren, Zerstörungsphasen oder dynamische Speicherverwaltungen. Die Struktur operiert vollständig zur Übersetzungszeit im C++-Compiler:
+As a pure utility construct for metaprogramming, <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> has no runtime lifecycle. There are neither instances in memory nor constructors, destruction phases, or dynamic memory management. The structure operates entirely at compile time within the C++ compiler:
 </p>
 <ul>
-<li><strong>Instanziierung:</strong> Der Compiler instanziiert die partielle Spezialisierung, sobald im Code auf einen Member-Typ zugegriffen wird.</li>
-<li><strong>Auflösung:</strong> Während der semantischen Analyse prüft der Compiler die Gültigkeit des Index <code>I</code> und bindet den resultierenden Typ an das Member-Alias.</li>
-<li><strong>Abschluss:</strong> Nach der Codegenerierung verbleiben keinerlei Spuren des Traits im generierten Maschinenprogramm.</li>
+<li><strong>Instantiation:</strong> The compiler instantiates the partial specialization as soon as a member type is accessed in code.</li>
+<li><strong>Resolution:</strong> During semantic analysis, the compiler checks the validity of the index <code>I</code> and binds the resulting type to the member alias.</li>
+<li><strong>Completion:</strong> After code generation, no traces whatsoever of the trait remain in the generated machine program.</li>
 </ul>
 <p>
-Themen der Nebenläufigkeit und Threadsicherheit entfallen zur Laufzeit vollkommen, da kein veränderlicher Speicherzustand vorliegt und Compile-Time-Transformationen inhärent seiteneffektfrei sind.
+Topics of concurrency and thread safety are completely eliminated at runtime, since there is no mutable memory state and compile-time transformations are inherently free of side effects.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Usage Path</h4>
 <p>
-Die Struktur wird typischerweise in generischen Algorithmen oder Metaprogrammierungs-Pipelines eingesetzt, wenn Typen aus <code>volatile</code>-qualifizierten Varianten extrahiert werden müssen:
+The structure is typically used in generic algorithms or metaprogramming pipelines when types must be extracted from <code>volatile</code>-qualified variants:
 </p>
 <ol>
-<li><strong>Angabe des Positionsindex:</strong> Der Entwickler übergibt den gewünschten Index <code>I</code> vom Typ <code>std::size_t</code> als statischen Template-Parameter.</li>
-<li><strong>Übergabe des Variantentyps:</strong> Ein <code>volatile</code>-qualifizierter Typ wird als Typargument <code>T</code> spezifiziert, beispielsweise <code>volatile ara::core::variant&lt;int, double, float&gt;</code>.</li>
-<li><strong>Typabfrage:</strong> Interpretation: Über den eingebetteten Typalias <code>type</code> (oder ein entsprechendes Alias-Template) wird der qualifizierte Alternativtyp abgefragt; bei Index 0 ergäbe dies im genannten Beispiel <code>volatile int</code>.</li>
-<li><strong>Verwendung in Signaturen:</strong> Der so extrahierte Typ wird als Rückgabe- oder Parametertyp generischer Zugriffsmethoden eingesetzt oder in statischen Assertionen weiterverarbeitet.</li>
+<li><strong>Specification of positional index:</strong> The developer passes the desired index <code>I</code> of type <code>std::size_t</code> as a static template parameter.</li>
+<li><strong>Passing the variant type:</strong> A <code>volatile</code>-qualified type is specified as type argument <code>T</code>, for example <code>volatile ara::core::variant&lt;int, double, float&gt;</code>.</li>
+<li><strong>Type query:</strong> Interpretation: Via the embedded type alias <code>type</code> (or a corresponding alias template), the qualified alternative type is queried; for index 0, this would yield <code>volatile int</code> in the example mentioned.</li>
+<li><strong>Usage in signatures:</strong> The type extracted in this way is used as a return or parameter type of generic accessor methods or processed further in static assertions.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Error Scenarios</h4>
 <p>
-Fehlerszenarien bei der Verwendung von <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> führen nicht zu Laufzeitausnahmen oder Fehlercodes, sondern treten als statische Übersetzungsfehler auf:
+Failure scenarios when using <code>ara::core::variant_alternative&lt;I, volatile T&gt;</code> do not lead to runtime exceptions or error codes, but manifest as static compilation errors:
 </p>
 <ul>
-<li><strong>Indexüberschreitung:</strong> Wird ein Wert für <code>I</code> gewählt, der größer oder gleich der Anzahl der Alternativen des Variantentyps <code>T</code> ist, schlägt die Typauflösung fehl. Interpretation: Der Compiler bricht die Übersetzung mit einem Fehler ab, da für diesen Index keine Spezialisierung oder Typdefinition existiert.</li>
-<li><strong>Inkompatibler Typ <code>T</code>:</strong> Wird ein Typ übergeben, der keine Variante darstellt und für den keine primäre Definition von <code>variant_alternative</code> greift, scheitert die Template-Instanziierung.</li>
-<li><strong>Einschränkungen von <code>volatile</code>:</strong> Bei der weiteren Verwendung des resultierenden Typs in modernen C++-Umgebungen sind eventuelle Restriktionen für flüchtige Operationen auf zusammengesetzten Typen zu beachten.</li>
+<li><strong>Index out of bounds:</strong> If a value is chosen for <code>I</code> that is greater than or equal to the number of alternatives of the variant type <code>T</code>, type resolution fails. Interpretation: The compiler aborts compilation with an error because no specialization or type definition exists for this index.</li>
+<li><strong>Incompatible type <code>T</code>:</strong> If a type is passed that does not represent a variant and for which no primary definition of <code>variant_alternative</code> takes effect, template instantiation fails.</li>
+<li><strong>Restrictions of <code>volatile</code>:</strong> When using the resulting type further in modern C++ environments, possible restrictions for volatile operations on compound types must be observed.</li>
 </ul>
 
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform für das Release R25-11.</p>
+<p class="ai-note">This guide is based on the specification data of the AUTOSAR Adaptive Platform for release R25-11.</p>
 <!-- annahmen: 1) Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante ara::core::variant_alternative<I, T> und fügt volatile hinzu – Begründung: Verhalten analog zur C++-Standardspezifikation [variant]. 2) Interpretation: Die Typabfrage erfolgt über das Member-Alias type – Begründung: Orientierung am Standardvorbild std::variant_alternative. 3) Interpretation: Ein ungültiger Index I führt zu einem harten Übersetzungsfehler – Begründung: Typische Ausprägung von Compile-Time-Traits ohne Fallback im ISO-C++-Standard. -->
 
 <div class="ai-commentary-actions">
@@ -288,50 +287,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="00637bd8ea46e06b9357992a4eaf1726caad26c9269792d822e322a3c0a38507" data-trace-output="0418ea16c07558e689e3bc8ce43471570ca62d8a3ef29ee523773ba2e0c51751" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Die Template-Struktur &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; fungiert als typbezogenes Metaprogrammierungs-Hilfskonstrukt innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform. Ihre Kernaufgabe besteht darin, zur Übersetzungszeit den Typ derjenigen Alternative zu ermitteln, die sich am nullbasierten Index &lt;code&gt;I&lt;/code&gt; eines &lt;code&gt;volatile&lt;/code&gt;-qualifizierten Variantentyps &lt;code&gt;T&lt;/code&gt; befindet. Gemäß der Beschreibung richtet sich das Verhalten nach der korrespondierenden Verwendung von &lt;code&gt;[variant]&lt;/code&gt; im C++-Standard.
+The template structure &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; acts as a type-related metaprogramming utility construct within the &lt;code&gt;core&lt;/code&gt; module of the AUTOSAR Adaptive Platform. Its core responsibility is to determine, at compile time, the type of the alternative located at the zero-based index &lt;code&gt;I&lt;/code&gt; of a &lt;code&gt;volatile&lt;/code&gt;-qualified variant type &lt;code&gt;T&lt;/code&gt;. According to the description, the behavior follows the corresponding usage of &lt;code&gt;[variant]&lt;/code&gt; in the C++ standard.
 &lt;/p&gt;
 &lt;p&gt;
-In generischen Bibliotheken interagiert diese partielle Spezialisierung eng mit &lt;code&gt;ara::core::variant&lt;/code&gt; sowie anderen typinspektierenden Strukturen wie &lt;code&gt;variant_size&lt;/code&gt;. Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante &lt;code&gt;ara::core::variant_alternative&amp;lt;I, T&amp;gt;&lt;/code&gt; und qualifiziert das extrahierte Ergebnis anschließend mit &lt;code&gt;volatile&lt;/code&gt;, um die cv-Qualifizierung des umschließenden Objekts konsistent auf die enthaltene Alternative zu übertragen.
+In generic libraries, this partial specialization interacts closely with &lt;code&gt;ara::core::variant&lt;/code&gt; as well as other type-inspecting structures like &lt;code&gt;variant_size&lt;/code&gt;. Interpretation: The specialization presumably delegates internally to the unqualified variant &lt;code&gt;ara::core::variant_alternative&amp;lt;I, T&amp;gt;&lt;/code&gt; and subsequently qualifies the extracted result with &lt;code&gt;volatile&lt;/code&gt; to consistently propagate the cv-qualification of the enclosing object to the contained alternative.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
 &lt;p&gt;
-Als reines Hilfskonstrukt für Metaprogrammierung besitzt &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; keinen Laufzeit-Lebenszyklus. Es existieren weder Instanzen im Arbeitsspeicher noch Konstruktoren, Zerstörungsphasen oder dynamische Speicherverwaltungen. Die Struktur operiert vollständig zur Übersetzungszeit im C++-Compiler:
+As a pure utility construct for metaprogramming, &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; has no runtime lifecycle. There are neither instances in memory nor constructors, destruction phases, or dynamic memory management. The structure operates entirely at compile time within the C++ compiler:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Der Compiler instanziiert die partielle Spezialisierung, sobald im Code auf einen Member-Typ zugegriffen wird.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auflösung:&lt;/strong&gt; Während der semantischen Analyse prüft der Compiler die Gültigkeit des Index &lt;code&gt;I&lt;/code&gt; und bindet den resultierenden Typ an das Member-Alias.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abschluss:&lt;/strong&gt; Nach der Codegenerierung verbleiben keinerlei Spuren des Traits im generierten Maschinenprogramm.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Instantiation:&lt;/strong&gt; The compiler instantiates the partial specialization as soon as a member type is accessed in code.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Resolution:&lt;/strong&gt; During semantic analysis, the compiler checks the validity of the index &lt;code&gt;I&lt;/code&gt; and binds the resulting type to the member alias.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Completion:&lt;/strong&gt; After code generation, no traces whatsoever of the trait remain in the generated machine program.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Themen der Nebenläufigkeit und Threadsicherheit entfallen zur Laufzeit vollkommen, da kein veränderlicher Speicherzustand vorliegt und Compile-Time-Transformationen inhärent seiteneffektfrei sind.
+Topics of concurrency and thread safety are completely eliminated at runtime, since there is no mutable memory state and compile-time transformations are inherently free of side effects.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Usage Path&lt;/h4&gt;
 &lt;p&gt;
-Die Struktur wird typischerweise in generischen Algorithmen oder Metaprogrammierungs-Pipelines eingesetzt, wenn Typen aus &lt;code&gt;volatile&lt;/code&gt;-qualifizierten Varianten extrahiert werden müssen:
+The structure is typically used in generic algorithms or metaprogramming pipelines when types must be extracted from &lt;code&gt;volatile&lt;/code&gt;-qualified variants:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Angabe des Positionsindex:&lt;/strong&gt; Der Entwickler übergibt den gewünschten Index &lt;code&gt;I&lt;/code&gt; vom Typ &lt;code&gt;std::size_t&lt;/code&gt; als statischen Template-Parameter.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe des Variantentyps:&lt;/strong&gt; Ein &lt;code&gt;volatile&lt;/code&gt;-qualifizierter Typ wird als Typargument &lt;code&gt;T&lt;/code&gt; spezifiziert, beispielsweise &lt;code&gt;volatile ara::core::variant&amp;lt;int, double, float&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Typabfrage:&lt;/strong&gt; Interpretation: Über den eingebetteten Typalias &lt;code&gt;type&lt;/code&gt; (oder ein entsprechendes Alias-Template) wird der qualifizierte Alternativtyp abgefragt; bei Index 0 ergäbe dies im genannten Beispiel &lt;code&gt;volatile int&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verwendung in Signaturen:&lt;/strong&gt; Der so extrahierte Typ wird als Rückgabe- oder Parametertyp generischer Zugriffsmethoden eingesetzt oder in statischen Assertionen weiterverarbeitet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Specification of positional index:&lt;/strong&gt; The developer passes the desired index &lt;code&gt;I&lt;/code&gt; of type &lt;code&gt;std::size_t&lt;/code&gt; as a static template parameter.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Passing the variant type:&lt;/strong&gt; A &lt;code&gt;volatile&lt;/code&gt;-qualified type is specified as type argument &lt;code&gt;T&lt;/code&gt;, for example &lt;code&gt;volatile ara::core::variant&amp;lt;int, double, float&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Type query:&lt;/strong&gt; Interpretation: Via the embedded type alias &lt;code&gt;type&lt;/code&gt; (or a corresponding alias template), the qualified alternative type is queried; for index 0, this would yield &lt;code&gt;volatile int&lt;/code&gt; in the example mentioned.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Usage in signatures:&lt;/strong&gt; The type extracted in this way is used as a return or parameter type of generic accessor methods or processed further in static assertions.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
 &lt;p&gt;
-Fehlerszenarien bei der Verwendung von &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; führen nicht zu Laufzeitausnahmen oder Fehlercodes, sondern treten als statische Übersetzungsfehler auf:
+Failure scenarios when using &lt;code&gt;ara::core::variant_alternative&amp;lt;I, volatile T&amp;gt;&lt;/code&gt; do not lead to runtime exceptions or error codes, but manifest as static compilation errors:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Indexüberschreitung:&lt;/strong&gt; Wird ein Wert für &lt;code&gt;I&lt;/code&gt; gewählt, der größer oder gleich der Anzahl der Alternativen des Variantentyps &lt;code&gt;T&lt;/code&gt; ist, schlägt die Typauflösung fehl. Interpretation: Der Compiler bricht die Übersetzung mit einem Fehler ab, da für diesen Index keine Spezialisierung oder Typdefinition existiert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Inkompatibler Typ &lt;code&gt;T&lt;/code&gt;:&lt;/strong&gt; Wird ein Typ übergeben, der keine Variante darstellt und für den keine primäre Definition von &lt;code&gt;variant_alternative&lt;/code&gt; greift, scheitert die Template-Instanziierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Einschränkungen von &lt;code&gt;volatile&lt;/code&gt;:&lt;/strong&gt; Bei der weiteren Verwendung des resultierenden Typs in modernen C++-Umgebungen sind eventuelle Restriktionen für flüchtige Operationen auf zusammengesetzten Typen zu beachten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Index out of bounds:&lt;/strong&gt; If a value is chosen for &lt;code&gt;I&lt;/code&gt; that is greater than or equal to the number of alternatives of the variant type &lt;code&gt;T&lt;/code&gt;, type resolution fails. Interpretation: The compiler aborts compilation with an error because no specialization or type definition exists for this index.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Incompatible type &lt;code&gt;T&lt;/code&gt;:&lt;/strong&gt; If a type is passed that does not represent a variant and for which no primary definition of &lt;code&gt;variant_alternative&lt;/code&gt; takes effect, template instantiation fails.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Restrictions of &lt;code&gt;volatile&lt;/code&gt;:&lt;/strong&gt; When using the resulting type further in modern C++ environments, possible restrictions for volatile operations on compound types must be observed.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform für das Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;This guide is based on the specification data of the AUTOSAR Adaptive Platform for release R25-11.&lt;/p&gt;
 &lt;!-- annahmen: 1) Interpretation: Die Spezialisierung delegiert vermutlich intern an die unqualifizierte Variante ara::core::variant_alternative&lt;I, T&gt; und fügt volatile hinzu – Begründung: Verhalten analog zur C++-Standardspezifikation [variant]. 2) Interpretation: Die Typabfrage erfolgt über das Member-Alias type – Begründung: Orientierung am Standardvorbild std::variant_alternative. 3) Interpretation: Ein ungültiger Index I führt zu einem harten Übersetzungsfehler – Begründung: Typische Ausprägung von Compile-Time-Traits ohne Fallback im ISO-C++-Standard. --&gt;
 
 

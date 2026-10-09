@@ -24,36 +24,35 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>5744f7a43f93</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Datenstruktur <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface9&gt;StopOutput</code> ist Bestandteil des Moduls <code>diag</code> innerhalb der AUTOSAR Adaptive Platform im Release R25-11. Gemäß der Modellspezifikation fungiert dieser Typ als strukturierter Datenbehälter, der die Ausgabeargumente für das Beenden einer Diagnoseroutine bündelt (<em>Structure wrapping the out arguments for a Stop</em>).</p>
+<h4>上下文</h4>
+<p>数据结构 <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface9&gt;StopOutput</code> 是 AUTOSAR Adaptive Platform 在 Release R25-11 中模块 <code>diag</code> 的组成部分。根据模型规范，该类型用作结构化数据容器，用于捆绑终止诊断例程的输出参数（<em>Structure wrapping the out arguments for a Stop</em>）。</p>
 
-<p>In der fahrzeugbezogenen Diagnosekommunikation werden Routinen typischerweise über definierte Diagnoseanfragen gestartet, überwacht und gezielt angehalten. Die Schnittstelle einer Diagnoseroutine definiert für das Stoppen neben möglichen Eingangsdaten auch die Ausgabedaten, die nach Ausführung der Stop-Funktionalität an die anfragende Diagnoseinstanz zurückübermittelt werden müssen. An dieser Stelle übernimmt <code>&lt;RoutineInterface9&gt;StopOutput</code> die Rolle eines standardisierten Ausgabetyps. Interpretation: Die Struktur dient vermutlich als Datenübertragungsobjekt (Data Transfer Object), welches die modellspezifisch generierten Ausgabeparameter der Stop-Operation aggregiert und dem Diagnose-Framework der Adaptive Platform in typisierter C++-Form bereitstellt.</p>
+<p>在车辆相关诊断通信中，例程通常通过定义的诊断请求进行启动、监视和有针对性地停止。诊断例程的接口除了定义可能的输入数据外，还为停止操作定义了在执行停止功能后必须向发出请求的诊断实体返回的输出数据。在此处，<code>&lt;RoutineInterface9&gt;StopOutput</code> 承担了标准化输出类型的角色。解读：该结构推测用作数据传输对象（Data Transfer Object），它聚合了停止操作中特定于模型生成的输出参数，并以类型化的 C++ 形式提供给 Adaptive Platform 的诊断框架。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Als reine Datenstruktur (<code>struct</code>) besitzt <code>&lt;RoutineInterface9&gt;StopOutput</code> eine einfache und an Standardaufrufkonventionen orientierte Lebensdauer. Sie dient der reinen Kapselung von Ergebniswerten und besitzt keine eigene interne Zustandsverwaltung.</p>
+<h4>生命周期</h4>
+<p>作为纯数据结构（<code>struct</code>），<code>&lt;RoutineInterface9&gt;StopOutput</code> 具有简单且面向标准调用约定的生命周期。它仅用于封装结果值，没有自身的内部状态管理。</p>
 
-<p>Interpretation: Die Instanziierung der Struktur erfolgt vermutlich direkt durch die implementierende Anwendungslogik, sobald der Befehl zum Stoppen der Diagnoseroutine erfolgreich ausgeführt wurde. Dabei wird das Objekt im lokalen Kontext erzeugt und mit den ermittelten Ergebniswerten belegt.</p>
+<p>解读：推测一旦停止诊断例程的命令执行成功，该结构的实例化直接由实现的应用逻辑进行。此时，对象在局部上下文中创建并填充获取的结果值。</p>
 
-<p>Da es sich um einen reinen Wertetyp handelt, wird die Struktur nach der Erzeugung an das Diagnose-Framework übergeben. Nach der Konvertierung beziehungsweise Serialisierung der enthaltenen Felder in das Diagnoseantwortprotokoll endet die Lebensdauer der Instanz, und die reservierten Ressourcen werden automatisch freigegeben. Nebenläufige Zugriffe finden auf Ebene der Struktur in der Regel nicht statt, da jede Beendigungsoperation einer Routine ein eigenes, isoliertes Ausgabeobjekt erzeugt und verarbeitet.</p>
+<p>由于它属于纯值类型，因此该结构在创建后被传递给诊断框架。在将所包含的字段转换或序列化到诊断响应协议中之后，实例的生命周期结束，预留的资源被自动释放。在结构级别通常不会发生并发访问，因为例程的每次终止操作都会创建并处理一个独立的、隔离的输出对象。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Nutzungspfad von <code>&lt;RoutineInterface9&gt;StopOutput</code> vollzieht sich im Rahmen der Bearbeitung einer Diagnoseanforderung zum Anhalten einer Diagnoseroutine:</p>
+<h4>使用路径</h4>
+<p><code>&lt;RoutineInterface9&gt;StopOutput</code> 的典型使用路径在处理停止诊断例程的诊断请求框架下展开：</p>
 
 <ul>
-<li><strong>Anforderungsempfang:</strong> Das Modul <code>diag</code> empfängt die Aufforderung zum Stoppen der aktiven Diagnoseroutine und leitet diese an die registrierte Softwarekomponente weiter.</li>
-<li><strong>Abarbeitung der Routinenlogik:</strong> Die anwendungsspezifische Logik führt die notwendigen Aktionen durch, um den Routinebetrieb kontrolliert zu beenden, und erfasst die anfallenden Ausgabedaten.</li>
-<li><strong>Erzeugung und Befüllung:</strong> Die Anwendung instanziiert <code>&lt;RoutineInterface9&gt;StopOutput</code> und setzt die ermittelten Rückgabewerte in die dafür vorgesehenen Member-Variablen. Interpretation: Die Struktur dürfte systemspezifisch über genau die Attribute verfügen, die im Datenmodell der Schnittstelle für die Ausgabeparameter des Stop-Dienstes deklariert wurden.</li>
-<li><strong>Ergebnisübergabe:</strong> Die befüllte Struktur wird als Ergebnis der Operation an die Diagnoselaufzeitumgebung übergeben.</li>
-<li><strong>Antwortgenerierung:</strong> Das Framework überführt die Daten in die positive Diagnoserückmeldung und sendet das Antworttelegramm an den Diagnosetester.</li>
+<li><strong>接收请求：</strong>模块 <code>diag</code> 接收停止活动诊断例程的请求，并将其转发给已注册的软件组件。</li>
+<li><strong>执行例程逻辑：</strong>应用特定逻辑执行必要的操作以受控地终止例程运行，并采集产生的输出数据。</li>
+<li><strong>创建与填充：</strong>应用实例化 <code>&lt;RoutineInterface9&gt;StopOutput</code> 并将获取的返回值设置到为此预留的成员变量中。解读：该结构在系统特定实现中应当恰好具有在接口数据模型中为 Stop 服务的输出参数所声明的属性。</li>
+<li><strong>结果传递：</strong>将填充后的结构作为操作结果传递给诊断运行时环境。</li>
+<li><strong>生成响应：</strong>框架将数据转换至肯定诊断响应中，并将响应报文发送给诊断仪。</li>
 </ul>
 
-<p>Durch diese Trennung von reiner Datenhaltung und Protokollverarbeitung interagiert die Diagnoseanwendung ausschließlich über eine typsichere C++-Schnittstelle.</p>
+<p>通过纯数据保存与协议处理的这种分离，诊断应用仅通过类型安全的 C++ 接口进行交互。</p>
 
-<p class="ai-note">Dieser Leitfaden basiert auf der formalen Deklaration der Struktur im Modul diag für die Adaptive Platform (Release R25-11).</p>
+<p class="ai-note">本指南基于 Adaptive Platform（Release R25-11）中 diag 模块内该结构的形式化声明。</p>
 <!-- annahmen: 1) Die Struktur dient vermutlich als Datenübertragungsobjekt (Data Transfer Object), welches modellspezifisch generierte Ausgabeparameter aggregiert. – Begründung: Der Payload beschreibt die Klasse als "Structure wrapping the out arguments for a Stop", spezifiziert jedoch keine Member-Variablen.
 2) Die Instanziierung erfolgt vermutlich direkt durch die Anwendungslogik bei der Beendigung der Routine und wird als Ergebnisobjekt an das Framework übergeben. – Begründung: Der Payload weist eine C++-struct ohne spezifische Fabrik- oder Erzeugungsmethoden aus.
 3) Die Struktur dürfte systemspezifisch über genau die Attribute verfügen, die im Datenmodell für die Stop-Ausgabeparameter deklariert wurden. – Begründung: Bezeichner mit Platzhaltern wie <RoutineInterface> kennzeichnen Schnittstellen-Templates, deren konkrete Felder modellbasiert generiert werden. -->
@@ -273,33 +272,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5744f7a43f9390e3d1e6c9e04e8babedbb2dc8b312d8b7041405140cf0d93115" data-trace-output="82211226224441fef4ef9e6d311a60b631df98c9f4ca4ca86070ada949b2eb7d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Datenstruktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform im Release R25-11. Gemäß der Modellspezifikation fungiert dieser Typ als strukturierter Datenbehälter, der die Ausgabeargumente für das Beenden einer Diagnoseroutine bündelt (&lt;em&gt;Structure wrapping the out arguments for a Stop&lt;/em&gt;).&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;数据结构 &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; 是 AUTOSAR Adaptive Platform 在 Release R25-11 中模块 &lt;code&gt;diag&lt;/code&gt; 的组成部分。根据模型规范，该类型用作结构化数据容器，用于捆绑终止诊断例程的输出参数（&lt;em&gt;Structure wrapping the out arguments for a Stop&lt;/em&gt;）。&lt;/p&gt;
 
-&lt;p&gt;In der fahrzeugbezogenen Diagnosekommunikation werden Routinen typischerweise über definierte Diagnoseanfragen gestartet, überwacht und gezielt angehalten. Die Schnittstelle einer Diagnoseroutine definiert für das Stoppen neben möglichen Eingangsdaten auch die Ausgabedaten, die nach Ausführung der Stop-Funktionalität an die anfragende Diagnoseinstanz zurückübermittelt werden müssen. An dieser Stelle übernimmt &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; die Rolle eines standardisierten Ausgabetyps. Interpretation: Die Struktur dient vermutlich als Datenübertragungsobjekt (Data Transfer Object), welches die modellspezifisch generierten Ausgabeparameter der Stop-Operation aggregiert und dem Diagnose-Framework der Adaptive Platform in typisierter C++-Form bereitstellt.&lt;/p&gt;
+&lt;p&gt;在车辆相关诊断通信中，例程通常通过定义的诊断请求进行启动、监视和有针对性地停止。诊断例程的接口除了定义可能的输入数据外，还为停止操作定义了在执行停止功能后必须向发出请求的诊断实体返回的输出数据。在此处，&lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; 承担了标准化输出类型的角色。解读：该结构推测用作数据传输对象（Data Transfer Object），它聚合了停止操作中特定于模型生成的输出参数，并以类型化的 C++ 形式提供给 Adaptive Platform 的诊断框架。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Als reine Datenstruktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; eine einfache und an Standardaufrufkonventionen orientierte Lebensdauer. Sie dient der reinen Kapselung von Ergebniswerten und besitzt keine eigene interne Zustandsverwaltung.&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;作为纯数据结构（&lt;code&gt;struct&lt;/code&gt;），&lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; 具有简单且面向标准调用约定的生命周期。它仅用于封装结果值，没有自身的内部状态管理。&lt;/p&gt;
 
-&lt;p&gt;Interpretation: Die Instanziierung der Struktur erfolgt vermutlich direkt durch die implementierende Anwendungslogik, sobald der Befehl zum Stoppen der Diagnoseroutine erfolgreich ausgeführt wurde. Dabei wird das Objekt im lokalen Kontext erzeugt und mit den ermittelten Ergebniswerten belegt.&lt;/p&gt;
+&lt;p&gt;解读：推测一旦停止诊断例程的命令执行成功，该结构的实例化直接由实现的应用逻辑进行。此时，对象在局部上下文中创建并填充获取的结果值。&lt;/p&gt;
 
-&lt;p&gt;Da es sich um einen reinen Wertetyp handelt, wird die Struktur nach der Erzeugung an das Diagnose-Framework übergeben. Nach der Konvertierung beziehungsweise Serialisierung der enthaltenen Felder in das Diagnoseantwortprotokoll endet die Lebensdauer der Instanz, und die reservierten Ressourcen werden automatisch freigegeben. Nebenläufige Zugriffe finden auf Ebene der Struktur in der Regel nicht statt, da jede Beendigungsoperation einer Routine ein eigenes, isoliertes Ausgabeobjekt erzeugt und verarbeitet.&lt;/p&gt;
+&lt;p&gt;由于它属于纯值类型，因此该结构在创建后被传递给诊断框架。在将所包含的字段转换或序列化到诊断响应协议中之后，实例的生命周期结束，预留的资源被自动释放。在结构级别通常不会发生并发访问，因为例程的每次终止操作都会创建并处理一个独立的、隔离的输出对象。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; vollzieht sich im Rahmen der Bearbeitung einer Diagnoseanforderung zum Anhalten einer Diagnoseroutine:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; 的典型使用路径在处理停止诊断例程的诊断请求框架下展开：&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Anforderungsempfang:&lt;/strong&gt; Das Modul &lt;code&gt;diag&lt;/code&gt; empfängt die Aufforderung zum Stoppen der aktiven Diagnoseroutine und leitet diese an die registrierte Softwarekomponente weiter.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abarbeitung der Routinenlogik:&lt;/strong&gt; Die anwendungsspezifische Logik führt die notwendigen Aktionen durch, um den Routinebetrieb kontrolliert zu beenden, und erfasst die anfallenden Ausgabedaten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Befüllung:&lt;/strong&gt; Die Anwendung instanziiert &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; und setzt die ermittelten Rückgabewerte in die dafür vorgesehenen Member-Variablen. Interpretation: Die Struktur dürfte systemspezifisch über genau die Attribute verfügen, die im Datenmodell der Schnittstelle für die Ausgabeparameter des Stop-Dienstes deklariert wurden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ergebnisübergabe:&lt;/strong&gt; Die befüllte Struktur wird als Ergebnis der Operation an die Diagnoselaufzeitumgebung übergeben.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Antwortgenerierung:&lt;/strong&gt; Das Framework überführt die Daten in die positive Diagnoserückmeldung und sendet das Antworttelegramm an den Diagnosetester.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;接收请求：&lt;/strong&gt;模块 &lt;code&gt;diag&lt;/code&gt; 接收停止活动诊断例程的请求，并将其转发给已注册的软件组件。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;执行例程逻辑：&lt;/strong&gt;应用特定逻辑执行必要的操作以受控地终止例程运行，并采集产生的输出数据。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;创建与填充：&lt;/strong&gt;应用实例化 &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; 并将获取的返回值设置到为此预留的成员变量中。解读：该结构在系统特定实现中应当恰好具有在接口数据模型中为 Stop 服务的输出参数所声明的属性。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;结果传递：&lt;/strong&gt;将填充后的结构作为操作结果传递给诊断运行时环境。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;生成响应：&lt;/strong&gt;框架将数据转换至肯定诊断响应中，并将响应报文发送给诊断仪。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Durch diese Trennung von reiner Datenhaltung und Protokollverarbeitung interagiert die Diagnoseanwendung ausschließlich über eine typsichere C++-Schnittstelle.&lt;/p&gt;
+&lt;p&gt;通过纯数据保存与协议处理的这种分离，诊断应用仅通过类型安全的 C++ 接口进行交互。&lt;/p&gt;
 
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der formalen Deklaration der Struktur im Modul diag für die Adaptive Platform (Release R25-11).&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 Adaptive Platform（Release R25-11）中 diag 模块内该结构的形式化声明。&lt;/p&gt;
 &lt;!-- annahmen: 1) Die Struktur dient vermutlich als Datenübertragungsobjekt (Data Transfer Object), welches modellspezifisch generierte Ausgabeparameter aggregiert. – Begründung: Der Payload beschreibt die Klasse als "Structure wrapping the out arguments for a Stop", spezifiziert jedoch keine Member-Variablen.
 2) Die Instanziierung erfolgt vermutlich direkt durch die Anwendungslogik bei der Beendigung der Routine und wird als Ergebnisobjekt an das Framework übergeben. – Begründung: Der Payload weist eine C++-struct ohne spezifische Fabrik- oder Erzeugungsmethoden aus.
 3) Die Struktur dürfte systemspezifisch über genau die Attribute verfügen, die im Datenmodell für die Stop-Ausgabeparameter deklariert wurden. – Begründung: Bezeichner mit Platzhaltern wie &lt;RoutineInterface&gt; kennzeichnen Schnittstellen-Templates, deren konkrete Felder modellbasiert generiert werden. --&gt;

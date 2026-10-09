@@ -24,57 +24,56 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>e99044a03d11</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ru/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" data-view-mode="editor" title="Открыть редактор курации и досье" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Курировать</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Контекст</h4>
 <p>
-Die Datenstruktur <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> ist Bestandteil des Moduls <code>diag</code> innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation <code>ReadOutput</code> zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+Структура данных <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> является частью модуля <code>diag</code> в составе AUTOSAR Adaptive Platform для релиза R25-11. Ее основная задача заключается в том, чтобы объединить выходные аргументы для операции <code>ReadOutput</code> и предоставить их в виде типизированной транспортной структуры.
 </p>
 <p>
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+В диагностических приложениях эта конструкция данных инкапсулирует прочитанные полезные данные и связанные выходные параметры конкретного Data Identifier (DID). Вместо передачи нескольких отдельных возвращаемых параметров через указатели или ссылки структура объединяет все результирующие значения в единое целое. Партнеры по взаимодействию включают внутренний диагностический сервер, реализующий прикладной уровень, а также сгенерированный интерфейс соответствующего Data Identifier. Интерпретация: структура, вероятно, выступает в качестве стандартизированного контейнера возвращаемых значений, который передается внутри цепочек асинхронных вызовов для сохранения согласованности определения интерфейса.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>Жизненный цикл</h4>
 <p>
-Als reine Datenkapsel (Data Transfer Object) besitzt <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+Будучи чистой капсулой данных (Data Transfer Object), <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> обычно имеет характер объекта-значения (Value Object). Создание выполняется применительно к конкретному экземпляру, как только обрабатывается запрос на чтение для соответствующего Data Identifier.
 </p>
 <p>
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+Отношения владения зависят от выбранного механизма передачи:
 </p>
 <ul>
-<li><strong>Erzeugung:</strong> Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.</li>
-<li><strong>Übergabe und Transport:</strong> Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.</li>
-<li><strong>Zerstörung:</strong> Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.</li>
+<li><strong>Создание:</strong> создание экземпляра происходит, предположительно, на стороне предоставляющей логики приложения, которая определяет запрошенные диагностические значения и встраивает их в поля структуры.</li>
+<li><strong>Передача и транспортировка:</strong> объект передается вызывающему уровню управления диагностикой путем копирования или перемещения (семантика перемещения). При передаче через границы интерфейса владение переходит к получателю.</li>
+<li><strong>Уничтожение:</strong> время жизни автоматически завершается при выходе из области видимости получателя или после завершения сериализации для диагностического ответа.</li>
 </ul>
 <p>
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+Поскольку структура не имеет собственного потока управления, она не управляет внутренними конечными автоматами. Что касается параллелизма: так как это чистый агрегат данных, внутренний механизм синхронизации, вероятно, отсутствует, поэтому одновременный доступ на чтение и запись из разных потоков должен синхронизироваться извне.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Путь использования</h4>
 <p>
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+Типичное использование структуры данных следует фиксированной последовательности в рамках диагностического запроса на чтение Data Identifier:
 </p>
 <ol>
-<li><strong>Anfrageempfang:</strong> Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle <code>&lt;DataIdentifierInterface&gt;</code> zu.</li>
-<li><strong>Verarbeitung und Datenermittlung:</strong> Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.</li>
-<li><strong>Zuweisung:</strong> Eine Instanz von <code>&lt;DataIdentifier&gt;ReadOutput</code> wird deklariert und mit den ermittelten Ergebniswerten befüllt.</li>
-<li><strong>Rückmeldung:</strong> Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.</li>
-<li><strong>Ressourcenfreigabe:</strong> Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.</li>
+<li><strong>Прием запроса:</strong> диагностический клиент запрашивает чтение Data Identifier по стандартизированным диагностическим протоколам. Диагностический стек сопоставляет этот запрос с соответствующим интерфейсом <code>&lt;DataIdentifierInterface&gt;</code>.</li>
+<li><strong>Обработка и определение данных:</strong> отвечающая функция приложения определяет актуальные значения данных подсистемы автомобиля или внутренней памяти.</li>
+<li><strong>Присваивание:</strong> объявляется экземпляр <code>&lt;DataIdentifier&gt;ReadOutput</code> и заполняется определенными результирующими значениями.</li>
+<li><strong>Обратная связь:</strong> заполненная структура возвращается в диагностический фреймворк, который считывает поля, форматирует диагностические сообщения и отправляет ответ диагностическому клиенту.</li>
+<li><strong>Освобождение ресурсов:</strong> после успешной передачи и обработки экземпляр уничтожается.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Сценарии ошибок</h4>
 <p>
-Als reine Datenstruktur löst <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+Являясь чистой структурой данных, <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> сама по себе не генерирует функциональных кодов ошибок или исключений. Однако потенциальные ошибочные состояния возникают в контексте использования:
 </p>
 <ul>
-<li><strong>Unvollständige Initialisierung:</strong> Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.</li>
-<li><strong>Bereitstellungsfehler:</strong> Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.</li>
-<li><strong>Gültigkeitsbereichsverletzungen:</strong> Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.</li>
+<li><strong>Неполная инициализация:</strong> если перед возвратом не все обязательные выходные параметры заполнены корректно, нижележащие уровни могут сформировать неполные или несогласованные диагностические ответы. Предварительным условием для возврата всегда является полное заполнение всех определенных полей.</li>
+<li><strong>Ошибки предоставления:</strong> если логика приложения не может определить требуемые значения (например, из-за ошибок датчиков или шины), обычно передается не валидный экземпляр структуры, а сообщается соответствующий диагностический код ошибки.</li>
+<li><strong>Нарушения области видимости:</strong> при асинхронной передаче необходимо обеспечить, чтобы структура данных не освобождалась преждевременно, пока к ней обращаются ссылающиеся компоненты.</li>
 </ul>
 <!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls <code>diag</code> (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.</p>
+<p class="ai-note">Это руководство основано на структурных метаданных модуля AUTOSAR Adaptive <code>diag</code> (релиз R25-11). Специфические требования к интерфейсам и определения полей данных приведены в соответствующей спецификации модуля.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" title="Обсудить с ИИ">💬 Обсудить с ИИ</button>
@@ -291,54 +290,53 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e99044a03d11e8b09b129f1b5c47ea5922c27eb4b52d94473eae5fa72ded1446" data-trace-output="5b21e6473f1200bb788b607a95f4bbc5672f78e6a2a7c1c616413fdea8550597" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Контекст&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation &lt;code&gt;ReadOutput&lt;/code&gt; zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+Структура данных &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; является частью модуля &lt;code&gt;diag&lt;/code&gt; в составе AUTOSAR Adaptive Platform для релиза R25-11. Ее основная задача заключается в том, чтобы объединить выходные аргументы для операции &lt;code&gt;ReadOutput&lt;/code&gt; и предоставить их в виде типизированной транспортной структуры.
 &lt;/p&gt;
 &lt;p&gt;
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+В диагностических приложениях эта конструкция данных инкапсулирует прочитанные полезные данные и связанные выходные параметры конкретного Data Identifier (DID). Вместо передачи нескольких отдельных возвращаемых параметров через указатели или ссылки структура объединяет все результирующие значения в единое целое. Партнеры по взаимодействию включают внутренний диагностический сервер, реализующий прикладной уровень, а также сгенерированный интерфейс соответствующего Data Identifier. Интерпретация: структура, вероятно, выступает в качестве стандартизированного контейнера возвращаемых значений, который передается внутри цепочек асинхронных вызовов для сохранения согласованности определения интерфейса.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;Жизненный цикл&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenkapsel (Data Transfer Object) besitzt &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+Будучи чистой капсулой данных (Data Transfer Object), &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; обычно имеет характер объекта-значения (Value Object). Создание выполняется применительно к конкретному экземпляру, как только обрабатывается запрос на чтение для соответствующего Data Identifier.
 &lt;/p&gt;
 &lt;p&gt;
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+Отношения владения зависят от выбранного механизма передачи:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe und Transport:&lt;/strong&gt; Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Создание:&lt;/strong&gt; создание экземпляра происходит, предположительно, на стороне предоставляющей логики приложения, которая определяет запрошенные диагностические значения и встраивает их в поля структуры.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Передача и транспортировка:&lt;/strong&gt; объект передается вызывающему уровню управления диагностикой путем копирования или перемещения (семантика перемещения). При передаче через границы интерфейса владение переходит к получателю.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Уничтожение:&lt;/strong&gt; время жизни автоматически завершается при выходе из области видимости получателя или после завершения сериализации для диагностического ответа.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+Поскольку структура не имеет собственного потока управления, она не управляет внутренними конечными автоматами. Что касается параллелизма: так как это чистый агрегат данных, внутренний механизм синхронизации, вероятно, отсутствует, поэтому одновременный доступ на чтение и запись из разных потоков должен синхронизироваться извне.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Путь использования&lt;/h4&gt;
 &lt;p&gt;
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+Типичное использование структуры данных следует фиксированной последовательности в рамках диагностического запроса на чтение Data Identifier:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Anfrageempfang:&lt;/strong&gt; Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt; zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung und Datenermittlung:&lt;/strong&gt; Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zuweisung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; wird deklariert und mit den ermittelten Ergebniswerten befüllt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ressourcenfreigabe:&lt;/strong&gt; Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Прием запроса:&lt;/strong&gt; диагностический клиент запрашивает чтение Data Identifier по стандартизированным диагностическим протоколам. Диагностический стек сопоставляет этот запрос с соответствующим интерфейсом &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Обработка и определение данных:&lt;/strong&gt; отвечающая функция приложения определяет актуальные значения данных подсистемы автомобиля или внутренней памяти.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Присваивание:&lt;/strong&gt; объявляется экземпляр &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; и заполняется определенными результирующими значениями.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Обратная связь:&lt;/strong&gt; заполненная структура возвращается в диагностический фреймворк, который считывает поля, форматирует диагностические сообщения и отправляет ответ диагностическому клиенту.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Освобождение ресурсов:&lt;/strong&gt; после успешной передачи и обработки экземпляр уничтожается.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Сценарии ошибок&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenstruktur löst &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+Являясь чистой структурой данных, &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; сама по себе не генерирует функциональных кодов ошибок или исключений. Однако потенциальные ошибочные состояния возникают в контексте использования:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Initialisierung:&lt;/strong&gt; Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellungsfehler:&lt;/strong&gt; Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeitsbereichsverletzungen:&lt;/strong&gt; Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Неполная инициализация:&lt;/strong&gt; если перед возвратом не все обязательные выходные параметры заполнены корректно, нижележащие уровни могут сформировать неполные или несогласованные диагностические ответы. Предварительным условием для возврата всегда является полное заполнение всех определенных полей.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ошибки предоставления:&lt;/strong&gt; если логика приложения не может определить требуемые значения (например, из-за ошибок датчиков или шины), обычно передается не валидный экземпляр структуры, а сообщается соответствующий диагностический код ошибки.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Нарушения области видимости:&lt;/strong&gt; при асинхронной передаче необходимо обеспечить, чтобы структура данных не освобождалась преждевременно, пока к ней обращаются ссылающиеся компоненты.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls &lt;code&gt;diag&lt;/code&gt; (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Это руководство основано на структурных метаданных модуля AUTOSAR Adaptive &lt;code&gt;diag&lt;/code&gt; (релиз R25-11). Специфические требования к интерфейсам и определения полей данных приведены в соответствующей спецификации модуля.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

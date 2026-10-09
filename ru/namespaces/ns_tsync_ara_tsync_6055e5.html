@@ -20,28 +20,27 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>9331b66b0573</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_tsync_ara_tsync_6055e5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ru/namespaces/ns_tsync_ara_tsync_6055e5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_tsync_ara_tsync_6055e5" data-view-mode="editor" title="Открыть редактор курации и досье" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Курировать</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Контекст</h4>
 <p>
-Der C++-Namespace <code>ara::tsync</code> stellt die funktionale Schnittstelle des Moduls <em>Time Synchronization</em> (tsync) in der AUTOSAR Adaptive Platform dar. Er ermöglicht Anwendungen den einheitlichen Zugriff auf synchronisierte Zeitbasen sowie die Überwachung von Synchronisationszuständen und Zeitgüte. Die Architektur unterscheidet primär zwischen Konsumenten und Bereitstellern von Zeitinformationen:
+C++-пространство имен <code>ara::tsync</code> представляет собой функциональный интерфейс модуля <em>Time Synchronization</em> (tsync) в составе AUTOSAR Adaptive Platform. Оно предоставляет приложениям единообразный доступ к синхронизированным шкалам времени, а также возможность мониторинга состояний синхронизации и качества времени. Архитектура в первую очередь различает потребителей и поставщиков информации о времени:
 </p>
 <ul>
-<li><code>SynchronizedTimeBaseConsumer</code> dient Anwendungen als Zugriffspunkt auf eine konfigurierte, über einen <em>InstanceSpecifier</em> referenzierte Zeitbasis, um Zeitstempel abzurufen oder Zustandsänderungen zu verfolgen.</li>
-<li><code>SynchronizedTimeBaseProvider</code> ermöglicht Anwendungen oder Plattformkomponenten, als Zeitquelle zu agieren und eine Zeitbasis bereitzustellen.</li>
-<li><code>TimeBase</code> fungiert als Pseudo-Clock-Konstrukt zur standardkonformen Typisierung im Rahmen von <code>std::chrono</code>. Basierend darauf definiert der Typalias <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) standardisierte Zeitpunkte als <code>std::chrono::time_point&lt;TimeBase, std::chrono::nanoseconds&gt;</code>.</li>
-<li><code>SynchronizedTimeBaseStatus</code> erfasst Momentaufnahmen des Systemzustands einer Zeitbasis inklusive Kommunikations- und Sprunginformationen.</li>
-<li>Mess- und Validierungsdatenstrukturen (darunter <code>TimeMasterMeasurementType</code>, <code>TimeSlaveMeasurementType</code>, <code>PdelayInitiatorMeasurementType</code>, <code>PdelayResponderMeasurementType</code> und <code>TimePrecisionMeasurement</code>) sowie die Callback-Schnittstellen <code>ConsumerTimeBaseValidationNotification</code> und <code>ProviderTimeBaseValidationNotification</code> unterstützen die Verifikation und Präzisionsbewertung der Zeitverteilung.</li>
+<li><code>SynchronizedTimeBaseConsumer</code> служит для приложений точкой доступа к сконфигурированной шкале времени, на которую ссылается <em>InstanceSpecifier</em>, для получения временных меток или отслеживания изменений состояния.</li>
+<li><code>SynchronizedTimeBaseProvider</code> позволяет приложениям или компонентам платформы выступать в роли источника времени и предоставлять шкалу времени.</li>
+<li><code>TimeBase</code> функционирует как конструкция псевдочасов (Pseudo-Clock) для соответствующей стандарту типизации в рамках <code>std::chrono</code>. На ее основе псевдоним типа <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) определяет стандартизированные моменты времени как <code>std::chrono::time_point&lt;TimeBase, std::chrono::nanoseconds&gt;</code>.</li>
+<li><code>SynchronizedTimeBaseStatus</code> фиксирует снимки состояния системы для шкалы времени, включая информацию о связи и скачках времени.</li>
+<li>Структуры данных измерений и валидации (включая <code>TimeMasterMeasurementType</code>, <code>TimeSlaveMeasurementType</code>, <code>PdelayInitiatorMeasurementType</code>, <code>PdelayResponderMeasurementType</code> и <code>TimePrecisionMeasurement</code>), а также callback-интерфейсы <code>ConsumerTimeBaseValidationNotification</code> и <code>ProviderTimeBaseValidationNotification</code> поддерживают верификацию и оценку точности распределения времени.</li>
 </ul>
 
-<h4>Lebenszyklus und Synchronisationszustände</h4>
+<h4>Жизненный цикл и состояния синхронизации</h4>
 <p>
-Zeitbasen durchlaufen im Laufzeitbetrieb diskrete Synchronisationszustände, die über das Enum <code>SynchronizationStatus</code> (<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a>) abgebildet werden. Nach dem Start befindet sich eine Zeitbasis initial im Zustand <code>kNotSynchronizedUntilStartup</code> (=0). Sobald Synchronisationsnachrichten erfolgreich verarbeitet werden, wechselt die Zeitbasis entweder in den Zustand <code>kSynchronized</code> (=2) bei direkter Kopplung an den Time Master oder in <code>kSynchToGateway</code> (=3), falls die Synchronisation mittelbar über ein Gateway erfolgt. Bleibt die Synchronisation innerhalb eines definierten Zeitfensters aus, wird der Zustand <code>kTimeOut</code> (=1) eingenommen.
+Шкалы времени во время работы проходят через дискретные состояния синхронизации, отображаемые через перечисление <code>SynchronizationStatus</code> (<a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a>). После запуска шкала времени изначально находится в состоянии <code>kNotSynchronizedUntilStartup</code> (=0). Как только сообщения синхронизации успешно обрабатываются, шкала времени переходит либо в состояние <code>kSynchronized</code> (=2) при прямом подключении к Time Master, либо в <code>kSynchToGateway</code> (=3), если синхронизация осуществляется опосредованно через шлюз. Если синхронизация не происходит в пределах определенного временного окна, принимается состояние <code>kTimeOut</code> (=1).
 </p>
 <p>
-Parallel zum Kommunikationszustand signalisiert das Enum <code>LeapJump</code> (<a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051">[SWS_TS_01051]</a>) sprunghafte Korrekturen der Zeitbasis: <code>kTimeLeapNone</code> (=0) zeigt den regulären Verlauf ohne Schwellwertüberschreitung an, während <code>kTimeLeapFuture</code> (=1) einen Vorwärtssprung und <code>kTimeLeapPast</code> (=2) einen Rückwärtssprung über den konfigurierten Schwellwert hinaus kennzeichnet.
+Параллельно с состоянием связи перечисление <code>LeapJump</code> (<a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051">[SWS_TS_01051]</a>) сигнализирует о скачкообразных корректировках шкалы времени: <code>kTimeLeapNone</code> (=0) указывает на штатный ход без превышения порогового значения, тогда как <code>kTimeLeapFuture</code> (=1) обозначает скачок вперед, а <code>kTimeLeapPast</code> (=2) — скачок назад сверх сконфигурированного порогового значения.
 </p>
 <div class="diagram" id="diag-sync-status"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 466.11 357.40" style="max-width:621px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 343)">
@@ -150,64 +149,64 @@ Parallel zum Kommunikationszustand signalisiert das Enum <code>LeapJump</code> (
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Synchronisationszustände einer Zeitbasis gemäß SynchronizationStatus. Quellen: <a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a></p>
+<p class="diagram-note">Диаграмма состояний: состояния синхронизации шкалы времени согласно SynchronizationStatus. Источники: <a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050">[SWS_TS_01050]</a></p>
 
-<h4>Nutzungspfad</h4>
+<h4>Путь использования</h4>
 <p>
-Ein typischer Nutzungsablauf auf Konsumentenseite gliedert sich in Instanziierung, Registrierung asynchroner Callback-Funktionen und zyklische bzw. ereignisgesteuerte Abfrage von Zeitinformationen:
+Типичный сценарий использования на стороне потребителя делится на создание экземпляра, регистрацию асинхронных callback-функций и циклический либо управляемый событиями опрос информации о времени:
 </p>
 <ol>
-<li><strong>Zugriff binden:</strong> Eine Konsumenten-Anwendung instanziiert ein Objekt vom Typ <code>SynchronizedTimeBaseConsumer</code> unter Angabe des passenden <em>InstanceSpecifier</em>.</li>
-<li><strong>Benachrichtigungen registrieren:</strong> Um über Statuswechsel informiert zu werden, übergibt die Anwendung Callback-Funktionen an den Konsumenten. Die Funktionssignaturen sind über Callback-Aliase vorgegeben:
+<li><strong>Привязка доступа:</strong> приложение-потребитель создает экземпляр объекта типа <code>SynchronizedTimeBaseConsumer</code> с указанием подходящего <em>InstanceSpecifier</em>.</li>
+<li><strong>Регистрация уведомлений:</strong> чтобы получать информацию об изменениях состояния, приложение передает callback-функции потребителю. Сигнатуры функций задаются псевдонимами callback-функций:
 <ul>
-<li><code>SynchronizationNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222">[SWS_TS_14222]</a>) zur Benachrichtigung bei Wechsel des <code>SynchronizationStatus</code> (Signatur <code>std::function&lt;void(const SynchronizationStatus &amp;)&gt;</code>, als nicht threadsicher spezifiziert).</li>
-<li><code>SynchronizedTimeBaseNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221">[SWS_TS_14221]</a>) zur Übermittlung vollständiger Status-Snapshots via <code>SynchronizedTimeBaseStatus</code> (Signatur <code>std::function&lt;void(const SynchronizedTimeBaseStatus &amp;)&gt;</code>, nicht threadsicher).</li>
-<li><code>TimePrecisionNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223">[SWS_TS_14223]</a>) zur periodischen Auswertung von Präzisionsmessdaten über <code>TimePrecisionMeasurement</code> (Signatur <code>std::function&lt;void(const TimePrecisionMeasurement &amp;)&gt;</code>, nicht threadsicher).</li>
+<li><code>SynchronizationNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222">[SWS_TS_14222]</a>) для уведомления при изменении <code>SynchronizationStatus</code> (сигнатура <code>std::function&lt;void(const SynchronizationStatus &amp;)&gt;</code>, специфицирована как непотокобезопасная).</li>
+<li><code>SynchronizedTimeBaseNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221">[SWS_TS_14221]</a>) для передачи полных снимков состояния через <code>SynchronizedTimeBaseStatus</code> (сигнатура <code>std::function&lt;void(const SynchronizedTimeBaseStatus &amp;)&gt;</code>, непотокобезопасная).</li>
+<li><code>TimePrecisionNotifier</code> (<a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223">[SWS_TS_14223]</a>) для периодической оценки данных измерения точности через <code>TimePrecisionMeasurement</code> (сигнатура <code>std::function&lt;void(const TimePrecisionMeasurement &amp;)&gt;</code>, непотокобезопасная).</li>
 </ul>
 </li>
-<li><strong>Zeitstempel und Nutzerdaten erfassen:</strong> Die Anwendung fragt Zeitpunkte vom Typ <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) ab und kann anwendungsbezogene Zusatzinformationen über <code>UserData</code> transportieren.</li>
+<li><strong>Получение временных меток и пользовательских данных:</strong> приложение запрашивает моменты времени типа <code>Timestamp</code> (<a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251">[SWS_TS_01251]</a>) и может передавать дополнительную прикладную информацию через <code>UserData</code>.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Сценарии ошибок</h4>
 <p>
-Die Fehlerbehandlung in <code>ara::tsync</code> orientiert sich an den Konventionen von <code>ara::core</code>. Fehler werden über die Fehlerdomäne <code>TsyncErrorDomain</code> und den Fehlercode-Enum <code>TsyncErrc</code> (<a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901">[SWS_TS_00901]</a>) abgebildet:
+Обработка ошибок в <code>ara::tsync</code> ориентируется на соглашения <code>ara::core</code>. Ошибки отображаются через домен ошибок <code>TsyncErrorDomain</code> и перечисление кодов ошибок <code>TsyncErrc</code> (<a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901">[SWS_TS_00901]</a>):
 </p>
 <table>
 <thead>
 <tr>
-<th>Fehlercode</th>
-<th>Numerischer Wert</th>
-<th>Bedeutung und Ursache</th>
+<th>Код ошибки</th>
+<th>Числовое значение</th>
+<th>Значение и причина</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>kDaemonConnectionLost</code></td>
 <td>1</td>
-<td>Die angeforderte Operation schlägt fehl, da die Verbindung zum Time-Synchronization-Daemon unterbrochen ist.</td>
+<td>Запрошенная операция завершается сбоем, так как соединение с демоном Time Synchronization разорвано.</td>
 </tr>
 <tr>
 <td><code>kLimitsExceeded</code></td>
 <td>2</td>
-<td>Ein übergebener Parameter überschreitet den zulässigen Wertebereich.</td>
+<td>Переданный параметр выходит за пределы допустимого диапазона значений.</td>
 </tr>
 <tr>
 <td><code>kFunctionNotSupported</code></td>
 <td>3</td>
-<td>Die angeforderte Funktion wird von der aktuellen Implementierung oder Konfiguration nicht unterstützt.</td>
+<td>Запрошенная функция не поддерживается текущей реализацией или конфигурацией.</td>
 </tr>
 <tr>
 <td><code>kInvalidUserDataSize</code></td>
 <td>4</td>
-<td>Die Länge der übergebenen Nutzerdaten überschreitet die maximal zulässige Größe (spezifiziert durch <code>UserData::kMaxUserDataSize</code>, standardmäßig 3 Bytes).</td>
+<td>Длина переданных пользовательских данных превышает максимально допустимый размер (специфицированный через <code>UserData::kMaxUserDataSize</code>, по умолчанию 3 байта).</td>
 </tr>
 </tbody>
 </table>
 <p>
-Für die Erzeugung und Prüfung von Fehlerobjekten stellt der Namespace die threadsichere und ausnahmesichere Hilfsfunktion <code>MakeErrorCode</code> (<a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910">[SWS_TS_00910]</a>) sowie den Zugriff auf die globale Fehlerdomäne über <code>GetTsyncErrorDomain</code> (<a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909">[SWS_TS_00909]</a>) bereit. Alternativ signalisiert die Exception-Klasse <code>TsyncException</code> Ausnahmesituationen in Kontexten, in denen C++-Exceptions zum Einsatz kommen.
+Для создания и проверки объектов ошибок пространство имен предоставляет потокобезопасную и безопасную относительно исключений вспомогательную функцию <code>MakeErrorCode</code> (<a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910">[SWS_TS_00910]</a>), а также доступ к глобальному домену ошибок через <code>GetTsyncErrorDomain</code> (<a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909">[SWS_TS_00909]</a>). В качестве альтернативы класс исключений <code>TsyncException</code> сигнализирует об исключительных ситуациях в контекстах, где используются исключения C++.
 </p>
 <!-- annahmen: 1) Die Zustandsübergänge zwischen den SynchronizationStatus-Werten ergeben sich fachlich aus dem beschriebenen Verlust bzw. Wiederaufbau der Synchronisation. – Begründung: SWS_TS_01050 definiert die Zustände kNotSynchronizedUntilStartup, kTimeOut, kSynchronized und kSynchToGateway, spezifiziert jedoch keine separate Übergangsmatrix im Payload. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen und Typdefinitionen der Spezifikation ara::tsync (AUTOSAR Adaptive Platform R25-11).</p>
+<p class="ai-note">Настоящее руководство основано на требованиях и определениях типов спецификации ara::tsync (AUTOSAR Adaptive Platform R25-11).</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_tsync_ara_tsync_6055e5" title="Обсудить с ИИ">💬 Обсудить с ИИ</button>
@@ -1251,25 +1250,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="9331b66b057303cbbb041c6200a918337902f1552e503fed1bb5c4d67bc2ec02" data-trace-output="9fea7be386120556fd7f83a6372aa2fc03fda55cc0e8780fe077557fc046fe90" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Контекст&lt;/h4&gt;
 &lt;p&gt;
-Der C++-Namespace &lt;code&gt;ara::tsync&lt;/code&gt; stellt die funktionale Schnittstelle des Moduls &lt;em&gt;Time Synchronization&lt;/em&gt; (tsync) in der AUTOSAR Adaptive Platform dar. Er ermöglicht Anwendungen den einheitlichen Zugriff auf synchronisierte Zeitbasen sowie die Überwachung von Synchronisationszuständen und Zeitgüte. Die Architektur unterscheidet primär zwischen Konsumenten und Bereitstellern von Zeitinformationen:
+C++-пространство имен &lt;code&gt;ara::tsync&lt;/code&gt; представляет собой функциональный интерфейс модуля &lt;em&gt;Time Synchronization&lt;/em&gt; (tsync) в составе AUTOSAR Adaptive Platform. Оно предоставляет приложениям единообразный доступ к синхронизированным шкалам времени, а также возможность мониторинга состояний синхронизации и качества времени. Архитектура в первую очередь различает потребителей и поставщиков информации о времени:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; dient Anwendungen als Zugriffspunkt auf eine konfigurierte, über einen &lt;em&gt;InstanceSpecifier&lt;/em&gt; referenzierte Zeitbasis, um Zeitstempel abzurufen oder Zustandsänderungen zu verfolgen.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseProvider&lt;/code&gt; ermöglicht Anwendungen oder Plattformkomponenten, als Zeitquelle zu agieren und eine Zeitbasis bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TimeBase&lt;/code&gt; fungiert als Pseudo-Clock-Konstrukt zur standardkonformen Typisierung im Rahmen von &lt;code&gt;std::chrono&lt;/code&gt;. Basierend darauf definiert der Typalias &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) standardisierte Zeitpunkte als &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase, std::chrono::nanoseconds&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; erfasst Momentaufnahmen des Systemzustands einer Zeitbasis inklusive Kommunikations- und Sprunginformationen.&lt;/li&gt;
-&lt;li&gt;Mess- und Validierungsdatenstrukturen (darunter &lt;code&gt;TimeMasterMeasurementType&lt;/code&gt;, &lt;code&gt;TimeSlaveMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayInitiatorMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayResponderMeasurementType&lt;/code&gt; und &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt;) sowie die Callback-Schnittstellen &lt;code&gt;ConsumerTimeBaseValidationNotification&lt;/code&gt; und &lt;code&gt;ProviderTimeBaseValidationNotification&lt;/code&gt; unterstützen die Verifikation und Präzisionsbewertung der Zeitverteilung.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; служит для приложений точкой доступа к сконфигурированной шкале времени, на которую ссылается &lt;em&gt;InstanceSpecifier&lt;/em&gt;, для получения временных меток или отслеживания изменений состояния.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseProvider&lt;/code&gt; позволяет приложениям или компонентам платформы выступать в роли источника времени и предоставлять шкалу времени.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TimeBase&lt;/code&gt; функционирует как конструкция псевдочасов (Pseudo-Clock) для соответствующей стандарту типизации в рамках &lt;code&gt;std::chrono&lt;/code&gt;. На ее основе псевдоним типа &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) определяет стандартизированные моменты времени как &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase, std::chrono::nanoseconds&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; фиксирует снимки состояния системы для шкалы времени, включая информацию о связи и скачках времени.&lt;/li&gt;
+&lt;li&gt;Структуры данных измерений и валидации (включая &lt;code&gt;TimeMasterMeasurementType&lt;/code&gt;, &lt;code&gt;TimeSlaveMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayInitiatorMeasurementType&lt;/code&gt;, &lt;code&gt;PdelayResponderMeasurementType&lt;/code&gt; и &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt;), а также callback-интерфейсы &lt;code&gt;ConsumerTimeBaseValidationNotification&lt;/code&gt; и &lt;code&gt;ProviderTimeBaseValidationNotification&lt;/code&gt; поддерживают верификацию и оценку точности распределения времени.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus und Synchronisationszustände&lt;/h4&gt;
+&lt;h4&gt;Жизненный цикл и состояния синхронизации&lt;/h4&gt;
 &lt;p&gt;
-Zeitbasen durchlaufen im Laufzeitbetrieb diskrete Synchronisationszustände, die über das Enum &lt;code&gt;SynchronizationStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;) abgebildet werden. Nach dem Start befindet sich eine Zeitbasis initial im Zustand &lt;code&gt;kNotSynchronizedUntilStartup&lt;/code&gt; (=0). Sobald Synchronisationsnachrichten erfolgreich verarbeitet werden, wechselt die Zeitbasis entweder in den Zustand &lt;code&gt;kSynchronized&lt;/code&gt; (=2) bei direkter Kopplung an den Time Master oder in &lt;code&gt;kSynchToGateway&lt;/code&gt; (=3), falls die Synchronisation mittelbar über ein Gateway erfolgt. Bleibt die Synchronisation innerhalb eines definierten Zeitfensters aus, wird der Zustand &lt;code&gt;kTimeOut&lt;/code&gt; (=1) eingenommen.
+Шкалы времени во время работы проходят через дискретные состояния синхронизации, отображаемые через перечисление &lt;code&gt;SynchronizationStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;). После запуска шкала времени изначально находится в состоянии &lt;code&gt;kNotSynchronizedUntilStartup&lt;/code&gt; (=0). Как только сообщения синхронизации успешно обрабатываются, шкала времени переходит либо в состояние &lt;code&gt;kSynchronized&lt;/code&gt; (=2) при прямом подключении к Time Master, либо в &lt;code&gt;kSynchToGateway&lt;/code&gt; (=3), если синхронизация осуществляется опосредованно через шлюз. Если синхронизация не происходит в пределах определенного временного окна, принимается состояние &lt;code&gt;kTimeOut&lt;/code&gt; (=1).
 &lt;/p&gt;
 &lt;p&gt;
-Parallel zum Kommunikationszustand signalisiert das Enum &lt;code&gt;LeapJump&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051"&gt;[SWS_TS_01051]&lt;/a&gt;) sprunghafte Korrekturen der Zeitbasis: &lt;code&gt;kTimeLeapNone&lt;/code&gt; (=0) zeigt den regulären Verlauf ohne Schwellwertüberschreitung an, während &lt;code&gt;kTimeLeapFuture&lt;/code&gt; (=1) einen Vorwärtssprung und &lt;code&gt;kTimeLeapPast&lt;/code&gt; (=2) einen Rückwärtssprung über den konfigurierten Schwellwert hinaus kennzeichnet.
+Параллельно с состоянием связи перечисление &lt;code&gt;LeapJump&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01051" href="../spec/record.html?id=SWS_TS_01051"&gt;[SWS_TS_01051]&lt;/a&gt;) сигнализирует о скачкообразных корректировках шкалы времени: &lt;code&gt;kTimeLeapNone&lt;/code&gt; (=0) указывает на штатный ход без превышения порогового значения, тогда как &lt;code&gt;kTimeLeapFuture&lt;/code&gt; (=1) обозначает скачок вперед, а &lt;code&gt;kTimeLeapPast&lt;/code&gt; (=2) — скачок назад сверх сконфигурированного порогового значения.
 &lt;/p&gt;
 &lt;div class="diagram" id="diag-sync-status"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 466.11 357.40" style="max-width:621px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 343)"&gt;
@@ -1378,64 +1376,64 @@ Parallel zum Kommunikationszustand signalisiert das Enum &lt;code&gt;LeapJump&lt
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Synchronisationszustände einer Zeitbasis gemäß SynchronizationStatus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Диаграмма состояний: состояния синхронизации шкалы времени согласно SynchronizationStatus. Источники: &lt;a class="spec-record-ref" data-req="SWS_TS_01050" href="../spec/record.html?id=SWS_TS_01050"&gt;[SWS_TS_01050]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Путь использования&lt;/h4&gt;
 &lt;p&gt;
-Ein typischer Nutzungsablauf auf Konsumentenseite gliedert sich in Instanziierung, Registrierung asynchroner Callback-Funktionen und zyklische bzw. ereignisgesteuerte Abfrage von Zeitinformationen:
+Типичный сценарий использования на стороне потребителя делится на создание экземпляра, регистрацию асинхронных callback-функций и циклический либо управляемый событиями опрос информации о времени:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Zugriff binden:&lt;/strong&gt; Eine Konsumenten-Anwendung instanziiert ein Objekt vom Typ &lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; unter Angabe des passenden &lt;em&gt;InstanceSpecifier&lt;/em&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Benachrichtigungen registrieren:&lt;/strong&gt; Um über Statuswechsel informiert zu werden, übergibt die Anwendung Callback-Funktionen an den Konsumenten. Die Funktionssignaturen sind über Callback-Aliase vorgegeben:
+&lt;li&gt;&lt;strong&gt;Привязка доступа:&lt;/strong&gt; приложение-потребитель создает экземпляр объекта типа &lt;code&gt;SynchronizedTimeBaseConsumer&lt;/code&gt; с указанием подходящего &lt;em&gt;InstanceSpecifier&lt;/em&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Регистрация уведомлений:&lt;/strong&gt; чтобы получать информацию об изменениях состояния, приложение передает callback-функции потребителю. Сигнатуры функций задаются псевдонимами callback-функций:
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SynchronizationNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222"&gt;[SWS_TS_14222]&lt;/a&gt;) zur Benachrichtigung bei Wechsel des &lt;code&gt;SynchronizationStatus&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const SynchronizationStatus &amp;amp;)&amp;gt;&lt;/code&gt;, als nicht threadsicher spezifiziert).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221"&gt;[SWS_TS_14221]&lt;/a&gt;) zur Übermittlung vollständiger Status-Snapshots via &lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const SynchronizedTimeBaseStatus &amp;amp;)&amp;gt;&lt;/code&gt;, nicht threadsicher).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TimePrecisionNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223"&gt;[SWS_TS_14223]&lt;/a&gt;) zur periodischen Auswertung von Präzisionsmessdaten über &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt; (Signatur &lt;code&gt;std::function&amp;lt;void(const TimePrecisionMeasurement &amp;amp;)&amp;gt;&lt;/code&gt;, nicht threadsicher).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizationNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14222" href="../spec/record.html?id=SWS_TS_14222"&gt;[SWS_TS_14222]&lt;/a&gt;) для уведомления при изменении &lt;code&gt;SynchronizationStatus&lt;/code&gt; (сигнатура &lt;code&gt;std::function&amp;lt;void(const SynchronizationStatus &amp;amp;)&amp;gt;&lt;/code&gt;, специфицирована как непотокобезопасная).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SynchronizedTimeBaseNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14221" href="../spec/record.html?id=SWS_TS_14221"&gt;[SWS_TS_14221]&lt;/a&gt;) для передачи полных снимков состояния через &lt;code&gt;SynchronizedTimeBaseStatus&lt;/code&gt; (сигнатура &lt;code&gt;std::function&amp;lt;void(const SynchronizedTimeBaseStatus &amp;amp;)&amp;gt;&lt;/code&gt;, непотокобезопасная).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TimePrecisionNotifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_14223" href="../spec/record.html?id=SWS_TS_14223"&gt;[SWS_TS_14223]&lt;/a&gt;) для периодической оценки данных измерения точности через &lt;code&gt;TimePrecisionMeasurement&lt;/code&gt; (сигнатура &lt;code&gt;std::function&amp;lt;void(const TimePrecisionMeasurement &amp;amp;)&amp;gt;&lt;/code&gt;, непотокобезопасная).&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zeitstempel und Nutzerdaten erfassen:&lt;/strong&gt; Die Anwendung fragt Zeitpunkte vom Typ &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) ab und kann anwendungsbezogene Zusatzinformationen über &lt;code&gt;UserData&lt;/code&gt; transportieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Получение временных меток и пользовательских данных:&lt;/strong&gt; приложение запрашивает моменты времени типа &lt;code&gt;Timestamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01251" href="../spec/record.html?id=SWS_TS_01251"&gt;[SWS_TS_01251]&lt;/a&gt;) и может передавать дополнительную прикладную информацию через &lt;code&gt;UserData&lt;/code&gt;.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Сценарии ошибок&lt;/h4&gt;
 &lt;p&gt;
-Die Fehlerbehandlung in &lt;code&gt;ara::tsync&lt;/code&gt; orientiert sich an den Konventionen von &lt;code&gt;ara::core&lt;/code&gt;. Fehler werden über die Fehlerdomäne &lt;code&gt;TsyncErrorDomain&lt;/code&gt; und den Fehlercode-Enum &lt;code&gt;TsyncErrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901"&gt;[SWS_TS_00901]&lt;/a&gt;) abgebildet:
+Обработка ошибок в &lt;code&gt;ara::tsync&lt;/code&gt; ориентируется на соглашения &lt;code&gt;ara::core&lt;/code&gt;. Ошибки отображаются через домен ошибок &lt;code&gt;TsyncErrorDomain&lt;/code&gt; и перечисление кодов ошибок &lt;code&gt;TsyncErrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00901" href="../spec/record.html?id=SWS_TS_00901"&gt;[SWS_TS_00901]&lt;/a&gt;):
 &lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
-&lt;th&gt;Fehlercode&lt;/th&gt;
-&lt;th&gt;Numerischer Wert&lt;/th&gt;
-&lt;th&gt;Bedeutung und Ursache&lt;/th&gt;
+&lt;th&gt;Код ошибки&lt;/th&gt;
+&lt;th&gt;Числовое значение&lt;/th&gt;
+&lt;th&gt;Значение и причина&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kDaemonConnectionLost&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;1&lt;/td&gt;
-&lt;td&gt;Die angeforderte Operation schlägt fehl, da die Verbindung zum Time-Synchronization-Daemon unterbrochen ist.&lt;/td&gt;
+&lt;td&gt;Запрошенная операция завершается сбоем, так как соединение с демоном Time Synchronization разорвано.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kLimitsExceeded&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;2&lt;/td&gt;
-&lt;td&gt;Ein übergebener Parameter überschreitet den zulässigen Wertebereich.&lt;/td&gt;
+&lt;td&gt;Переданный параметр выходит за пределы допустимого диапазона значений.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kFunctionNotSupported&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;3&lt;/td&gt;
-&lt;td&gt;Die angeforderte Funktion wird von der aktuellen Implementierung oder Konfiguration nicht unterstützt.&lt;/td&gt;
+&lt;td&gt;Запрошенная функция не поддерживается текущей реализацией или конфигурацией.&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;kInvalidUserDataSize&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;4&lt;/td&gt;
-&lt;td&gt;Die Länge der übergebenen Nutzerdaten überschreitet die maximal zulässige Größe (spezifiziert durch &lt;code&gt;UserData::kMaxUserDataSize&lt;/code&gt;, standardmäßig 3 Bytes).&lt;/td&gt;
+&lt;td&gt;Длина переданных пользовательских данных превышает максимально допустимый размер (специфицированный через &lt;code&gt;UserData::kMaxUserDataSize&lt;/code&gt;, по умолчанию 3 байта).&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;
-Für die Erzeugung und Prüfung von Fehlerobjekten stellt der Namespace die threadsichere und ausnahmesichere Hilfsfunktion &lt;code&gt;MakeErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910"&gt;[SWS_TS_00910]&lt;/a&gt;) sowie den Zugriff auf die globale Fehlerdomäne über &lt;code&gt;GetTsyncErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909"&gt;[SWS_TS_00909]&lt;/a&gt;) bereit. Alternativ signalisiert die Exception-Klasse &lt;code&gt;TsyncException&lt;/code&gt; Ausnahmesituationen in Kontexten, in denen C++-Exceptions zum Einsatz kommen.
+Для создания и проверки объектов ошибок пространство имен предоставляет потокобезопасную и безопасную относительно исключений вспомогательную функцию &lt;code&gt;MakeErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00910" href="../spec/record.html?id=SWS_TS_00910"&gt;[SWS_TS_00910]&lt;/a&gt;), а также доступ к глобальному домену ошибок через &lt;code&gt;GetTsyncErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_00909" href="../spec/record.html?id=SWS_TS_00909"&gt;[SWS_TS_00909]&lt;/a&gt;). В качестве альтернативы класс исключений &lt;code&gt;TsyncException&lt;/code&gt; сигнализирует об исключительных ситуациях в контекстах, где используются исключения C++.
 &lt;/p&gt;
 &lt;!-- annahmen: 1) Die Zustandsübergänge zwischen den SynchronizationStatus-Werten ergeben sich fachlich aus dem beschriebenen Verlust bzw. Wiederaufbau der Synchronisation. – Begründung: SWS_TS_01050 definiert die Zustände kNotSynchronizedUntilStartup, kTimeOut, kSynchronized und kSynchToGateway, spezifiziert jedoch keine separate Übergangsmatrix im Payload. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen und Typdefinitionen der Spezifikation ara::tsync (AUTOSAR Adaptive Platform R25-11).&lt;/p&gt;
+&lt;p class="ai-note"&gt;Настоящее руководство основано на требованиях и определениях типов спецификации ara::tsync (AUTOSAR Adaptive Platform R25-11).&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

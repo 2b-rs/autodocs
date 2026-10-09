@@ -20,45 +20,44 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>de1a88879cea</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_diag__ExtendedDataRecord_Namespace_3a4b0c/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/namespaces/ns_diag__ExtendedDataRecord_Namespace_3a4b0c/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_diag__ExtendedDataRecord_Namespace_3a4b0c" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Der Namespace <code>&lt;ExtendedDataRecord-Namespace&gt;</code> ist Teil des Funktionsclusters <code>diag</code> innerhalb der AUTOSAR Adaptive Platform im Release R25-11. Die primäre Rolle dieses Namespace liegt in der Strukturierung von Diagnoseschnittstellen zur Erfassung, Verwaltung und Bereitstellung erweiterter Datensätze (Extended Data Records). Im Rahmen moderner Fahrzeugdiagnoseprotokolle wie UDS (Unified Diagnostic Services) sind Extended Data Records darauf ausgelegt, über die reinen Fehlercodes (Diagnostic Trouble Codes, DTCs) hinaus detaillierte Kontextinformationen wie Betriebsstunden, Zählerstände oder spezifische Umgebungsbedingungen bereitzustellen.
+命名空间 <code>&lt;ExtendedDataRecord-Namespace&gt;</code> 是 Release R25-11 中 AUTOSAR Adaptive Platform 内功能群 <code>diag</code> 的一部分。该命名空间的主要作用在于构建用于采集、管理和提供扩展数据记录（Extended Data Records）的诊断接口。在如 UDS（Unified Diagnostic Services）等现代车辆诊断协议的框架内，Extended Data Records 旨在超越单纯的故障代码（Diagnostic Trouble Codes, DTC），提供详细的上下文信息，例如运行小时数、计数值或特定的环境条件。
 </p>
 <p>
-Als maßgebliches Element ist im vorliegenden Namespace die Klasse <code>&lt;ExtendedDataRecordElementInterface&gt;</code> (mit der Klassenbezeichnung <code>DiagnosticExtendedDataRecordInterface</code>) definiert. Diese Klasse übernimmt die funktionale Vermittlung zwischen den fachlichen Applikationskomponenten und dem adaptiven Diagnosesystem. Interpretation: Die Schnittstelle fungiert als standardisierter Zugriffspunkt, über den anwendungsspezifische Sensor- und Betriebsparameter für das Diagnosesystem bereitgestellt werden, sobald eine Diagnosedienstanforderung oder ein gespeichertes Fehlerereignis dies erfordert.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Die Instanzen und Komponenten innerhalb des Namespace <code>&lt;ExtendedDataRecord-Namespace&gt;</code> folgen den architektonischen Mustern für adaptive Dienstschnittstellen. Die Lebensdauer einer Instanz von <code>&lt;ExtendedDataRecordElementInterface&gt;</code> dürfte an den Lebenszyklus des übergeordneten Software-Prozesses gebunden sein, der die entsprechenden Diagnosedaten erfasst und verwaltet.
-</p>
-<p>
-Die Erzeugung und Initialisierung findet typischerweise während der Hochlauf- und Konfigurationsphase der adaptiven Applikation statt. Nach der Instanziierung muss die Schnittstelle dem Diagnosesubsystem verfügbar gemacht werden, damit Abfragen erfolgreich zugestellt werden können. Während des regulären Betriebs verharrt die Schnittstelle in einem bereiten Zustand, um asynchrone Abfragen entgegenzunehmen. Bei der kontrollierten Beendigung der Applikation wird die Schnittstelle deregistriert und freigegeben. Da Abfragen seitens des Diagnose-Managers unabhängig vom primären Ablauf der Anwendungslogik erfolgen können, erfordert die Implementierung ein geeignetes Konzept zur Beherrschung von Nebenläufigkeit und thread-sicherem Datenzugriff.
+本命名空间中定义的核心元素是类 <code>&lt;ExtendedDataRecordElementInterface&gt;</code>（类名为 <code>DiagnosticExtendedDataRecordInterface</code>）。该类承担业务应用程序组件与自适应诊断系统之间的功能协调。解释：一旦诊断服务请求或存储的故障事件有此需要，该接口即充当标准化访问点，通过该访问点向诊断系统提供特定于应用的传感器和运行参数。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>生命周期</h4>
 <p>
-Die Integration und Verwendung von <code>&lt;ExtendedDataRecordElementInterface&gt;</code> in einer adaptiven Anwendung gliedert sich typischerweise in folgende Schritte:
+命名空间 <code>&lt;ExtendedDataRecord-Namespace&gt;</code> 内的实例和组件遵循自适应服务接口的架构模式。<code>&lt;ExtendedDataRecordElementInterface&gt;</code> 实例的生命周期大概率与采集和管理相应诊断数据的上层软件进程的生命周期绑定。
+</p>
+<p>
+创建和初始化通常发生在自适应应用程序的启动和配置阶段。实例化后，必须使接口对诊断子系统可用，以便能够成功传送查询。在常规运行期间，接口保持就绪状态以接收异步查询。在应用程序受控终止时，接口将被注销并释放。由于来自诊断管理器的查询可以独立于应用逻辑的主流程发生，因此该实现需要适当的概念来掌控并发性和线程安全的数据访问。
+</p>
+
+<h4>使用路径</h4>
+<p>
+在自适应应用程序中集成和使用 <code>&lt;ExtendedDataRecordElementInterface&gt;</code> 通常分为以下步骤：
 </p>
 <ul>
-<li><strong>Bereitstellung und Ableitung:</strong> Die adaptive Applikation realisiert die von <code>&lt;ExtendedDataRecordElementInterface&gt;</code> geforderte Funktionalität passend zu den im Modell konfigurierten Extended Data Records.</li>
-<li><strong>Registrierung beim Diagnosesystem:</strong> Die erzeugte Schnittstelleninstanz wird an das Diagnose-Laufzeitsystem des Moduls <code>diag</code> angebunden, um als aktiver Datenlieferant für den spezifischen Datensatz registriert zu werden.</li>
-<li><strong>Datenabfrage:</strong> Vermutlich ruft das Diagnosesubsystem bei Eintreffen einer externen Testeranfrage (etwa zum Auslesen von Fehlerdaten) oder beim Auftreten eines Fehlereintrags die Schnittstelle auf, um den aktuellen Datensatz abzurufen.</li>
-<li><strong>Ergebnisrückgabe:</strong> Die Anwendung stellt die aufbereiteten Datensatzwerte bereit, woraufhin das Diagnosesystem diese in das Antworttelegramm einbindet und an das Testwerkzeug übermittelt.</li>
+<li><strong>提供与派生：</strong>自适应应用程序实现 <code>&lt;ExtendedDataRecordElementInterface&gt;</code> 所需的功能，以匹配模型中配置的 Extended Data Records。</li>
+<li><strong>在诊断系统上注册：</strong>所创建的接口实例连接到模块 <code>diag</code> 的诊断运行时系统，以便注册为特定数据记录的活动数据提供方。</li>
+<li><strong>数据查询：</strong>大概率在外部测试仪请求到达（例如用于读出故障数据）或发生故障条目时，诊断子系统会调用该接口以获取当前数据记录。</li>
+<li><strong>结果返回：</strong>应用程序提供经处理的数据记录值，随后诊断系统将其嵌入响应报文中并传输给测试工具。</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Bei der Interaktion über <code>&lt;ExtendedDataRecordElementInterface&gt;</code> können unterschiedliche Fehlersituationen auftreten. Kann eine Applikation den angeforderten Datensatz zum Abfragezeitpunkt nicht liefern — beispielsweise weil ein relevanter Sensor noch nicht initialisiert ist oder interne Kommunikationsfehler vorliegen —, muss die Schnittstelle dies fehlertolerant signalisieren. Innerhalb der AUTOSAR Adaptive Platform erfolgt dies üblicherweise über strukturierte Fehlerobjekte ohne den Einsatz von C++-Exceptions. Als Vorbedingung für erfolgreiche Datenabfragen gilt, dass die Schnittstelle vollständig instanziiert und dem Diagnosesystem bekannt ist. Nachbedingungen verlangen, dass bereitgestellte Datenformate exakt den in der Diagnosekonfiguration hinterlegten Byte-Längen und Strukturdefinitionen entsprechen.
+通过 <code>&lt;ExtendedDataRecordElementInterface&gt;</code> 进行交互时，可能会出现不同的错误情况。如果应用程序在查询时刻无法提供所请求的数据记录（例如因为相关传感器尚未初始化或存在内部通信错误），则接口必须以容错的方式对此进行指示。在 AUTOSAR Adaptive Platform 内，这通常通过结构化错误对象进行，而不使用 C++ 异常。成功进行数据查询的前置条件是接口已完全实例化并已为诊断系统所知。后置条件要求提供的数据格式严格符合诊断配置中存储的字节长度和结构定义。
 </p>
 
 <!-- annahmen: 1) Die Schnittstelle fungiert als Zugriffspunkt für anwendungsspezifische Sensor- und Betriebsparameter – Begründung: Der Payload enthält nur die Klassennamen DiagnosticExtendedDataRecordInterface und ExtendedDataRecordElementInterface ohne Methodendetails; 2) Die Lebensdauer der Schnittstelleninstanz ist an den Lebenszyklus des übergeordneten Software-Prozesses gebunden – Begründung: Der Payload enthält keine Lebenszyklus-Spezifikationen für den Namespace; 3) Das Diagnosesubsystem ruft die Daten bei externen Testeranfragen oder Fehlerereignissen ab – Begründung: Spezifische Aufrufauslöser sind im Payload nicht belegt -->
 
-<p class="ai-note">Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11 für das Modul diag. Spezifische Anforderungsspezifikationen oder Dokumentstellen lagen im Payload nicht vor.</p>
+<p class="ai-note">本指南基于 Release R25-11 中模块 diag 的可用元数据。有效负载中不存在具体的先验需求规范或文档引用。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_diag__ExtendedDataRecord_Namespace_3a4b0c" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -313,42 +312,41 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="de1a88879ceabf1e0677010ee2522b8b3f13f670a374a2547836bc9c7b7f7648" data-trace-output="00c42a7d37e92314a81b7027794005237ae3b2c234ae88f444c1014676fe2c50" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Der Namespace &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;&lt;/code&gt; ist Teil des Funktionsclusters &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform im Release R25-11. Die primäre Rolle dieses Namespace liegt in der Strukturierung von Diagnoseschnittstellen zur Erfassung, Verwaltung und Bereitstellung erweiterter Datensätze (Extended Data Records). Im Rahmen moderner Fahrzeugdiagnoseprotokolle wie UDS (Unified Diagnostic Services) sind Extended Data Records darauf ausgelegt, über die reinen Fehlercodes (Diagnostic Trouble Codes, DTCs) hinaus detaillierte Kontextinformationen wie Betriebsstunden, Zählerstände oder spezifische Umgebungsbedingungen bereitzustellen.
+命名空间 &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;&lt;/code&gt; 是 Release R25-11 中 AUTOSAR Adaptive Platform 内功能群 &lt;code&gt;diag&lt;/code&gt; 的一部分。该命名空间的主要作用在于构建用于采集、管理和提供扩展数据记录（Extended Data Records）的诊断接口。在如 UDS（Unified Diagnostic Services）等现代车辆诊断协议的框架内，Extended Data Records 旨在超越单纯的故障代码（Diagnostic Trouble Codes, DTC），提供详细的上下文信息，例如运行小时数、计数值或特定的环境条件。
 &lt;/p&gt;
 &lt;p&gt;
-Als maßgebliches Element ist im vorliegenden Namespace die Klasse &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; (mit der Klassenbezeichnung &lt;code&gt;DiagnosticExtendedDataRecordInterface&lt;/code&gt;) definiert. Diese Klasse übernimmt die funktionale Vermittlung zwischen den fachlichen Applikationskomponenten und dem adaptiven Diagnosesystem. Interpretation: Die Schnittstelle fungiert als standardisierter Zugriffspunkt, über den anwendungsspezifische Sensor- und Betriebsparameter für das Diagnosesystem bereitgestellt werden, sobald eine Diagnosedienstanforderung oder ein gespeichertes Fehlerereignis dies erfordert.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Die Instanzen und Komponenten innerhalb des Namespace &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;&lt;/code&gt; folgen den architektonischen Mustern für adaptive Dienstschnittstellen. Die Lebensdauer einer Instanz von &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; dürfte an den Lebenszyklus des übergeordneten Software-Prozesses gebunden sein, der die entsprechenden Diagnosedaten erfasst und verwaltet.
-&lt;/p&gt;
-&lt;p&gt;
-Die Erzeugung und Initialisierung findet typischerweise während der Hochlauf- und Konfigurationsphase der adaptiven Applikation statt. Nach der Instanziierung muss die Schnittstelle dem Diagnosesubsystem verfügbar gemacht werden, damit Abfragen erfolgreich zugestellt werden können. Während des regulären Betriebs verharrt die Schnittstelle in einem bereiten Zustand, um asynchrone Abfragen entgegenzunehmen. Bei der kontrollierten Beendigung der Applikation wird die Schnittstelle deregistriert und freigegeben. Da Abfragen seitens des Diagnose-Managers unabhängig vom primären Ablauf der Anwendungslogik erfolgen können, erfordert die Implementierung ein geeignetes Konzept zur Beherrschung von Nebenläufigkeit und thread-sicherem Datenzugriff.
+本命名空间中定义的核心元素是类 &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;（类名为 &lt;code&gt;DiagnosticExtendedDataRecordInterface&lt;/code&gt;）。该类承担业务应用程序组件与自适应诊断系统之间的功能协调。解释：一旦诊断服务请求或存储的故障事件有此需要，该接口即充当标准化访问点，通过该访问点向诊断系统提供特定于应用的传感器和运行参数。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Die Integration und Verwendung von &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; in einer adaptiven Anwendung gliedert sich typischerweise in folgende Schritte:
+命名空间 &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;&lt;/code&gt; 内的实例和组件遵循自适应服务接口的架构模式。&lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; 实例的生命周期大概率与采集和管理相应诊断数据的上层软件进程的生命周期绑定。
+&lt;/p&gt;
+&lt;p&gt;
+创建和初始化通常发生在自适应应用程序的启动和配置阶段。实例化后，必须使接口对诊断子系统可用，以便能够成功传送查询。在常规运行期间，接口保持就绪状态以接收异步查询。在应用程序受控终止时，接口将被注销并释放。由于来自诊断管理器的查询可以独立于应用逻辑的主流程发生，因此该实现需要适当的概念来掌控并发性和线程安全的数据访问。
+&lt;/p&gt;
+
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;
+在自适应应用程序中集成和使用 &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; 通常分为以下步骤：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellung und Ableitung:&lt;/strong&gt; Die adaptive Applikation realisiert die von &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; geforderte Funktionalität passend zu den im Modell konfigurierten Extended Data Records.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Registrierung beim Diagnosesystem:&lt;/strong&gt; Die erzeugte Schnittstelleninstanz wird an das Diagnose-Laufzeitsystem des Moduls &lt;code&gt;diag&lt;/code&gt; angebunden, um als aktiver Datenlieferant für den spezifischen Datensatz registriert zu werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Datenabfrage:&lt;/strong&gt; Vermutlich ruft das Diagnosesubsystem bei Eintreffen einer externen Testeranfrage (etwa zum Auslesen von Fehlerdaten) oder beim Auftreten eines Fehlereintrags die Schnittstelle auf, um den aktuellen Datensatz abzurufen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ergebnisrückgabe:&lt;/strong&gt; Die Anwendung stellt die aufbereiteten Datensatzwerte bereit, woraufhin das Diagnosesystem diese in das Antworttelegramm einbindet und an das Testwerkzeug übermittelt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;提供与派生：&lt;/strong&gt;自适应应用程序实现 &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; 所需的功能，以匹配模型中配置的 Extended Data Records。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;在诊断系统上注册：&lt;/strong&gt;所创建的接口实例连接到模块 &lt;code&gt;diag&lt;/code&gt; 的诊断运行时系统，以便注册为特定数据记录的活动数据提供方。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;数据查询：&lt;/strong&gt;大概率在外部测试仪请求到达（例如用于读出故障数据）或发生故障条目时，诊断子系统会调用该接口以获取当前数据记录。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;结果返回：&lt;/strong&gt;应用程序提供经处理的数据记录值，随后诊断系统将其嵌入响应报文中并传输给测试工具。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Bei der Interaktion über &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; können unterschiedliche Fehlersituationen auftreten. Kann eine Applikation den angeforderten Datensatz zum Abfragezeitpunkt nicht liefern — beispielsweise weil ein relevanter Sensor noch nicht initialisiert ist oder interne Kommunikationsfehler vorliegen —, muss die Schnittstelle dies fehlertolerant signalisieren. Innerhalb der AUTOSAR Adaptive Platform erfolgt dies üblicherweise über strukturierte Fehlerobjekte ohne den Einsatz von C++-Exceptions. Als Vorbedingung für erfolgreiche Datenabfragen gilt, dass die Schnittstelle vollständig instanziiert und dem Diagnosesystem bekannt ist. Nachbedingungen verlangen, dass bereitgestellte Datenformate exakt den in der Diagnosekonfiguration hinterlegten Byte-Längen und Strukturdefinitionen entsprechen.
+通过 &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; 进行交互时，可能会出现不同的错误情况。如果应用程序在查询时刻无法提供所请求的数据记录（例如因为相关传感器尚未初始化或存在内部通信错误），则接口必须以容错的方式对此进行指示。在 AUTOSAR Adaptive Platform 内，这通常通过结构化错误对象进行，而不使用 C++ 异常。成功进行数据查询的前置条件是接口已完全实例化并已为诊断系统所知。后置条件要求提供的数据格式严格符合诊断配置中存储的字节长度和结构定义。
 &lt;/p&gt;
 
 &lt;!-- annahmen: 1) Die Schnittstelle fungiert als Zugriffspunkt für anwendungsspezifische Sensor- und Betriebsparameter – Begründung: Der Payload enthält nur die Klassennamen DiagnosticExtendedDataRecordInterface und ExtendedDataRecordElementInterface ohne Methodendetails; 2) Die Lebensdauer der Schnittstelleninstanz ist an den Lebenszyklus des übergeordneten Software-Prozesses gebunden – Begründung: Der Payload enthält keine Lebenszyklus-Spezifikationen für den Namespace; 3) Das Diagnosesubsystem ruft die Daten bei externen Testeranfragen oder Fehlerereignissen ab – Begründung: Spezifische Aufrufauslöser sind im Payload nicht belegt --&gt;
 
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11 für das Modul diag. Spezifische Anforderungsspezifikationen oder Dokumentstellen lagen im Payload nicht vor.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 Release R25-11 中模块 diag 的可用元数据。有效负载中不存在具体的先验需求规范或文档引用。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

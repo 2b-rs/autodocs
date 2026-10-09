@@ -24,61 +24,60 @@
   <span class="ai-badge-label">GERADO POR IA</span>
   <span class="ai-review-state">não revisado</span>
   <span class="ai-trace-meta">Modelo: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperatura: nicht steuerbar · Prompt: <code>7a91de511d59</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_in_place_t_343915/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedência: perfil, hash de prompt, hash de saída, execuções, revisão">Procedência</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/pt/classes/cl_ara_core_in_place_t_343915/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedência: perfil, hash de prompt, hash de saída, execuções, revisão">Procedência</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_in_place_t_343915" data-view-mode="editor" title="Abrir editor de curadoria e dossiê" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curar</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Nota editorial:</strong> Este guia técnico está atualmente em processo de tradução. A versão de referência original é exibida abaixo.</div>
-<h4>Kontext</h4>
+<h4>Contexto</h4>
 <p>
-Die Struktur <code>ara::core::in_place_t</code> fungiert im Modul <code>core</code> der AUTOSAR Adaptive Platform als sogenannter Tag-Typ (Disambiguierungs-Typ). Ihre zentrale Aufgabe besteht darin, Operationen zu kennzeichnen, die direkt vor Ort („in-place“) ausgeführt werden sollen. Konkret dient eine Instanz dieses Typs als Signalgeber bei der Übergabe an ausgewählte Konstruktoren von <code>ara::core::Optional</code>. Dadurch wird signalisiert, dass der im Container gehaltene Zieltyp direkt im Speicherbereich des Containers konstruiert werden soll, ohne dass dafür temporäre Objekte erzeugt, kopiert oder verschoben werden müssen.
+A estrutura <code>ara::core::in_place_t</code> atua no módulo <code>core</code> da AUTOSAR Adaptive Platform como o chamado tipo de tag (tipo de desambiguação). Sua tarefa central consiste em identificar operações que devem ser executadas diretamente no local («in-place»). Concretamente, uma instância deste tipo serve como emissor de sinal na passagem para construtores selecionados de <code>ara::core::Optional</code>. Com isso, sinaliza-se que o tipo de destino mantido no contêiner deve ser construído diretamente na área de memória do contêiner, sem que para isso precisem ser criados, copiados ou movidos objetos temporários.
 </p>
 <p>
-In modernen C++-Architekturen der funktionalen Sicherheit und Ressourceneffizienz spielen In-Place-Mechanismen eine wesentliche Rolle. Sie erlauben die Instanziierung von Typen, die weder kopierbar noch verschiebbar sind, oder deren Kopiervorgang aufgrund dynamischer Allokationen oder großer Datenstrukturen vermieden werden soll. Die Struktur <code>ara::core::in_place_t</code> interagiert in diesem Kontext primär mit <code>ara::core::Optional</code> und dem Anwendungs-Code, der die Objekterzeugung steuert.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Der Lebenszyklus von <code>ara::core::in_place_t</code> ist extrem leichtgewichtig. Die Struktur wird über den Header <code>#include "ara/core/utility.h"</code> bereitgestellt und definiert einen expliziten Standardkonstruktor:
-</p>
-<p>
-Gemäß <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> ist der Default-Konstruktor als <code>explicit in_place_t() noexcept = default;</code> deklariert. Da es sich um eine leere Struktur handelt, umfasst der Lebenszyklus keine komplexen Zustandsübergänge, Allokationen oder Besitzverhältnisse.
-</p>
-<p>
-Interpretation: Als reiner Tag-Typ besitzt <code>ara::core::in_place_t</code> keinen internen Zustand, sodass Instanzen beliebig nebenläufig erzeugt, kopiert oder als temporäre Werte an Funktionen übergeben werden können, ohne dass Synchronisationsmechanismen erforderlich wären. Typischerweise entsteht eine Instanz nur als temporäres Übergangsobjekt im Aufrufkontext eines Zielkonstruktors und wird unmittelbar nach Abschluss des Ausdrucks wieder zerstört.
+Em arquiteturas C++ modernas de segurança funcional e eficiência de recursos, os mecanismos in-place desempenham um papel essencial. Eles permitem a instanciação de tipos que não são copiáveis nem movíveis, ou cuja operação de cópia deve ser evitada devido a alocações dinâmicas ou grandes estruturas de dados. A estrutura <code>ara::core::in_place_t</code> interage, nesse contexto, primariamente com <code>ara::core::Optional</code> e com o código da aplicação que controla a criação do objeto.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Ciclo de vida</h4>
 <p>
-Der typische Nutzungspfad von <code>ara::core::in_place_t</code> gliedert sich in folgende Schritte:
+O ciclo de vida de <code>ara::core::in_place_t</code> é extremamente leve. A estrutura é disponibilizada por meio do cabeçalho <code>#include "ara/core/utility.h"</code> e define um construtor padrão explícito:
+</p>
+<p>
+De acordo com <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>, o construtor default é declarado como <code>explicit in_place_t() noexcept = default;</code>. Como se trata de uma estrutura vazia, o ciclo de vida não engloba transições de estado complexas, alocações ou relações de posse.
+</p>
+<p>
+Interpretação: como tipo de tag puro, <code>ara::core::in_place_t</code> não possui estado interno, de modo que instâncias podem ser criadas concorrentemente de forma arbitrária, copiadas ou passadas para funções como valores temporários sem que sejam necessários mecanismos de sincronização. Tipicamente, uma instância surge apenas como objeto de transição temporário no contexto de chamada de um construtor de destino e é destruída novamente logo após a conclusão da expressão.
+</p>
+
+<h4>Caminho de utilização</h4>
+<p>
+O caminho de uso típico de <code>ara::core::in_place_t</code> divide-se nos seguintes passos:
 </p>
 <ol>
 <li>
-<strong>Einbinden der Header-Datei:</strong> Die Bereitstellung des Typs erfolgt über das Einbinden von <code>#include "ara/core/utility.h"</code> gemäß <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>.
+<strong>Inclusão do arquivo de cabeçalho:</strong> A disponibilização do tipo é feita por meio da inclusão de <code>#include "ara/core/utility.h"</code> de acordo com <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>.
 </li>
 <li>
-<strong>Instanziierung des Tag-Objekts:</strong> Zur Initialisierung wird eine Instanz von <code>ara::core::in_place_t</code> erzeugt. Aufgrund des expliziten Konstruktors nach <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> erfolgt dies üblicherweise durch direkte Wertinitialisierung (beispielsweise <code>ara::core::in_place_t{}</code>).
+<strong>Instanciação do objeto tag:</strong> Para a inicialização, cria-se uma instância de <code>ara::core::in_place_t</code>. Devido ao construtor explícito segundo <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>, isso ocorre tipicamente por inicialização direta por valor (por exemplo, <code>ara::core::in_place_t{}</code>).
 </li>
 <li>
-<strong>Übergabe an den Container-Konstruktor:</strong> Die Instanz wird als erstes Argument an einen dafür vorgesehenen Konstruktor von <code>ara::core::Optional</code> übergeben, gefolgt von den Konstruktorargumenten des einzubettenden Nutztyps.
+<strong>Passagem para o construtor do contêiner:</strong> A instância é passada como primeiro argumento para um construtor previsto para essa finalidade de <code>ara::core::Optional</code>, seguido pelos argumentos do construtor do tipo útil a ser incorporado.
 </li>
 <li>
-<strong>Direkte Konstruktion im Zielspeicher:</strong> <code>ara::core::Optional</code> wertet den Tag aus und leitet die nachfolgenden Argumente an den Konstruktor des gekapselten Werts weiter. Das Nutzwertobjekt wird direkt im internen Speicher von <code>ara::core::Optional</code> erzeugt, ohne dass Kopier- oder Verschiebeoperationen stattfinden.
+<strong>Construção direta na memória de destino:</strong> <code>ara::core::Optional</code> avalia a tag e encaminha os argumentos subsequentes para o construtor do valor encapsulado. O objeto do valor útil é criado diretamente na memória interna de <code>ara::core::Optional</code>, sem que ocorram operações de cópia ou movimentação.
 </li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Cenários de erro</h4>
 <p>
-Für die Erzeugung von <code>ara::core::in_place_t</code> sind keine Fehlerszenarien vorgesehen. Der Standardkonstruktor ist gemäß <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> mit <code>noexcept</code> ausgezeichnet und gilt als ausnahmesicher („exception safe“). Eine Fehlbedienung bei der Objekterzeugung von <code>in_place_t</code> selbst führt nicht zu Laufzeitfehlern, sondern wird durch das Typsystem zur Übersetzungszeit abgefangen.
+Nenhum cenário de erro está previsto para a criação de <code>ara::core::in_place_t</code>. O construtor padrão está marcado com <code>noexcept</code> de acordo com <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> e é considerado seguro contra exceções («exception safe»). Uma operação incorreta na própria criação do objeto de <code>in_place_t</code> não leva a erros em tempo de execução, sendo interceptada pelo sistema de tipos em tempo de compilação.
 </p>
 <p>
-Interpretation: Durch die Kennzeichnung des Konstruktors mit <code>explicit</code> nach <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> dürfte eine unbeabsichtigte implizite Typumwandlung aus leeren Initialisierungslisten (wie <code>{}</code>) verhindert werden. Aufrufer müssen die Instanziierung bewusst und typgenau formulieren, wodurch Mehrdeutigkeiten bei überladenen Konstruktoren von <code>ara::core::Optional</code> vermieden werden. Sollte bei der In-Place-Konstruktion des im Container gehaltenen Zielobjekts eine Ausnahme ausgelöst werden, geht diese nicht von <code>ara::core::in_place_t</code> aus, sondern unterliegt der Ausnahmesicherheit des Konstruktors des Nutzwertes.
+Interpretação: Com a marcação do construtor com <code>explicit</code> de acordo com <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>, deve ser evitada uma conversão implícita de tipo não intencional a partir de listas de inicialização vazias (como <code>{}</code>). Os chamadores devem formular a instanciação de forma consciente e precisa em termos de tipo, evitando ambiguidades em construtores sobrecarregados de <code>ara::core::Optional</code>. Caso uma exceção seja lançada durante a construção in-place do objeto de destino mantido no contêiner, ela não se origina de <code>ara::core::in_place_t</code>, mas está sujeita à segurança contra exceções do construtor do valor útil.
 </p>
 
 <!-- annahmen:
 1) Interpretation: Als reiner Tag-Typ besitzt ara::core::in_place_t keinen internen Zustand und erfordert keine Synchronisation bei nebenläufigem Zugriff. – Begründung: Der Payload spezifiziert eine leere struct ohne Datenmitglieder und mit trivialem Default-Konstruktor.
 2) Interpretation: Das Schlüsselwort explicit am Default-Konstruktor dürfte implizite Konvertierungen aus leeren Initialisierungslisten {} unterbinden und so Überladungskonflikte bei ara::core::Optional verhindern. – Begründung: SWS_CORE_04012 deklariert explicit in_place_t() noexcept = default, was in modernem C++ typischerweise zur Vermeidung unabsichtlicher impliziter Tag-Konstruktionen dient.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen der AUTOSAR-Adaptive-Spezifikation R25-11. Alle normativen Festlegungen zu Signaturen, Header-Zuordnungen und Ausnahmeverhalten stammen aus den referenzierten SWS-Einträgen.</p>
+<p class="ai-note">Este guia baseia-se nos requisitos da especificação AUTOSAR Adaptive R25-11. Todas as definições normativas sobre assinaturas, atribuições de cabeçalhos e comportamento em relação a exceções provêm das entradas SWS referenciadas.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_in_place_t_343915" title="Discutir com IA">💬 Discutir com IA</button>
@@ -386,58 +385,57 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="7a91de511d596814af262f9d193757974c271a61a3fcfa14a77f522a0dfb2edf" data-trace-output="1f13ee716fb9698d783935be30fa5295147d8692643d1024aa20200dbc46278e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Nota editorial:&lt;/strong&gt; Este guia técnico está atualmente em processo de tradução. A versão de referência original é exibida abaixo.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Contexto&lt;/h4&gt;
 &lt;p&gt;
-Die Struktur &lt;code&gt;ara::core::in_place_t&lt;/code&gt; fungiert im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform als sogenannter Tag-Typ (Disambiguierungs-Typ). Ihre zentrale Aufgabe besteht darin, Operationen zu kennzeichnen, die direkt vor Ort („in-place“) ausgeführt werden sollen. Konkret dient eine Instanz dieses Typs als Signalgeber bei der Übergabe an ausgewählte Konstruktoren von &lt;code&gt;ara::core::Optional&lt;/code&gt;. Dadurch wird signalisiert, dass der im Container gehaltene Zieltyp direkt im Speicherbereich des Containers konstruiert werden soll, ohne dass dafür temporäre Objekte erzeugt, kopiert oder verschoben werden müssen.
+A estrutura &lt;code&gt;ara::core::in_place_t&lt;/code&gt; atua no módulo &lt;code&gt;core&lt;/code&gt; da AUTOSAR Adaptive Platform como o chamado tipo de tag (tipo de desambiguação). Sua tarefa central consiste em identificar operações que devem ser executadas diretamente no local («in-place»). Concretamente, uma instância deste tipo serve como emissor de sinal na passagem para construtores selecionados de &lt;code&gt;ara::core::Optional&lt;/code&gt;. Com isso, sinaliza-se que o tipo de destino mantido no contêiner deve ser construído diretamente na área de memória do contêiner, sem que para isso precisem ser criados, copiados ou movidos objetos temporários.
 &lt;/p&gt;
 &lt;p&gt;
-In modernen C++-Architekturen der funktionalen Sicherheit und Ressourceneffizienz spielen In-Place-Mechanismen eine wesentliche Rolle. Sie erlauben die Instanziierung von Typen, die weder kopierbar noch verschiebbar sind, oder deren Kopiervorgang aufgrund dynamischer Allokationen oder großer Datenstrukturen vermieden werden soll. Die Struktur &lt;code&gt;ara::core::in_place_t&lt;/code&gt; interagiert in diesem Kontext primär mit &lt;code&gt;ara::core::Optional&lt;/code&gt; und dem Anwendungs-Code, der die Objekterzeugung steuert.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Der Lebenszyklus von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; ist extrem leichtgewichtig. Die Struktur wird über den Header &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; bereitgestellt und definiert einen expliziten Standardkonstruktor:
-&lt;/p&gt;
-&lt;p&gt;
-Gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; ist der Default-Konstruktor als &lt;code&gt;explicit in_place_t() noexcept = default;&lt;/code&gt; deklariert. Da es sich um eine leere Struktur handelt, umfasst der Lebenszyklus keine komplexen Zustandsübergänge, Allokationen oder Besitzverhältnisse.
-&lt;/p&gt;
-&lt;p&gt;
-Interpretation: Als reiner Tag-Typ besitzt &lt;code&gt;ara::core::in_place_t&lt;/code&gt; keinen internen Zustand, sodass Instanzen beliebig nebenläufig erzeugt, kopiert oder als temporäre Werte an Funktionen übergeben werden können, ohne dass Synchronisationsmechanismen erforderlich wären. Typischerweise entsteht eine Instanz nur als temporäres Übergangsobjekt im Aufrufkontext eines Zielkonstruktors und wird unmittelbar nach Abschluss des Ausdrucks wieder zerstört.
+Em arquiteturas C++ modernas de segurança funcional e eficiência de recursos, os mecanismos in-place desempenham um papel essencial. Eles permitem a instanciação de tipos que não são copiáveis nem movíveis, ou cuja operação de cópia deve ser evitada devido a alocações dinâmicas ou grandes estruturas de dados. A estrutura &lt;code&gt;ara::core::in_place_t&lt;/code&gt; interage, nesse contexto, primariamente com &lt;code&gt;ara::core::Optional&lt;/code&gt; e com o código da aplicação que controla a criação do objeto.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Ciclo de vida&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; gliedert sich in folgende Schritte:
+O ciclo de vida de &lt;code&gt;ara::core::in_place_t&lt;/code&gt; é extremamente leve. A estrutura é disponibilizada por meio do cabeçalho &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; e define um construtor padrão explícito:
+&lt;/p&gt;
+&lt;p&gt;
+De acordo com &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;, o construtor default é declarado como &lt;code&gt;explicit in_place_t() noexcept = default;&lt;/code&gt;. Como se trata de uma estrutura vazia, o ciclo de vida não engloba transições de estado complexas, alocações ou relações de posse.
+&lt;/p&gt;
+&lt;p&gt;
+Interpretação: como tipo de tag puro, &lt;code&gt;ara::core::in_place_t&lt;/code&gt; não possui estado interno, de modo que instâncias podem ser criadas concorrentemente de forma arbitrária, copiadas ou passadas para funções como valores temporários sem que sejam necessários mecanismos de sincronização. Tipicamente, uma instância surge apenas como objeto de transição temporário no contexto de chamada de um construtor de destino e é destruída novamente logo após a conclusão da expressão.
+&lt;/p&gt;
+
+&lt;h4&gt;Caminho de utilização&lt;/h4&gt;
+&lt;p&gt;
+O caminho de uso típico de &lt;code&gt;ara::core::in_place_t&lt;/code&gt; divide-se nos seguintes passos:
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;strong&gt;Einbinden der Header-Datei:&lt;/strong&gt; Die Bereitstellung des Typs erfolgt über das Einbinden von &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;.
+&lt;strong&gt;Inclusão do arquivo de cabeçalho:&lt;/strong&gt; A disponibilização do tipo é feita por meio da inclusão de &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; de acordo com &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Instanziierung des Tag-Objekts:&lt;/strong&gt; Zur Initialisierung wird eine Instanz von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; erzeugt. Aufgrund des expliziten Konstruktors nach &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; erfolgt dies üblicherweise durch direkte Wertinitialisierung (beispielsweise &lt;code&gt;ara::core::in_place_t{}&lt;/code&gt;).
+&lt;strong&gt;Instanciação do objeto tag:&lt;/strong&gt; Para a inicialização, cria-se uma instância de &lt;code&gt;ara::core::in_place_t&lt;/code&gt;. Devido ao construtor explícito segundo &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;, isso ocorre tipicamente por inicialização direta por valor (por exemplo, &lt;code&gt;ara::core::in_place_t{}&lt;/code&gt;).
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Übergabe an den Container-Konstruktor:&lt;/strong&gt; Die Instanz wird als erstes Argument an einen dafür vorgesehenen Konstruktor von &lt;code&gt;ara::core::Optional&lt;/code&gt; übergeben, gefolgt von den Konstruktorargumenten des einzubettenden Nutztyps.
+&lt;strong&gt;Passagem para o construtor do contêiner:&lt;/strong&gt; A instância é passada como primeiro argumento para um construtor previsto para essa finalidade de &lt;code&gt;ara::core::Optional&lt;/code&gt;, seguido pelos argumentos do construtor do tipo útil a ser incorporado.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Direkte Konstruktion im Zielspeicher:&lt;/strong&gt; &lt;code&gt;ara::core::Optional&lt;/code&gt; wertet den Tag aus und leitet die nachfolgenden Argumente an den Konstruktor des gekapselten Werts weiter. Das Nutzwertobjekt wird direkt im internen Speicher von &lt;code&gt;ara::core::Optional&lt;/code&gt; erzeugt, ohne dass Kopier- oder Verschiebeoperationen stattfinden.
+&lt;strong&gt;Construção direta na memória de destino:&lt;/strong&gt; &lt;code&gt;ara::core::Optional&lt;/code&gt; avalia a tag e encaminha os argumentos subsequentes para o construtor do valor encapsulado. O objeto do valor útil é criado diretamente na memória interna de &lt;code&gt;ara::core::Optional&lt;/code&gt;, sem que ocorram operações de cópia ou movimentação.
 &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Cenários de erro&lt;/h4&gt;
 &lt;p&gt;
-Für die Erzeugung von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; sind keine Fehlerszenarien vorgesehen. Der Standardkonstruktor ist gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; mit &lt;code&gt;noexcept&lt;/code&gt; ausgezeichnet und gilt als ausnahmesicher („exception safe“). Eine Fehlbedienung bei der Objekterzeugung von &lt;code&gt;in_place_t&lt;/code&gt; selbst führt nicht zu Laufzeitfehlern, sondern wird durch das Typsystem zur Übersetzungszeit abgefangen.
+Nenhum cenário de erro está previsto para a criação de &lt;code&gt;ara::core::in_place_t&lt;/code&gt;. O construtor padrão está marcado com &lt;code&gt;noexcept&lt;/code&gt; de acordo com &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; e é considerado seguro contra exceções («exception safe»). Uma operação incorreta na própria criação do objeto de &lt;code&gt;in_place_t&lt;/code&gt; não leva a erros em tempo de execução, sendo interceptada pelo sistema de tipos em tempo de compilação.
 &lt;/p&gt;
 &lt;p&gt;
-Interpretation: Durch die Kennzeichnung des Konstruktors mit &lt;code&gt;explicit&lt;/code&gt; nach &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; dürfte eine unbeabsichtigte implizite Typumwandlung aus leeren Initialisierungslisten (wie &lt;code&gt;{}&lt;/code&gt;) verhindert werden. Aufrufer müssen die Instanziierung bewusst und typgenau formulieren, wodurch Mehrdeutigkeiten bei überladenen Konstruktoren von &lt;code&gt;ara::core::Optional&lt;/code&gt; vermieden werden. Sollte bei der In-Place-Konstruktion des im Container gehaltenen Zielobjekts eine Ausnahme ausgelöst werden, geht diese nicht von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; aus, sondern unterliegt der Ausnahmesicherheit des Konstruktors des Nutzwertes.
+Interpretação: Com a marcação do construtor com &lt;code&gt;explicit&lt;/code&gt; de acordo com &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;, deve ser evitada uma conversão implícita de tipo não intencional a partir de listas de inicialização vazias (como &lt;code&gt;{}&lt;/code&gt;). Os chamadores devem formular a instanciação de forma consciente e precisa em termos de tipo, evitando ambiguidades em construtores sobrecarregados de &lt;code&gt;ara::core::Optional&lt;/code&gt;. Caso uma exceção seja lançada durante a construção in-place do objeto de destino mantido no contêiner, ela não se origina de &lt;code&gt;ara::core::in_place_t&lt;/code&gt;, mas está sujeita à segurança contra exceções do construtor do valor útil.
 &lt;/p&gt;
 
 &lt;!-- annahmen:
 1) Interpretation: Als reiner Tag-Typ besitzt ara::core::in_place_t keinen internen Zustand und erfordert keine Synchronisation bei nebenläufigem Zugriff. – Begründung: Der Payload spezifiziert eine leere struct ohne Datenmitglieder und mit trivialem Default-Konstruktor.
 2) Interpretation: Das Schlüsselwort explicit am Default-Konstruktor dürfte implizite Konvertierungen aus leeren Initialisierungslisten {} unterbinden und so Überladungskonflikte bei ara::core::Optional verhindern. – Begründung: SWS_CORE_04012 deklariert explicit in_place_t() noexcept = default, was in modernem C++ typischerweise zur Vermeidung unabsichtlicher impliziter Tag-Konstruktionen dient.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen der AUTOSAR-Adaptive-Spezifikation R25-11. Alle normativen Festlegungen zu Signaturen, Header-Zuordnungen und Ausnahmeverhalten stammen aus den referenzierten SWS-Einträgen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Este guia baseia-se nos requisitos da especificação AUTOSAR Adaptive R25-11. Todas as definições normativas sobre assinaturas, atribuições de cabeçalhos e comportamento em relação a exceções provêm das entradas SWS referenciadas.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

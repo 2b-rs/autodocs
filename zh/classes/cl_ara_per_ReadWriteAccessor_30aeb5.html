@@ -24,56 +24,55 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>6dac7d821dca</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_per_ReadWriteAccessor_30aeb5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_per_ReadWriteAccessor_30aeb5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_per_ReadWriteAccessor_30aeb5" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Klasse <code>ara::per::ReadWriteAccessor</code> ist Bestandteil des Moduls <code>per</code> (Persistency) der AUTOSAR Adaptive Platform im Release R25-11. Ihre Kernaufgabe besteht darin, das Lesen und Schreiben von Dateidaten innerhalb einer einheitlichen Schnittstelle bereitzustellen. Hierzu kombiniert sie die funktionalen Eigenschaften der Basisklassen <code>ReadAccessor</code> und <code>WriteAccessor</code> über Mehrfachvererbung.
+类 <code>ara::per::ReadWriteAccessor</code> 是 AUTOSAR Adaptive Platform 在 Release R25-11 中 <code>per</code>（Persistency）模块的组成部分。其核心任务是在统一接口内提供文件数据的读取和写入。为此，它通过多重继承结合了基类 <code>ReadAccessor</code> 和 <code>WriteAccessor</code> 的功能特性。
 </p>
 <p>
-In der Klassenarchitektur ist <code>ara::per::ReadWriteAccessor</code> als <code>final</code> deklariert (<code>class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor</code>). Dies verhindert eine weitere Ableitung und stellt sicher, dass Implementierungsdetails der kombinierten Dateizugriffsschnittstelle nicht durch nachgelagerte Spezialisierungen überschrieben oder erweitert werden. Als Interaktionspartner fungieren einerseits die aufrufende Applikation, welche Lese- und Schreiboperationen auf persistenten Dateiinhalten ausführen möchte, und andererseits die beiden Schnittstellenverträge <code>ReadAccessor</code> sowie <code>WriteAccessor</code>, deren Funktionalitäten in diesem konkreten Accessor zusammengeführt werden.
+在类架构中，<code>ara::per::ReadWriteAccessor</code> 被声明为 <code>final</code>（<code>class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor</code>）。这防止了进一步的派生，并确保组合文件访问接口的实现细节不会被下游特化重写或扩展。作为交互伙伴，一方面是希望对持久化文件内容执行读取和写入操作的调用应用程序，另一方面是两个接口契约 <code>ReadAccessor</code> 以及 <code>WriteAccessor</code>，它们的功能在此具体访问器中汇合。
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>生命周期</h4>
 <p>
-Der Lebenszyklus einer Instanz von <code>ara::per::ReadWriteAccessor</code> unterliegt strikten Vorgaben hinsichtlich Instanziierung, Ressourcenbindung und Zerstörung.
+<code>ara::per::ReadWriteAccessor</code> 实例的生命周期在实例化、资源绑定和销毁方面遵循严格的规范。
 </p>
 <ul>
-  <li><strong>Erzeugung:</strong> Der parameterlose Standardkonstruktor ist explizit gelöscht (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>). Ein direkter Aufruf von <code>ReadWriteAccessor()</code> ist damit untersagt und schlägt zur Übersetzungszeit fehl. Die Erzeugung einer gültigen Instanz erfolgt vermutlich über spezialisierte Fabrik- oder Öffnungsfunktionen des Persistenzmoduls, welche die Bindung an eine konkrete Datei sowie Zugriffsmodi zur Laufzeit etablieren (Interpretation).</li>
-  <li><strong>Zustand und Nutzung:</strong> Nach erfolgreicher Bereitstellung befindet sich das Objekt im aktiven Betriebszustand und ermöglicht über seine Basisklassen sowohl lesende als auch schreibende Dateioperationen.</li>
-  <li><strong>Zerstörung und Aufräumarbeiten:</strong> Der Destruktor <code>~ReadWriteAccessor()</code> ist als <code>final noexcept</code> definiert (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>). Bei Erreichen des Gültigkeitsbereichs (Scope) oder expliziter Zerstörung des Objekts wird der Zugriffskontext abgebaut und die zugehörige Dateiressource deterministisch freigegeben.</li>
+  <li><strong>创建：</strong>无参默认构造函数被显式删除（<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>）。因此禁止直接调用 <code>ReadWriteAccessor()</code>，并在编译时失败。有效实例的创建推测是通过 Persistency 模块专用的工厂或打开函数进行，这些函数在运行时建立与具体文件的绑定以及访问模式（解释）。</li>
+  <li><strong>状态与使用：</strong>成功提供后，对象处于活动运行状态，并通过其基类同时支持读取和写入文件操作。</li>
+  <li><strong>销毁与清理工作：</strong>析构函数 <code>~ReadWriteAccessor()</code> 定义为 <code>final noexcept</code>（<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>）。在达到作用域（Scope）或显式销毁对象时，访问上下文将被解除，并确定性释放相关的文件资源。</li>
 </ul>
 <p>
-In Bezug auf die Nebenläufigkeit ist der Destruktor gemäß Spezifikation als nicht threadsicher (<code>not thread-safe</code>) eingestuft (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>). Gleichzeitig garantiert er vollständige Ausnahmesicherheit (<code>exception safe</code>) (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>), was durch den Spezifikationsbezeichner <code>noexcept</code> unterstrichen wird.
+在并发方面，根据规范析构函数被归类为非线程安全（<code>not thread-safe</code>）（<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>）。同时它保证了完全的异常安全性（<code>exception safe</code>）（<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>），这由规范标识符 <code>noexcept</code> 所强调。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>使用路径</h4>
 <p>
-Der typische Nutzungspfad von <code>ara::per::ReadWriteAccessor</code> folgt dem RAII-Muster (Resource Acquisition Is Initialization) für Dateizugriffe, bei denen simultan Lese- und Schreibberechtigungen benötigt werden:
+<code>ara::per::ReadWriteAccessor</code> 的典型使用路径遵循用于文件访问的 RAII 模式（Resource Acquisition Is Initialization），其中同时需要读取和写入权限：
 </p>
 <ol>
-  <li><strong>Anforderung des Dateizugriffs:</strong> Die Applikation fordert Zugriff auf eine Datei an. Da der Standardkonstruktor gelöscht ist (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>), erhält der Aufrufer das <code>ReadWriteAccessor</code>-Objekt typischerweise als Rückgabewert einer übergeordneten Modulfunktion des Persistenz-Subsystems.</li>
-  <li><strong>Durchführung kombinierter Operationen:</strong> Über die Schnittstellen von <code>ReadAccessor</code> und <code>WriteAccessor</code> führt die Anwendung Dateizugriffe durch. Dies umfasst das Einlesen bestehender Inhalte, Modifikationen im Datenstrom sowie das Zurückschreiben von Aktualisierungen in die Datei.</li>
-  <li><strong>Beendigung des Zugriffs:</strong> Verlässt das Accessor-Objekt seinen Gültigkeitsbereich, greift der Destruktor (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>). Dateipuffer und interne Verwaltungsinformationen dürften während der Zerstörung final bereinigt werden, ohne dass dabei Ausnahmen entweichen.</li>
+  <li><strong>请求文件访问：</strong>应用程序请求访问文件。由于默认构造函数已删除（<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>），调用方通常将 <code>ReadWriteAccessor</code> 对象作为 Persistency 子系统上层模块函数的返回值接收。</li>
+  <li><strong>执行组合操作：</strong>通过 <code>ReadAccessor</code> 和 <code>WriteAccessor</code> 的接口，应用程序执行文件访问。这包括读取现有内容、在数据流中进行修改以及将更新写回文件。</li>
+  <li><strong>终止访问：</strong>如果访问器对象离开其作用域，析构函数将生效（<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>）。文件缓冲区和内部管理信息应在销毁过程中最终清理，而不会抛出异常。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Bei der Integration und Verwendung von <code>ara::per::ReadWriteAccessor</code> sind folgende Vorbedingungen und Fehlerszenarien zu berücksichtigen:
+在集成和使用 <code>ara::per::ReadWriteAccessor</code> 时，需考虑以下前置条件和错误场景：
 </p>
 <ul>
-  <li><strong>Fehlerhafte Instanziierung:</strong> Der Versuch, ein Objekt ohne die erforderlichen Kontextparameter über einen Standardkonstruktor zu instanziieren, wird durch <code>ReadWriteAccessor() = delete</code> (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>) bereits zur Kompilierzeit als Syntax- bzw. Typfehler abgewiesen.</li>
-  <li><strong>Gleichzeitiger Zugriff und Zerstörung (Data Races):</strong> Da der Destruktor explizit als <code>not thread-safe</code> spezifiziert ist (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>), führt die Zerstörung des Accessors bei gleichzeitigem lesenden oder schreibenden Zugriff aus einem anderen Thread zu undefiniertem Verhalten (Race Condition). Aufrufer müssen durch externe Synchronisationsmaßnahmen sicherstellen, dass vor dem Aufruf des Destruktors alle laufenden Dateioperationen auf der Instanz abgeschlossen sind.</li>
-  <li><strong>Ausnahmen im Zerstörungspfad:</strong> Durch die Spezifikation als <code>noexcept</code> und die Einstufung als <code>exception safe</code> (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) ist gewährleistet, dass der Destruktor niemals eine C++-Exception nach außen wirft. Sollten beim Schließen oder Bereinigen der zugrunde liegenden Dateiressourcen interne Fehler auftreten, müssen diese intern abgefangen und behandelt werden.</li>
+  <li><strong>错误的实例化：</strong>尝试在没有必要上下文参数的情况下通过默认构造函数实例化对象，在编译时就会被 <code>ReadWriteAccessor() = delete</code>（<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>）作为语法或类型错误拒绝。</li>
+  <li><strong>并发访问与销毁（数据竞争）：</strong>由于析构函数显式指定为 <code>not thread-safe</code>（<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>），因此在来自另一线程的并发读取或写入访问期间销毁访问器会导致未定义行为（竞态条件）。调用方必须通过外部同步措施确保在调用析构函数之前，该实例上的所有正在运行的文件操作均已完成。</li>
+  <li><strong>销毁路径中的异常：</strong>通过指定为 <code>noexcept</code> 以及归类为 <code>exception safe</code>（<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>），保证了析构函数绝不会向外抛出 C++ 异常。如果在关闭或清理底层文件资源时发生内部错误，必须在内部捕获并处理这些错误。</li>
 </ul>
 
 <!-- annahmen:
 1) Die Instanziierung erfolgt vermutlich über eine Fabrik- oder Öffnungsmethode der Persistenz-API – Begründung: Der Standardkonstruktor ist gemäß SWS_PER_00462 gelöscht, wodurch die Objekterzeugung über externe Verwaltungsfunktionen erfolgen muss.
 2) Dateipuffer und interne Verwaltungsressourcen dürften während des Destruktoraufrufs final synchronisiert und freigegeben werden – Begründung: Der Destruktor ist als final noexcept und exception safe spezifiziert (SWS_PER_00598) und bildet den standardmäßigen RAII-Abschluss für Dateizugriffe.
 -->
-<p class="ai-note">Dieser Klassen-Leitfaden wurde automatisiert auf Basis der Spezifikationsvorgaben von AUTOSAR Adaptive R25-11 generiert.</p>
+<p class="ai-note">本类指南基于 AUTOSAR Adaptive R25-11 的规范要求自动生成。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_per_ReadWriteAccessor_30aeb5" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -501,53 +500,52 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="6dac7d821dca3aea1ec0d1e313e9badc36e2ece9b6fd86f9d5dee4be98a32e77" data-trace-output="4cb25d7f88df7cf8545ddf962e79b9839853bfe75ab16937a5ebfa6605d23b8b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;per&lt;/code&gt; (Persistency) der AUTOSAR Adaptive Platform im Release R25-11. Ihre Kernaufgabe besteht darin, das Lesen und Schreiben von Dateidaten innerhalb einer einheitlichen Schnittstelle bereitzustellen. Hierzu kombiniert sie die funktionalen Eigenschaften der Basisklassen &lt;code&gt;ReadAccessor&lt;/code&gt; und &lt;code&gt;WriteAccessor&lt;/code&gt; über Mehrfachvererbung.
+类 &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; 是 AUTOSAR Adaptive Platform 在 Release R25-11 中 &lt;code&gt;per&lt;/code&gt;（Persistency）模块的组成部分。其核心任务是在统一接口内提供文件数据的读取和写入。为此，它通过多重继承结合了基类 &lt;code&gt;ReadAccessor&lt;/code&gt; 和 &lt;code&gt;WriteAccessor&lt;/code&gt; 的功能特性。
 &lt;/p&gt;
 &lt;p&gt;
-In der Klassenarchitektur ist &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; als &lt;code&gt;final&lt;/code&gt; deklariert (&lt;code&gt;class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor&lt;/code&gt;). Dies verhindert eine weitere Ableitung und stellt sicher, dass Implementierungsdetails der kombinierten Dateizugriffsschnittstelle nicht durch nachgelagerte Spezialisierungen überschrieben oder erweitert werden. Als Interaktionspartner fungieren einerseits die aufrufende Applikation, welche Lese- und Schreiboperationen auf persistenten Dateiinhalten ausführen möchte, und andererseits die beiden Schnittstellenverträge &lt;code&gt;ReadAccessor&lt;/code&gt; sowie &lt;code&gt;WriteAccessor&lt;/code&gt;, deren Funktionalitäten in diesem konkreten Accessor zusammengeführt werden.
+在类架构中，&lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; 被声明为 &lt;code&gt;final&lt;/code&gt;（&lt;code&gt;class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor&lt;/code&gt;）。这防止了进一步的派生，并确保组合文件访问接口的实现细节不会被下游特化重写或扩展。作为交互伙伴，一方面是希望对持久化文件内容执行读取和写入操作的调用应用程序，另一方面是两个接口契约 &lt;code&gt;ReadAccessor&lt;/code&gt; 以及 &lt;code&gt;WriteAccessor&lt;/code&gt;，它们的功能在此具体访问器中汇合。
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus einer Instanz von &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; unterliegt strikten Vorgaben hinsichtlich Instanziierung, Ressourcenbindung und Zerstörung.
+&lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; 实例的生命周期在实例化、资源绑定和销毁方面遵循严格的规范。
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Der parameterlose Standardkonstruktor ist explizit gelöscht (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;). Ein direkter Aufruf von &lt;code&gt;ReadWriteAccessor()&lt;/code&gt; ist damit untersagt und schlägt zur Übersetzungszeit fehl. Die Erzeugung einer gültigen Instanz erfolgt vermutlich über spezialisierte Fabrik- oder Öffnungsfunktionen des Persistenzmoduls, welche die Bindung an eine konkrete Datei sowie Zugriffsmodi zur Laufzeit etablieren (Interpretation).&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Zustand und Nutzung:&lt;/strong&gt; Nach erfolgreicher Bereitstellung befindet sich das Objekt im aktiven Betriebszustand und ermöglicht über seine Basisklassen sowohl lesende als auch schreibende Dateioperationen.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Zerstörung und Aufräumarbeiten:&lt;/strong&gt; Der Destruktor &lt;code&gt;~ReadWriteAccessor()&lt;/code&gt; ist als &lt;code&gt;final noexcept&lt;/code&gt; definiert (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;). Bei Erreichen des Gültigkeitsbereichs (Scope) oder expliziter Zerstörung des Objekts wird der Zugriffskontext abgebaut und die zugehörige Dateiressource deterministisch freigegeben.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;创建：&lt;/strong&gt;无参默认构造函数被显式删除（&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;）。因此禁止直接调用 &lt;code&gt;ReadWriteAccessor()&lt;/code&gt;，并在编译时失败。有效实例的创建推测是通过 Persistency 模块专用的工厂或打开函数进行，这些函数在运行时建立与具体文件的绑定以及访问模式（解释）。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;状态与使用：&lt;/strong&gt;成功提供后，对象处于活动运行状态，并通过其基类同时支持读取和写入文件操作。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;销毁与清理工作：&lt;/strong&gt;析构函数 &lt;code&gt;~ReadWriteAccessor()&lt;/code&gt; 定义为 &lt;code&gt;final noexcept&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;）。在达到作用域（Scope）或显式销毁对象时，访问上下文将被解除，并确定性释放相关的文件资源。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-In Bezug auf die Nebenläufigkeit ist der Destruktor gemäß Spezifikation als nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;) eingestuft (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;). Gleichzeitig garantiert er vollständige Ausnahmesicherheit (&lt;code&gt;exception safe&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;), was durch den Spezifikationsbezeichner &lt;code&gt;noexcept&lt;/code&gt; unterstrichen wird.
+在并发方面，根据规范析构函数被归类为非线程安全（&lt;code&gt;not thread-safe&lt;/code&gt;）（&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;）。同时它保证了完全的异常安全性（&lt;code&gt;exception safe&lt;/code&gt;）（&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;），这由规范标识符 &lt;code&gt;noexcept&lt;/code&gt; 所强调。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad von &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; folgt dem RAII-Muster (Resource Acquisition Is Initialization) für Dateizugriffe, bei denen simultan Lese- und Schreibberechtigungen benötigt werden:
+&lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; 的典型使用路径遵循用于文件访问的 RAII 模式（Resource Acquisition Is Initialization），其中同时需要读取和写入权限：
 &lt;/p&gt;
 &lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Anforderung des Dateizugriffs:&lt;/strong&gt; Die Applikation fordert Zugriff auf eine Datei an. Da der Standardkonstruktor gelöscht ist (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;), erhält der Aufrufer das &lt;code&gt;ReadWriteAccessor&lt;/code&gt;-Objekt typischerweise als Rückgabewert einer übergeordneten Modulfunktion des Persistenz-Subsystems.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Durchführung kombinierter Operationen:&lt;/strong&gt; Über die Schnittstellen von &lt;code&gt;ReadAccessor&lt;/code&gt; und &lt;code&gt;WriteAccessor&lt;/code&gt; führt die Anwendung Dateizugriffe durch. Dies umfasst das Einlesen bestehender Inhalte, Modifikationen im Datenstrom sowie das Zurückschreiben von Aktualisierungen in die Datei.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Beendigung des Zugriffs:&lt;/strong&gt; Verlässt das Accessor-Objekt seinen Gültigkeitsbereich, greift der Destruktor (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;). Dateipuffer und interne Verwaltungsinformationen dürften während der Zerstörung final bereinigt werden, ohne dass dabei Ausnahmen entweichen.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;请求文件访问：&lt;/strong&gt;应用程序请求访问文件。由于默认构造函数已删除（&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;），调用方通常将 &lt;code&gt;ReadWriteAccessor&lt;/code&gt; 对象作为 Persistency 子系统上层模块函数的返回值接收。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;执行组合操作：&lt;/strong&gt;通过 &lt;code&gt;ReadAccessor&lt;/code&gt; 和 &lt;code&gt;WriteAccessor&lt;/code&gt; 的接口，应用程序执行文件访问。这包括读取现有内容、在数据流中进行修改以及将更新写回文件。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;终止访问：&lt;/strong&gt;如果访问器对象离开其作用域，析构函数将生效（&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;）。文件缓冲区和内部管理信息应在销毁过程中最终清理，而不会抛出异常。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Bei der Integration und Verwendung von &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; sind folgende Vorbedingungen und Fehlerszenarien zu berücksichtigen:
+在集成和使用 &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; 时，需考虑以下前置条件和错误场景：
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Fehlerhafte Instanziierung:&lt;/strong&gt; Der Versuch, ein Objekt ohne die erforderlichen Kontextparameter über einen Standardkonstruktor zu instanziieren, wird durch &lt;code&gt;ReadWriteAccessor() = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;) bereits zur Kompilierzeit als Syntax- bzw. Typfehler abgewiesen.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Gleichzeitiger Zugriff und Zerstörung (Data Races):&lt;/strong&gt; Da der Destruktor explizit als &lt;code&gt;not thread-safe&lt;/code&gt; spezifiziert ist (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;), führt die Zerstörung des Accessors bei gleichzeitigem lesenden oder schreibenden Zugriff aus einem anderen Thread zu undefiniertem Verhalten (Race Condition). Aufrufer müssen durch externe Synchronisationsmaßnahmen sicherstellen, dass vor dem Aufruf des Destruktors alle laufenden Dateioperationen auf der Instanz abgeschlossen sind.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Ausnahmen im Zerstörungspfad:&lt;/strong&gt; Durch die Spezifikation als &lt;code&gt;noexcept&lt;/code&gt; und die Einstufung als &lt;code&gt;exception safe&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) ist gewährleistet, dass der Destruktor niemals eine C++-Exception nach außen wirft. Sollten beim Schließen oder Bereinigen der zugrunde liegenden Dateiressourcen interne Fehler auftreten, müssen diese intern abgefangen und behandelt werden.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;错误的实例化：&lt;/strong&gt;尝试在没有必要上下文参数的情况下通过默认构造函数实例化对象，在编译时就会被 &lt;code&gt;ReadWriteAccessor() = delete&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;）作为语法或类型错误拒绝。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;并发访问与销毁（数据竞争）：&lt;/strong&gt;由于析构函数显式指定为 &lt;code&gt;not thread-safe&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;），因此在来自另一线程的并发读取或写入访问期间销毁访问器会导致未定义行为（竞态条件）。调用方必须通过外部同步措施确保在调用析构函数之前，该实例上的所有正在运行的文件操作均已完成。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;销毁路径中的异常：&lt;/strong&gt;通过指定为 &lt;code&gt;noexcept&lt;/code&gt; 以及归类为 &lt;code&gt;exception safe&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;），保证了析构函数绝不会向外抛出 C++ 异常。如果在关闭或清理底层文件资源时发生内部错误，必须在内部捕获并处理这些错误。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
 1) Die Instanziierung erfolgt vermutlich über eine Fabrik- oder Öffnungsmethode der Persistenz-API – Begründung: Der Standardkonstruktor ist gemäß SWS_PER_00462 gelöscht, wodurch die Objekterzeugung über externe Verwaltungsfunktionen erfolgen muss.
 2) Dateipuffer und interne Verwaltungsressourcen dürften während des Destruktoraufrufs final synchronisiert und freigegeben werden – Begründung: Der Destruktor ist als final noexcept und exception safe spezifiziert (SWS_PER_00598) und bildet den standardmäßigen RAII-Abschluss für Dateizugriffe.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde automatisiert auf Basis der Spezifikationsvorgaben von AUTOSAR Adaptive R25-11 generiert.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本类指南基于 AUTOSAR Adaptive R25-11 的规范要求自动生成。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

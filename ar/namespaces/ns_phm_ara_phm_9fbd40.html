@@ -20,30 +20,29 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>2dbc936761fb</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_phm_ara_phm_9fbd40" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>ara::phm</code> stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.</p>
-<p>Die Architektur im Namespace stützt sich auf vier zentrale Klassen:</p>
+<h4>السياق</h4>
+<p>يوفر نطاق الأسماء <code>ara::phm</code> واجهة برمجة التطبيقات لـ Platform Health Management (PHM) في AUTOSAR Adaptive Platform. وتكمن مسؤوليته الأساسية في المراقبة الوظيفية للعمليات والتطبيقات فيما يتعلق بالحيوية والمواعيد الزمنية المحددة والتدفق المنطقي للبرامج، بالإضافة إلى تنسيق الاستجابة للأخطاء.</p>
+<p>تعتمد البنية في نطاق الأسماء على أربع فئات مركزية:</p>
 <ul>
-<li><code>SupervisedEntity</code>: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.</li>
-<li><code>RecoveryAction</code>: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.</li>
-<li><code>PhmErrorDomain</code>: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.</li>
-<li><code>PhmException</code>: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.</li>
+<li><code>SupervisedEntity</code>: يمثل كيان البرمجيات الخاضع للمراقبة داخل تطبيق ما، والذي يبلغ عن معلومات الحالة.</li>
+<li><code>RecoveryAction</code>: فئة أساسية مجردة لإجراءات الاسترداد التي يتم تنفيذها عند اكتشاف الأخطاء.</li>
+<li><code>PhmErrorDomain</code>: يحدد نطاق الأخطاء لرسائل أخطاء النظام الفرعي.</li>
+<li><code>PhmException</code>: نوع الاستثناء القياسي لحالات الاستثناء في Platform Health Management.</li>
 </ul>
-<p>Die Überwachungsmethoden werden über die Enumeration <code>TypeOfSupervision</code> spezifiziert <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. Hierbei unterscheidet die Plattform zwischen <code>kAliveSupervision</code> (Lebenszeichenüberwachung), <code>kDeadlineSupervision</code> (Einhaltung definierter Zeitintervalle) und <code>kLogicalSupervision</code> (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.</p>
+<p>يتم تحديد طرق المراقبة عبر التعداد <code>TypeOfSupervision</code> <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. وتُميز المنصة هنا بين <code>kAliveSupervision</code> (مراقبة علامات الحياة)، و<code>kDeadlineSupervision</code> (الالتزام بفترات زمنية محددة)، و<code>kLogicalSupervision</code> (التحقق من الترتيب الصحيح لنقاط تدفق التحكم). وفي هذا السياق، يتفاعل PHM بشكل وثيق مع خفيّ PHM بالإضافة إلى State Management لـ Adaptive Platform.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert <code>ElementarySupervisionStatus</code> den Zustand einer einzelnen Überwachungsfunktion <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
+<h4>دورة الحياة</h4>
+<p>يتم تمثيل دورة حياة المراقبة من خلال استعلامات وانتقالات متعددة المستويات للحالة. وعلى أدنى مستوى، يحدد <code>ElementarySupervisionStatus</code> حالة وظيفة مراقبة مفردة <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
 <ul>
-<li><code>kDeactivated</code>: Die elementare Überwachung ist inaktiv.</li>
-<li><code>kOK</code>: Die Überwachung ist aktiv und es liegt kein Fehler vor.</li>
-<li><code>kFailed</code>: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.</li>
-<li><code>kExpired</code>: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.</li>
+<li><code>kDeactivated</code>: المراقبة الأولية غير نشطة.</li>
+<li><code>kOK</code>: المراقبة نشطة ولا يوجد أي خطأ.</li>
+<li><code>kFailed</code>: تم تسجيل خطأ، لكنه لا يزال ضمن نافذة التفاوت أو منع الارتداد.</li>
+<li><code>kExpired</code>: تم تأهيل الخطأ نهائيًا بعد انتهاء نافذة التفاوت.</li>
 </ul>
-<p>Zur Bewertung des Gesamtzustands aggregiert <code>GlobalSupervisionStatus</code> die Resultate korrespondierender elementarer Überwachungen <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. Der globale Zustand wechselt dabei von <code>kDeactivated</code> nach <code>kOK</code>, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über <code>kFailed</code> und <code>kExpired</code> bis hin zu <code>kStopped</code>, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.</p>
+<p>لتقييم الحالة العامة، يجمع <code>GlobalSupervisionStatus</code> نتائج المراقبات الأولية المقابلة <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. وتنتقل الحالة العامة هنا من <code>kDeactivated</code> إلى <code>kOK</code> بمجرد أن تصبح مراقبة أولية واحدة على الأقل نشطة وخالية من الأخطاء. وإذا حدثت أخطاء، تتصاعد الحالة عبر <code>kFailed</code> و<code>kExpired</code> وصولاً إلى <code>kStopped</code>، بشرط تجاوز فترة السماح بعد تأهيل الخطأ.</p>
 <div class="diagram" id="diag-global-supervision"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)">
 <title>GlobalSupervisionStatus</title>
@@ -115,31 +114,31 @@
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
+<p class="diagram-note">مخطط الحالة: حالات المراقبة المجمعة والانتقالات المحتملة في دورة المراقبة العامة. المصادر: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:</p>
+<h4>مسار الاستخدام</h4>
+<p>يتضمن المسار النموذجي لتأمين تطبيق تكيفي عدة مراحل متتالية:</p>
 <ol>
-<li><strong>Konfiguration und Anbindung:</strong> Die Anwendung instanziiert eine <code>SupervisedEntity</code> für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus <code>TypeOfSupervision</code> (<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> oder <code>kLogicalSupervision</code>) zugeordnet <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
-<li><strong>Zyklische Ausführung und Meldung:</strong> Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben <code>ElementarySupervisionStatus</code> und <code>GlobalSupervisionStatus</code> im Status <code>kOK</code> <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
-<li><strong>Reaktionsabwicklung:</strong> Wird ein Überwachungsfehler qualifiziert (Übergang zu <code>kExpired</code> bzw. <code>kStopped</code>), wird eine abgeleitete Instanz von <code>RecoveryAction</code> herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.</li>
+<li><strong>التهيئة والربط:</strong> ينشئ التطبيق نسخة من <code>SupervisedEntity</code> للمكونات المطلوب مراقبتها في كل حالة. ويتم هنا تعيين معلمات المراقبة للأنماط من <code>TypeOfSupervision</code> (<code>kAliveSupervision</code> أو <code>kDeadlineSupervision</code> أو <code>kLogicalSupervision</code>) <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
+<li><strong>التنفيذ والإبلاغ الدوريان:</strong> أثناء التشغيل العادي، يبلّغ الكيان عن نقاط فحص إلى النظام الفرعي. وطالما يتم الالتزام بالمتطلبات، يظل <code>ElementarySupervisionStatus</code> و<code>GlobalSupervisionStatus</code> في الحالة <code>kOK</code> <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>، <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
+<li><strong>معالجة الاستجابة:</strong> إذا تم تأكيد خطأ مراقبة (الانتقال إلى <code>kExpired</code> أو <code>kStopped</code>)، فسيتم استخدام نسخة مشتقة من <code>RecoveryAction</code> لبدء تدابير تصحيحية مثل عمليات إعادة التشغيل أو تغييرات الحالة.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlerzustände und Ausnahmebedingungen im Namespace <code>ara::phm</code> werden über standardisierte Fehlerstrukturen abgewickelt:</p>
+<h4>سيناريوهات الأخطاء</h4>
+<p>تتم معالجة حالات الخطأ والشروط الاستثنائية في مساحة الاسم <code>ara::phm</code> عبر بنيات خطأ قياسية:</p>
 <ul>
-<li>Die Fehlerdomäne kann über die freie Funktion <code>GetPhmDomain()</code> bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
-<li>Konkrete Fehlerursachen werden über die Enumeration <code>PhmErrc</code> typisiert <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
+<li>يمكن الحصول على نطاق الخطأ عبر الدالة الحرة <code>GetPhmDomain()</code>؛ الاستدعاء آمن بالنسبة للخيوط ولا يطلق أي استثناءات <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
+<li>يتم تحديد أنواع أسباب الأخطاء المحددة عبر التعداد <code>PhmErrc</code> <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
   <ul>
-  <li><code>kOfferFailed</code>: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.</li>
-  <li><code>kSMCanNotHandleRecovery</code>: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.</li>
-  <li><code>kServiceNotReady</code>: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.</li>
+  <li><code>kOfferFailed</code>: تعذر تقديم الخدمة لأن الاتصال ببرنامج PHM الخفي فشل.</li>
+  <li><code>kSMCanNotHandleRecovery</code>: لا يمكن لـ State Management تنفيذ الاستعادة؛ يتولى Platform Health Management التصعيد والتحكم في الـ Watchdog.</li>
+  <li><code>kServiceNotReady</code>: تتم بالفعل معالجة عملية Enable أو Disable متوازية.</li>
   </ul>
 </li>
-<li>Mit der Hilfsfunktion <code>MakeErrorCode()</code> werden Fehlermeldungen vom Typ <code>ara::core::ErrorCode</code> unter Kombination eines <code>PhmErrc</code> und herstellerspezifischer Zusatzdaten erzeugt <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird <code>PhmException</code> geworfen.</li>
+<li>باستخدام الدالة المساعدة <code>MakeErrorCode()</code>، يتم إنشاء رسائل خطأ من النوع <code>ara::core::ErrorCode</code> من خلال الجمع بين <code>PhmErrc</code> وبيانات إضافية خاصة بالشركة المصنعة <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. وفي حالة الأخطاء الجسيمة التي تتطلب معالجة الاستثناءات، يتم طرح <code>PhmException</code>.</li>
 </ul>
 <!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">يستند هذا الدليل حصرياً إلى مواصفات AUTOSAR Adaptive Platform الإصدار R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_phm_ara_phm_9fbd40" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -870,27 +869,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="2dbc936761fb64b98a9037f5e9f9ab5cef60d528e14abcc64ef715a78921ef83" data-trace-output="adf8edc9a987c4e41c3a797151bc26a7e6d0712e1e9ec4162917bbbc99f85417" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;ara::phm&lt;/code&gt; stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.&lt;/p&gt;
-&lt;p&gt;Die Architektur im Namespace stützt sich auf vier zentrale Klassen:&lt;/p&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
+&lt;p&gt;يوفر نطاق الأسماء &lt;code&gt;ara::phm&lt;/code&gt; واجهة برمجة التطبيقات لـ Platform Health Management (PHM) في AUTOSAR Adaptive Platform. وتكمن مسؤوليته الأساسية في المراقبة الوظيفية للعمليات والتطبيقات فيما يتعلق بالحيوية والمواعيد الزمنية المحددة والتدفق المنطقي للبرامج، بالإضافة إلى تنسيق الاستجابة للأخطاء.&lt;/p&gt;
+&lt;p&gt;تعتمد البنية في نطاق الأسماء على أربع فئات مركزية:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: يمثل كيان البرمجيات الخاضع للمراقبة داخل تطبيق ما، والذي يبلغ عن معلومات الحالة.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: فئة أساسية مجردة لإجراءات الاسترداد التي يتم تنفيذها عند اكتشاف الأخطاء.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: يحدد نطاق الأخطاء لرسائل أخطاء النظام الفرعي.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: نوع الاستثناء القياسي لحالات الاستثناء في Platform Health Management.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Die Überwachungsmethoden werden über die Enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; spezifiziert &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Hierbei unterscheidet die Plattform zwischen &lt;code&gt;kAliveSupervision&lt;/code&gt; (Lebenszeichenüberwachung), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (Einhaltung definierter Zeitintervalle) und &lt;code&gt;kLogicalSupervision&lt;/code&gt; (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.&lt;/p&gt;
+&lt;p&gt;يتم تحديد طرق المراقبة عبر التعداد &lt;code&gt;TypeOfSupervision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. وتُميز المنصة هنا بين &lt;code&gt;kAliveSupervision&lt;/code&gt; (مراقبة علامات الحياة)، و&lt;code&gt;kDeadlineSupervision&lt;/code&gt; (الالتزام بفترات زمنية محددة)، و&lt;code&gt;kLogicalSupervision&lt;/code&gt; (التحقق من الترتيب الصحيح لنقاط تدفق التحكم). وفي هذا السياق، يتفاعل PHM بشكل وثيق مع خفيّ PHM بالإضافة إلى State Management لـ Adaptive Platform.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; den Zustand einer einzelnen Überwachungsfunktion &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
+&lt;h4&gt;دورة الحياة&lt;/h4&gt;
+&lt;p&gt;يتم تمثيل دورة حياة المراقبة من خلال استعلامات وانتقالات متعددة المستويات للحالة. وعلى أدنى مستوى، يحدد &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; حالة وظيفة مراقبة مفردة &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: Die elementare Überwachung ist inaktiv.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: Die Überwachung ist aktiv und es liegt kein Fehler vor.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: المراقبة الأولية غير نشطة.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: المراقبة نشطة ولا يوجد أي خطأ.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: تم تسجيل خطأ، لكنه لا يزال ضمن نافذة التفاوت أو منع الارتداد.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: تم تأهيل الخطأ نهائيًا بعد انتهاء نافذة التفاوت.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Zur Bewertung des Gesamtzustands aggregiert &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; die Resultate korrespondierender elementarer Überwachungen &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. Der globale Zustand wechselt dabei von &lt;code&gt;kDeactivated&lt;/code&gt; nach &lt;code&gt;kOK&lt;/code&gt;, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über &lt;code&gt;kFailed&lt;/code&gt; und &lt;code&gt;kExpired&lt;/code&gt; bis hin zu &lt;code&gt;kStopped&lt;/code&gt;, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.&lt;/p&gt;
+&lt;p&gt;لتقييم الحالة العامة، يجمع &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; نتائج المراقبات الأولية المقابلة &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. وتنتقل الحالة العامة هنا من &lt;code&gt;kDeactivated&lt;/code&gt; إلى &lt;code&gt;kOK&lt;/code&gt; بمجرد أن تصبح مراقبة أولية واحدة على الأقل نشطة وخالية من الأخطاء. وإذا حدثت أخطاء، تتصاعد الحالة عبر &lt;code&gt;kFailed&lt;/code&gt; و&lt;code&gt;kExpired&lt;/code&gt; وصولاً إلى &lt;code&gt;kStopped&lt;/code&gt;، بشرط تجاوز فترة السماح بعد تأهيل الخطأ.&lt;/p&gt;
 &lt;div class="diagram" id="diag-global-supervision"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
 &lt;title&gt;GlobalSupervisionStatus&lt;/title&gt;
@@ -962,31 +960,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;مخطط الحالة: حالات المراقبة المجمعة والانتقالات المحتملة في دورة المراقبة العامة. المصادر: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:&lt;/p&gt;
+&lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
+&lt;p&gt;يتضمن المسار النموذجي لتأمين تطبيق تكيفي عدة مراحل متتالية:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Konfiguration und Anbindung:&lt;/strong&gt; Die Anwendung instanziiert eine &lt;code&gt;SupervisedEntity&lt;/code&gt; für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; oder &lt;code&gt;kLogicalSupervision&lt;/code&gt;) zugeordnet &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zyklische Ausführung und Meldung:&lt;/strong&gt; Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; und &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; im Status &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reaktionsabwicklung:&lt;/strong&gt; Wird ein Überwachungsfehler qualifiziert (Übergang zu &lt;code&gt;kExpired&lt;/code&gt; bzw. &lt;code&gt;kStopped&lt;/code&gt;), wird eine abgeleitete Instanz von &lt;code&gt;RecoveryAction&lt;/code&gt; herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التهيئة والربط:&lt;/strong&gt; ينشئ التطبيق نسخة من &lt;code&gt;SupervisedEntity&lt;/code&gt; للمكونات المطلوب مراقبتها في كل حالة. ويتم هنا تعيين معلمات المراقبة للأنماط من &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt; أو &lt;code&gt;kDeadlineSupervision&lt;/code&gt; أو &lt;code&gt;kLogicalSupervision&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التنفيذ والإبلاغ الدوريان:&lt;/strong&gt; أثناء التشغيل العادي، يبلّغ الكيان عن نقاط فحص إلى النظام الفرعي. وطالما يتم الالتزام بالمتطلبات، يظل &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; و&lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; في الحالة &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;، &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;معالجة الاستجابة:&lt;/strong&gt; إذا تم تأكيد خطأ مراقبة (الانتقال إلى &lt;code&gt;kExpired&lt;/code&gt; أو &lt;code&gt;kStopped&lt;/code&gt;)، فسيتم استخدام نسخة مشتقة من &lt;code&gt;RecoveryAction&lt;/code&gt; لبدء تدابير تصحيحية مثل عمليات إعادة التشغيل أو تغييرات الحالة.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlerzustände und Ausnahmebedingungen im Namespace &lt;code&gt;ara::phm&lt;/code&gt; werden über standardisierte Fehlerstrukturen abgewickelt:&lt;/p&gt;
+&lt;h4&gt;سيناريوهات الأخطاء&lt;/h4&gt;
+&lt;p&gt;تتم معالجة حالات الخطأ والشروط الاستثنائية في مساحة الاسم &lt;code&gt;ara::phm&lt;/code&gt; عبر بنيات خطأ قياسية:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Die Fehlerdomäne kann über die freie Funktion &lt;code&gt;GetPhmDomain()&lt;/code&gt; bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Konkrete Fehlerursachen werden über die Enumeration &lt;code&gt;PhmErrc&lt;/code&gt; typisiert &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
+&lt;li&gt;يمكن الحصول على نطاق الخطأ عبر الدالة الحرة &lt;code&gt;GetPhmDomain()&lt;/code&gt;؛ الاستدعاء آمن بالنسبة للخيوط ولا يطلق أي استثناءات &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;يتم تحديد أنواع أسباب الأخطاء المحددة عبر التعداد &lt;code&gt;PhmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
   &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: تعذر تقديم الخدمة لأن الاتصال ببرنامج PHM الخفي فشل.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: لا يمكن لـ State Management تنفيذ الاستعادة؛ يتولى Platform Health Management التصعيد والتحكم في الـ Watchdog.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: تتم بالفعل معالجة عملية Enable أو Disable متوازية.&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;Mit der Hilfsfunktion &lt;code&gt;MakeErrorCode()&lt;/code&gt; werden Fehlermeldungen vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; unter Kombination eines &lt;code&gt;PhmErrc&lt;/code&gt; und herstellerspezifischer Zusatzdaten erzeugt &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird &lt;code&gt;PhmException&lt;/code&gt; geworfen.&lt;/li&gt;
+&lt;li&gt;باستخدام الدالة المساعدة &lt;code&gt;MakeErrorCode()&lt;/code&gt;، يتم إنشاء رسائل خطأ من النوع &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; من خلال الجمع بين &lt;code&gt;PhmErrc&lt;/code&gt; وبيانات إضافية خاصة بالشركة المصنعة &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. وفي حالة الأخطاء الجسيمة التي تتطلب معالجة الاستثناءات، يتم طرح &lt;code&gt;PhmException&lt;/code&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;يستند هذا الدليل حصرياً إلى مواصفات AUTOSAR Adaptive Platform الإصدار R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

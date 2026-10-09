@@ -24,37 +24,36 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>5f09d1956600</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/hi/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" data-view-mode="editor" title="क्यूरेशन संपादक और ऑडिट डोजियर खोलें" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ क्यूरेट करें</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>संदर्भ</h4>
 <p>
-Die Datenstruktur <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> übernimmt im Modul <code>diag</code> der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation <code>RequestResult</code> einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+डेटा संरचना <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> AUTOSAR Adaptive Platform के मॉड्यूल <code>diag</code> में किसी डायग्नोस्टिक रूटीन के ऑपरेशन <code>RequestResult</code> के लिए सभी आउटपुट पैरामीटर को एक साथ बंडल करने का कार्य करती है। मानकीकृत डायग्नोस्टिक सेवाओं के माध्यम से डायग्नोस्टिक रूटीन निष्पादित करते समय, शुद्ध निष्पादन स्थिति के अलावा अक्सर एप्लिकेशन-विशिष्ट परिणाम डेटा मौजूद होता है, जिसे डायग्नोस्टिक प्रबंधन प्रणाली में प्रेषित किया जाना चाहिए। पैरामीटर सूचियों के माध्यम से कई अलग-अलग रिटर्न मानों को व्यक्तिगत रूप से पास करने के बजाय, यह संरचना सभी आउटपुट तर्कों को एक साझा डेटा प्रकार में संपुटित करती है।
 </p>
 <p>
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als C++-Struktur (<code>struct</code>) besitzt <code>&lt;RoutineInterface&gt;RequestResultOutput</code> den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von <code>RequestResult</code>, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-</p>
-<p>
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+यहाँ प्राथमिक इंटरैक्शन साझेदार ठोस एप्लिकेशन घटक हैं जो डायग्नोस्टिक रूटीन को कार्यान्वित करते हैं, साथ ही डायग्नोस्टिक्स मॉड्यूल का रनटाइम वातावरण भी है। यह संरचना एप्लिकेशन के आंतरिक लॉजिक और जनरेट किए गए बुनियादी ढांचे के बीच एक टाइप्ड इंटरफ़ेस के रूप में कार्य करती है। इस डेटा संरचना के फ़ील्ड संबंधित AUTOSAR मॉडल में परिभाषित डायग्नोस्टिक रूटीन के आउटपुट तर्कों के अनुरूप होने चाहिए, जिससे निर्दिष्ट डायग्नोस्टिक आउटपुट का सीधा मानचित्रण सुनिश्चित होता है।
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>जीवनचक्र</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+C++ संरचना (<code>struct</code>) के रूप में, <code>&lt;RoutineInterface&gt;RequestResultOutput</code> में एक क्लासिक वैल्यू टाइप (Value Type) का जीवनकाल होता है। इंस्टैंसिएशन आमतौर पर <code>RequestResult</code> के निष्पादन के संदर्भ में होता है, जैसे ही एप्लिकेशन-विशिष्ट रूटीन अपने परिणाम निर्धारित कर लेता है। एप्लिकेशन संरचना का एक स्थानीय इंस्टेंस बनाता है, उसमें परिभाषित सदस्यों को वर्तमान परिणाम मानों से भरता है, और तैयार संरचना कॉलर को सौंपता है।
+</p>
+<p>
+स्वामित्व संबंधों के संबंध में, ऑब्जेक्ट किसी जटिल निर्भरता के अधीन नहीं है: यह बाहरी सेवाओं पर कोई साझा स्वामित्व अधिकार नहीं रखता है और किसी दीर्घकालिक सिस्टम संसाधन का प्रबंधन नहीं करता है। संभवतः संरचना को एप्लिकेशन रूटीन द्वारा तत्कालित किया जाता है और बाद में नियमित वैल्यू पासिंग या मूव सेमेंटिक्स के माध्यम से डायग्नोस्टिक फ्रेमवर्क को वापस कर दिया जाता है। डायग्नोस्टिक इंफ्रास्ट्रक्चर द्वारा आगे के प्रसंस्करण या सीरियलाइज़ेशन के बाद, संबंधित स्कोप से बाहर निकलने पर डिस्ट्रक्टर के स्वचालित कॉल के माध्यम से ऑब्जेक्ट का जीवनकाल नियमित रूप से समाप्त हो जाता है। शामिल पेलोड डेटा के अलावा कोई आंतरिक स्थिति मौजूद नहीं है; इसलिए कोई अलग स्थिति संक्रमण या स्थिति मशीन के चरण नहीं हैं।
+</p>
+
+<h4>उपयोग पथ</h4>
+<p>
+विशिष्ट उपयोग पथ को इनिशियलाइज़ेशन, भराव और रिटर्न चरणों में विभाजित किया गया है:
 </p>
 <ul>
-<li><strong>Vorbereitung:</strong> Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.</li>
-<li><strong>Erzeugung und Zuweisung:</strong> Die Anwendungskomponente deklariert eine Instanz von <code>&lt;RoutineInterface&gt;RequestResultOutput</code> und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.</li>
-<li><strong>Rückmeldung:</strong> Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.</li>
+<li><strong>तैयारी:</strong> एप्लिकेशन जनरेट किए गए रूटीन इंटरफ़ेस के माध्यम से चल रहे डायग्नोस्टिक रूटीन का मध्यवर्ती या अंतिम परिणाम प्रदान करने का अनुरोध प्राप्त करता है।</li>
+<li><strong>निर्माण और असाइनमेंट:</strong> एप्लिकेशन घटक <code>&lt;RoutineInterface&gt;RequestResultOutput</code> का एक इंस्टेंस घोषित करता है और संबंधित फ़ील्ड्स में निर्धारित माप मान, स्थिति फ़्लैग या अन्य रूटीन डेटा असाइन करता है।</li>
+<li><strong>फीडबैक:</strong> पूरी तरह से भरी हुई संरचना कॉल के परिणाम के रूप में वापस लौटा दी जाती है, जिससे डायग्नोस्टिक्स सबसिस्टम परिणामी डायग्नोस्टिक प्रोटोकॉल में आउटपुट मानों को शामिल कर सकता है।</li>
 </ul>
 <p>
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+व्याख्या: डायग्नोस्टिक फ्रेमवर्क आमतौर पर भरी हुई इंस्टेंस को वैल्यू द्वारा या मूव सेमेंटिक्स द्वारा आगे ले जाता है, क्योंकि एक शुद्ध डेटा संरचना के रूप में किसी जटिल संसाधन प्रबंधन की आवश्यकता नहीं होती है। चूंकि संरचना को मुख्य रूप से एक निष्क्रिय डेटा वाहक के रूप में डिज़ाइन किया गया है, इसलिए इसमें स्वयं कोई समवर्ती सिंक्रोनाइज़ेशन नहीं है; यदि एकाधिक थ्रेड समानांतर में एक ही इंस्टेंस तक पहुंचते हैं, तो थ्रेड-सुरक्षित समन्वय कॉलिंग एप्लिकेशन लॉजिक की जिम्मेदारी है।
 </p>
 
 <!-- annahmen:
@@ -62,7 +61,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.</p>
+<p class="ai-note">यह गाइड विशेष रूप से AUTOSAR Adaptive रिलीज़ R25-11 के विनिर्देश मेटाडेटा पर आधारित है।</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" title="एआई से चर्चा करें">💬 एआई से चर्चा करें</button>
@@ -279,34 +278,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5f09d1956600abe96f1cf76dbb99c3220413956c6723afdf9c79be1c5417c7ff" data-trace-output="2590cbb2aa4504dea4cf3ca53bae4121d11a631c0d4129c11343f8e147cff677" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;संदर्भ&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; übernimmt im Modul &lt;code&gt;diag&lt;/code&gt; der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation &lt;code&gt;RequestResult&lt;/code&gt; einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+डेटा संरचना &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; AUTOSAR Adaptive Platform के मॉड्यूल &lt;code&gt;diag&lt;/code&gt; में किसी डायग्नोस्टिक रूटीन के ऑपरेशन &lt;code&gt;RequestResult&lt;/code&gt; के लिए सभी आउटपुट पैरामीटर को एक साथ बंडल करने का कार्य करती है। मानकीकृत डायग्नोस्टिक सेवाओं के माध्यम से डायग्नोस्टिक रूटीन निष्पादित करते समय, शुद्ध निष्पादन स्थिति के अलावा अक्सर एप्लिकेशन-विशिष्ट परिणाम डेटा मौजूद होता है, जिसे डायग्नोस्टिक प्रबंधन प्रणाली में प्रेषित किया जाना चाहिए। पैरामीटर सूचियों के माध्यम से कई अलग-अलग रिटर्न मानों को व्यक्तिगत रूप से पास करने के बजाय, यह संरचना सभी आउटपुट तर्कों को एक साझा डेटा प्रकार में संपुटित करती है।
 &lt;/p&gt;
 &lt;p&gt;
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als C++-Struktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von &lt;code&gt;RequestResult&lt;/code&gt;, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-&lt;/p&gt;
-&lt;p&gt;
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+यहाँ प्राथमिक इंटरैक्शन साझेदार ठोस एप्लिकेशन घटक हैं जो डायग्नोस्टिक रूटीन को कार्यान्वित करते हैं, साथ ही डायग्नोस्टिक्स मॉड्यूल का रनटाइम वातावरण भी है। यह संरचना एप्लिकेशन के आंतरिक लॉजिक और जनरेट किए गए बुनियादी ढांचे के बीच एक टाइप्ड इंटरफ़ेस के रूप में कार्य करती है। इस डेटा संरचना के फ़ील्ड संबंधित AUTOSAR मॉडल में परिभाषित डायग्नोस्टिक रूटीन के आउटपुट तर्कों के अनुरूप होने चाहिए, जिससे निर्दिष्ट डायग्नोस्टिक आउटपुट का सीधा मानचित्रण सुनिश्चित होता है।
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;जीवनचक्र&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+C++ संरचना (&lt;code&gt;struct&lt;/code&gt;) के रूप में, &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; में एक क्लासिक वैल्यू टाइप (Value Type) का जीवनकाल होता है। इंस्टैंसिएशन आमतौर पर &lt;code&gt;RequestResult&lt;/code&gt; के निष्पादन के संदर्भ में होता है, जैसे ही एप्लिकेशन-विशिष्ट रूटीन अपने परिणाम निर्धारित कर लेता है। एप्लिकेशन संरचना का एक स्थानीय इंस्टेंस बनाता है, उसमें परिभाषित सदस्यों को वर्तमान परिणाम मानों से भरता है, और तैयार संरचना कॉलर को सौंपता है।
+&lt;/p&gt;
+&lt;p&gt;
+स्वामित्व संबंधों के संबंध में, ऑब्जेक्ट किसी जटिल निर्भरता के अधीन नहीं है: यह बाहरी सेवाओं पर कोई साझा स्वामित्व अधिकार नहीं रखता है और किसी दीर्घकालिक सिस्टम संसाधन का प्रबंधन नहीं करता है। संभवतः संरचना को एप्लिकेशन रूटीन द्वारा तत्कालित किया जाता है और बाद में नियमित वैल्यू पासिंग या मूव सेमेंटिक्स के माध्यम से डायग्नोस्टिक फ्रेमवर्क को वापस कर दिया जाता है। डायग्नोस्टिक इंफ्रास्ट्रक्चर द्वारा आगे के प्रसंस्करण या सीरियलाइज़ेशन के बाद, संबंधित स्कोप से बाहर निकलने पर डिस्ट्रक्टर के स्वचालित कॉल के माध्यम से ऑब्जेक्ट का जीवनकाल नियमित रूप से समाप्त हो जाता है। शामिल पेलोड डेटा के अलावा कोई आंतरिक स्थिति मौजूद नहीं है; इसलिए कोई अलग स्थिति संक्रमण या स्थिति मशीन के चरण नहीं हैं।
+&lt;/p&gt;
+
+&lt;h4&gt;उपयोग पथ&lt;/h4&gt;
+&lt;p&gt;
+विशिष्ट उपयोग पथ को इनिशियलाइज़ेशन, भराव और रिटर्न चरणों में विभाजित किया गया है:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Vorbereitung:&lt;/strong&gt; Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Zuweisung:&lt;/strong&gt; Die Anwendungskomponente deklariert eine Instanz von &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;तैयारी:&lt;/strong&gt; एप्लिकेशन जनरेट किए गए रूटीन इंटरफ़ेस के माध्यम से चल रहे डायग्नोस्टिक रूटीन का मध्यवर्ती या अंतिम परिणाम प्रदान करने का अनुरोध प्राप्त करता है।&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;निर्माण और असाइनमेंट:&lt;/strong&gt; एप्लिकेशन घटक &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; का एक इंस्टेंस घोषित करता है और संबंधित फ़ील्ड्स में निर्धारित माप मान, स्थिति फ़्लैग या अन्य रूटीन डेटा असाइन करता है।&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;फीडबैक:&lt;/strong&gt; पूरी तरह से भरी हुई संरचना कॉल के परिणाम के रूप में वापस लौटा दी जाती है, जिससे डायग्नोस्टिक्स सबसिस्टम परिणामी डायग्नोस्टिक प्रोटोकॉल में आउटपुट मानों को शामिल कर सकता है।&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+व्याख्या: डायग्नोस्टिक फ्रेमवर्क आमतौर पर भरी हुई इंस्टेंस को वैल्यू द्वारा या मूव सेमेंटिक्स द्वारा आगे ले जाता है, क्योंकि एक शुद्ध डेटा संरचना के रूप में किसी जटिल संसाधन प्रबंधन की आवश्यकता नहीं होती है। चूंकि संरचना को मुख्य रूप से एक निष्क्रिय डेटा वाहक के रूप में डिज़ाइन किया गया है, इसलिए इसमें स्वयं कोई समवर्ती सिंक्रोनाइज़ेशन नहीं है; यदि एकाधिक थ्रेड समानांतर में एक ही इंस्टेंस तक पहुंचते हैं, तो थ्रेड-सुरक्षित समन्वय कॉलिंग एप्लिकेशन लॉजिक की जिम्मेदारी है।
 &lt;/p&gt;
 
 &lt;!-- annahmen:
@@ -314,7 +312,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;यह गाइड विशेष रूप से AUTOSAR Adaptive रिलीज़ R25-11 के विनिर्देश मेटाडेटा पर आधारित है।&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

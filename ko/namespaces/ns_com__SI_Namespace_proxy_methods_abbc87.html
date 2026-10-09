@@ -20,39 +20,38 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>8a677b90bae2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_proxy_methods_abbc87/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/namespaces/ns_com__SI_Namespace_proxy_methods_abbc87/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_proxy_methods_abbc87" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>&lt;SI-Namespace&gt;::proxy::methods</code> stellt innerhalb des Moduls <code>com</code> der AUTOSAR Adaptive Platform die clientseitigen Schnittstellenrepräsentanten für Methodenaufrufe bereit. In der serviceorientierten Architektur von AUTOSAR Adaptive werden Kommunikationsbeziehungen über Service-Schnittstellen (<code>ServiceInterface</code>) definiert. Enthält eine solche Schnittstelle Operationen vom Typ <code>ClientServerOperation</code>, erzeugt der Schnittstellengenerator für jede dieser Operationen eine spezialisierte Methodenklasse im Proxy-Namespace.</p>
-<p>Die Architektur unterscheidet dabei grundlegend zwischen zwei Ausprägungen von Methoden, die durch das Metamodellattribut <code>fireAndForget</code> gesteuert werden:</p>
+<h4>컨텍스트</h4>
+<p>네임스페이스 <code>&lt;SI-Namespace&gt;::proxy::methods</code>은 AUTOSAR Adaptive Platform의 <code>com</code> 모듈 내에서 메서드 호출을 위한 클라이언트 측 인터페이스 대표자를 제공합니다. AUTOSAR Adaptive의 서비스 지향 아키텍처에서 통신 관계는 서비스 인터페이스(<code>ServiceInterface</code>)를 통해 정의됩니다. 이러한 인터페이스에 <code>ClientServerOperation</code> 유형의 오퍼레이션이 포함되어 있는 경우, 인터페이스 생성기는 각 오퍼레이션에 대해 프록시 네임스페이스 내에 특화된 메서드 클래스를 생성합니다.</p>
+<p>이때 아키텍처는 메타모델 속성 <code>fireAndForget</code>에 의해 제어되는 두 가지 메서드 형태를 기본적으로 구분합니다:</p>
 <ul>
-<li><strong>Klasse <code>&lt;Method&gt;</code>:</strong> Diese Klasse wird für jede <code>ClientServerOperation</code> generiert, bei der <code>ClientServerOperation.fireAndForget == FALSE</code> konfiguriert ist. Sie repräsentiert synchrone oder asynchrone Request-Response-Aufrufe, bei denen der Client eine Antwort oder ein Ergebnis vom Server erwartet.</li>
-<li><strong>Klasse <code>&lt;FnFMethod&gt;</code>:</strong> Diese Klasse wird für Operationen erzeugt, bei denen <code>ClientServerOperation.fireAndForget == TRUE</code> gilt. Sie implementiert ein reines Einweg-Nachrichtenmuster (Fire-and-Forget), bei dem der Aufruf abgesetzt wird, ohne dass eine serverseitige Rückmeldung oder ein Rückgabewert an den Client übertragen wird.</li>
+<li><strong>클래스 <code>&lt;Method&gt;</code>:</strong> 이 클래스는 <code>ClientServerOperation.fireAndForget == FALSE</code>(이)가 구성된 각 <code>ClientServerOperation</code>에 대해 생성됩니다. 이는 클라이언트가 서버로부터 응답이나 결과를 기대하는 동기 또는 비동기 요청-응답(Request-Response) 호출을 나타냅니다.</li>
+<li><strong>클래스 <code>&lt;FnFMethod&gt;</code>:</strong> 이 클래스는 <code>ClientServerOperation.fireAndForget == TRUE</code>(이)가 적용되는 오퍼레이션에 대해 생성됩니다. 이는 서버 측 응답이나 반환값이 클라이언트로 전송되지 않고 호출이 발송되는 순수 단방향 메시지 패턴(Fire-and-Forget)을 구현합니다.</li>
 </ul>
-<p>Innerhalb der Gesamthierarchie von <code>&lt;SI-Namespace&gt;::proxy</code> kapseln diese Klassen die Serialisierung der Eingangsparameter, die Übergabe an die zugrunde liegende Kommunikationsinfrastruktur sowie bei regulären Methoden die Entgegennahme der Antwortdaten.</p>
+<p><code>&lt;SI-Namespace&gt;::proxy</code>의 전체 계층 구조 내에서 이러한 클래스는 입력 매개변수의 직렬화, 기본 통신 인프라로의 전달 및 일반 메서드의 경우 응답 데이터의 수신을 캡슐화합니다.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Lebensdauer der Klassen im Namespace <code>&lt;SI-Namespace&gt;::proxy::methods</code> ist eng an die übergeordnete Proxy-Instanz der jeweiligen Service-Schnittstelle gekoppelt. Interpretation: <code>&lt;Method&gt;</code>- und <code>&lt;FnFMethod&gt;</code>-Instanzen dürften als Member der generierten Service-Proxy-Klasse instanziiert werden und teilen daher vollständig deren Lebenszyklus.</p>
-<p>Beim Instanziieren des Service-Proxys (nach erfolgreicher Service-Discovery und Bindung an eine konkrete Service-Instanz) werden die eingebetteten Methodenobjekte initialisiert. Sie erhalten dabei den Zugriffskontext auf das zugrunde liegende Kommunikations-Binding. Solange der Service-Proxy gültig bleibt, stehen die Methodeninstanzen der Client-Anwendung zur Verfügung. Wird der Service-Proxy zerstört, erlöschen auch die zugehörigen Methodenobjekte. Laufende asynchrone Aufrufe oder noch ausstehende Antworten müssen vor oder während des Destruktoraufrufs des Proxys abgewickelt bzw. invalidiert werden.</p>
-<p>In Bezug auf die Nebenläufigkeit sind Methodenaufrufe so konzipiert, dass mehrere Threads der Anwendungssoftware dieselbe Proxy-Methode aufrufen können, sofern die Implementierung der Middleware Thread-Sicherheit für den Versand gewährleistet. Da Methodenobjekte typischerweise keinen zustandsbehafteten Aufrufkontext über aufeinanderfolgende Aufrufe hinweg speichern, agieren sie im Wesentlichen als zustandslose Funktionsschnittstellen für den Nachrichtentransport.</p>
+<h4>수명 주기</h4>
+<p>네임스페이스 <code>&lt;SI-Namespace&gt;::proxy::methods</code> 내 클래스의 수명은 각 서비스 인터페이스의 상위 프록시 인스턴스에 밀접하게 연결되어 있습니다. Interpretation: <code>&lt;Method&gt;</code> 및 <code>&lt;FnFMethod&gt;</code> 인스턴스는 생성된 서비스 프록시 클래스의 멤버로 인스턴스화될 것으로 보이며, 따라서 해당 프록시 클래스의 수명 주기를 완전히 공유합니다.</p>
+<p>(성공적인 서비스 검색 및 구체적인 서비스 인스턴스에 대한 바인딩 후) 서비스 프록시를 인스턴스화할 때 임베디드 메서드 객체가 초기화됩니다. 이때 해당 객체는 기본 통신 바인딩에 대한 액세스 컨텍스트를 얻습니다. 서비스 프록시가 유효하게 유지되는 한, 메서드 인스턴스는 클라이언트 애플리케이션에서 계속 사용할 수 있습니다. 서비스 프록시가 파괴되면 연관된 메서드 객체도 소멸합니다. 진행 중인 비동기 호출이나 아직 보류 중인 응답은 프록시의 소멸자 호출 전이나 도중에 처리되거나 무효화되어야 합니다.</p>
+<p>동시성과 관련하여, 미들웨어 구현이 전송에 대한 스레드 안전성을 보장하는 한 응용 소프트웨어의 여러 스레드가 동일한 프록시 메서드를 호출할 수 있도록 메서드 호출이 설계되었습니다. 메서드 객체는 일반적으로 연속적인 호출에 걸쳐 상태 저장 호출 컨텍스트를 저장하지 않으므로, 메시지 전송을 위한 무상태 함수 인터페이스로 기본 작동합니다.</p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Ablauf bei der Verwendung der Klassen aus <code>&lt;SI-Namespace&gt;::proxy::methods</code> gliedert sich in folgende Phasen:</p>
+<h4>사용 경로</h4>
+<p><code>&lt;SI-Namespace&gt;::proxy::methods</code>의 클래스를 사용할 때의 일반적인 흐름은 다음 단계로 나뉩니다:</p>
 <ol>
-<li><strong>Proxy-Bereitstellung:</strong> Die Client-Anwendung findet die gewünschte Service-Instanz über die Service-Discovery des Moduls <code>com</code> und instanziiert den typisierten Proxy.</li>
-<li><strong>Methodenzugriff:</strong> Die Anwendung greift auf das spezifische Methoden-Member des Proxys zu. Interpretation: Der Aufruf eines Methodenobjekts dürfte typischerweise über einen überladenen Funktionsaufruf-Operator (<code>operator()</code>) des jeweiligen Objekts erfolgen.</li>
-<li><strong>Ausführung regulärer Methoden (<code>&lt;Method&gt;</code>):</strong> Bei einer regulären Operation übergibt die Anwendung die deklarierten Eingabeparameter. Das Methodenobjekt leitet die Anfrage über die Middleware an den Server weiter und gibt der aufrufenden Anwendung ein Objekt zurück, das das asynchrone Ergebnis kapselt. Die Anwendung kann anschließend synchron blockieren, bis das Ergebnis vorliegt, oder eine asynchrone Benachrichtigung registrieren.</li>
-<li><strong>Ausführung von Fire-and-Forget-Methoden (<code>&lt;FnFMethod&gt;</code>):</strong> Bei einer Einweg-Operation übergibt die Anwendung ebenfalls die Eingabeparameter an das Methodenobjekt. Dieses stößt die Übertragung an und kehrt unmittelbar zur Anwendung zurück, ohne ein Rückgabe- oder Zustandsobjekt für ein Ergebnis bereitzustellen.</li>
+<li><strong>프록시 프로비저닝:</strong> 클라이언트 애플리케이션은 <code>com</code> 모듈의 서비스 검색을 통해 원하는 서비스 인스턴스를 찾고 형식화된 프록시를 인스턴스화합니다.</li>
+<li><strong>메서드 액세스:</strong> 애플리케이션은 프록시의 특정 메서드 멤버에 액세스합니다. Interpretation: 메서드 객체의 호출은 일반적으로 각 객체의 오버로드된 함수 호출 연산자(<code>operator()</code>)를 통해 이루어질 것으로 추정됩니다.</li>
+<li><strong>일반 메서드(<code>&lt;Method&gt;</code>) 실행:</strong> 일반 오퍼레이션의 경우 애플리케이션은 선언된 입력 매개변수를 전달합니다. 메서드 객체는 미들웨어를 통해 서버로 요청을 전달하고, 비동기 결과를 캡슐화하는 객체를 호출 애플리케이션에 반환합니다. 그 후 애플리케이션은 결과가 나올 때까지 동기적으로 차단하거나 비동기 알림을 등록할 수 있습니다.</li>
+<li><strong>Fire-and-Forget 메서드(<code>&lt;FnFMethod&gt;</code>) 실행:</strong> 단방향 오퍼레이션의 경우에도 애플리케이션은 입력 매개변수를 메서드 객체에 전달합니다. 이 객체는 전송을 트리거하고 결과에 대한 반환 또는 상태 객체를 제공하지 않고 애플리케이션으로 즉시 반환됩니다.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Beim Aufruf von Klassen aus <code>&lt;SI-Namespace&gt;::proxy::methods</code> sind unterschiedliche Fehlerebenen zu berücksichtigen, die sich je nach Aufrufsemantik unterscheiden:</p>
+<h4>오류 시나리오</h4>
+<p><code>&lt;SI-Namespace&gt;::proxy::methods</code>의 클래스를 호출할 때는 호출 시맨틱에 따라 달라지는 다양한 오류 수준을 고려해야 합니다:</p>
 <ul>
-<li><strong>Kommunikations- und Bindungsfehler:</strong> Vorbedingung für jeden Methodenaufruf ist ein funktionstüchtiger Transportkanal zur Service-Instanz. Bricht die Netzwerkverbindung ab oder ist die Service-Instanz nicht mehr erreichbar, schlagen Aufrufe fehl. Bei regulären <code>&lt;Method&gt;</code>-Klassen wird ein entsprechender Fehler über das Ergebnisobjekt transportiert.</li>
-<li><strong>Anwendungsfehler:</strong> Kann der Server eine reguläre <code>&lt;Method&gt;</code> nicht erfolgreich verarbeiten, wird ein in der Service-Schnittstelle definierter Anwendungsfehler an den Client zurückübermittelt.</li>
-<li><strong>Fehlerverhalten bei Fire-and-Forget:</strong> Interpretation: Bei <code>&lt;FnFMethod&gt;</code> dürften serverseitige Verarbeitungsfehler nicht an den Aufrufer zurückgemeldet werden, da fire-and-forget semantisch keine Antwortnachricht vorsieht. Für die Anwendung bedeutet dies, dass serverseitige Ausnahmen oder Berechnungsfehler unbemerkt bleiben, es sei denn, ein separater Rückkanal (etwa ein Event) wird hierfür genutzt. Lokale Fehler bei der Parameterübernahme oder beim Absenden können hingegen unmittelbar im aufrufenden Kontext signalisiert werden.</li>
+<li><strong>통신 및 바인딩 오류:</strong> 모든 메서드 호출의 전제 조건은 서비스 인스턴스로 향하는 정상 작동하는 전송 채널입니다. 네트워크 연결이 끊어지거나 서비스 인스턴스에 더 이상 연결할 수 없는 경우 호출이 실패합니다. 일반 <code>&lt;Method&gt;</code> 클래스에서는 해당 오류가 결과 객체를 통해 전달됩니다.</li>
+<li><strong>애플리케이션 오류:</strong> 서버가 일반 <code>&lt;Method&gt;</code>을(를) 성공적으로 처리할 수 없는 경우, 서비스 인터페이스에 정의된 애플리케이션 오류가 클라이언트로 다시 전송됩니다.</li>
+<li><strong>Fire-and-Forget에서의 오류 동작:</strong> Interpretation: <code>&lt;FnFMethod&gt;</code>의 경우, fire-and-forget은 시맨틱상 응답 메시지를 제공하지 않으므로 서버 측 처리 오류가 호출자에게 다시 보고되지 않을 것으로 추정됩니다. 애플리케이션 관점에서 이는 별도의 리턴 채널(예: 이벤트)을 사용하지 않는 한 서버 측 예외나 계산 오류를 인지하지 못함을 의미합니다. 반면 매개변수 인수 또는 발신 시의 로컬 오류는 호출 컨텍스트에서 즉시 신호화될 수 있습니다.</li>
 </ul>
 
 <!-- annahmen:
@@ -60,7 +59,7 @@
 2) Der Aufruf eines Methodenobjekts dürfte typischerweise über einen überladenen Funktionsaufruf-Operator (operator()) des jeweiligen Objekts erfolgen. – Begründung: Der Payload benennt die Klassen als Methodenklassen eines C++-Service-Proxys, spezifiziert jedoch nicht die genaue Signatur des Aufrufoperators im Auszug.
 3) Bei <FnFMethod> dürften serverseitige Verarbeitungsfehler nicht an den Aufrufer zurückgemeldet werden, da fire-and-forget semantisch keine Antwortnachricht vorsieht. – Begründung: Aus der Bedingung ClientServerOperation.fireAndForget == TRUE folgt die Einweg-Kommunikation ohne Rückkanal.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul com und wurde automatisiert erstellt.</p>
+<p class="ai-note">이 가이드는 com 모듈에 대한 AUTOSAR Adaptive Platform 릴리스 R25-11의 사양 데이터를 기반으로 하며 자동으로 작성되었습니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_proxy_methods_abbc87" title="AI와 토론">💬 AI와 토론</button>
@@ -325,36 +324,35 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="8a677b90bae22dd576cfbc348b41a49c216ac497e0625e5b2a53bf64afe85c4b" data-trace-output="64731a322ead10b907d3f2e8bd9d446218deea71cd236421aebb3b8e70cf598c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; stellt innerhalb des Moduls &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform die clientseitigen Schnittstellenrepräsentanten für Methodenaufrufe bereit. In der serviceorientierten Architektur von AUTOSAR Adaptive werden Kommunikationsbeziehungen über Service-Schnittstellen (&lt;code&gt;ServiceInterface&lt;/code&gt;) definiert. Enthält eine solche Schnittstelle Operationen vom Typ &lt;code&gt;ClientServerOperation&lt;/code&gt;, erzeugt der Schnittstellengenerator für jede dieser Operationen eine spezialisierte Methodenklasse im Proxy-Namespace.&lt;/p&gt;
-&lt;p&gt;Die Architektur unterscheidet dabei grundlegend zwischen zwei Ausprägungen von Methoden, die durch das Metamodellattribut &lt;code&gt;fireAndForget&lt;/code&gt; gesteuert werden:&lt;/p&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
+&lt;p&gt;네임스페이스 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt;은 AUTOSAR Adaptive Platform의 &lt;code&gt;com&lt;/code&gt; 모듈 내에서 메서드 호출을 위한 클라이언트 측 인터페이스 대표자를 제공합니다. AUTOSAR Adaptive의 서비스 지향 아키텍처에서 통신 관계는 서비스 인터페이스(&lt;code&gt;ServiceInterface&lt;/code&gt;)를 통해 정의됩니다. 이러한 인터페이스에 &lt;code&gt;ClientServerOperation&lt;/code&gt; 유형의 오퍼레이션이 포함되어 있는 경우, 인터페이스 생성기는 각 오퍼레이션에 대해 프록시 네임스페이스 내에 특화된 메서드 클래스를 생성합니다.&lt;/p&gt;
+&lt;p&gt;이때 아키텍처는 메타모델 속성 &lt;code&gt;fireAndForget&lt;/code&gt;에 의해 제어되는 두 가지 메서드 형태를 기본적으로 구분합니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Klasse &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;:&lt;/strong&gt; Diese Klasse wird für jede &lt;code&gt;ClientServerOperation&lt;/code&gt; generiert, bei der &lt;code&gt;ClientServerOperation.fireAndForget == FALSE&lt;/code&gt; konfiguriert ist. Sie repräsentiert synchrone oder asynchrone Request-Response-Aufrufe, bei denen der Client eine Antwort oder ein Ergebnis vom Server erwartet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Klasse &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;:&lt;/strong&gt; Diese Klasse wird für Operationen erzeugt, bei denen &lt;code&gt;ClientServerOperation.fireAndForget == TRUE&lt;/code&gt; gilt. Sie implementiert ein reines Einweg-Nachrichtenmuster (Fire-and-Forget), bei dem der Aufruf abgesetzt wird, ohne dass eine serverseitige Rückmeldung oder ein Rückgabewert an den Client übertragen wird.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;클래스 &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;:&lt;/strong&gt; 이 클래스는 &lt;code&gt;ClientServerOperation.fireAndForget == FALSE&lt;/code&gt;(이)가 구성된 각 &lt;code&gt;ClientServerOperation&lt;/code&gt;에 대해 생성됩니다. 이는 클라이언트가 서버로부터 응답이나 결과를 기대하는 동기 또는 비동기 요청-응답(Request-Response) 호출을 나타냅니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;클래스 &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;:&lt;/strong&gt; 이 클래스는 &lt;code&gt;ClientServerOperation.fireAndForget == TRUE&lt;/code&gt;(이)가 적용되는 오퍼레이션에 대해 생성됩니다. 이는 서버 측 응답이나 반환값이 클라이언트로 전송되지 않고 호출이 발송되는 순수 단방향 메시지 패턴(Fire-and-Forget)을 구현합니다.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Innerhalb der Gesamthierarchie von &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; kapseln diese Klassen die Serialisierung der Eingangsparameter, die Übergabe an die zugrunde liegende Kommunikationsinfrastruktur sowie bei regulären Methoden die Entgegennahme der Antwortdaten.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt;의 전체 계층 구조 내에서 이러한 클래스는 입력 매개변수의 직렬화, 기본 통신 인프라로의 전달 및 일반 메서드의 경우 응답 데이터의 수신을 캡슐화합니다.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Lebensdauer der Klassen im Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; ist eng an die übergeordnete Proxy-Instanz der jeweiligen Service-Schnittstelle gekoppelt. Interpretation: &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;- und &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;-Instanzen dürften als Member der generierten Service-Proxy-Klasse instanziiert werden und teilen daher vollständig deren Lebenszyklus.&lt;/p&gt;
-&lt;p&gt;Beim Instanziieren des Service-Proxys (nach erfolgreicher Service-Discovery und Bindung an eine konkrete Service-Instanz) werden die eingebetteten Methodenobjekte initialisiert. Sie erhalten dabei den Zugriffskontext auf das zugrunde liegende Kommunikations-Binding. Solange der Service-Proxy gültig bleibt, stehen die Methodeninstanzen der Client-Anwendung zur Verfügung. Wird der Service-Proxy zerstört, erlöschen auch die zugehörigen Methodenobjekte. Laufende asynchrone Aufrufe oder noch ausstehende Antworten müssen vor oder während des Destruktoraufrufs des Proxys abgewickelt bzw. invalidiert werden.&lt;/p&gt;
-&lt;p&gt;In Bezug auf die Nebenläufigkeit sind Methodenaufrufe so konzipiert, dass mehrere Threads der Anwendungssoftware dieselbe Proxy-Methode aufrufen können, sofern die Implementierung der Middleware Thread-Sicherheit für den Versand gewährleistet. Da Methodenobjekte typischerweise keinen zustandsbehafteten Aufrufkontext über aufeinanderfolgende Aufrufe hinweg speichern, agieren sie im Wesentlichen als zustandslose Funktionsschnittstellen für den Nachrichtentransport.&lt;/p&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
+&lt;p&gt;네임스페이스 &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; 내 클래스의 수명은 각 서비스 인터페이스의 상위 프록시 인스턴스에 밀접하게 연결되어 있습니다. Interpretation: &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; 및 &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; 인스턴스는 생성된 서비스 프록시 클래스의 멤버로 인스턴스화될 것으로 보이며, 따라서 해당 프록시 클래스의 수명 주기를 완전히 공유합니다.&lt;/p&gt;
+&lt;p&gt;(성공적인 서비스 검색 및 구체적인 서비스 인스턴스에 대한 바인딩 후) 서비스 프록시를 인스턴스화할 때 임베디드 메서드 객체가 초기화됩니다. 이때 해당 객체는 기본 통신 바인딩에 대한 액세스 컨텍스트를 얻습니다. 서비스 프록시가 유효하게 유지되는 한, 메서드 인스턴스는 클라이언트 애플리케이션에서 계속 사용할 수 있습니다. 서비스 프록시가 파괴되면 연관된 메서드 객체도 소멸합니다. 진행 중인 비동기 호출이나 아직 보류 중인 응답은 프록시의 소멸자 호출 전이나 도중에 처리되거나 무효화되어야 합니다.&lt;/p&gt;
+&lt;p&gt;동시성과 관련하여, 미들웨어 구현이 전송에 대한 스레드 안전성을 보장하는 한 응용 소프트웨어의 여러 스레드가 동일한 프록시 메서드를 호출할 수 있도록 메서드 호출이 설계되었습니다. 메서드 객체는 일반적으로 연속적인 호출에 걸쳐 상태 저장 호출 컨텍스트를 저장하지 않으므로, 메시지 전송을 위한 무상태 함수 인터페이스로 기본 작동합니다.&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Ablauf bei der Verwendung der Klassen aus &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; gliedert sich in folgende Phasen:&lt;/p&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt;의 클래스를 사용할 때의 일반적인 흐름은 다음 단계로 나뉩니다:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Proxy-Bereitstellung:&lt;/strong&gt; Die Client-Anwendung findet die gewünschte Service-Instanz über die Service-Discovery des Moduls &lt;code&gt;com&lt;/code&gt; und instanziiert den typisierten Proxy.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Methodenzugriff:&lt;/strong&gt; Die Anwendung greift auf das spezifische Methoden-Member des Proxys zu. Interpretation: Der Aufruf eines Methodenobjekts dürfte typischerweise über einen überladenen Funktionsaufruf-Operator (&lt;code&gt;operator()&lt;/code&gt;) des jeweiligen Objekts erfolgen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausführung regulärer Methoden (&lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;):&lt;/strong&gt; Bei einer regulären Operation übergibt die Anwendung die deklarierten Eingabeparameter. Das Methodenobjekt leitet die Anfrage über die Middleware an den Server weiter und gibt der aufrufenden Anwendung ein Objekt zurück, das das asynchrone Ergebnis kapselt. Die Anwendung kann anschließend synchron blockieren, bis das Ergebnis vorliegt, oder eine asynchrone Benachrichtigung registrieren.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausführung von Fire-and-Forget-Methoden (&lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;):&lt;/strong&gt; Bei einer Einweg-Operation übergibt die Anwendung ebenfalls die Eingabeparameter an das Methodenobjekt. Dieses stößt die Übertragung an und kehrt unmittelbar zur Anwendung zurück, ohne ein Rückgabe- oder Zustandsobjekt für ein Ergebnis bereitzustellen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;프록시 프로비저닝:&lt;/strong&gt; 클라이언트 애플리케이션은 &lt;code&gt;com&lt;/code&gt; 모듈의 서비스 검색을 통해 원하는 서비스 인스턴스를 찾고 형식화된 프록시를 인스턴스화합니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;메서드 액세스:&lt;/strong&gt; 애플리케이션은 프록시의 특정 메서드 멤버에 액세스합니다. Interpretation: 메서드 객체의 호출은 일반적으로 각 객체의 오버로드된 함수 호출 연산자(&lt;code&gt;operator()&lt;/code&gt;)를 통해 이루어질 것으로 추정됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;일반 메서드(&lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;) 실행:&lt;/strong&gt; 일반 오퍼레이션의 경우 애플리케이션은 선언된 입력 매개변수를 전달합니다. 메서드 객체는 미들웨어를 통해 서버로 요청을 전달하고, 비동기 결과를 캡슐화하는 객체를 호출 애플리케이션에 반환합니다. 그 후 애플리케이션은 결과가 나올 때까지 동기적으로 차단하거나 비동기 알림을 등록할 수 있습니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fire-and-Forget 메서드(&lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;) 실행:&lt;/strong&gt; 단방향 오퍼레이션의 경우에도 애플리케이션은 입력 매개변수를 메서드 객체에 전달합니다. 이 객체는 전송을 트리거하고 결과에 대한 반환 또는 상태 객체를 제공하지 않고 애플리케이션으로 즉시 반환됩니다.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Beim Aufruf von Klassen aus &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; sind unterschiedliche Fehlerebenen zu berücksichtigen, die sich je nach Aufrufsemantik unterscheiden:&lt;/p&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt;의 클래스를 호출할 때는 호출 시맨틱에 따라 달라지는 다양한 오류 수준을 고려해야 합니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Kommunikations- und Bindungsfehler:&lt;/strong&gt; Vorbedingung für jeden Methodenaufruf ist ein funktionstüchtiger Transportkanal zur Service-Instanz. Bricht die Netzwerkverbindung ab oder ist die Service-Instanz nicht mehr erreichbar, schlagen Aufrufe fehl. Bei regulären &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;-Klassen wird ein entsprechender Fehler über das Ergebnisobjekt transportiert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Anwendungsfehler:&lt;/strong&gt; Kann der Server eine reguläre &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; nicht erfolgreich verarbeiten, wird ein in der Service-Schnittstelle definierter Anwendungsfehler an den Client zurückübermittelt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fehlerverhalten bei Fire-and-Forget:&lt;/strong&gt; Interpretation: Bei &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; dürften serverseitige Verarbeitungsfehler nicht an den Aufrufer zurückgemeldet werden, da fire-and-forget semantisch keine Antwortnachricht vorsieht. Für die Anwendung bedeutet dies, dass serverseitige Ausnahmen oder Berechnungsfehler unbemerkt bleiben, es sei denn, ein separater Rückkanal (etwa ein Event) wird hierfür genutzt. Lokale Fehler bei der Parameterübernahme oder beim Absenden können hingegen unmittelbar im aufrufenden Kontext signalisiert werden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;통신 및 바인딩 오류:&lt;/strong&gt; 모든 메서드 호출의 전제 조건은 서비스 인스턴스로 향하는 정상 작동하는 전송 채널입니다. 네트워크 연결이 끊어지거나 서비스 인스턴스에 더 이상 연결할 수 없는 경우 호출이 실패합니다. 일반 &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; 클래스에서는 해당 오류가 결과 객체를 통해 전달됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;애플리케이션 오류:&lt;/strong&gt; 서버가 일반 &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;을(를) 성공적으로 처리할 수 없는 경우, 서비스 인터페이스에 정의된 애플리케이션 오류가 클라이언트로 다시 전송됩니다.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fire-and-Forget에서의 오류 동작:&lt;/strong&gt; Interpretation: &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;의 경우, fire-and-forget은 시맨틱상 응답 메시지를 제공하지 않으므로 서버 측 처리 오류가 호출자에게 다시 보고되지 않을 것으로 추정됩니다. 애플리케이션 관점에서 이는 별도의 리턴 채널(예: 이벤트)을 사용하지 않는 한 서버 측 예외나 계산 오류를 인지하지 못함을 의미합니다. 반면 매개변수 인수 또는 발신 시의 로컬 오류는 호출 컨텍스트에서 즉시 신호화될 수 있습니다.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -362,7 +360,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 2) Der Aufruf eines Methodenobjekts dürfte typischerweise über einen überladenen Funktionsaufruf-Operator (operator()) des jeweiligen Objekts erfolgen. – Begründung: Der Payload benennt die Klassen als Methodenklassen eines C++-Service-Proxys, spezifiziert jedoch nicht die genaue Signatur des Aufrufoperators im Auszug.
 3) Bei &lt;FnFMethod&gt; dürften serverseitige Verarbeitungsfehler nicht an den Aufrufer zurückgemeldet werden, da fire-and-forget semantisch keine Antwortnachricht vorsieht. – Begründung: Aus der Bedingung ClientServerOperation.fireAndForget == TRUE folgt die Einweg-Kommunikation ohne Rückkanal.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform Release R25-11 für das Modul com und wurde automatisiert erstellt.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 com 모듈에 대한 AUTOSAR Adaptive Platform 릴리스 R25-11의 사양 데이터를 기반으로 하며 자동으로 작성되었습니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

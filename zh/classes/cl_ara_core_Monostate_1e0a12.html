@@ -24,47 +24,46 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>b22ce7de55b7</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_Monostate_1e0a12/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_core_Monostate_1e0a12/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_Monostate_1e0a12" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>上下文</h4>
   <p>
-    Der Typ <code>ara::core::Monostate</code> stellt im Modul <code>core</code> der AUTOSAR Adaptive Platform einen zustandslosen Einheitstyp (Unit Type) dar. Laut Spezifikationsbeschreibung dient die Struktur dem korrespondierenden Einsatz in Verbindung mit Varianten-Typen (<code>[variant]</code>). In typisierten Unions bzw. Summentypen wie Variantenstrukturen wird ein dedizierter Typ benötigt, wenn ein Zustand repräsentiert werden soll, der keine Nutzdaten trägt.
+    类型 <code>ara::core::Monostate</code> 在 AUTOSAR Adaptive Platform 的模块 <code>core</code> 中表示一个无状态的单元类型（Unit Type）。根据规范描述，该结构用于与变体类型（<code>[variant]</code>）配合使用。在类型化联合或和类型（如变体结构）中，当需要表示一个不携带有效负载数据的状态时，需要一个专用的类型。
   </p>
   <p>
-    Als Kernkomponente des Basissystems interagiert <code>ara::core::Monostate</code> primär mit generischen Datenstrukturen zur Typauswahl. Interpretation: Die Definition als <code>struct Monostate final</code> dürfte sicherstellen, dass dieser Typ ausschließlich als distinkter Stellvertretertyp verwendet wird und keine abgeleiteten Spezialisierungen gestattet sind. Durch seine Existenz ermöglicht er es generischen Schnittstellen, eine leere Alternative explizit auf Typebene modellieren zu können, ohne auf zeigerbasierte Nullwerte oder unüberprüfte Sentinel-Werte zurückgreifen zu müssen.
+    作为基础系统的核心组件，<code>ara::core::Monostate</code> 主要与用于类型选择的泛型数据结构进行交互。解读：将其定义为 <code>struct Monostate final</code> 应当可以确保该类型仅用作独立的占位符类型，而不允许派生的特化。通过其存在，它使泛型接口能够在类型级别显式建模空替代方案，而无需求助于基于指针的空值或未校验的哨兵值。
   </p>
 
-  <h4>Lebenszyklus</h4>
+  <h4>生命周期</h4>
   <p>
-    Der Lebenszyklus von <code>ara::core::Monostate</code> ist trivial und an die Lebensdauer des Kontextes gebunden, in den die Struktur eingebettet wird. Da es sich um eine leere Datenstruktur handelt, belegt eine Instanz zur Laufzeit lediglich den minimalen, durch das C++-Objektmodell vorgeschriebenen Speicherplatz zur Wahrung einer eindeutigen Objektadresse, transportiert jedoch keinen dynamischen Zustand.
+    <code>ara::core::Monostate</code> 的生命周期是平凡的，并且与嵌入该结构的上下文的生命周期绑定。由于它是一个空数据结构，实例在运行时仅占用 C++ 对象模型规定的用于维护唯一对象地址的最小存储空间，但不传输任何动态状态。
   </p>
   <p>
-    Hinsichtlich der Erzeugung und Zerstörung gelten folgende Eigenschaften:
+    关于创建和销毁，适用以下属性：
   </p>
   <ul>
-    <li><strong>Erzeugung:</strong> Instanzen können ohne zusätzliche Parameter konstruiert werden. Sie besitzen weder Ressourcen noch Zeiger auf externe Komponenten.</li>
-    <li><strong>Zustandsmodell:</strong> Es existieren keine internen Zustandsübergänge. Alle Instanzen dieses Typs sind zueinander äquivalent, da kein interner Status existiert, der voneinander abweichen könnte.</li>
-    <li><strong>Besitzverhältnisse:</strong> <code>ara::core::Monostate</code> verwaltet keine dynamisch allokierten Ressourcen. Der Besitz liegt immer direkt bei der umgebenden Datenstruktur oder auf dem Stack des Aufrufers.</li>
-    <li><strong>Nebenläufigkeit:</strong> Da Instanzen keinen veränderlichen Zustand besitzen, sind Lese- und Kopiervorgänge thread-sicher, sofern keine Datenrennen auf den übergeordneten Speicherbereichen vorliegen.</li>
+    <li><strong>创建：</strong>实例可以在无需附加参数的情况下进行构造。它们既不拥有资源，也不拥有指向外部组件的指针。</li>
+    <li><strong>状态模型：</strong>不存在内部状态转换。该类型的所有实例彼此等价，因为不存在可能彼此不同的内部状态。</li>
+    <li><strong>所有权关系：</strong><code>ara::core::Monostate</code> 不管理动态分配的资源。所有权始终直接归外层数据结构所有或位于调用方的栈上。</li>
+    <li><strong>并发性：</strong>由于实例不具有可变状态，因此只要外层内存区域不存在数据争用，读取和拷贝操作就是线程安全的。</li>
   </ul>
   <p>
-    Vermutlich ist das Verhalten des Typs vollständig an das aus dem C++-Standard bekannte <code>std::monostate</code> angelehnt, um nahtlos mit Move- und Copy-Semantiken generischer Container zusammenzuspielen. Die Zerstörung erfordert keine Bereinigungsaktionen und erfolgt trivial.
+    推测该类型的行为完全借鉴了 C++ 标准中已知的 <code>std::monostate</code>，以便与泛型容器的移动和拷贝语义无缝协作。销毁不需要清理操作，过程是平凡的。
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>使用路径</h4>
   <p>
-    Der typische Ablauf bei der Verwendung von <code>ara::core::Monostate</code> orientiert sich an der Modellierung von optionalen Zuständen oder Default-Konstruierbarkeit in Varianten:
+    使用 <code>ara::core::Monostate</code> 时的典型流程遵循变体中可选状态的建模或默认可构造性：
   </p>
   <ol>
-    <li><strong>Typdefinition:</strong> Eine Variantenstruktur wird so typisiert, dass <code>ara::core::Monostate</code> als erste Alternative deklariert wird, wenn der Standardkonstruktor der Variante einen leeren oder inaktiven Zustand abbilden soll.</li>
-    <li><strong>Initialisierung:</strong> Bei der Standardkonstruktion der Variante nimmt diese den Zustand von <code>ara::core::Monostate</code> an, ohne dass hierfür Nutzdaten initialisiert werden müssen.</li>
-    <li><strong>Zustandsprüfung:</strong> Vor der Verarbeitung prüft die verarbeitende Logik, ob die Variante derzeit den Typ <code>ara::core::Monostate</code> hält, was fachlich das Fehlen eines konkreten Nutzdatenwertes anzeigt.</li>
-    <li><strong>Überschreiben:</strong> Sobald ein fachlicher Wert verfügbar ist, wird die Variante mit dem entsprechenden Nutzlasttyp belegt, wodurch der Monostate-Zustand verlassen wird.</li>
+    <li><strong>类型定义：</strong>当变体的默认构造函数要表示空状态或非活动状态时，变体结构将被类型化为将 <code>ara::core::Monostate</code> 声明为第一个备选项。</li>
+    <li><strong>初始化：</strong>在变体的默认构造时，变体采用 <code>ara::core::Monostate</code> 的状态，而无需为此初始化有效负载数据。</li>
+    <li><strong>状态检查：</strong>在处理之前，处理逻辑检查变体当前是否持有类型 <code>ara::core::Monostate</code>，这在业务上表示缺少具体的有效负载数据值。</li>
+    <li><strong>覆盖：</strong>一旦业务值可用，变体就会被相应的有效负载类型填充，从而退出 Monostate 状态。</li>
   </ol>
   <p>
-    Interpretation: Der Typ dürfte vor allem dann zum Einsatz kommen, wenn die übrigen Alternativen einer Variante keinen parameterlosen Konstruktor besitzen und somit eine explizite leere Initialisierungsform zwingend erforderlich ist.
+    解读：该类型应当主要在变体的其他备选项不具有无参构造函数、从而强制需要显式的空初始化形式时使用。
   </p>
 
   <!-- annahmen:
@@ -74,7 +73,7 @@
   -->
 
   <p class="ai-note">
-    Dieser Leitfaden basiert auf den strukturellen Metadaten und Typbeschreibungen der AUTOSAR Adaptive Platform Release R25-11.
+    本指南基于 AUTOSAR Adaptive Platform Release R25-11 的结构元数据和类型描述。
   </p>
 
 <div class="ai-commentary-actions">
@@ -292,44 +291,43 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="b22ce7de55b730ee369384666b1096e6a9d4b56f5f2e55ddc0acd6ed53d83b2b" data-trace-output="de91c3135fa173accf498c66a3a1d072f50aef34adc8321f4c870e679c99014f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;上下文&lt;/h4&gt;
   &lt;p&gt;
-    Der Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform einen zustandslosen Einheitstyp (Unit Type) dar. Laut Spezifikationsbeschreibung dient die Struktur dem korrespondierenden Einsatz in Verbindung mit Varianten-Typen (&lt;code&gt;[variant]&lt;/code&gt;). In typisierten Unions bzw. Summentypen wie Variantenstrukturen wird ein dedizierter Typ benötigt, wenn ein Zustand repräsentiert werden soll, der keine Nutzdaten trägt.
+    类型 &lt;code&gt;ara::core::Monostate&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的模块 &lt;code&gt;core&lt;/code&gt; 中表示一个无状态的单元类型（Unit Type）。根据规范描述，该结构用于与变体类型（&lt;code&gt;[variant]&lt;/code&gt;）配合使用。在类型化联合或和类型（如变体结构）中，当需要表示一个不携带有效负载数据的状态时，需要一个专用的类型。
   &lt;/p&gt;
   &lt;p&gt;
-    Als Kernkomponente des Basissystems interagiert &lt;code&gt;ara::core::Monostate&lt;/code&gt; primär mit generischen Datenstrukturen zur Typauswahl. Interpretation: Die Definition als &lt;code&gt;struct Monostate final&lt;/code&gt; dürfte sicherstellen, dass dieser Typ ausschließlich als distinkter Stellvertretertyp verwendet wird und keine abgeleiteten Spezialisierungen gestattet sind. Durch seine Existenz ermöglicht er es generischen Schnittstellen, eine leere Alternative explizit auf Typebene modellieren zu können, ohne auf zeigerbasierte Nullwerte oder unüberprüfte Sentinel-Werte zurückgreifen zu müssen.
+    作为基础系统的核心组件，&lt;code&gt;ara::core::Monostate&lt;/code&gt; 主要与用于类型选择的泛型数据结构进行交互。解读：将其定义为 &lt;code&gt;struct Monostate final&lt;/code&gt; 应当可以确保该类型仅用作独立的占位符类型，而不允许派生的特化。通过其存在，它使泛型接口能够在类型级别显式建模空替代方案，而无需求助于基于指针的空值或未校验的哨兵值。
   &lt;/p&gt;
 
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+  &lt;h4&gt;生命周期&lt;/h4&gt;
   &lt;p&gt;
-    Der Lebenszyklus von &lt;code&gt;ara::core::Monostate&lt;/code&gt; ist trivial und an die Lebensdauer des Kontextes gebunden, in den die Struktur eingebettet wird. Da es sich um eine leere Datenstruktur handelt, belegt eine Instanz zur Laufzeit lediglich den minimalen, durch das C++-Objektmodell vorgeschriebenen Speicherplatz zur Wahrung einer eindeutigen Objektadresse, transportiert jedoch keinen dynamischen Zustand.
+    &lt;code&gt;ara::core::Monostate&lt;/code&gt; 的生命周期是平凡的，并且与嵌入该结构的上下文的生命周期绑定。由于它是一个空数据结构，实例在运行时仅占用 C++ 对象模型规定的用于维护唯一对象地址的最小存储空间，但不传输任何动态状态。
   &lt;/p&gt;
   &lt;p&gt;
-    Hinsichtlich der Erzeugung und Zerstörung gelten folgende Eigenschaften:
+    关于创建和销毁，适用以下属性：
   &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Instanzen können ohne zusätzliche Parameter konstruiert werden. Sie besitzen weder Ressourcen noch Zeiger auf externe Komponenten.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Zustandsmodell:&lt;/strong&gt; Es existieren keine internen Zustandsübergänge. Alle Instanzen dieses Typs sind zueinander äquivalent, da kein interner Status existiert, der voneinander abweichen könnte.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Besitzverhältnisse:&lt;/strong&gt; &lt;code&gt;ara::core::Monostate&lt;/code&gt; verwaltet keine dynamisch allokierten Ressourcen. Der Besitz liegt immer direkt bei der umgebenden Datenstruktur oder auf dem Stack des Aufrufers.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Da Instanzen keinen veränderlichen Zustand besitzen, sind Lese- und Kopiervorgänge thread-sicher, sofern keine Datenrennen auf den übergeordneten Speicherbereichen vorliegen.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;创建：&lt;/strong&gt;实例可以在无需附加参数的情况下进行构造。它们既不拥有资源，也不拥有指向外部组件的指针。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;状态模型：&lt;/strong&gt;不存在内部状态转换。该类型的所有实例彼此等价，因为不存在可能彼此不同的内部状态。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;所有权关系：&lt;/strong&gt;&lt;code&gt;ara::core::Monostate&lt;/code&gt; 不管理动态分配的资源。所有权始终直接归外层数据结构所有或位于调用方的栈上。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;并发性：&lt;/strong&gt;由于实例不具有可变状态，因此只要外层内存区域不存在数据争用，读取和拷贝操作就是线程安全的。&lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Vermutlich ist das Verhalten des Typs vollständig an das aus dem C++-Standard bekannte &lt;code&gt;std::monostate&lt;/code&gt; angelehnt, um nahtlos mit Move- und Copy-Semantiken generischer Container zusammenzuspielen. Die Zerstörung erfordert keine Bereinigungsaktionen und erfolgt trivial.
+    推测该类型的行为完全借鉴了 C++ 标准中已知的 &lt;code&gt;std::monostate&lt;/code&gt;，以便与泛型容器的移动和拷贝语义无缝协作。销毁不需要清理操作，过程是平凡的。
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;使用路径&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Ablauf bei der Verwendung von &lt;code&gt;ara::core::Monostate&lt;/code&gt; orientiert sich an der Modellierung von optionalen Zuständen oder Default-Konstruierbarkeit in Varianten:
+    使用 &lt;code&gt;ara::core::Monostate&lt;/code&gt; 时的典型流程遵循变体中可选状态的建模或默认可构造性：
   &lt;/p&gt;
   &lt;ol&gt;
-    &lt;li&gt;&lt;strong&gt;Typdefinition:&lt;/strong&gt; Eine Variantenstruktur wird so typisiert, dass &lt;code&gt;ara::core::Monostate&lt;/code&gt; als erste Alternative deklariert wird, wenn der Standardkonstruktor der Variante einen leeren oder inaktiven Zustand abbilden soll.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Bei der Standardkonstruktion der Variante nimmt diese den Zustand von &lt;code&gt;ara::core::Monostate&lt;/code&gt; an, ohne dass hierfür Nutzdaten initialisiert werden müssen.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Zustandsprüfung:&lt;/strong&gt; Vor der Verarbeitung prüft die verarbeitende Logik, ob die Variante derzeit den Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; hält, was fachlich das Fehlen eines konkreten Nutzdatenwertes anzeigt.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Überschreiben:&lt;/strong&gt; Sobald ein fachlicher Wert verfügbar ist, wird die Variante mit dem entsprechenden Nutzlasttyp belegt, wodurch der Monostate-Zustand verlassen wird.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;类型定义：&lt;/strong&gt;当变体的默认构造函数要表示空状态或非活动状态时，变体结构将被类型化为将 &lt;code&gt;ara::core::Monostate&lt;/code&gt; 声明为第一个备选项。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;初始化：&lt;/strong&gt;在变体的默认构造时，变体采用 &lt;code&gt;ara::core::Monostate&lt;/code&gt; 的状态，而无需为此初始化有效负载数据。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;状态检查：&lt;/strong&gt;在处理之前，处理逻辑检查变体当前是否持有类型 &lt;code&gt;ara::core::Monostate&lt;/code&gt;，这在业务上表示缺少具体的有效负载数据值。&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;覆盖：&lt;/strong&gt;一旦业务值可用，变体就会被相应的有效负载类型填充，从而退出 Monostate 状态。&lt;/li&gt;
   &lt;/ol&gt;
   &lt;p&gt;
-    Interpretation: Der Typ dürfte vor allem dann zum Einsatz kommen, wenn die übrigen Alternativen einer Variante keinen parameterlosen Konstruktor besitzen und somit eine explizite leere Initialisierungsform zwingend erforderlich ist.
+    解读：该类型应当主要在变体的其他备选项不具有无参构造函数、从而强制需要显式的空初始化形式时使用。
   &lt;/p&gt;
 
   &lt;!-- annahmen:
@@ -339,7 +337,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
   --&gt;
 
   &lt;p class="ai-note"&gt;
-    Dieser Leitfaden basiert auf den strukturellen Metadaten und Typbeschreibungen der AUTOSAR Adaptive Platform Release R25-11.
+    本指南基于 AUTOSAR Adaptive Platform Release R25-11 的结构元数据和类型描述。
   &lt;/p&gt;
 
 

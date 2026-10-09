@@ -24,37 +24,36 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>5f09d1956600</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/nl/classes/cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" data-view-mode="editor" title="Curatie-editor &amp; auditdossier openen" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curateren</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Die Datenstruktur <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> übernimmt im Modul <code>diag</code> der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation <code>RequestResult</code> einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+De datastructuur <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput</code> vervult in de module <code>diag</code> van het AUTOSAR Adaptive Platform de taak om alle uitvoerparameters voor de operatie <code>RequestResult</code> van een diagnoseroutine gebundeld samen te vatten. Bij het uitvoeren van diagnoseroutines via gestandaardiseerde diagnosediensten bestaan er, naast de zuivere uitvoeringsstatus, vaak applicatiespecifieke resultaatgegevens die naar het diagnosebeheersysteem moeten worden verzonden. In plaats van meerdere afzonderlijke retourwaarden individueel via parameterlijsten over te dragen, kapselt deze structuur alle uitvoerargumenten in één gemeenschappelijk datatype in.
 </p>
 <p>
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als C++-Struktur (<code>struct</code>) besitzt <code>&lt;RoutineInterface&gt;RequestResultOutput</code> den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von <code>RequestResult</code>, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-</p>
-<p>
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+Als primaire interactiepartners fungeren hierbij de concrete applicatiecomponent die de diagnoseroutine implementeert, evenals de runtime-omgeving van de diagnosemodule. De structuur dient als getypeerde interface tussen de applicatie-interne logica en de gegenereerde infrastructuur. De velden van deze datastructuur komen vermoedelijk overeen met de in het betreffende AUTOSAR-model gedefinieerde uitvoerargumenten van de diagnoseroutine, zodat een directe afspiegeling van de gespecificeerde diagnose-uitvoer gewaarborgd is.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Levenscyclus</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+Als C++-structuur (<code>struct</code>) heeft <code>&lt;RoutineInterface&gt;RequestResultOutput</code> de levenscyclus van een klassiek waardetype (Value Type). De instantiëring vindt typisch plaats in de context van de uitvoering van <code>RequestResult</code>, zodra de applicatiespecifieke routine haar resultaten heeft bepaald. De applicatie maakt een lokale instantie van de structuur aan, vult de daarin gedefinieerde members met de actuele resultaatwaarden en draagt de voltooide structuur over aan de aanroeper.
+</p>
+<p>
+Wat de eigendomsverhoudingen betreft, is het object niet onderhevig aan complexe afhankelijkheden: het heeft geen gedeelde eigendomsrechten op externe diensten en beheert geen langlevende systeemresources. Vermoedelijk wordt de structuur door de applicatieroutine geïnstantieerd en vervolgens via reguliere waardeoverdracht of move-semantiek geretourneerd aan het diagnoseframework. Na verdere verwerking of serialisatie door de diagnose-infrastructuur eindigt de levenscyclus van het object regulier via de automatische aanroep van de destructor bij het verlaten van de desbetreffende scope. Een eigen interne toestand bestaat buiten de aanwezige gebruikersdata niet; er zijn daarom geen afzonderlijke toestandsovergangen of fasen van een toestandsmachine.
+</p>
+
+<h4>Gebruikspad</h4>
+<p>
+Het typische gebruikstraject is onderverdeeld in de fasen initialisatie, vulling en teruggave:
 </p>
 <ul>
-<li><strong>Vorbereitung:</strong> Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.</li>
-<li><strong>Erzeugung und Zuweisung:</strong> Die Anwendungskomponente deklariert eine Instanz von <code>&lt;RoutineInterface&gt;RequestResultOutput</code> und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.</li>
-<li><strong>Rückmeldung:</strong> Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.</li>
+<li><strong>Voorbereiding:</strong> De applicatie ontvangt via de gegenereerde routine-interface het verzoek om het tussen- of eindresultaat van een lopende diagnoseroutine beschikbaar te stellen.</li>
+<li><strong>Aanmaak en toewijzing:</strong> De applicatiecomponent declareert een instantie van <code>&lt;RoutineInterface&gt;RequestResultOutput</code> en wijst de vastgestelde meetwaarden, statusflags of overige routinedata toe aan de respectievelijke velden.</li>
+<li><strong>Terugmelding:</strong> De volledig ingevulde structuur wordt geretourneerd als resultaat van de aanroep, zodat het diagnosesubsysteem de uitvoerwaarden kan overnemen in het resulterende diagnoseprotocol.</li>
 </ul>
 <p>
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+Interpretatie: Het diagnoseframework transporteert de ingevulde instanties typisch op waarde of via move-semantiek verder, omdat als pure datastructuur geen complex resourcebeheer vereist is. Omdat de structuur primair is ontworpen als passieve datadrager, bevat deze zelf geen gelijktijdige synchronisatie; als meerdere threads parallel toegang hebben tot dezelfde instantie, is de thread-veilige coördinatie de verantwoordelijkheid van de aanroepende applicatielogica.
 </p>
 
 <!-- annahmen:
@@ -62,7 +61,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.</p>
+<p class="ai-note">Deze handleiding is uitsluitend gebaseerd op de specificatiemetadata van AUTOSAR Adaptive release R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" title="Met AI bespreken">💬 Met AI bespreken</button>
@@ -279,34 +278,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5f09d1956600abe96f1cf76dbb99c3220413956c6723afdf9c79be1c5417c7ff" data-trace-output="2590cbb2aa4504dea4cf3ca53bae4121d11a631c0d4129c11343f8e147cff677" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; übernimmt im Modul &lt;code&gt;diag&lt;/code&gt; der AUTOSAR Adaptive Platform die Aufgabe, sämtliche Ausgabeparameter für die Operation &lt;code&gt;RequestResult&lt;/code&gt; einer Diagnoseroutine gebündelt zusammenzufassen. Bei der Ausführung von Diagnoseroutinen über standardisierte Diagnosedienste existieren neben dem reinen Ausführungsstatus häufig anwendungsspezifische Ergebnisdaten, die an das Diagnosemanagementsystem übermittelt werden müssen. Anstatt mehrere separate Rückgabewerte einzeln über Parameterlisten zu übergeben, kapselt diese Struktur alle Ausgabeargumente in einem gemeinsamen Datentyp.
+De datastructuur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; vervult in de module &lt;code&gt;diag&lt;/code&gt; van het AUTOSAR Adaptive Platform de taak om alle uitvoerparameters voor de operatie &lt;code&gt;RequestResult&lt;/code&gt; van een diagnoseroutine gebundeld samen te vatten. Bij het uitvoeren van diagnoseroutines via gestandaardiseerde diagnosediensten bestaan er, naast de zuivere uitvoeringsstatus, vaak applicatiespecifieke resultaatgegevens die naar het diagnosebeheersysteem moeten worden verzonden. In plaats van meerdere afzonderlijke retourwaarden individueel via parameterlijsten over te dragen, kapselt deze structuur alle uitvoerargumenten in één gemeenschappelijk datatype in.
 &lt;/p&gt;
 &lt;p&gt;
-Als primäre Interaktionspartner fungieren hierbei die konkrete Anwendungskomponente, welche die Diagnoseroutine implementiert, sowie die Laufzeitumgebung des Diagnosemoduls. Die Struktur dient als typisierte Schnittstelle zwischen der anwendungsinternen Logik und der generierten Infrastruktur. Die Felder dieser Datenstruktur dürften den im jeweiligen AUTOSAR-Modell definierten Ausgabeargumenten der Diagnoseroutine entsprechen, sodass eine direkte Abbildung der spezifizierten Diagnoseausgaben gewährleistet ist.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als C++-Struktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; den Lebenszyklus eines klassischen Werttyps (Value Type). Die Instanziierung erfolgt typischerweise im Kontext der Ausführung von &lt;code&gt;RequestResult&lt;/code&gt;, sobald die anwendungsspezifische Routine ihre Ergebnisse ermittelt hat. Die Anwendung erzeugt eine lokale Instanz der Struktur, belegt die darin definierten Member mit den aktuellen Ergebniswerten und übergibt die fertige Struktur an den Aufrufer.
-&lt;/p&gt;
-&lt;p&gt;
-Hinsichtlich der Besitzverhältnisse unterliegt das Objekt keinen komplexen Abhängigkeiten: Es hält keine geteilten Eigentumsrechte an externen Diensten und verwaltet keine langlebigen Systemressourcen. Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. Nach der Weiterverarbeitung oder Serialisierung durch die Diagnoseinfrastruktur endet der Lebenszyklus des Objekts regulär über den automatischen Aufruf des Destruktors beim Verlassen des entsprechenden Gültigkeitsbereichs. Ein eigener interner Zustand existiert abseits der enthaltenen Nutzdaten nicht; es gibt daher keine separaten Zustandsübergänge oder Phasen einer Zustandsmaschine.
+Als primaire interactiepartners fungeren hierbij de concrete applicatiecomponent die de diagnoseroutine implementeert, evenals de runtime-omgeving van de diagnosemodule. De structuur dient als getypeerde interface tussen de applicatie-interne logica en de gegenereerde infrastructuur. De velden van deze datastructuur komen vermoedelijk overeen met de in het betreffende AUTOSAR-model gedefinieerde uitvoerargumenten van de diagnoseroutine, zodat een directe afspiegeling van de gespecificeerde diagnose-uitvoer gewaarborgd is.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Levenscyclus&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Phasen Initialisierung, Befüllung und Rückgabe:
+Als C++-structuur (&lt;code&gt;struct&lt;/code&gt;) heeft &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; de levenscyclus van een klassiek waardetype (Value Type). De instantiëring vindt typisch plaats in de context van de uitvoering van &lt;code&gt;RequestResult&lt;/code&gt;, zodra de applicatiespecifieke routine haar resultaten heeft bepaald. De applicatie maakt een lokale instantie van de structuur aan, vult de daarin gedefinieerde members met de actuele resultaatwaarden en draagt de voltooide structuur over aan de aanroeper.
+&lt;/p&gt;
+&lt;p&gt;
+Wat de eigendomsverhoudingen betreft, is het object niet onderhevig aan complexe afhankelijkheden: het heeft geen gedeelde eigendomsrechten op externe diensten en beheert geen langlevende systeemresources. Vermoedelijk wordt de structuur door de applicatieroutine geïnstantieerd en vervolgens via reguliere waardeoverdracht of move-semantiek geretourneerd aan het diagnoseframework. Na verdere verwerking of serialisatie door de diagnose-infrastructuur eindigt de levenscyclus van het object regulier via de automatische aanroep van de destructor bij het verlaten van de desbetreffende scope. Een eigen interne toestand bestaat buiten de aanwezige gebruikersdata niet; er zijn daarom geen afzonderlijke toestandsovergangen of fasen van een toestandsmachine.
+&lt;/p&gt;
+
+&lt;h4&gt;Gebruikspad&lt;/h4&gt;
+&lt;p&gt;
+Het typische gebruikstraject is onderverdeeld in de fasen initialisatie, vulling en teruggave:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Vorbereitung:&lt;/strong&gt; Die Anwendung empfängt über das generierte Routine-Interface die Aufforderung, das Zwischen- oder Endergebnis einer laufenden Diagnoseroutine bereitzustellen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Zuweisung:&lt;/strong&gt; Die Anwendungskomponente deklariert eine Instanz von &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; und weist den jeweiligen Feldern die ermittelten Messwerte, Statusflags oder sonstigen Routinedaten zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die vollständig befüllte Struktur wird als Ergebnis des Aufrufs zurückgegeben, sodass das Diagnose-Subsystem die Ausgabewerte in das resultierende Diagnoseprotokoll übernehmen kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Voorbereiding:&lt;/strong&gt; De applicatie ontvangt via de gegenereerde routine-interface het verzoek om het tussen- of eindresultaat van een lopende diagnoseroutine beschikbaar te stellen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Aanmaak en toewijzing:&lt;/strong&gt; De applicatiecomponent declareert een instantie van &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; en wijst de vastgestelde meetwaarden, statusflags of overige routinedata toe aan de respectievelijke velden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Terugmelding:&lt;/strong&gt; De volledig ingevulde structuur wordt geretourneerd als resultaat van de aanroep, zodat het diagnosesubsysteem de uitvoerwaarden kan overnemen in het resulterende diagnoseprotocol.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. Da die Struktur primär als passiver Datenträger konzipiert ist, enthält sie selbst keine nebenläufige Synchronisation; greifen mehrere Threads parallel auf dieselbe Instanz zu, obliegt die thread-sichere Koordination der aufrufenden Anwendungslogik.
+Interpretatie: Het diagnoseframework transporteert de ingevulde instanties typisch op waarde of via move-semantiek verder, omdat als pure datastructuur geen complex resourcebeheer vereist is. Omdat de structuur primair is ontworpen als passieve datadrager, bevat deze zelf geen gelijktijdige synchronisatie; als meerdere threads parallel toegang hebben tot dezelfde instantie, is de thread-veilige coördinatie de verantwoordelijkheid van de aanroepende applicatielogica.
 &lt;/p&gt;
 
 &lt;!-- annahmen:
@@ -314,7 +312,7 @@ Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen ty
 2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
 3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsmetadaten von AUTOSAR Adaptive Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Deze handleiding is uitsluitend gebaseerd op de specificatiemetadata van AUTOSAR Adaptive release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

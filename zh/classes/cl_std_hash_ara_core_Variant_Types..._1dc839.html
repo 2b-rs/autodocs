@@ -20,41 +20,40 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>2655effc193d</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_std_hash_ara_core_Variant_Types..._1dc839/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_std_hash_ara_core_Variant_Types..._1dc839/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_std_hash_ara_core_Variant_Types..._1dc839" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Spezialisierung <code>std::hash&lt;ara::core::Variant&lt;Types...&gt;&gt;</code> stellt die standardisierte Hash-Funktionalität für den Summentyp <code>ara::core::Variant</code> der AUTOSAR Adaptive Platform im Modul <code>core</code> bereit. Sie ist im Header <code>ara/core/variant.h</code> deklariert und folgt dem funktionalen Schnittstellenmuster für C++-Standard-Hashfunktoren.</p>
-<p>Als Hilfsstruktur dient die Spezialisierung der nahtlosen Integration von <code>ara::core::Variant</code>-Objekten in generische, hashbasierte Datenstrukturen. Primäre Interaktionspartner sind standardkonforme assoziative Container wie beispielsweise ungeordnete Tabellen (<code>std::unordered_map</code>) oder Mengen (<code>std::unordered_set</code>), die zur Bucket-Verteilung und Schlüsselverwaltung einen deterministischen Hashwert benötigen. Der zentrale Interaktionspunkt ist der Funktionsaufrufoperator <code>operator()</code> <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a>, über welchen Container oder aufrufende Algorithmen den Hashwert einer übergebenen Variant-Instanz abrufen.</p>
+<h4>上下文</h4>
+<p>特化 <code>std::hash&lt;ara::core::Variant&lt;Types...&gt;&gt;</code> 为 AUTOSAR Adaptive Platform 在模块 <code>core</code> 中的和类型（Sum Type）<code>ara::core::Variant</code> 提供标准化的哈希功能。它在头文件 <code>ara/core/variant.h</code> 中声明，并遵循 C++ 标准哈希仿函数的功能接口模式。</p>
+<p>作为辅助结构，该特化用于将 <code>ara::core::Variant</code> 对象无缝集成到基于哈希的泛型数据结构中。主要交互方是符合标准规范的关联容器，例如无序表（<code>std::unordered_map</code>）或集合（<code>std::unordered_set</code>），它们需要确定性的哈希值用于存储桶分布和键管理。核心交互点是函数调用运算符 <code>operator()</code> <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a>，容器或调用算法通过该运算符检索传入的 Variant 实例的哈希值。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Als Funktorstruktur zeichnet sich <code>std::hash&lt;ara::core::Variant&lt;Types...&gt;&gt;</code> durch eine minimale und unaufwendige Lebenszyklusverwaltung aus:</p>
+<h4>生命周期</h4>
+<p>作为仿函数结构，<code>std::hash&lt;ara::core::Variant&lt;Types...&gt;&gt;</code> 具有极简且开销低廉的生命周期管理特点：</p>
 <ul>
-<li><strong>Erzeugung und Zerstörung:</strong> Die Struktur besitzt keinen veränderlichen internen Zustand und agiert als zustandsloses Funktionsobjekt. Instanzen können bei Bedarf ohne nennenswerten Laufzeitaufwand direkt auf dem Aufruf-Stack erzeugt oder implizit als Template-Typargument innerhalb von Container-Klassen instantiiert werden. Die Zerstörung erfolgt automatisch beim Verlassen des jeweiligen Gültigkeitsbereichs.</li>
-<li><strong>Zustandsmodell:</strong> Da die Spezialisierung keine internen Datenfelder oder Konfigurationen verwaltet, existieren keine distinkten Zustände oder komplexen Phasenübergänge während der Lebensdauer.</li>
-<li><strong>Nebenläufigkeit:</strong> Gemäß <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a> ist der Aufrufoperator als <code>const</code> deklariert. Dies gewährleistet, dass parallele Aufrufe von <code>operator()</code> über mehrere Threads hinweg auf derselben Funktorinstanz oder auf getrennten Instanzen threadsicher sind, vorausgesetzt, die referenzierte <code>ara::core::Variant</code>-Instanz wird währenddessen nicht nebenläufig modifiziert.</li>
+<li><strong>创建和销毁：</strong>该结构不包含任何可变的内部状态，充当无状态函数对象。如果需要，可以在调用栈上直接创建实例而无明显的运行时开销，或者作为模板类型实参在容器类内部隐式实例化。销毁在离开相应作用域时自动发生。</li>
+<li><strong>状态模型：</strong>由于该特化不管理任何内部数据字段或配置，因此在其生命周期内不存在不同的状态或复杂的状态转换。</li>
+<li><strong>并发性：</strong>根据 <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a>，调用运算符被声明为 <code>const</code>。这确保了跨多个线程在同一个仿函数实例或独立实例上并行调用 <code>operator()</code> 均具有线程安全性，前提是所引用的 <code>ara::core::Variant</code> 实例在此期间未被并发修改。</li>
 </ul>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Einsatz von <code>std::hash&lt;ara::core::Variant&lt;Types...&gt;&gt;</code> erfolgt bei der Verwendung von Varianten als Schlüssel in ungeordneten Assoziativspeichern oder bei der expliziten Schlüsselberechnung:</p>
+<h4>使用路径</h4>
+<p><code>std::hash&lt;ara::core::Variant&lt;Types...&gt;&gt;</code> 的典型应用是在无序关联存储中使用 Variant 作为键时，或在进行显式键计算时：</p>
 <ol>
-<li><strong>Einbindung der Schnittstelle:</strong> Der Aufrufer bindet den Header <code>ara/core/variant.h</code> ein, um Zugriff auf die Klassenvorlage <code>ara::core::Variant</code> und die zugehörige <code>std::hash</code>-Spezialisierung zu erhalten.</li>
-<li><strong>Bereitstellung des Objekts:</strong> Eine Instanz von <code>ara::core::Variant&lt;Types...&gt;</code> wird deklariert und mit einem konkreten Wert aus der Menge der deklarierten Alternativtypen <code>Types...</code> belegt.</li>
-<li><strong>Hash-Berechnung:</strong> Die Hash-Funktion wird entweder implizit durch Container-Operationen oder manuell durch die Anwendung aufgerufen. Dabei wird das Variant-Objekt als konstante Referenz an den Aufrufoperator übergeben: <code>size_t operator() (ara::core::Variant&lt;Types...&gt; const &amp;v) const noexcept;</code> <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a>.</li>
-<li><strong>Rückgabe und Verwendung:</strong> Der Aufruf liefert einen numerischen Wert vom Typ <code>size_t</code> zurück, der unmittelbar zur Adressierung in Hashtabellen oder zur Gleichheitsprüfung herangezogen werden kann.</li>
+<li><strong>包含接口：</strong>调用方包含头文件 <code>ara/core/variant.h</code>，以获取对类模板 <code>ara::core::Variant</code> 及其关联的 <code>std::hash</code> 特化的访问权限。</li>
+<li><strong>提供对象：</strong>声明 <code>ara::core::Variant&lt;Types...&gt;</code> 的一个实例，并使用来自所声明的替代类型集合 <code>Types...</code> 中的具体值进行赋值。</li>
+<li><strong>哈希计算：</strong>哈希函数要么通过容器操作隐式调用，要么由应用程序手动调用。在此过程中，Variant 对象作为常量引用传递给调用运算符：<code>size_t operator() (ara::core::Variant&lt;Types...&gt; const &amp;v) const noexcept;</code> <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a>。</li>
+<li><strong>返回与使用：</strong>调用返回一个类型为 <code>size_t</code> 的数值，该数值可直接用于哈希表中的寻址或用于相等性检查。</li>
 </ol>
-<p>Interpretation: Vermutlich delegiert der Aufrufoperator die Berechnung an die entsprechende <code>std::hash</code>-Spezialisierung des im Variant aktuell aktiven Werts und kombiniert diesen mit dem Typ-Index der Alternative.</p>
+<p>解释：调用运算符大概会将计算委托给 Variant 中当前活动值的对应 <code>std::hash</code> 特化，并将其与该替代类型的类型索引相结合。</p>
 
-<h4>Fehlerszenarien</h4>
-<p>Bei der Verwendung der Hash-Spezialisierung sind definierte Randbedingungen und Stabilitätsgarantien zu beachten:</p>
+<h4>错误场景</h4>
+<p>使用哈希特化时，必须遵守已定义的边界条件和稳定性保证：</p>
 <ul>
-<li><strong>Ausnahmesicherheit:</strong> Entsprechend <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a> ist <code>operator()</code> als <code>noexcept</code> qualifiziert und als ausnahmesicher (<em>exception safe</em>) eingestuft. Der Aufruf garantiert, dass unter keinen Umständen C++-Exceptions geworfen werden.</li>
-<li><strong>Fehlersignalisierung:</strong> Die Funktion gibt direkt einen primitiven Skalarwert vom Typ <code>size_t</code> zurück. Es werden keine AUTOSAR-spezifischen Fehlerstrukturen (wie <code>ara::core::Result</code>) oder Fehlercodes verwendet.</li>
-<li><strong>Typanforderungen:</strong> Interpretation: Vermutlich müssen alle in <code>Types...</code> aufgeführten Datentypen ihrerseits hashbar sein (d. h. eine gültige <code>std::hash</code>-Spezialisierung besitzen), damit die Vorlage fehlerfrei für alle potenziellen Alternativen instanziiert und ausgeführt werden kann.</li>
+<li><strong>异常安全性：</strong>根据 <a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669">[SWS_CORE_01669]</a>，<code>operator()</code> 被限定为 <code>noexcept</code> 并归类为异常安全（<em>exception safe</em>）。该调用保证在任何情况下都不会引发 C++ 异常。</li>
+<li><strong>错误指示：</strong>该函数直接返回类型为 <code>size_t</code> 的原始标量值。不使用 AUTOSAR 特定的错误结构体（如 <code>ara::core::Result</code>）或错误码。</li>
+<li><strong>类型要求：</strong>解释：<code>Types...</code> 中列出的所有数据类型本身大概都必须是可哈希的（即具有有效的 <code>std::hash</code> 特化），以便该模板能够针对所有潜在的备选项无错误地进行实例化和执行。</li>
 </ul>
 <!-- annahmen: 1) Vermutlich delegiert operator() die Hash-Berechnung an die std::hash-Spezialisierung des aktiven Typs und kombiniert das Ergebnis mit dem Diskriminator – Begründung: SWS_CORE_01669 spezifiziert 'Invoke the hashing function', ohne den internen Mischalgorithmus zu definieren. 2) Vermutlich müssen alle in Types... enthaltenen Typen selbst hashbar sein – Begründung: Zur Gewährleistung eines noexcept-Aufrufs über alle Typalternativen muss für jeden Parametertyp eine Hash-Funktion existieren. -->
-<p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform R25-11 (Modul core) und wurde automatisiert erstellt.</p>
+<p class="ai-note">本指南基于 AUTOSAR Adaptive Platform R25-11 规范（core 模块），并通过自动化方式生成。</p>
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_std_hash_ara_core_Variant_Types..._1dc839" title="与 AI 讨论">💬 与 AI 讨论</button>
   <button type="button" class="btn-feedback-action" data-feedback-open data-target-id="Class Guide: cl_std_hash_ara_core_Variant_Types..._1dc839" title="提供反馈">⚠️ 提供反馈</button>
@@ -360,38 +359,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="2655effc193d05177bc2a1e9a998929e038332607a1ee2994494379e21af2cc4" data-trace-output="1f3bb51dfc68cda0145623b9e5e3fbdc1dd5911d2e8111b4539a52bbc2539126" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; stellt die standardisierte Hash-Funktionalität für den Summentyp &lt;code&gt;ara::core::Variant&lt;/code&gt; der AUTOSAR Adaptive Platform im Modul &lt;code&gt;core&lt;/code&gt; bereit. Sie ist im Header &lt;code&gt;ara/core/variant.h&lt;/code&gt; deklariert und folgt dem funktionalen Schnittstellenmuster für C++-Standard-Hashfunktoren.&lt;/p&gt;
-&lt;p&gt;Als Hilfsstruktur dient die Spezialisierung der nahtlosen Integration von &lt;code&gt;ara::core::Variant&lt;/code&gt;-Objekten in generische, hashbasierte Datenstrukturen. Primäre Interaktionspartner sind standardkonforme assoziative Container wie beispielsweise ungeordnete Tabellen (&lt;code&gt;std::unordered_map&lt;/code&gt;) oder Mengen (&lt;code&gt;std::unordered_set&lt;/code&gt;), die zur Bucket-Verteilung und Schlüsselverwaltung einen deterministischen Hashwert benötigen. Der zentrale Interaktionspunkt ist der Funktionsaufrufoperator &lt;code&gt;operator()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;, über welchen Container oder aufrufende Algorithmen den Hashwert einer übergebenen Variant-Instanz abrufen.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;特化 &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; 为 AUTOSAR Adaptive Platform 在模块 &lt;code&gt;core&lt;/code&gt; 中的和类型（Sum Type）&lt;code&gt;ara::core::Variant&lt;/code&gt; 提供标准化的哈希功能。它在头文件 &lt;code&gt;ara/core/variant.h&lt;/code&gt; 中声明，并遵循 C++ 标准哈希仿函数的功能接口模式。&lt;/p&gt;
+&lt;p&gt;作为辅助结构，该特化用于将 &lt;code&gt;ara::core::Variant&lt;/code&gt; 对象无缝集成到基于哈希的泛型数据结构中。主要交互方是符合标准规范的关联容器，例如无序表（&lt;code&gt;std::unordered_map&lt;/code&gt;）或集合（&lt;code&gt;std::unordered_set&lt;/code&gt;），它们需要确定性的哈希值用于存储桶分布和键管理。核心交互点是函数调用运算符 &lt;code&gt;operator()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;，容器或调用算法通过该运算符检索传入的 Variant 实例的哈希值。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Als Funktorstruktur zeichnet sich &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; durch eine minimale und unaufwendige Lebenszyklusverwaltung aus:&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;作为仿函数结构，&lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; 具有极简且开销低廉的生命周期管理特点：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung und Zerstörung:&lt;/strong&gt; Die Struktur besitzt keinen veränderlichen internen Zustand und agiert als zustandsloses Funktionsobjekt. Instanzen können bei Bedarf ohne nennenswerten Laufzeitaufwand direkt auf dem Aufruf-Stack erzeugt oder implizit als Template-Typargument innerhalb von Container-Klassen instantiiert werden. Die Zerstörung erfolgt automatisch beim Verlassen des jeweiligen Gültigkeitsbereichs.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zustandsmodell:&lt;/strong&gt; Da die Spezialisierung keine internen Datenfelder oder Konfigurationen verwaltet, existieren keine distinkten Zustände oder komplexen Phasenübergänge während der Lebensdauer.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt; ist der Aufrufoperator als &lt;code&gt;const&lt;/code&gt; deklariert. Dies gewährleistet, dass parallele Aufrufe von &lt;code&gt;operator()&lt;/code&gt; über mehrere Threads hinweg auf derselben Funktorinstanz oder auf getrennten Instanzen threadsicher sind, vorausgesetzt, die referenzierte &lt;code&gt;ara::core::Variant&lt;/code&gt;-Instanz wird währenddessen nicht nebenläufig modifiziert.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;创建和销毁：&lt;/strong&gt;该结构不包含任何可变的内部状态，充当无状态函数对象。如果需要，可以在调用栈上直接创建实例而无明显的运行时开销，或者作为模板类型实参在容器类内部隐式实例化。销毁在离开相应作用域时自动发生。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;状态模型：&lt;/strong&gt;由于该特化不管理任何内部数据字段或配置，因此在其生命周期内不存在不同的状态或复杂的状态转换。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;并发性：&lt;/strong&gt;根据 &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;，调用运算符被声明为 &lt;code&gt;const&lt;/code&gt;。这确保了跨多个线程在同一个仿函数实例或独立实例上并行调用 &lt;code&gt;operator()&lt;/code&gt; 均具有线程安全性，前提是所引用的 &lt;code&gt;ara::core::Variant&lt;/code&gt; 实例在此期间未被并发修改。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Einsatz von &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; erfolgt bei der Verwendung von Varianten als Schlüssel in ungeordneten Assoziativspeichern oder bei der expliziten Schlüsselberechnung:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; 的典型应用是在无序关联存储中使用 Variant 作为键时，或在进行显式键计算时：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Einbindung der Schnittstelle:&lt;/strong&gt; Der Aufrufer bindet den Header &lt;code&gt;ara/core/variant.h&lt;/code&gt; ein, um Zugriff auf die Klassenvorlage &lt;code&gt;ara::core::Variant&lt;/code&gt; und die zugehörige &lt;code&gt;std::hash&lt;/code&gt;-Spezialisierung zu erhalten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellung des Objekts:&lt;/strong&gt; Eine Instanz von &lt;code&gt;ara::core::Variant&amp;lt;Types...&amp;gt;&lt;/code&gt; wird deklariert und mit einem konkreten Wert aus der Menge der deklarierten Alternativtypen &lt;code&gt;Types...&lt;/code&gt; belegt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hash-Berechnung:&lt;/strong&gt; Die Hash-Funktion wird entweder implizit durch Container-Operationen oder manuell durch die Anwendung aufgerufen. Dabei wird das Variant-Objekt als konstante Referenz an den Aufrufoperator übergeben: &lt;code&gt;size_t operator() (ara::core::Variant&amp;lt;Types...&amp;gt; const &amp;amp;v) const noexcept;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückgabe und Verwendung:&lt;/strong&gt; Der Aufruf liefert einen numerischen Wert vom Typ &lt;code&gt;size_t&lt;/code&gt; zurück, der unmittelbar zur Adressierung in Hashtabellen oder zur Gleichheitsprüfung herangezogen werden kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;包含接口：&lt;/strong&gt;调用方包含头文件 &lt;code&gt;ara/core/variant.h&lt;/code&gt;，以获取对类模板 &lt;code&gt;ara::core::Variant&lt;/code&gt; 及其关联的 &lt;code&gt;std::hash&lt;/code&gt; 特化的访问权限。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;提供对象：&lt;/strong&gt;声明 &lt;code&gt;ara::core::Variant&amp;lt;Types...&amp;gt;&lt;/code&gt; 的一个实例，并使用来自所声明的替代类型集合 &lt;code&gt;Types...&lt;/code&gt; 中的具体值进行赋值。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;哈希计算：&lt;/strong&gt;哈希函数要么通过容器操作隐式调用，要么由应用程序手动调用。在此过程中，Variant 对象作为常量引用传递给调用运算符：&lt;code&gt;size_t operator() (ara::core::Variant&amp;lt;Types...&amp;gt; const &amp;amp;v) const noexcept;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;返回与使用：&lt;/strong&gt;调用返回一个类型为 &lt;code&gt;size_t&lt;/code&gt; 的数值，该数值可直接用于哈希表中的寻址或用于相等性检查。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Interpretation: Vermutlich delegiert der Aufrufoperator die Berechnung an die entsprechende &lt;code&gt;std::hash&lt;/code&gt;-Spezialisierung des im Variant aktuell aktiven Werts und kombiniert diesen mit dem Typ-Index der Alternative.&lt;/p&gt;
+&lt;p&gt;解释：调用运算符大概会将计算委托给 Variant 中当前活动值的对应 &lt;code&gt;std::hash&lt;/code&gt; 特化，并将其与该替代类型的类型索引相结合。&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Bei der Verwendung der Hash-Spezialisierung sind definierte Randbedingungen und Stabilitätsgarantien zu beachten:&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;使用哈希特化时，必须遵守已定义的边界条件和稳定性保证：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Ausnahmesicherheit:&lt;/strong&gt; Entsprechend &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt; ist &lt;code&gt;operator()&lt;/code&gt; als &lt;code&gt;noexcept&lt;/code&gt; qualifiziert und als ausnahmesicher (&lt;em&gt;exception safe&lt;/em&gt;) eingestuft. Der Aufruf garantiert, dass unter keinen Umständen C++-Exceptions geworfen werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Fehlersignalisierung:&lt;/strong&gt; Die Funktion gibt direkt einen primitiven Skalarwert vom Typ &lt;code&gt;size_t&lt;/code&gt; zurück. Es werden keine AUTOSAR-spezifischen Fehlerstrukturen (wie &lt;code&gt;ara::core::Result&lt;/code&gt;) oder Fehlercodes verwendet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Typanforderungen:&lt;/strong&gt; Interpretation: Vermutlich müssen alle in &lt;code&gt;Types...&lt;/code&gt; aufgeführten Datentypen ihrerseits hashbar sein (d. h. eine gültige &lt;code&gt;std::hash&lt;/code&gt;-Spezialisierung besitzen), damit die Vorlage fehlerfrei für alle potenziellen Alternativen instanziiert und ausgeführt werden kann.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;异常安全性：&lt;/strong&gt;根据 &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;，&lt;code&gt;operator()&lt;/code&gt; 被限定为 &lt;code&gt;noexcept&lt;/code&gt; 并归类为异常安全（&lt;em&gt;exception safe&lt;/em&gt;）。该调用保证在任何情况下都不会引发 C++ 异常。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;错误指示：&lt;/strong&gt;该函数直接返回类型为 &lt;code&gt;size_t&lt;/code&gt; 的原始标量值。不使用 AUTOSAR 特定的错误结构体（如 &lt;code&gt;ara::core::Result&lt;/code&gt;）或错误码。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;类型要求：&lt;/strong&gt;解释：&lt;code&gt;Types...&lt;/code&gt; 中列出的所有数据类型本身大概都必须是可哈希的（即具有有效的 &lt;code&gt;std::hash&lt;/code&gt; 特化），以便该模板能够针对所有潜在的备选项无错误地进行实例化和执行。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Vermutlich delegiert operator() die Hash-Berechnung an die std::hash-Spezialisierung des aktiven Typs und kombiniert das Ergebnis mit dem Diskriminator – Begründung: SWS_CORE_01669 spezifiziert 'Invoke the hashing function', ohne den internen Mischalgorithmus zu definieren. 2) Vermutlich müssen alle in Types... enthaltenen Typen selbst hashbar sein – Begründung: Zur Gewährleistung eines noexcept-Aufrufs über alle Typalternativen muss für jeden Parametertyp eine Hash-Funktion existieren. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform R25-11 (Modul core) und wurde automatisiert erstellt.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive Platform R25-11 规范（core 模块），并通过自动化方式生成。&lt;/p&gt;
 
 &lt;/div&gt;</pre>
         </div>

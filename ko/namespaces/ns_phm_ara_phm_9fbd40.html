@@ -20,30 +20,29 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>2dbc936761fb</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/namespaces/ns_phm_ara_phm_9fbd40/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_phm_ara_phm_9fbd40" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Der Namespace <code>ara::phm</code> stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.</p>
-<p>Die Architektur im Namespace stützt sich auf vier zentrale Klassen:</p>
+<h4>컨텍스트</h4>
+<p><code>ara::phm</code> 네임스페이스는 AUTOSAR Adaptive Platform의 Platform Health Management(PHM)를 위한 프로그래밍 인터페이스를 제공합니다. 핵심 역할은 활성 상태, 시간 제한 및 논리적 프로그램 실행 흐름과 관련하여 프로세스 및 애플리케이션을 기능적으로 모니터링하고 오류 반응을 조정하는 데 있습니다.</p>
+<p>해당 네임스페이스의 아키텍처는 네 개의 핵심 클래스를 기반으로 합니다:</p>
 <ul>
-<li><code>SupervisedEntity</code>: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.</li>
-<li><code>RecoveryAction</code>: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.</li>
-<li><code>PhmErrorDomain</code>: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.</li>
-<li><code>PhmException</code>: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.</li>
+<li><code>SupervisedEntity</code>: 상태 정보를 보고하는 애플리케이션 내의 모니터링 대상 소프트웨어 엔티티를 나타냅니다.</li>
+<li><code>RecoveryAction</code>: 감지된 오류 발생 시 실행되는 복구 작업을 위한 추상 기본 클래스입니다.</li>
+<li><code>PhmErrorDomain</code>: 서브시스템 오류 메시지를 위한 오류 도메인을 정의합니다.</li>
+<li><code>PhmException</code>: Platform Health Management의 예외 상황을 위한 표준 예외 타입입니다.</li>
 </ul>
-<p>Die Überwachungsmethoden werden über die Enumeration <code>TypeOfSupervision</code> spezifiziert <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. Hierbei unterscheidet die Plattform zwischen <code>kAliveSupervision</code> (Lebenszeichenüberwachung), <code>kDeadlineSupervision</code> (Einhaltung definierter Zeitintervalle) und <code>kLogicalSupervision</code> (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.</p>
+<p>모니터링 방법은 열거형 <code>TypeOfSupervision</code>을(를) 통해 지정됩니다 <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>. 여기서 플랫폼은 <code>kAliveSupervision</code>(생존 신호 모니터링), <code>kDeadlineSupervision</code>(정의된 시간 간격 준수) 및 <code>kLogicalSupervision</code>(제어 흐름 지점의 올바른 순서 검사)를 구분합니다. 이 과정에서 PHM은 Adaptive Platform의 State Management 및 PHM 데몬과 밀접하게 상호작용합니다.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert <code>ElementarySupervisionStatus</code> den Zustand einer einzelnen Überwachungsfunktion <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
+<h4>수명 주기</h4>
+<p>모니터링 수명 주기는 다단계 상태 조회 및 전이를 통해 표현됩니다. 가장 하위 수준에서는 <code>ElementarySupervisionStatus</code>이(가) 개별 모니터링 기능의 상태를 정의합니다 <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>:</p>
 <ul>
-<li><code>kDeactivated</code>: Die elementare Überwachung ist inaktiv.</li>
-<li><code>kOK</code>: Die Überwachung ist aktiv und es liegt kein Fehler vor.</li>
-<li><code>kFailed</code>: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.</li>
-<li><code>kExpired</code>: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.</li>
+<li><code>kDeactivated</code>: 기본 모니터링이 비활성 상태입니다.</li>
+<li><code>kOK</code>: 모니터링이 활성 상태이며 오류가 없습니다.</li>
+<li><code>kFailed</code>: 오류가 등록되었으나 아직 허용 또는 디바운싱 창 내에 있습니다.</li>
+<li><code>kExpired</code>: 허용 창이 만료된 후 오류가 최종적으로 확정되었습니다.</li>
 </ul>
-<p>Zur Bewertung des Gesamtzustands aggregiert <code>GlobalSupervisionStatus</code> die Resultate korrespondierender elementarer Überwachungen <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. Der globale Zustand wechselt dabei von <code>kDeactivated</code> nach <code>kOK</code>, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über <code>kFailed</code> und <code>kExpired</code> bis hin zu <code>kStopped</code>, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.</p>
+<p>전체 상태를 평가하기 위해 <code>GlobalSupervisionStatus</code>은(는) 해당하는 기본 모니터링의 결과들을 집계합니다 <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>. 최소 하나의 기본 모니터링이 활성화되어 오류가 없는 즉시 글로벌 상태는 <code>kDeactivated</code>에서 <code>kOK</code>(으)로 전환됩니다. 오류가 발생하면 상태는 <code>kFailed</code> 및 <code>kExpired</code>을(를) 거쳐 에스컬레이션되며, 오류 확정 후 유예 시간이 초과되는 경우 <code>kStopped</code>까지 에스컬레이션됩니다.</p>
 <div class="diagram" id="diag-global-supervision"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)">
 <title>GlobalSupervisionStatus</title>
@@ -115,31 +114,31 @@
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
+<p class="diagram-note">상태 다이어그램: 글로벌 모니터링 주기에서의 집계된 모니터링 상태 및 추정되는 전이. 출처: <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a></p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:</p>
+<h4>사용 경로</h4>
+<p>어댑티브 애플리케이션 보호를 위한 일반적인 흐름은 상호 연계된 여러 단계로 구성됩니다:</p>
 <ol>
-<li><strong>Konfiguration und Anbindung:</strong> Die Anwendung instanziiert eine <code>SupervisedEntity</code> für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus <code>TypeOfSupervision</code> (<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> oder <code>kLogicalSupervision</code>) zugeordnet <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
-<li><strong>Zyklische Ausführung und Meldung:</strong> Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben <code>ElementarySupervisionStatus</code> und <code>GlobalSupervisionStatus</code> im Status <code>kOK</code> <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
-<li><strong>Reaktionsabwicklung:</strong> Wird ein Überwachungsfehler qualifiziert (Übergang zu <code>kExpired</code> bzw. <code>kStopped</code>), wird eine abgeleitete Instanz von <code>RecoveryAction</code> herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.</li>
+<li><strong>구성 및 연결:</strong> 애플리케이션은 각각 모니터링할 컴포넌트에 대해 <code>SupervisedEntity</code>을(를) 인스턴스화합니다. 이때 모니터링 매개변수는 <code>TypeOfSupervision</code>(<code>kAliveSupervision</code>, <code>kDeadlineSupervision</code> 또는 <code>kLogicalSupervision</code>)의 모드에 할당됩니다 <a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138">[SWS_PHM_01138]</a>.</li>
+<li><strong>주기적 실행 및 보고:</strong> 정상 작동 중에 엔티티는 서브시스템에 체크포인트를 보고합니다. 요구사항이 준수되는 한 <code>ElementarySupervisionStatus</code> 및 <code>GlobalSupervisionStatus</code>은(는) <code>kOK</code> 상태를 유지합니다 <a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358">[SWS_PHM_01358]</a>, <a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137">[SWS_PHM_01137]</a>.</li>
+<li><strong>반응 처리:</strong> 모니터링 오류가 판정되면(<code>kExpired</code> 또는 <code>kStopped</code>(으)로의 전이), 재시작 또는 상태 변경과 같은 시정 조치를 시작하기 위해 <code>RecoveryAction</code>의 파생 인스턴스가 사용됩니다.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlerzustände und Ausnahmebedingungen im Namespace <code>ara::phm</code> werden über standardisierte Fehlerstrukturen abgewickelt:</p>
+<h4>오류 시나리오</h4>
+<p>네임스페이스 <code>ara::phm</code>의 오류 상태 및 예외 조건은 표준화된 오류 구조를 통해 처리됩니다:</p>
 <ul>
-<li>Die Fehlerdomäne kann über die freie Funktion <code>GetPhmDomain()</code> bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
-<li>Konkrete Fehlerursachen werden über die Enumeration <code>PhmErrc</code> typisiert <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
+<li>오류 도메인은 자유 함수 <code>GetPhmDomain()</code>을(를) 통해 가져올 수 있습니다. 이 호출은 스레드 안전하며 예외를 발생시키지 않습니다 <a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251">[SWS_PHM_01251]</a>.</li>
+<li>구체적인 오류 원인은 열거형 <code>PhmErrc</code>을(를) 통해 유형화됩니다 <a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240">[SWS_PHM_01240]</a>:
   <ul>
-  <li><code>kOfferFailed</code>: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.</li>
-  <li><code>kSMCanNotHandleRecovery</code>: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.</li>
-  <li><code>kServiceNotReady</code>: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.</li>
+  <li><code>kOfferFailed</code>: PHM 데몬에 대한 연결이 실패하여 서비스를 제공할 수 없었습니다.</li>
+  <li><code>kSMCanNotHandleRecovery</code>: State Management가 복구를 수행할 수 없습니다. Platform Health Management가 에스컬레이션을 인계받아 워치독을 제어합니다.</li>
+  <li><code>kServiceNotReady</code>: 병행 Enable 또는 Disable 작업이 이미 처리 중입니다.</li>
   </ul>
 </li>
-<li>Mit der Hilfsfunktion <code>MakeErrorCode()</code> werden Fehlermeldungen vom Typ <code>ara::core::ErrorCode</code> unter Kombination eines <code>PhmErrc</code> und herstellerspezifischer Zusatzdaten erzeugt <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird <code>PhmException</code> geworfen.</li>
+<li>도우미 함수 <code>MakeErrorCode()</code>을(를) 사용하여 <code>PhmErrc</code> 및 공급업체별 추가 데이터를 결합함으로써 <code>ara::core::ErrorCode</code> 유형의 오류 메시지를 생성합니다 <a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244">[SWS_PHM_01244]</a>. 예외 처리가 필요한 심각한 오류의 경우 <code>PhmException</code>이(가) 던져집니다.</li>
 </ul>
 <!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">이 가이드는 AUTOSAR Adaptive Platform Release R25-11 사양만을 기반으로 합니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_phm_ara_phm_9fbd40" title="AI와 토론">💬 AI와 토론</button>
@@ -870,27 +869,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="2dbc936761fb64b98a9037f5e9f9ab5cef60d528e14abcc64ef715a78921ef83" data-trace-output="adf8edc9a987c4e41c3a797151bc26a7e6d0712e1e9ec4162917bbbc99f85417" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Der Namespace &lt;code&gt;ara::phm&lt;/code&gt; stellt die Programmierschnittstelle für das Platform Health Management (PHM) in der AUTOSAR Adaptive Platform bereit. Seine Kernverantwortung liegt in der funktionalen Überwachung von Prozessen und Anwendungen hinsichtlich Lebendigkeit, zeitlicher Fristen und logischer Programmabläufe sowie in der Koordination von Fehlerreaktionen.&lt;/p&gt;
-&lt;p&gt;Die Architektur im Namespace stützt sich auf vier zentrale Klassen:&lt;/p&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::phm&lt;/code&gt; 네임스페이스는 AUTOSAR Adaptive Platform의 Platform Health Management(PHM)를 위한 프로그래밍 인터페이스를 제공합니다. 핵심 역할은 활성 상태, 시간 제한 및 논리적 프로그램 실행 흐름과 관련하여 프로세스 및 애플리케이션을 기능적으로 모니터링하고 오류 반응을 조정하는 데 있습니다.&lt;/p&gt;
+&lt;p&gt;해당 네임스페이스의 아키텍처는 네 개의 핵심 클래스를 기반으로 합니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: Repräsentiert die überwachte Software-Entität innerhalb einer Anwendung, welche Statusinformationen meldet.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: Abstrakte Basisklasse für Wiederherstellungsaktionen, die bei festgestellten Fehlern ausgeführt werden.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: Definiert die Fehlerdomäne für Fehlermeldungen des Subsystems.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Standard-Ausnahmetyp für Ausnahmefälle im Platform Health Management.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: 상태 정보를 보고하는 애플리케이션 내의 모니터링 대상 소프트웨어 엔티티를 나타냅니다.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: 감지된 오류 발생 시 실행되는 복구 작업을 위한 추상 기본 클래스입니다.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: 서브시스템 오류 메시지를 위한 오류 도메인을 정의합니다.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Platform Health Management의 예외 상황을 위한 표준 예외 타입입니다.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Die Überwachungsmethoden werden über die Enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; spezifiziert &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Hierbei unterscheidet die Plattform zwischen &lt;code&gt;kAliveSupervision&lt;/code&gt; (Lebenszeichenüberwachung), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (Einhaltung definierter Zeitintervalle) und &lt;code&gt;kLogicalSupervision&lt;/code&gt; (Prüfung der korrekten Reihenfolge von Kontrollflusspunkten). Das PHM interagiert dabei eng mit dem PHM-Daemon sowie dem State Management der Adaptive Platform.&lt;/p&gt;
+&lt;p&gt;모니터링 방법은 열거형 &lt;code&gt;TypeOfSupervision&lt;/code&gt;을(를) 통해 지정됩니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. 여기서 플랫폼은 &lt;code&gt;kAliveSupervision&lt;/code&gt;(생존 신호 모니터링), &lt;code&gt;kDeadlineSupervision&lt;/code&gt;(정의된 시간 간격 준수) 및 &lt;code&gt;kLogicalSupervision&lt;/code&gt;(제어 흐름 지점의 올바른 순서 검사)를 구분합니다. 이 과정에서 PHM은 Adaptive Platform의 State Management 및 PHM 데몬과 밀접하게 상호작용합니다.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Der Überwachungslebenszyklus wird durch mehrstufige Statusabfragen und -übergänge abgebildet. Auf der untersten Ebene definiert &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; den Zustand einer einzelnen Überwachungsfunktion &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
+&lt;p&gt;모니터링 수명 주기는 다단계 상태 조회 및 전이를 통해 표현됩니다. 가장 하위 수준에서는 &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt;이(가) 개별 모니터링 기능의 상태를 정의합니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: Die elementare Überwachung ist inaktiv.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: Die Überwachung ist aktiv und es liegt kein Fehler vor.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: Ein Fehler wurde registriert, befindet sich jedoch noch innerhalb des Toleranz- bzw. Entprellungsfensters.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: Ein Fehler wurde nach Ablauf des Toleranzfensters endgültig qualifiziert.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: 기본 모니터링이 비활성 상태입니다.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: 모니터링이 활성 상태이며 오류가 없습니다.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: 오류가 등록되었으나 아직 허용 또는 디바운싱 창 내에 있습니다.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: 허용 창이 만료된 후 오류가 최종적으로 확정되었습니다.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Zur Bewertung des Gesamtzustands aggregiert &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; die Resultate korrespondierender elementarer Überwachungen &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. Der globale Zustand wechselt dabei von &lt;code&gt;kDeactivated&lt;/code&gt; nach &lt;code&gt;kOK&lt;/code&gt;, sobald mindestens eine elementare Überwachung aktiv fehlerfrei ist. Treten Fehler auf, eskaliert der Status über &lt;code&gt;kFailed&lt;/code&gt; und &lt;code&gt;kExpired&lt;/code&gt; bis hin zu &lt;code&gt;kStopped&lt;/code&gt;, sofern die Karenzzeit nach der Fehlerqualifikation überschritten wird.&lt;/p&gt;
+&lt;p&gt;전체 상태를 평가하기 위해 &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt;은(는) 해당하는 기본 모니터링의 결과들을 집계합니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. 최소 하나의 기본 모니터링이 활성화되어 오류가 없는 즉시 글로벌 상태는 &lt;code&gt;kDeactivated&lt;/code&gt;에서 &lt;code&gt;kOK&lt;/code&gt;(으)로 전환됩니다. 오류가 발생하면 상태는 &lt;code&gt;kFailed&lt;/code&gt; 및 &lt;code&gt;kExpired&lt;/code&gt;을(를) 거쳐 에스컬레이션되며, 오류 확정 후 유예 시간이 초과되는 경우 &lt;code&gt;kStopped&lt;/code&gt;까지 에스컬레이션됩니다.&lt;/p&gt;
 &lt;div class="diagram" id="diag-global-supervision"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
 &lt;title&gt;GlobalSupervisionStatus&lt;/title&gt;
@@ -962,31 +960,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Aggregierte Überwachungszustände und vermutliche Übergänge im globalen Überwachungszyklus. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;상태 다이어그램: 글로벌 모니터링 주기에서의 집계된 모니터링 상태 및 추정되는 전이. 출처: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Ablauf zur Absicherung einer adaptiven Anwendung umfasst mehrere aufeinander aufbauende Phasen:&lt;/p&gt;
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;어댑티브 애플리케이션 보호를 위한 일반적인 흐름은 상호 연계된 여러 단계로 구성됩니다:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Konfiguration und Anbindung:&lt;/strong&gt; Die Anwendung instanziiert eine &lt;code&gt;SupervisedEntity&lt;/code&gt; für die jeweils zu überwachenden Komponenten. Die Überwachungsparameter werden dabei den Modi aus &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; oder &lt;code&gt;kLogicalSupervision&lt;/code&gt;) zugeordnet &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zyklische Ausführung und Meldung:&lt;/strong&gt; Während des regulären Betriebs meldet die Entität Prüfpunkte an das Subsystem. Solange die Anforderungen eingehalten werden, verbleiben &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; und &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; im Status &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reaktionsabwicklung:&lt;/strong&gt; Wird ein Überwachungsfehler qualifiziert (Übergang zu &lt;code&gt;kExpired&lt;/code&gt; bzw. &lt;code&gt;kStopped&lt;/code&gt;), wird eine abgeleitete Instanz von &lt;code&gt;RecoveryAction&lt;/code&gt; herangezogen, um korrigierende Maßnahmen wie Neustarts oder Zustandswechsel einzuleiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;구성 및 연결:&lt;/strong&gt; 애플리케이션은 각각 모니터링할 컴포넌트에 대해 &lt;code&gt;SupervisedEntity&lt;/code&gt;을(를) 인스턴스화합니다. 이때 모니터링 매개변수는 &lt;code&gt;TypeOfSupervision&lt;/code&gt;(&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; 또는 &lt;code&gt;kLogicalSupervision&lt;/code&gt;)의 모드에 할당됩니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;주기적 실행 및 보고:&lt;/strong&gt; 정상 작동 중에 엔티티는 서브시스템에 체크포인트를 보고합니다. 요구사항이 준수되는 한 &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; 및 &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt;은(는) &lt;code&gt;kOK&lt;/code&gt; 상태를 유지합니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;반응 처리:&lt;/strong&gt; 모니터링 오류가 판정되면(&lt;code&gt;kExpired&lt;/code&gt; 또는 &lt;code&gt;kStopped&lt;/code&gt;(으)로의 전이), 재시작 또는 상태 변경과 같은 시정 조치를 시작하기 위해 &lt;code&gt;RecoveryAction&lt;/code&gt;의 파생 인스턴스가 사용됩니다.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlerzustände und Ausnahmebedingungen im Namespace &lt;code&gt;ara::phm&lt;/code&gt; werden über standardisierte Fehlerstrukturen abgewickelt:&lt;/p&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
+&lt;p&gt;네임스페이스 &lt;code&gt;ara::phm&lt;/code&gt;의 오류 상태 및 예외 조건은 표준화된 오류 구조를 통해 처리됩니다:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Die Fehlerdomäne kann über die freie Funktion &lt;code&gt;GetPhmDomain()&lt;/code&gt; bezogen werden; der Aufruf ist threadsicher und löst keine Ausnahmen aus &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Konkrete Fehlerursachen werden über die Enumeration &lt;code&gt;PhmErrc&lt;/code&gt; typisiert &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
+&lt;li&gt;오류 도메인은 자유 함수 &lt;code&gt;GetPhmDomain()&lt;/code&gt;을(를) 통해 가져올 수 있습니다. 이 호출은 스레드 안전하며 예외를 발생시키지 않습니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;구체적인 오류 원인은 열거형 &lt;code&gt;PhmErrc&lt;/code&gt;을(를) 통해 유형화됩니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
   &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: Der Dienst konnte nicht angeboten werden, weil die Verbindung zum PHM-Daemon fehlschlug.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: Das State Management kann die Wiederherstellung nicht durchführen; das Platform Health Management übernimmt die Eskalation und steuert den Watchdog an.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: Ein paralleler Enable- oder Disable-Vorgang wird bereits verarbeitet.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: PHM 데몬에 대한 연결이 실패하여 서비스를 제공할 수 없었습니다.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: State Management가 복구를 수행할 수 없습니다. Platform Health Management가 에스컬레이션을 인계받아 워치독을 제어합니다.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: 병행 Enable 또는 Disable 작업이 이미 처리 중입니다.&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;Mit der Hilfsfunktion &lt;code&gt;MakeErrorCode()&lt;/code&gt; werden Fehlermeldungen vom Typ &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; unter Kombination eines &lt;code&gt;PhmErrc&lt;/code&gt; und herstellerspezifischer Zusatzdaten erzeugt &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. Bei schwerwiegenden Fehlern, die eine Ausnahmebehandlung erfordern, wird &lt;code&gt;PhmException&lt;/code&gt; geworfen.&lt;/li&gt;
+&lt;li&gt;도우미 함수 &lt;code&gt;MakeErrorCode()&lt;/code&gt;을(를) 사용하여 &lt;code&gt;PhmErrc&lt;/code&gt; 및 공급업체별 추가 데이터를 결합함으로써 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 유형의 오류 메시지를 생성합니다 &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. 예외 처리가 필요한 심각한 오류의 경우 &lt;code&gt;PhmException&lt;/code&gt;이(가) 던져집니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 AUTOSAR Adaptive Platform Release R25-11 사양만을 기반으로 합니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

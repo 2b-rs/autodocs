@@ -24,48 +24,47 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>8c7185f0f26f</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_log_Format_2a1754/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_log_Format_2a1754/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_log_Format_2a1754" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Datenstruktur <code>ara::log::Format</code> dient innerhalb des Protokollierungssystems der AUTOSAR Adaptive Platform als Formatierungshinweis (formatting hint) für die Datenausgabe. Als <code>struct Format final</code> in der Header-Datei <code>#include "ara/log/logger.h"</code> deklariert, kapselt sie Steuerungsdaten zur Text- und Zahlendarstellung. Anstelle einer freien Formatierungszeichenkette strukturiert sie zwei fundamentale Parameter:</p>
+<h4>上下文</h4>
+<p>数据结构 <code>ara::log::Format</code> 在 AUTOSAR Adaptive Platform 的日志系统中充当数据输出的格式化提示（formatting hint）。它作为 <code>struct Format final</code> 在头文件 <code>#include "ara/log/logger.h"</code> 中声明，封装了用于文本和数字表示的控制数据。它不是自由格式的字符串，而是将两个基本参数结构化：</p>
 <ul>
-<li><code>fmt</code>: Der Formatspezifizierer vom Typ <code>Fmt</code> <a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225">[SWS_LOG_00225]</a>, welcher die Darstellungsform wie Ganzzahlformate, Fließkommaformate oder Standardformate festlegt.</li>
-<li><code>precision</code>: Ein Wert vom Typ <code>std::uint16_t</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a>, dessen semantische Auswertung an den gewählten Typ in <code>fmt</code> gekoppelt ist.</li>
+<li><code>fmt</code>：类型为 <code>Fmt</code> <a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225">[SWS_LOG_00225]</a> 的格式说明符，用于指定表示形式，如整数格式、浮点数格式或标准格式。</li>
+<li><code>precision</code>：类型为 <code>std::uint16_t</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a> 的值，其语义解释与在 <code>fmt</code> 中选定的类型相绑定。</li>
 </ul>
-<p>Im Modul <code>log</code> interagiert die Struktur als Vermittlungselement zwischen der Anwendungslogik, zugehörigen Hilfsfunktionen zur Objekterzeugung und der Protokollierungsinfrastruktur. Sie transportiert Formatierungsvorgaben direkt an die Ausgabekanäle, ohne eigene Systemressourcen oder dynamische Puffer zu verwalten.</p>
+<p>在模块 <code>log</code> 中，该结构作为应用逻辑、相关的对象创建辅助函数与日志记录基础架构之间的中介元素进行交互。它直接将格式化规范传递给输出通道，而无需管理自身的系统资源或动态缓冲区。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Der Lebenszyklus von <code>ara::log::Format</code> entspricht dem eines leichtgewichtigen Wertobjekts (Value Object). Für die Instanziierung formuliert die Spezifikation eine explizite Richtlinie: Es existieren dedizierte Hilfsfunktionen zur Erstellung spezifischer Ausprägungen dieser Struktur. Entwickler sollen Instanzen nicht manuell anlegen, sondern stets diese Hilfsfunktionen nutzen.</p>
-<p>Da der Typ als <code>final</code> deklariert ist und ausschließlich aus zwei einfachen Datenelementen besteht, besitzt <code>Format</code> keine dynamisch allokierten Ressourcen und erfordert keine komplexen Destruktions- oder Bereinigungslogiken. Exemplare können effizient auf dem Stack instanziiert oder direkt als temporäre Werte an Schnittstellen übergeben werden.</p>
-<p>In Bezug auf die Nebenläufigkeit enthält <code>ara::log::Format</code> keine internen Schutzmechanismen oder Mutex-Sperren. Da Instanzen jedoch üblicherweise kurzlebig erzeugt und als Wertkopie an Log-Aufrufe übergeben werden (Interpretation: reine Wertübergabe ohne gemeinsamen Zustand), verhält sich die Nutzung in Multi-Thread-Umgebungen sicher, solange nicht dieselbe Instanz ohne externe Synchronisation nebenläufig von mehreren Threads modifiziert wird.</p>
+<h4>生命周期</h4>
+<p><code>ara::log::Format</code> 的生命周期相当于轻量级值对象（Value Object）。针对其实例化，规范制定了明确的准则：存在用于创建该结构特定形式的专用辅助函数。开发人员不应手动创建实例，而应始终使用这些辅助函数。</p>
+<p>由于该类型被声明为 <code>final</code> 且仅由两个简单数据元素组成，因此 <code>Format</code> 不包含动态分配的资源，也不需要复杂的析构或清理逻辑。其实例可以在栈上高效实例化，或作为临时值直接传递给接口。</p>
+<p>在并发方面，<code>ara::log::Format</code> 不包含内部保护机制或互斥锁。然而，由于实例通常是短期创建并作为值副本传递给日志调用（解释：无共享状态的纯按值传递），因此只要不同线程在没有外部同步的情况下并发修改同一实例，在多线程环境中使用就是安全的。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Die typische Verwendung von <code>ara::log::Format</code> folgt einem standardisierten Muster aus Wahl der Darstellungsart, Erzeugung über Hilfsfunktionen und Übergabe an die Log-Ausgabe:</p>
+<h4>使用路径</h4>
+<p><code>ara::log::Format</code> 的典型用法遵循一个标准化模式：选择表示方式、通过辅助函数创建并传递给日志输出：</p>
 <ol>
-<li><strong>Formatierungsauswahl:</strong> Festlegung des Zielformats für den auszugebenden Wert. Zur Verfügung stehen unter anderem ganzzahlige Basen (<code>Fmt::kDec</code>, <code>Fmt::kOct</code>, <code>Fmt::kHex</code>, <code>Fmt::kBin</code>), Fließkommadarstellungen (<code>Fmt::kDecFloat</code>, <code>Fmt::kEngFloat</code>, <code>Fmt::kHexFloat</code>, <code>Fmt::kAutoFloat</code>) sowie die Standardformatierung <code>Fmt::kDefault</code>.</li>
-<li><strong>Erzeugung via Hilfsfunktion:</strong> Aufruf der für den Anwendungsfall vorgesehenen Hilfsfunktion, die ein entsprechend initialisiertes <code>Format</code>-Objekt mit gesetztem <code>fmt</code> <a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225">[SWS_LOG_00225]</a> und <code>precision</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a> zurückgibt.</li>
-<li><strong>Übergabe an den Log-Kanal:</strong> Das generierte Objekt wird an den Protokollierungsstrom weitergereicht (vermutlich über Streaming-Operatoren oder Argumentlisten des Loggers), wodurch die Formatierungsregeln auf das nachfolgende Datum angewendet werden.</li>
+<li><strong>格式化选择：</strong>确定待输出值的目标格式。可用的包括整数基数（<code>Fmt::kDec</code>、<code>Fmt::kOct</code>、<code>Fmt::kHex</code>、<code>Fmt::kBin</code>）、浮点表示（<code>Fmt::kDecFloat</code>、<code>Fmt::kEngFloat</code>、<code>Fmt::kHexFloat</code>、<code>Fmt::kAutoFloat</code>）以及默认格式化 <code>Fmt::kDefault</code>。</li>
+<li><strong>通过辅助函数创建：</strong>调用针对该用例预设的辅助函数，该函数返回一个相应初始化的 <code>Format</code> 对象，其中设置了 <code>fmt</code> <a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225">[SWS_LOG_00225]</a> 和 <code>precision</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a>。</li>
+<li><strong>传递给日志通道：</strong>生成的对象被传递给日志记录流（推测通过流式操作符或日志记录器的参数列表），从而将格式化规则应用于后续数据。</li>
 </ol>
-<p>Die Interpretation des Feldes <code>precision</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a> hängt dabei direkt von <code>fmt</code> <a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225">[SWS_LOG_00225]</a> ab:</p>
+<p>字段 <code>precision</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a> 的解释直接取决于 <code>fmt</code> <a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225">[SWS_LOG_00225]</a>：</p>
 <ul>
-<li><strong>Ganzzahlige Typen (<code>Fmt::kDec</code>, <code>Fmt::kOct</code>, <code>Fmt::kHex</code>, <code>Fmt::kBin</code>):</strong> <code>precision</code> definiert die Mindestanzahl an Ziffern, die ausgegeben werden müssen, vergleichbar mit dem Spezifizierer <code>std::printf("%.7d")</code>. Kürzere Zahlenwerte werden dabei mit führenden Nullen aufgefüllt.</li>
-<li><strong>Gleitkommatypen mit fester Nachkommastellenzahl (<code>Fmt::kDecFloat</code>, <code>Fmt::kEngFloat</code>, <code>Fmt::kHexFloat</code>):</strong> <code>precision</code> bestimmt die exakte Anzahl der Ziffern, die nach dem Dezimalpunkt dargestellt werden.</li>
-<li><strong>Automatische Gleitkommadarstellung (<code>Fmt::kAutoFloat</code>):</strong> <code>precision</code> bezeichnet die Anzahl signifikanter Stellen gemäß den standardisierten Formatierungsregeln von <code>std::printf("%g")</code>.</li>
-<li><strong>Standardformatierung (<code>Fmt::kDefault</code>):</strong> Bei diesem Spezifizierer wird das Feld <code>precision</code> vollständig ignoriert; stattdessen kommt eine implementationsdefinierte Formatierung zur Anwendung.</li>
+<li><strong>整型（<code>Fmt::kDec</code>、<code>Fmt::kOct</code>、<code>Fmt::kHex</code>、<code>Fmt::kBin</code>）：</strong><code>precision</code> 定义了必须输出的最小位数，与说明符 <code>std::printf("%.7d")</code> 类似。较短的数值将用前导零填充。</li>
+<li><strong>固定小数位数的浮点型（<code>Fmt::kDecFloat</code>、<code>Fmt::kEngFloat</code>、<code>Fmt::kHexFloat</code>）：</strong><code>precision</code> 确定小数点后显示的精确位数。</li>
+<li><strong>自动浮点表示（<code>Fmt::kAutoFloat</code>）：</strong><code>precision</code> 表示根据 <code>std::printf("%g")</code> 的标准化格式化规则的有效位数。</li>
+<li><strong>默认格式化（<code>Fmt::kDefault</code>）：</strong>对于该说明符，字段 <code>precision</code> 将被完全忽略；取而代之的是应用由实现定义的格式化。</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
-<p>Als kompakte Datenstruktur wirft <code>ara::log::Format</code> keine Ausnahmen und gibt keine Fehlercodes zurück. Für Grenzfälle definiert die Spezifikation jedoch ein klares, fehlertolerantes Verhalten:</p>
+<h4>错误场景</h4>
+<p>作为紧凑的数据结构，<code>ara::log::Format</code> 不抛出异常也不返回错误码。然而，针对边界情况，规范定义了明确且容错的行为：</p>
 <ul>
-<li><strong>Präzision Null bei ganzzahligen Werten:</strong> Wird für ganzzahlige Typen (<code>Fmt::kDec</code>, <code>Fmt::kOct</code>, <code>Fmt::kHex</code>, <code>Fmt::kBin</code>) ein Wert von <code>precision = 0</code> übergeben, wird dies nicht als ungültiger Parameter zurückgewiesen, sondern identisch zu <code>precision = 1</code> behandelt. Dies verhindert die versehentliche Unterdrückung von Ziffernausgaben bei Nullwerten.</li>
-<li><strong>Präzisionsangaben bei <code>Fmt::kDefault</code>:</strong> Ein beliebiger Wert in <code>precision</code> bei gesetztem <code>Fmt::kDefault</code> erzeugt keinen Fehlerzustand, da das Feld in diesem Modus definitionsgemäß ignoriert wird.</li>
-<li><strong>Wertebereichsüberläufe:</strong> Der Wertebereich für <code>precision</code> ist durch den Typ <code>std::uint16_t</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a> strikt auf den Bereich 0 bis 65535 begrenzt. Negative Werte sind typbedingt ausgeschlossen, sodass Vorzeichenfehler auf Schnittstellenebene vermieden werden.</li>
+<li><strong>整型值的精度为零：</strong>如果为整型（<code>Fmt::kDec</code>、<code>Fmt::kOct</code>、<code>Fmt::kHex</code>、<code>Fmt::kBin</code>）传递了值 <code>precision = 0</code>，这不会作为无效参数被拒绝，而是作为与 <code>precision = 1</code> 相同的方式处理。这防止了在零值时意外抑制数字输出。</li>
+<li><strong><code>Fmt::kDefault</code> 时的精度说明：</strong>在设置了 <code>Fmt::kDefault</code> 时，<code>precision</code> 中的任意值都不会产生错误状态，因为按照定义该字段在此模式下会被忽略。</li>
+<li><strong>值范围溢出：</strong><code>precision</code> 的值范围受类型 <code>std::uint16_t</code> <a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226">[SWS_LOG_00226]</a> 严格限制在 0 到 65535 的范围内。类型本身排除了负值，从而避免了接口级别的符号错误。</li>
 </ul>
 
 <!-- annahmen: 1) Format wird im Logging-Ablauf vermutlich als kurzlebiges Wertobjekt per Kopie oder Referenz an Protokollierungsströme übergeben. – Begründung: Format ist als reines Daten-Struct final ohne Ressourcenverwaltung deklariert und dient als Formatierungshinweis. 2) Die erwähnten Hilfsfunktionen dürften im Namensraum ara::log bereitgestellt werden. – Begründung: Format ist in ara/log/logger.h verortet und verweist zur Objekterzeugung auf begleitende Helferfunktionen. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationen der AUTOSAR Adaptive Platform im Release R25-11 für das Modul log. Instanzen von <code>ara::log::Format</code> sollten gemäß Spezifikation vorzugsweise über die zugehörigen Hilfsfunktionen erzeugt werden.</p>
+<p class="ai-note">本指南基于 AUTOSAR Adaptive Platform 在 Release R25-11 中针对 log 模块的规范。根据规范，<code>ara::log::Format</code> 的实例应优先通过相关的辅助函数创建。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_log_Format_2a1754" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -443,45 +442,44 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="8c7185f0f26f6140e64e9e285ea1c8e07403bdb8ce30af9f53d0ac43097276ef" data-trace-output="61a75bac515b06c36e715c39b7afb7023f9f6ee3220835f0b6241aacedf58acc" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Datenstruktur &lt;code&gt;ara::log::Format&lt;/code&gt; dient innerhalb des Protokollierungssystems der AUTOSAR Adaptive Platform als Formatierungshinweis (formatting hint) für die Datenausgabe. Als &lt;code&gt;struct Format final&lt;/code&gt; in der Header-Datei &lt;code&gt;#include "ara/log/logger.h"&lt;/code&gt; deklariert, kapselt sie Steuerungsdaten zur Text- und Zahlendarstellung. Anstelle einer freien Formatierungszeichenkette strukturiert sie zwei fundamentale Parameter:&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;数据结构 &lt;code&gt;ara::log::Format&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的日志系统中充当数据输出的格式化提示（formatting hint）。它作为 &lt;code&gt;struct Format final&lt;/code&gt; 在头文件 &lt;code&gt;#include "ara/log/logger.h"&lt;/code&gt; 中声明，封装了用于文本和数字表示的控制数据。它不是自由格式的字符串，而是将两个基本参数结构化：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;fmt&lt;/code&gt;: Der Formatspezifizierer vom Typ &lt;code&gt;Fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;, welcher die Darstellungsform wie Ganzzahlformate, Fließkommaformate oder Standardformate festlegt.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;precision&lt;/code&gt;: Ein Wert vom Typ &lt;code&gt;std::uint16_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;, dessen semantische Auswertung an den gewählten Typ in &lt;code&gt;fmt&lt;/code&gt; gekoppelt ist.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fmt&lt;/code&gt;：类型为 &lt;code&gt;Fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt; 的格式说明符，用于指定表示形式，如整数格式、浮点数格式或标准格式。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;precision&lt;/code&gt;：类型为 &lt;code&gt;std::uint16_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; 的值，其语义解释与在 &lt;code&gt;fmt&lt;/code&gt; 中选定的类型相绑定。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Im Modul &lt;code&gt;log&lt;/code&gt; interagiert die Struktur als Vermittlungselement zwischen der Anwendungslogik, zugehörigen Hilfsfunktionen zur Objekterzeugung und der Protokollierungsinfrastruktur. Sie transportiert Formatierungsvorgaben direkt an die Ausgabekanäle, ohne eigene Systemressourcen oder dynamische Puffer zu verwalten.&lt;/p&gt;
+&lt;p&gt;在模块 &lt;code&gt;log&lt;/code&gt; 中，该结构作为应用逻辑、相关的对象创建辅助函数与日志记录基础架构之间的中介元素进行交互。它直接将格式化规范传递给输出通道，而无需管理自身的系统资源或动态缓冲区。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Der Lebenszyklus von &lt;code&gt;ara::log::Format&lt;/code&gt; entspricht dem eines leichtgewichtigen Wertobjekts (Value Object). Für die Instanziierung formuliert die Spezifikation eine explizite Richtlinie: Es existieren dedizierte Hilfsfunktionen zur Erstellung spezifischer Ausprägungen dieser Struktur. Entwickler sollen Instanzen nicht manuell anlegen, sondern stets diese Hilfsfunktionen nutzen.&lt;/p&gt;
-&lt;p&gt;Da der Typ als &lt;code&gt;final&lt;/code&gt; deklariert ist und ausschließlich aus zwei einfachen Datenelementen besteht, besitzt &lt;code&gt;Format&lt;/code&gt; keine dynamisch allokierten Ressourcen und erfordert keine komplexen Destruktions- oder Bereinigungslogiken. Exemplare können effizient auf dem Stack instanziiert oder direkt als temporäre Werte an Schnittstellen übergeben werden.&lt;/p&gt;
-&lt;p&gt;In Bezug auf die Nebenläufigkeit enthält &lt;code&gt;ara::log::Format&lt;/code&gt; keine internen Schutzmechanismen oder Mutex-Sperren. Da Instanzen jedoch üblicherweise kurzlebig erzeugt und als Wertkopie an Log-Aufrufe übergeben werden (Interpretation: reine Wertübergabe ohne gemeinsamen Zustand), verhält sich die Nutzung in Multi-Thread-Umgebungen sicher, solange nicht dieselbe Instanz ohne externe Synchronisation nebenläufig von mehreren Threads modifiziert wird.&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::log::Format&lt;/code&gt; 的生命周期相当于轻量级值对象（Value Object）。针对其实例化，规范制定了明确的准则：存在用于创建该结构特定形式的专用辅助函数。开发人员不应手动创建实例，而应始终使用这些辅助函数。&lt;/p&gt;
+&lt;p&gt;由于该类型被声明为 &lt;code&gt;final&lt;/code&gt; 且仅由两个简单数据元素组成，因此 &lt;code&gt;Format&lt;/code&gt; 不包含动态分配的资源，也不需要复杂的析构或清理逻辑。其实例可以在栈上高效实例化，或作为临时值直接传递给接口。&lt;/p&gt;
+&lt;p&gt;在并发方面，&lt;code&gt;ara::log::Format&lt;/code&gt; 不包含内部保护机制或互斥锁。然而，由于实例通常是短期创建并作为值副本传递给日志调用（解释：无共享状态的纯按值传递），因此只要不同线程在没有外部同步的情况下并发修改同一实例，在多线程环境中使用就是安全的。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die typische Verwendung von &lt;code&gt;ara::log::Format&lt;/code&gt; folgt einem standardisierten Muster aus Wahl der Darstellungsart, Erzeugung über Hilfsfunktionen und Übergabe an die Log-Ausgabe:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::log::Format&lt;/code&gt; 的典型用法遵循一个标准化模式：选择表示方式、通过辅助函数创建并传递给日志输出：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Formatierungsauswahl:&lt;/strong&gt; Festlegung des Zielformats für den auszugebenden Wert. Zur Verfügung stehen unter anderem ganzzahlige Basen (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;), Fließkommadarstellungen (&lt;code&gt;Fmt::kDecFloat&lt;/code&gt;, &lt;code&gt;Fmt::kEngFloat&lt;/code&gt;, &lt;code&gt;Fmt::kHexFloat&lt;/code&gt;, &lt;code&gt;Fmt::kAutoFloat&lt;/code&gt;) sowie die Standardformatierung &lt;code&gt;Fmt::kDefault&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung via Hilfsfunktion:&lt;/strong&gt; Aufruf der für den Anwendungsfall vorgesehenen Hilfsfunktion, die ein entsprechend initialisiertes &lt;code&gt;Format&lt;/code&gt;-Objekt mit gesetztem &lt;code&gt;fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt; und &lt;code&gt;precision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; zurückgibt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe an den Log-Kanal:&lt;/strong&gt; Das generierte Objekt wird an den Protokollierungsstrom weitergereicht (vermutlich über Streaming-Operatoren oder Argumentlisten des Loggers), wodurch die Formatierungsregeln auf das nachfolgende Datum angewendet werden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;格式化选择：&lt;/strong&gt;确定待输出值的目标格式。可用的包括整数基数（&lt;code&gt;Fmt::kDec&lt;/code&gt;、&lt;code&gt;Fmt::kOct&lt;/code&gt;、&lt;code&gt;Fmt::kHex&lt;/code&gt;、&lt;code&gt;Fmt::kBin&lt;/code&gt;）、浮点表示（&lt;code&gt;Fmt::kDecFloat&lt;/code&gt;、&lt;code&gt;Fmt::kEngFloat&lt;/code&gt;、&lt;code&gt;Fmt::kHexFloat&lt;/code&gt;、&lt;code&gt;Fmt::kAutoFloat&lt;/code&gt;）以及默认格式化 &lt;code&gt;Fmt::kDefault&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;通过辅助函数创建：&lt;/strong&gt;调用针对该用例预设的辅助函数，该函数返回一个相应初始化的 &lt;code&gt;Format&lt;/code&gt; 对象，其中设置了 &lt;code&gt;fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt; 和 &lt;code&gt;precision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;传递给日志通道：&lt;/strong&gt;生成的对象被传递给日志记录流（推测通过流式操作符或日志记录器的参数列表），从而将格式化规则应用于后续数据。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Die Interpretation des Feldes &lt;code&gt;precision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; hängt dabei direkt von &lt;code&gt;fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt; ab:&lt;/p&gt;
+&lt;p&gt;字段 &lt;code&gt;precision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; 的解释直接取决于 &lt;code&gt;fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Ganzzahlige Typen (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;):&lt;/strong&gt; &lt;code&gt;precision&lt;/code&gt; definiert die Mindestanzahl an Ziffern, die ausgegeben werden müssen, vergleichbar mit dem Spezifizierer &lt;code&gt;std::printf("%.7d")&lt;/code&gt;. Kürzere Zahlenwerte werden dabei mit führenden Nullen aufgefüllt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gleitkommatypen mit fester Nachkommastellenzahl (&lt;code&gt;Fmt::kDecFloat&lt;/code&gt;, &lt;code&gt;Fmt::kEngFloat&lt;/code&gt;, &lt;code&gt;Fmt::kHexFloat&lt;/code&gt;):&lt;/strong&gt; &lt;code&gt;precision&lt;/code&gt; bestimmt die exakte Anzahl der Ziffern, die nach dem Dezimalpunkt dargestellt werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Automatische Gleitkommadarstellung (&lt;code&gt;Fmt::kAutoFloat&lt;/code&gt;):&lt;/strong&gt; &lt;code&gt;precision&lt;/code&gt; bezeichnet die Anzahl signifikanter Stellen gemäß den standardisierten Formatierungsregeln von &lt;code&gt;std::printf("%g")&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Standardformatierung (&lt;code&gt;Fmt::kDefault&lt;/code&gt;):&lt;/strong&gt; Bei diesem Spezifizierer wird das Feld &lt;code&gt;precision&lt;/code&gt; vollständig ignoriert; stattdessen kommt eine implementationsdefinierte Formatierung zur Anwendung.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;整型（&lt;code&gt;Fmt::kDec&lt;/code&gt;、&lt;code&gt;Fmt::kOct&lt;/code&gt;、&lt;code&gt;Fmt::kHex&lt;/code&gt;、&lt;code&gt;Fmt::kBin&lt;/code&gt;）：&lt;/strong&gt;&lt;code&gt;precision&lt;/code&gt; 定义了必须输出的最小位数，与说明符 &lt;code&gt;std::printf("%.7d")&lt;/code&gt; 类似。较短的数值将用前导零填充。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;固定小数位数的浮点型（&lt;code&gt;Fmt::kDecFloat&lt;/code&gt;、&lt;code&gt;Fmt::kEngFloat&lt;/code&gt;、&lt;code&gt;Fmt::kHexFloat&lt;/code&gt;）：&lt;/strong&gt;&lt;code&gt;precision&lt;/code&gt; 确定小数点后显示的精确位数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;自动浮点表示（&lt;code&gt;Fmt::kAutoFloat&lt;/code&gt;）：&lt;/strong&gt;&lt;code&gt;precision&lt;/code&gt; 表示根据 &lt;code&gt;std::printf("%g")&lt;/code&gt; 的标准化格式化规则的有效位数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;默认格式化（&lt;code&gt;Fmt::kDefault&lt;/code&gt;）：&lt;/strong&gt;对于该说明符，字段 &lt;code&gt;precision&lt;/code&gt; 将被完全忽略；取而代之的是应用由实现定义的格式化。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Als kompakte Datenstruktur wirft &lt;code&gt;ara::log::Format&lt;/code&gt; keine Ausnahmen und gibt keine Fehlercodes zurück. Für Grenzfälle definiert die Spezifikation jedoch ein klares, fehlertolerantes Verhalten:&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;作为紧凑的数据结构，&lt;code&gt;ara::log::Format&lt;/code&gt; 不抛出异常也不返回错误码。然而，针对边界情况，规范定义了明确且容错的行为：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Präzision Null bei ganzzahligen Werten:&lt;/strong&gt; Wird für ganzzahlige Typen (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;) ein Wert von &lt;code&gt;precision = 0&lt;/code&gt; übergeben, wird dies nicht als ungültiger Parameter zurückgewiesen, sondern identisch zu &lt;code&gt;precision = 1&lt;/code&gt; behandelt. Dies verhindert die versehentliche Unterdrückung von Ziffernausgaben bei Nullwerten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Präzisionsangaben bei &lt;code&gt;Fmt::kDefault&lt;/code&gt;:&lt;/strong&gt; Ein beliebiger Wert in &lt;code&gt;precision&lt;/code&gt; bei gesetztem &lt;code&gt;Fmt::kDefault&lt;/code&gt; erzeugt keinen Fehlerzustand, da das Feld in diesem Modus definitionsgemäß ignoriert wird.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Wertebereichsüberläufe:&lt;/strong&gt; Der Wertebereich für &lt;code&gt;precision&lt;/code&gt; ist durch den Typ &lt;code&gt;std::uint16_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; strikt auf den Bereich 0 bis 65535 begrenzt. Negative Werte sind typbedingt ausgeschlossen, sodass Vorzeichenfehler auf Schnittstellenebene vermieden werden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;整型值的精度为零：&lt;/strong&gt;如果为整型（&lt;code&gt;Fmt::kDec&lt;/code&gt;、&lt;code&gt;Fmt::kOct&lt;/code&gt;、&lt;code&gt;Fmt::kHex&lt;/code&gt;、&lt;code&gt;Fmt::kBin&lt;/code&gt;）传递了值 &lt;code&gt;precision = 0&lt;/code&gt;，这不会作为无效参数被拒绝，而是作为与 &lt;code&gt;precision = 1&lt;/code&gt; 相同的方式处理。这防止了在零值时意外抑制数字输出。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Fmt::kDefault&lt;/code&gt; 时的精度说明：&lt;/strong&gt;在设置了 &lt;code&gt;Fmt::kDefault&lt;/code&gt; 时，&lt;code&gt;precision&lt;/code&gt; 中的任意值都不会产生错误状态，因为按照定义该字段在此模式下会被忽略。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;值范围溢出：&lt;/strong&gt;&lt;code&gt;precision&lt;/code&gt; 的值范围受类型 &lt;code&gt;std::uint16_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; 严格限制在 0 到 65535 的范围内。类型本身排除了负值，从而避免了接口级别的符号错误。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen: 1) Format wird im Logging-Ablauf vermutlich als kurzlebiges Wertobjekt per Kopie oder Referenz an Protokollierungsströme übergeben. – Begründung: Format ist als reines Daten-Struct final ohne Ressourcenverwaltung deklariert und dient als Formatierungshinweis. 2) Die erwähnten Hilfsfunktionen dürften im Namensraum ara::log bereitgestellt werden. – Begründung: Format ist in ara/log/logger.h verortet und verweist zur Objekterzeugung auf begleitende Helferfunktionen. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationen der AUTOSAR Adaptive Platform im Release R25-11 für das Modul log. Instanzen von &lt;code&gt;ara::log::Format&lt;/code&gt; sollten gemäß Spezifikation vorzugsweise über die zugehörigen Hilfsfunktionen erzeugt werden.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive Platform 在 Release R25-11 中针对 log 模块的规范。根据规范，&lt;code&gt;ara::log::Format&lt;/code&gt; 的实例应优先通过相关的辅助函数创建。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

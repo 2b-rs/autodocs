@@ -24,42 +24,41 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>1afcfc0f9fb5</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_tsync_TimeBase_accd82/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_tsync_TimeBase_accd82/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_tsync_TimeBase_accd82" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Struktur <code>ara::tsync::TimeBase</code> dient im Modul <code>tsync</code> der AUTOSAR Adaptive Platform als Pseudo-Clock. Ihre primäre Funktion besteht darin, als erstes Template-Argument für <code>std::chrono::time_point</code> zu fungieren, um Zeitpunkte zu kennzeichnen, die sich auf eine lokale Zeitbasis im Kontext einer noch nicht näher spezifizierten Zeitressource (<em>timeBaseResource</em>) beziehen.
+结构体 <code>ara::tsync::TimeBase</code> 在 AUTOSAR Adaptive Platform 的模块 <code>tsync</code> 中用作伪时钟（Pseudo-Clock）。其主要功能是作为 <code>std::chrono::time_point</code> 的第一个模板参数，以标记与尚未详细指定的时钟资源（<em>timeBaseResource</em>）上下文中的本地时间基准相关的时间点。
 </p>
 <p>
-Durch die Definition der grundlegenden Typaliase und Konstanten erfüllt <code>ara::tsync::TimeBase</code> die formalen Anforderungen an eine Standard-C++-Uhr (<em>C++ Clock requirements</em>). Die Repräsentation der Ticks erfolgt über den vorzeichenbehafteten 64-Bit-Ganzzahltyp <code>rep</code> (<a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261">[SWS_TS_01261]</a>) mit einer Periodendauer im Nanosekundenbereich über <code>period</code> (<a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262">[SWS_TS_01262]</a>). Die Zeitspanne seit Beginn der Epoche wird über das Typalias <code>duration</code> (<a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263">[SWS_TS_01263]</a>) ausgedrückt. Ein konkreter Zeitpunkt wird als <code>time_point</code> abgebildet (<a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264">[SWS_TS_01264]</a>). Da es sich um eine Pseudo-Uhr handelt, deren Zeitbezug von einer externen Ressource abhängt und potenziell Sprünge oder Korrekturen aufweisen kann, ist die Eigenschaft <code>is_steady</code> mit dem Wert <code>false</code> festgelegt (<a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265">[SWS_TS_01265]</a>).
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Als reine Typ- und Tag-Struktur besitzt <code>ara::tsync::TimeBase</code> keinen eigenen dynamischen Zustand und keine Instanzdaten. Sie wird nicht als Laufzeitobjekt instanziiert oder verwaltet, sondern ausschließlich auf Typ-Ebene im C++-Typsystem verwendet. Folglich unterliegt sie keinem klassischen Lebenszyklus mit Erzeugung, Zustandstransitionen oder expliziter Zerstörung. Instanzen von <code>ara::tsync::TimeBase::time_point</code> verhalten sich gemäß den regulären Wertsemantiken der Standardbibliothek <code>std::chrono</code> und können uneingeschränkt kopiert und nebenläufig genutzt werden.
+通过定义基本类型别名和常量，<code>ara::tsync::TimeBase</code> 满足了标准 C++ 时钟的形式化要求（<em>C++ Clock requirements</em>）。Tick 的表示通过带符号 64 位整型 <code>rep</code>（<a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261">[SWS_TS_01261]</a>）进行，其周期通过 <code>period</code>（<a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262">[SWS_TS_01262]</a>）处于纳秒级范围。自历元（Epoch）开始的时间跨度通过类型别名 <code>duration</code>（<a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263">[SWS_TS_01263]</a>）表示。具体时间点映射为 <code>time_point</code>（<a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264">[SWS_TS_01264]</a>）。由于它是一个时间基准依赖于外部资源且可能出现跳变或校正的伪时钟，因此属性 <code>is_steady</code> 被设定为值 <code>false</code>（<a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265">[SWS_TS_01265]</a>）。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>生命周期</h4>
 <p>
-Die typische Verwendung von <code>ara::tsync::TimeBase</code> erfolgt rein deklarativ bei der Definition und Handhabung von Zeitstempeln:
+作为纯类型和标记结构体，<code>ara::tsync::TimeBase</code> 没有自己的动态状态和实例数据。它不会作为运行时对象被实例化或管理，而是仅在 C++ 类型系统中用于类型层面。因此，它不受具有创建、状态迁移或显式销毁的传统生命周期约束。<code>ara::tsync::TimeBase::time_point</code> 的实例遵循标准库 <code>std::chrono</code> 的常规值语义，可以不受限制地进行复制和并发使用。
+</p>
+
+<h4>使用路径</h4>
+<p>
+<code>ara::tsync::TimeBase</code> 的典型用法纯粹是声明式的，用于时间戳的定义和处理：
 </p>
 <ul>
-<li><strong>Einbindung der Schnittstelle:</strong> Einbinden der Header-Datei <code>#include "ara/tsync/timestamp.h"</code> (<a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261">[SWS_TS_01261]</a>).</li>
-<li><strong>Typisierung von Zeitpunkten:</strong> Verwendung des Typs <code>ara::tsync::TimeBase::time_point</code> (<a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264">[SWS_TS_01264]</a>) bzw. <code>std::chrono::time_point&lt;ara::tsync::TimeBase&gt;</code> zur typisierten Kennzeichnung lokaler Zeitstempel.</li>
-<li><strong>Arithmetik und Konvertierung:</strong> Differenzen zwischen zwei Zeitpunkten ergeben Werte des Typs <code>ara::tsync::TimeBase::duration</code> (<a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263">[SWS_TS_01263]</a>), welche mit nanosekundengenauer Auflösung (<a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262">[SWS_TS_01262]</a>) verarbeitet werden können.</li>
+<li><strong>包含接口：</strong>包含头文件 <code>#include "ara/tsync/timestamp.h"</code>（<a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261">[SWS_TS_01261]</a>）。</li>
+<li><strong>时间点的类型化：</strong>使用类型 <code>ara::tsync::TimeBase::time_point</code>（<a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264">[SWS_TS_01264]</a>）或 <code>std::chrono::time_point&lt;ara::tsync::TimeBase&gt;</code> 对本地时间戳进行类型化标记。</li>
+<li><strong>算术运算与转换：</strong>两个时间点之间的差值产生类型为 <code>ara::tsync::TimeBase::duration</code>（<a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263">[SWS_TS_01263]</a>）的值，这些值可以以纳秒级精度（<a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262">[SWS_TS_01262]</a>）进行处理。</li>
 </ul>
 <p>
-Da <code>TimeBase</code> als reine Pseudo-Clock fungiert, stellt sie vermutlich keine statische Member-Funktion <code>now()</code> bereit; Zeitstempel dürften stattdessen von den Synchronisationsmechanismen des Moduls <code>tsync</code> erzeugt und ausgegeben werden.
+由于 <code>TimeBase</code> 纯粹充当伪时钟，推测它不提供静态成员函数 <code>now()</code>；时间戳应当改由模块 <code>tsync</code> 的同步机制生成并输出。
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Da <code>ara::tsync::TimeBase</code> eine compile-zeitliche Definition von Typaliasen und einer Konstante darstellt, treten an der Klasse selbst keine Laufzeitfehler, Rückgabecodes oder Ausnahmen auf. Vor- und Nachbedingungen betreffen ausschließlich die Typsicherheit zur Übersetzungszeit: Operationen zwischen <code>TimeBase::time_point</code> und anderen Uhrentypen (wie <code>std::chrono::steady_clock</code>) werden vom C++-Typsystem verhindert, sofern keine explizite Konvertierung erfolgt.
+由于 <code>ara::tsync::TimeBase</code> 表示类型别名和常量的编译期定义，因此该类本身不会发生运行时错误、返回码或异常。前置和后置条件仅涉及编译时的类型安全：除非进行显式转换，否则 <code>TimeBase::time_point</code> 与其他时钟类型（如 <code>std::chrono::steady_clock</code>）之间的操作会被 C++ 类型系统阻止。
 </p>
 <!-- annahmen: 1) Fehlende Memberfunktion now() – Begründung: Der Payload enthält TimeBase als struct/Pseudo-Clock ohne now()-Methode, daher werden Zeitstempel vermutlich durch externe tsync-Mechanismen bereitgestellt. -->
-<p class="ai-note">Dieser Leitfaden wurde automatisiert auf Basis der Spezifikationsanforderungen von AUTOSAR R25-11 generiert.</p>
+<p class="ai-note">本指南是基于 AUTOSAR R25-11 的规范要求自动生成的。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_tsync_TimeBase_accd82" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -644,39 +643,38 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1afcfc0f9fb547262de39c019f9c63fe541ed4b82ba90d70135ee85e445c2ade" data-trace-output="3a18cd02f64e2706f8a2aee172b19be9d699d4dbf01a3eddc666d05a190fd101" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Struktur &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; dient im Modul &lt;code&gt;tsync&lt;/code&gt; der AUTOSAR Adaptive Platform als Pseudo-Clock. Ihre primäre Funktion besteht darin, als erstes Template-Argument für &lt;code&gt;std::chrono::time_point&lt;/code&gt; zu fungieren, um Zeitpunkte zu kennzeichnen, die sich auf eine lokale Zeitbasis im Kontext einer noch nicht näher spezifizierten Zeitressource (&lt;em&gt;timeBaseResource&lt;/em&gt;) beziehen.
+结构体 &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的模块 &lt;code&gt;tsync&lt;/code&gt; 中用作伪时钟（Pseudo-Clock）。其主要功能是作为 &lt;code&gt;std::chrono::time_point&lt;/code&gt; 的第一个模板参数，以标记与尚未详细指定的时钟资源（&lt;em&gt;timeBaseResource&lt;/em&gt;）上下文中的本地时间基准相关的时间点。
 &lt;/p&gt;
 &lt;p&gt;
-Durch die Definition der grundlegenden Typaliase und Konstanten erfüllt &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; die formalen Anforderungen an eine Standard-C++-Uhr (&lt;em&gt;C++ Clock requirements&lt;/em&gt;). Die Repräsentation der Ticks erfolgt über den vorzeichenbehafteten 64-Bit-Ganzzahltyp &lt;code&gt;rep&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;) mit einer Periodendauer im Nanosekundenbereich über &lt;code&gt;period&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;). Die Zeitspanne seit Beginn der Epoche wird über das Typalias &lt;code&gt;duration&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;) ausgedrückt. Ein konkreter Zeitpunkt wird als &lt;code&gt;time_point&lt;/code&gt; abgebildet (&lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;). Da es sich um eine Pseudo-Uhr handelt, deren Zeitbezug von einer externen Ressource abhängt und potenziell Sprünge oder Korrekturen aufweisen kann, ist die Eigenschaft &lt;code&gt;is_steady&lt;/code&gt; mit dem Wert &lt;code&gt;false&lt;/code&gt; festgelegt (&lt;a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265"&gt;[SWS_TS_01265]&lt;/a&gt;).
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Als reine Typ- und Tag-Struktur besitzt &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; keinen eigenen dynamischen Zustand und keine Instanzdaten. Sie wird nicht als Laufzeitobjekt instanziiert oder verwaltet, sondern ausschließlich auf Typ-Ebene im C++-Typsystem verwendet. Folglich unterliegt sie keinem klassischen Lebenszyklus mit Erzeugung, Zustandstransitionen oder expliziter Zerstörung. Instanzen von &lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt; verhalten sich gemäß den regulären Wertsemantiken der Standardbibliothek &lt;code&gt;std::chrono&lt;/code&gt; und können uneingeschränkt kopiert und nebenläufig genutzt werden.
+通过定义基本类型别名和常量，&lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; 满足了标准 C++ 时钟的形式化要求（&lt;em&gt;C++ Clock requirements&lt;/em&gt;）。Tick 的表示通过带符号 64 位整型 &lt;code&gt;rep&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;）进行，其周期通过 &lt;code&gt;period&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;）处于纳秒级范围。自历元（Epoch）开始的时间跨度通过类型别名 &lt;code&gt;duration&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;）表示。具体时间点映射为 &lt;code&gt;time_point&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;）。由于它是一个时间基准依赖于外部资源且可能出现跳变或校正的伪时钟，因此属性 &lt;code&gt;is_steady&lt;/code&gt; 被设定为值 &lt;code&gt;false&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265"&gt;[SWS_TS_01265]&lt;/a&gt;）。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Die typische Verwendung von &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; erfolgt rein deklarativ bei der Definition und Handhabung von Zeitstempeln:
+作为纯类型和标记结构体，&lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; 没有自己的动态状态和实例数据。它不会作为运行时对象被实例化或管理，而是仅在 C++ 类型系统中用于类型层面。因此，它不受具有创建、状态迁移或显式销毁的传统生命周期约束。&lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt; 的实例遵循标准库 &lt;code&gt;std::chrono&lt;/code&gt; 的常规值语义，可以不受限制地进行复制和并发使用。
+&lt;/p&gt;
+
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;
+&lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; 的典型用法纯粹是声明式的，用于时间戳的定义和处理：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Einbindung der Schnittstelle:&lt;/strong&gt; Einbinden der Header-Datei &lt;code&gt;#include "ara/tsync/timestamp.h"&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Typisierung von Zeitpunkten:&lt;/strong&gt; Verwendung des Typs &lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;) bzw. &lt;code&gt;std::chrono::time_point&amp;lt;ara::tsync::TimeBase&amp;gt;&lt;/code&gt; zur typisierten Kennzeichnung lokaler Zeitstempel.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Arithmetik und Konvertierung:&lt;/strong&gt; Differenzen zwischen zwei Zeitpunkten ergeben Werte des Typs &lt;code&gt;ara::tsync::TimeBase::duration&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;), welche mit nanosekundengenauer Auflösung (&lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;) verarbeitet werden können.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;包含接口：&lt;/strong&gt;包含头文件 &lt;code&gt;#include "ara/tsync/timestamp.h"&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;时间点的类型化：&lt;/strong&gt;使用类型 &lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;）或 &lt;code&gt;std::chrono::time_point&amp;lt;ara::tsync::TimeBase&amp;gt;&lt;/code&gt; 对本地时间戳进行类型化标记。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;算术运算与转换：&lt;/strong&gt;两个时间点之间的差值产生类型为 &lt;code&gt;ara::tsync::TimeBase::duration&lt;/code&gt;（&lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;）的值，这些值可以以纳秒级精度（&lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;）进行处理。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Da &lt;code&gt;TimeBase&lt;/code&gt; als reine Pseudo-Clock fungiert, stellt sie vermutlich keine statische Member-Funktion &lt;code&gt;now()&lt;/code&gt; bereit; Zeitstempel dürften stattdessen von den Synchronisationsmechanismen des Moduls &lt;code&gt;tsync&lt;/code&gt; erzeugt und ausgegeben werden.
+由于 &lt;code&gt;TimeBase&lt;/code&gt; 纯粹充当伪时钟，推测它不提供静态成员函数 &lt;code&gt;now()&lt;/code&gt;；时间戳应当改由模块 &lt;code&gt;tsync&lt;/code&gt; 的同步机制生成并输出。
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Da &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; eine compile-zeitliche Definition von Typaliasen und einer Konstante darstellt, treten an der Klasse selbst keine Laufzeitfehler, Rückgabecodes oder Ausnahmen auf. Vor- und Nachbedingungen betreffen ausschließlich die Typsicherheit zur Übersetzungszeit: Operationen zwischen &lt;code&gt;TimeBase::time_point&lt;/code&gt; und anderen Uhrentypen (wie &lt;code&gt;std::chrono::steady_clock&lt;/code&gt;) werden vom C++-Typsystem verhindert, sofern keine explizite Konvertierung erfolgt.
+由于 &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; 表示类型别名和常量的编译期定义，因此该类本身不会发生运行时错误、返回码或异常。前置和后置条件仅涉及编译时的类型安全：除非进行显式转换，否则 &lt;code&gt;TimeBase::time_point&lt;/code&gt; 与其他时钟类型（如 &lt;code&gt;std::chrono::steady_clock&lt;/code&gt;）之间的操作会被 C++ 类型系统阻止。
 &lt;/p&gt;
 &lt;!-- annahmen: 1) Fehlende Memberfunktion now() – Begründung: Der Payload enthält TimeBase als struct/Pseudo-Clock ohne now()-Methode, daher werden Zeitstempel vermutlich durch externe tsync-Mechanismen bereitgestellt. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisiert auf Basis der Spezifikationsanforderungen von AUTOSAR R25-11 generiert.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南是基于 AUTOSAR R25-11 的规范要求自动生成的。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

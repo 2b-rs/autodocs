@@ -24,33 +24,32 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>d22eaa4b70b2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_Bitset_reference_d7719d/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_core_Bitset_reference_d7719d/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_Bitset_reference_d7719d" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Hilfsklasse <code>ara::core::Bitset::reference</code> fungiert als eingebetteter Proxy-Typ innerhalb der Klassen-Template <code>ara::core::Bitset</code> im Modul <code>core</code> der AUTOSAR Adaptive Platform. Ihre primäre Verantwortung besteht darin, die Semantik und Funktionalität des standardisierten Hilfstyps <code>std::bitset::reference</code> bereitzustellen. Da in C++ einzelne Bits hardwarebedingt nicht direkt über native Sprachreferenzen wie <code>bool&amp;</code> adressiert werden können, dient diese Klasse als lvalue-Stellvertreter für ein einzelnes Bit innerhalb des übergeordneten Bitsets.</p>
-<p>Zu den typischen Interaktionspartnern gehört der aufrufende Anwendungscode, der einzelne Statuswerte oder Schalterflags in einer Bitfolge abfragt oder verändert. Durch das Anbieten einer referenzartigen Abstraktion gestattet <code>ara::core::Bitset::reference</code> dem Anwender, Lese- und Schreiboperationen auf Bitebene mit gewohnter Zuweisungs- und Manipulationssyntax durchzuführen, ohne manuelle Bitmasken oder bitweise Schiebeoperationen implementieren zu müssen.</p>
+<h4>上下文</h4>
+<p>辅助类 <code>ara::core::Bitset::reference</code> 在 AUTOSAR Adaptive Platform 的模块 <code>core</code> 中充当类模板 <code>ara::core::Bitset</code> 内的嵌入式代理类型。其首要职责是提供标准化辅助类型 <code>std::bitset::reference</code> 的语义和功能。由于在 C++ 中受硬件限制单个位无法通过诸如 <code>bool&amp;</code> 等原生语言引用直接寻址，因此该类用作父级 bitset 内单个位的左值代表。</p>
+<p>典型的交互方包括查询或更改位序列中单个状态值或开关标志的调用方应用程序代码。通过提供类似引用的抽象，<code>ara::core::Bitset::reference</code> 允许用户以熟悉的赋值和操作语法在位级别执行读写操作，而无需实现手动位掩码或按位移位操作。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Erzeugung eines <code>ara::core::Bitset::reference</code>-Objekts erfolgt typischerweise nicht eigenständig oder isoliert im Anwendungscode. Vermutlich wird eine Instanz ausschließlich transient als Rückgabewert erzeugt, wenn über den Indexoperator einer nicht-konstanten <code>ara::core::Bitset</code>-Instanz auf ein bestimmtes Bit zugegriffen wird.</p>
-<p>Hinsichtlich der Besitzverhältnisse besitzt das <code>reference</code>-Objekt den zugrunde liegenden Speicher nicht selbst. Das <code>reference</code>-Objekt dürfte intern lediglich einen Zeiger oder eine Referenz auf den Speicherbereich des Mutter-Bitsets sowie die Position des jeweiligen Bits verwalten. Daraus leitet sich eine strikte Lebensdauerabhängigkeit ab: Die Lebensdauer einer Referenz ist an die Existenz des zugehörigen <code>ara::core::Bitset</code> gebunden. Wird das übergeordnete <code>Bitset</code> zerstört oder im Speicher verschoben, verliert die Referenz augenblicklich ihre Gültigkeit.</p>
-<p>Hinsichtlich der Nebenläufigkeit ist zu beachten, dass einzelne Bits in der Regel zu größeren Speicherwörtern gebündelt sind. Schreibende Zugriffe über mehrere <code>reference</code>-Instanzen auf unterschiedliche Bits desselben Speicherblocks dürften ohne externe Synchronisationsmechanismen nicht threadsicher sein und zu Datenwettläufen (Data Races) führen.</p>
+<h4>生命周期</h4>
+<p><code>ara::core::Bitset::reference</code> 对象的创建通常不会在应用程序代码中单独或孤立地进行。推测只有在通过非常量 <code>ara::core::Bitset</code> 实例的下标运算符访问特定位时，才会以临时方式作为返回值创建实例。</p>
+<p>在所有权方面，<code>reference</code> 对象本身并不拥有底层内存。<code>reference</code> 对象内部应仅管理指向母 bitset 内存区域的指针或引用以及相应位的位置。由此推导出严格的生命周期依赖性：引用的生命周期与其关联的 <code>ara::core::Bitset</code> 的存在相绑定。如果父级 <code>Bitset</code> 被销毁或在内存中移动，该引用将立即失效。</p>
+<p>在并发方面需要注意的是，单个位通常被打包成较大的内存字。如果没有外部同步机制，通过多个 <code>reference</code> 实例对同一内存块的不同位进行写入访问可能不是线程安全的，并会导致数据竞争（Data Races）。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Der typische Nutzungspfad umfasst die Adressierung eines Bits innerhalb eines bestehenden Bitsets, gefolgt von einer Zustandsänderung über die Schnittstelle des Proxy-Objekts. Ein zentraler, spezifizierter Schritt ist das Invertieren des referenzierten Bitwerts über die Elementfunktion <code>flip()</code> <a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712">[SWS_CORE_01712]</a>.</p>
-<p>Wird <code>flip()</code> aufgerufen, kehrt die Methode den aktuellen Wahrheitswert des referenzierten Bits im Speicher des Bitsets um und gibt eine Referenz auf das modifizierte <code>reference</code>-Objekt zurück <a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712">[SWS_CORE_01712]</a>. Dies erlaubt die direkte Verkettung weiterer Zuweisungen oder Abfragen innerhalb eines Ausdrucks. Nach Abschluss der Anweisung verfällt das temporäre <code>reference</code>-Objekt üblicherweise wieder.</p>
+<h4>使用路径</h4>
+<p>典型的使用路径包括对现有 bitset 内的一个位进行寻址，随后通过代理对象的接口进行状态更改。一个核心的规范化步骤是通过成员函数 <code>flip()</code> <a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712">[SWS_CORE_01712]</a> 反转被引用的位值。</p>
+<p>当调用 <code>flip()</code> 时，该方法会反转 bitset 内存中被引用位的当前真值，并返回对修改后的 <code>reference</code> 对象的引用 <a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712">[SWS_CORE_01712]</a>。这允许在表达式中直接链式调用进一步的赋值或查询。语句执行完毕后，临时 <code>reference</code> 对象通常会再次失效。</p>
 
-<h4>Fehlerszenarien</h4>
-<p>Die Klasse <code>ara::core::Bitset::reference</code> setzt auf ein fehlertolerantes Design ohne Laufzeitausnahmen. Gemäß <a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712">[SWS_CORE_01712]</a> ist die Elementfunktion <code>flip()</code> als <code>noexcept</code> deklariert und als ausnahmesicher („exception safe“) spezifiziert. Sie wirft keine Ausnahmen und signalisiert Fehler nicht über Fehlercodes.</p>
-<p>Kritische Fehlerszenarien resultieren daher ausschließlich aus verletzten Vorbedingungen im aufrufenden Code:</p>
+<h4>错误场景</h4>
+<p>类 <code>ara::core::Bitset::reference</code> 采用无运行时异常的容错设计。根据 <a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712">[SWS_CORE_01712]</a>，成员函数 <code>flip()</code> 被声明为 <code>noexcept</code> 并被指定为异常安全（“exception safe”）。它不抛出异常，也不通过错误代码来指示错误。</p>
+<p>因此，关键错误场景完全源自调用方代码中违反的前置条件：</p>
 <ul>
-<li><strong>Dangling Reference:</strong> Wird ein <code>reference</code>-Objekt über das Ende der Lebensdauer des zugehörigen <code>Bitset</code> hinaus zwischengespeichert und anschließend manipuliert (beispielsweise via <code>flip()</code>), entsteht undefiniertes Verhalten durch Zugriff auf ungültigen Speicher.</li>
-<li><strong>Ungeschützte Nebenläufigkeit:</strong> Führen mehrere Ausführungsstränge unkoordiniert Modifikationen an Bits durch, die im selben Speicherwort liegen, droht undefiniertes Systemverhalten durch unvollständige oder überschriebene Schreibvorgänge.</li>
+<li><strong>悬空引用（Dangling Reference）：</strong>如果 <code>reference</code> 对象在其关联的 <code>Bitset</code> 生命周期结束之后仍被暂存并随后被操作（例如通过 <code>flip()</code>），则由于访问无效内存会导致未定义行为。</li>
+<li><strong>未受保护的并发：</strong>如果多个执行线程未协调地修改位于同一内存字中的位，则由于不完整或被覆盖的写入过程，可能导致未定义系统行为。</li>
 </ul>
 
 <!-- annahmen: 1) Die Instanziierung erfolgt typischerweise über den Indexoperator des Bitsets – Begründung: Der Payload spezifiziert die Klasse als Entsprechung zu std::bitset::reference, führt aber keine eigenständigen öffentlichen Konstruktoren in den member_requirements auf. 2) Das reference-Objekt hält intern lediglich Referenz und Bit-Offset ohne eigenen Besitz – Begründung: Dies entspricht dem deterministischen Proxy-Muster des C++-Standards für Bit-Referenzen. 3) Nebenläufige Schreibzugriffe auf verschiedene Bits desselben Speicherblocks erfordern externe Synchronisation – Begründung: Speicher wird von Rechnerarchitekturen ganzzahlig adressiert, weshalb bitweise Schreiboperationen ohne atomare Primitiven Datenwettläufe provozieren. -->
-<p class="ai-note">Dieser Leitfaden wurde automatisch erstellt und basiert auf der Spezifikation von AUTOSAR Adaptive R25-11.</p>
+<p class="ai-note">本指南自动生成，基于 AUTOSAR Adaptive R25-11 规范。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_Bitset_reference_d7719d" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -357,30 +356,29 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="d22eaa4b70b287fd457ecf8b63e33e60db91e3a4a55912d29156dcf454344070" data-trace-output="829ecc32eb2049d65825b76d0ea731b32c07d665f480dd9c2a80ce660d41146c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Hilfsklasse &lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; fungiert als eingebetteter Proxy-Typ innerhalb der Klassen-Template &lt;code&gt;ara::core::Bitset&lt;/code&gt; im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform. Ihre primäre Verantwortung besteht darin, die Semantik und Funktionalität des standardisierten Hilfstyps &lt;code&gt;std::bitset::reference&lt;/code&gt; bereitzustellen. Da in C++ einzelne Bits hardwarebedingt nicht direkt über native Sprachreferenzen wie &lt;code&gt;bool&amp;amp;&lt;/code&gt; adressiert werden können, dient diese Klasse als lvalue-Stellvertreter für ein einzelnes Bit innerhalb des übergeordneten Bitsets.&lt;/p&gt;
-&lt;p&gt;Zu den typischen Interaktionspartnern gehört der aufrufende Anwendungscode, der einzelne Statuswerte oder Schalterflags in einer Bitfolge abfragt oder verändert. Durch das Anbieten einer referenzartigen Abstraktion gestattet &lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; dem Anwender, Lese- und Schreiboperationen auf Bitebene mit gewohnter Zuweisungs- und Manipulationssyntax durchzuführen, ohne manuelle Bitmasken oder bitweise Schiebeoperationen implementieren zu müssen.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;辅助类 &lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的模块 &lt;code&gt;core&lt;/code&gt; 中充当类模板 &lt;code&gt;ara::core::Bitset&lt;/code&gt; 内的嵌入式代理类型。其首要职责是提供标准化辅助类型 &lt;code&gt;std::bitset::reference&lt;/code&gt; 的语义和功能。由于在 C++ 中受硬件限制单个位无法通过诸如 &lt;code&gt;bool&amp;amp;&lt;/code&gt; 等原生语言引用直接寻址，因此该类用作父级 bitset 内单个位的左值代表。&lt;/p&gt;
+&lt;p&gt;典型的交互方包括查询或更改位序列中单个状态值或开关标志的调用方应用程序代码。通过提供类似引用的抽象，&lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; 允许用户以熟悉的赋值和操作语法在位级别执行读写操作，而无需实现手动位掩码或按位移位操作。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Erzeugung eines &lt;code&gt;ara::core::Bitset::reference&lt;/code&gt;-Objekts erfolgt typischerweise nicht eigenständig oder isoliert im Anwendungscode. Vermutlich wird eine Instanz ausschließlich transient als Rückgabewert erzeugt, wenn über den Indexoperator einer nicht-konstanten &lt;code&gt;ara::core::Bitset&lt;/code&gt;-Instanz auf ein bestimmtes Bit zugegriffen wird.&lt;/p&gt;
-&lt;p&gt;Hinsichtlich der Besitzverhältnisse besitzt das &lt;code&gt;reference&lt;/code&gt;-Objekt den zugrunde liegenden Speicher nicht selbst. Das &lt;code&gt;reference&lt;/code&gt;-Objekt dürfte intern lediglich einen Zeiger oder eine Referenz auf den Speicherbereich des Mutter-Bitsets sowie die Position des jeweiligen Bits verwalten. Daraus leitet sich eine strikte Lebensdauerabhängigkeit ab: Die Lebensdauer einer Referenz ist an die Existenz des zugehörigen &lt;code&gt;ara::core::Bitset&lt;/code&gt; gebunden. Wird das übergeordnete &lt;code&gt;Bitset&lt;/code&gt; zerstört oder im Speicher verschoben, verliert die Referenz augenblicklich ihre Gültigkeit.&lt;/p&gt;
-&lt;p&gt;Hinsichtlich der Nebenläufigkeit ist zu beachten, dass einzelne Bits in der Regel zu größeren Speicherwörtern gebündelt sind. Schreibende Zugriffe über mehrere &lt;code&gt;reference&lt;/code&gt;-Instanzen auf unterschiedliche Bits desselben Speicherblocks dürften ohne externe Synchronisationsmechanismen nicht threadsicher sein und zu Datenwettläufen (Data Races) führen.&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; 对象的创建通常不会在应用程序代码中单独或孤立地进行。推测只有在通过非常量 &lt;code&gt;ara::core::Bitset&lt;/code&gt; 实例的下标运算符访问特定位时，才会以临时方式作为返回值创建实例。&lt;/p&gt;
+&lt;p&gt;在所有权方面，&lt;code&gt;reference&lt;/code&gt; 对象本身并不拥有底层内存。&lt;code&gt;reference&lt;/code&gt; 对象内部应仅管理指向母 bitset 内存区域的指针或引用以及相应位的位置。由此推导出严格的生命周期依赖性：引用的生命周期与其关联的 &lt;code&gt;ara::core::Bitset&lt;/code&gt; 的存在相绑定。如果父级 &lt;code&gt;Bitset&lt;/code&gt; 被销毁或在内存中移动，该引用将立即失效。&lt;/p&gt;
+&lt;p&gt;在并发方面需要注意的是，单个位通常被打包成较大的内存字。如果没有外部同步机制，通过多个 &lt;code&gt;reference&lt;/code&gt; 实例对同一内存块的不同位进行写入访问可能不是线程安全的，并会导致数据竞争（Data Races）。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der typische Nutzungspfad umfasst die Adressierung eines Bits innerhalb eines bestehenden Bitsets, gefolgt von einer Zustandsänderung über die Schnittstelle des Proxy-Objekts. Ein zentraler, spezifizierter Schritt ist das Invertieren des referenzierten Bitwerts über die Elementfunktion &lt;code&gt;flip()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712"&gt;[SWS_CORE_01712]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Wird &lt;code&gt;flip()&lt;/code&gt; aufgerufen, kehrt die Methode den aktuellen Wahrheitswert des referenzierten Bits im Speicher des Bitsets um und gibt eine Referenz auf das modifizierte &lt;code&gt;reference&lt;/code&gt;-Objekt zurück &lt;a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712"&gt;[SWS_CORE_01712]&lt;/a&gt;. Dies erlaubt die direkte Verkettung weiterer Zuweisungen oder Abfragen innerhalb eines Ausdrucks. Nach Abschluss der Anweisung verfällt das temporäre &lt;code&gt;reference&lt;/code&gt;-Objekt üblicherweise wieder.&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;典型的使用路径包括对现有 bitset 内的一个位进行寻址，随后通过代理对象的接口进行状态更改。一个核心的规范化步骤是通过成员函数 &lt;code&gt;flip()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712"&gt;[SWS_CORE_01712]&lt;/a&gt; 反转被引用的位值。&lt;/p&gt;
+&lt;p&gt;当调用 &lt;code&gt;flip()&lt;/code&gt; 时，该方法会反转 bitset 内存中被引用位的当前真值，并返回对修改后的 &lt;code&gt;reference&lt;/code&gt; 对象的引用 &lt;a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712"&gt;[SWS_CORE_01712]&lt;/a&gt;。这允许在表达式中直接链式调用进一步的赋值或查询。语句执行完毕后，临时 &lt;code&gt;reference&lt;/code&gt; 对象通常会再次失效。&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Die Klasse &lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; setzt auf ein fehlertolerantes Design ohne Laufzeitausnahmen. Gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712"&gt;[SWS_CORE_01712]&lt;/a&gt; ist die Elementfunktion &lt;code&gt;flip()&lt;/code&gt; als &lt;code&gt;noexcept&lt;/code&gt; deklariert und als ausnahmesicher („exception safe“) spezifiziert. Sie wirft keine Ausnahmen und signalisiert Fehler nicht über Fehlercodes.&lt;/p&gt;
-&lt;p&gt;Kritische Fehlerszenarien resultieren daher ausschließlich aus verletzten Vorbedingungen im aufrufenden Code:&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;类 &lt;code&gt;ara::core::Bitset::reference&lt;/code&gt; 采用无运行时异常的容错设计。根据 &lt;a class="spec-record-ref" data-req="SWS_CORE_01712" href="../spec/record.html?id=SWS_CORE_01712"&gt;[SWS_CORE_01712]&lt;/a&gt;，成员函数 &lt;code&gt;flip()&lt;/code&gt; 被声明为 &lt;code&gt;noexcept&lt;/code&gt; 并被指定为异常安全（“exception safe”）。它不抛出异常，也不通过错误代码来指示错误。&lt;/p&gt;
+&lt;p&gt;因此，关键错误场景完全源自调用方代码中违反的前置条件：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Dangling Reference:&lt;/strong&gt; Wird ein &lt;code&gt;reference&lt;/code&gt;-Objekt über das Ende der Lebensdauer des zugehörigen &lt;code&gt;Bitset&lt;/code&gt; hinaus zwischengespeichert und anschließend manipuliert (beispielsweise via &lt;code&gt;flip()&lt;/code&gt;), entsteht undefiniertes Verhalten durch Zugriff auf ungültigen Speicher.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ungeschützte Nebenläufigkeit:&lt;/strong&gt; Führen mehrere Ausführungsstränge unkoordiniert Modifikationen an Bits durch, die im selben Speicherwort liegen, droht undefiniertes Systemverhalten durch unvollständige oder überschriebene Schreibvorgänge.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;悬空引用（Dangling Reference）：&lt;/strong&gt;如果 &lt;code&gt;reference&lt;/code&gt; 对象在其关联的 &lt;code&gt;Bitset&lt;/code&gt; 生命周期结束之后仍被暂存并随后被操作（例如通过 &lt;code&gt;flip()&lt;/code&gt;），则由于访问无效内存会导致未定义行为。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;未受保护的并发：&lt;/strong&gt;如果多个执行线程未协调地修改位于同一内存字中的位，则由于不完整或被覆盖的写入过程，可能导致未定义系统行为。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen: 1) Die Instanziierung erfolgt typischerweise über den Indexoperator des Bitsets – Begründung: Der Payload spezifiziert die Klasse als Entsprechung zu std::bitset::reference, führt aber keine eigenständigen öffentlichen Konstruktoren in den member_requirements auf. 2) Das reference-Objekt hält intern lediglich Referenz und Bit-Offset ohne eigenen Besitz – Begründung: Dies entspricht dem deterministischen Proxy-Muster des C++-Standards für Bit-Referenzen. 3) Nebenläufige Schreibzugriffe auf verschiedene Bits desselben Speicherblocks erfordern externe Synchronisation – Begründung: Speicher wird von Rechnerarchitekturen ganzzahlig adressiert, weshalb bitweise Schreiboperationen ohne atomare Primitiven Datenwettläufe provozieren. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisch erstellt und basiert auf der Spezifikation von AUTOSAR Adaptive R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南自动生成，基于 AUTOSAR Adaptive R25-11 规范。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

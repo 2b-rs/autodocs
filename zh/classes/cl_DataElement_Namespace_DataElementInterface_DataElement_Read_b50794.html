@@ -24,35 +24,34 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>1065cd786aae</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Struktur <code>&lt;DataElement-Namespace&gt;::&lt;DataElementInterface&gt;::&lt;DataElement&gt;ReadOutput</code> ist ein generiertes C++-Artefakt innerhalb der AUTOSAR Adaptive Platform im Diagnosemodul (<code>diag</code>). Ihre primäre Verantwortung besteht darin, die Ausgabeargumente für eine Leseoperation (<code>ReadOutput</code>) an einem konkreten Diagnose-Datenelement zusammenzufassen und strukturiert zu kapseln.</p>
-<p>In modernen Fahrzeugsystemen spielen Diagnosedienste eine fundamentale Rolle bei der Fehleranalyse und Datenabfrage über Protokolle wie UDS (Unified Diagnostic Services), beispielsweise im Rahmen von Abfragen über <em>ReadDataByIdentifier</em> (Service 0x22). Der adaptive Diagnose-Stack trennt dabei strikt zwischen der infrastrukturseitigen Protokollabwicklung und der anwendungsspezifischen Bereitstellung von Nutzdaten. Das Modul <code>diag</code> dient als Vermittler: Es nimmt externe Diagnoseanfragen entgegen, leitet diese an die zuständige Software-Komponente weiter und überführt die gelieferten Daten in eine formale Diagnoseantwort.</p>
-<p>An dieser Schnittstelle fungiert <code>&lt;DataElement&gt;ReadOutput</code> als typisierter Datentransportbehälter. Die Platzhalter im Typnamen spiegeln das adaptive Entwurfsmuster wider: Der Bezeichner wird anhand des konfigurierten Namespace, des Interface-Namens und des Datenelements abgeleitet. Interaktionspartner sind der generische Diagnosedienst der Plattform und die anwendungsspezifische Service-Instanz, welche die eigentlichen Anwendungsdaten ermittelt. Interpretation: Die konkreten Membervariablen der Struktur dürften exakt den im ARXML-Datenmodell spezifizierten Ausgabeparametern des jeweiligen Datenelements entsprechen.</p>
+<h4>上下文</h4>
+<p>结构体 <code>&lt;DataElement-Namespace&gt;::&lt;DataElementInterface&gt;::&lt;DataElement&gt;ReadOutput</code> 是 AUTOSAR Adaptive Platform 诊断模块 (<code>diag</code>) 内生成的 C++ 工件。其主要职责是汇总针对具体诊断数据元素执行读取操作 (<code>ReadOutput</code>) 的输出参数，并进行结构化封装。</p>
+<p>在现代车辆系统中，诊断服务在通过 UDS (Unified Diagnostic Services) 等协议进行故障分析和数据查询中发挥着基础性作用，例如在通过 <em>ReadDataByIdentifier</em>（服务 0x22）进行查询的框架内。自适应诊断栈在基础设施侧的协议处理与特定于应用程序的有效载荷数据提供之间进行严格分离。模块 <code>diag</code> 充当中介：它接收外部诊断请求，将其转发给主管软件组件，并将提供的数据转换为正式的诊断响应。</p>
+<p>在此接口上，<code>&lt;DataElement&gt;ReadOutput</code> 充当类型化数据传输容器。类型名称中的占位符反映了自适应设计模式：标识符根据配置的命名空间、接口名称和数据元素派生。交互伙伴是平台的通用诊断服务和确定实际应用程序数据的特定于应用程序的服务实例。解释：该结构体的具体成员变量可能完全对应于在 ARXML 数据模型中指定的相应数据元素的输出参数。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Als reines Datenaggregat (C++-<code>struct</code>) besitzt <code>&lt;DataElement&gt;ReadOutput</code> keine interne Zustandsmaschine und keine persistente Identität. Der Lebenszyklus der Struktur ist unmittelbar an die Dauer eines einzelnen Lesezugriffs gebunden.</p>
-<p>Die Erzeugung erfolgt anwendungsseitig bei der Abarbeitung einer Diagnoseanforderung. Sobald der Leseaufruf die Anwendung erreicht, instanziiert diese die Struktur lokal auf dem Stack oder initialisiert sie direkt in einem Rückgabebehälter. Die Besitzverhältnisse liegen anfänglich ausschließlich bei der aufgerufenen Anwendungsfunktion, welche die Struktur mit den aktuellen Sensor- oder Zustandswerten befüllt. Anschließend werden die Daten an das Laufzeitsystem der Diagnose übergeben. Interpretation: Die Instanz wird vermutlich als Rückgabewert oder verpackt in einem asynchronen Ergebniscontainer (wie <code>ara::core::Result</code> oder <code>ara::core::Future</code>) per Move-Semantik oder Wertkopie an den Plattform-Stack übertragen.</p>
-<p>Nachdem das Diagnose-Framework die Daten aus <code>&lt;DataElement&gt;ReadOutput</code> extrahiert, serialisiert und in das UDS-Antwortpaket eingefügt hat, endet der funktionale Zweck der Instanz. Sie wird beim Verlassen des entsprechenden Gültigkeitsbereichs automatisch freigegeben. Da die Struktur keinerlei Synchronisationsmechanismen aufweist, ist sie nicht threadsicher. Ein nebenläufiger Zugriff mehrerer Threads auf dieselbe Instanz ohne externe Synchronisation ist unzulässig; stattdessen basiert das Design auf der isolierten Übergabe von Einzelwerten entlang der Aufrufhierarchie.</p>
+<h4>生命周期</h4>
+<p>作为纯数据聚合（C++ <code>struct</code>），<code>&lt;DataElement&gt;ReadOutput</code> 没有内部状态机，也没有持久身份。该结构体的生命周期直接绑定到单次读取访问的持续时间。</p>
+<p>在处理诊断请求时，创建操作由应用程序侧执行。读取调用一旦到达应用程序，应用程序就会在栈上本地实例化该结构体，或直接在返回容器中对其进行初始化。所有权最初完全属于被调用的应用程序函数，该函数使用当前传感器值或状态值填充该结构体。随后，数据被传递给诊断运行时系统。解释：该实例大概率作为返回值或打包在异步结果容器（如 <code>ara::core::Result</code> 或 <code>ara::core::Future</code>）中，通过移动语义或按值复制传输到平台栈。</p>
+<p>在诊断框架从 <code>&lt;DataElement&gt;ReadOutput</code> 中提取数据、序列化并插入到 UDS 响应报文包后，该实例的功能目的便告结束。离开相应作用域时它会被自动释放。由于该结构体不具备任何同步机制，因此它不是线程安全的。在没有外部同步的情况下，多个线程并发访问同一实例是不允许的；相反，该设计基于沿调用层次结构隔离传递单个值。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Die Verwendung der Struktur folgt während einer Leseabfrage einer festen Abfolge von Schritten:</p>
+<h4>使用路径</h4>
+<p>在读取查询期间，该结构体的使用遵循固定的步骤序列：</p>
 <ul>
-<li><strong>Schritt 1: Empfang der Leseanforderung</strong> – Ein Diagnosetester sendet eine Leseanforderung an das Fahrzeugsteuergerät. Der Diagnose-Stack identifiziert das referenzierte Datenelement und leitet den Aufruf an den registrierten Handler der Anwendung weiter.</li>
-<li><strong>Schritt 2: Datenerfassung durch die Anwendung</strong> – Die Handler-Methode der Anwendungssoftware wird aufgerufen. Sie ermittelt die geforderten Laufzeitdaten, liest interne Sensorwerte aus oder fragt Systemparameter ab.</li>
-<li><strong>Schritt 3: Instanziierung und Befüllung</strong> – Die Anwendung erzeugt eine Instanz von <code>&lt;DataElement&gt;ReadOutput</code> und belegt deren Felder mit den ermittelten Werten.</li>
-<li><strong>Schritt 4: Rückgabe an das Framework</strong> – Die fertig befüllte Struktur wird an das Diagnose-Framework zurückgemeldet, womit der erfolgreiche Abschluss der Leseoperation bestätigt wird.</li>
-<li><strong>Schritt 5: Serialisierung und Antwortübertragung</strong> – Der Diagnose-Stack liest die Felder der Struktur aus, transformiert sie in das Zielformat und sendet die positive UDS-Antwort an den Diagnosetester.</li>
+<li><strong>步骤 1：接收读取请求</strong>——诊断测试仪向车辆电子控制单元发送读取请求。诊断栈识别所引用的数据元素，并将调用转发给应用程序的已注册处理程序。</li>
+<li><strong>步骤 2：应用程序采集数据</strong>——调用应用程序软件的处理程序方法。该方法确定所需的运行时数据，读取内部传感器值或查询系统参数。</li>
+<li><strong>步骤 3：实例化和填充</strong>——应用程序创建 <code>&lt;DataElement&gt;ReadOutput</code> 的实例，并使用确定出的值填充其字段。</li>
+<li><strong>步骤 4：返回框架</strong>——已填充完毕的结构体反馈给诊断框架，从而确认读取操作成功完成。</li>
+<li><strong>步骤 5：序列化与响应传输</strong>——诊断栈读取该结构体的字段，将其转换为目标格式，并向诊断测试仪发送肯定 UDS 响应。</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
-<p>Die Struktur <code>&lt;DataElement&gt;ReadOutput</code> bildet ausschließlich den erfolgreichen Datenpfad einer Leseoperation ab. Sie fungiert als Träger valider Ausgangsdaten und ist nicht dafür konzipiert, Fehlersignalisierungen innerhalb ihrer eigenen Datenfelder aufzunehmen.</p>
-<p>Falls die angeforderten Daten anwendungsseitig nicht ermittelt werden können – beispielsweise aufgrund fehlerhafter Sensorik, nicht erfüllter Vorbedingungen oder temporär blockierter Ressourcen –, gilt als Vorbedingung, dass keine gültige Instanz von <code>&lt;DataElement&gt;ReadOutput</code> verarbeitet wird. In diesen Fällen greift die Fehlerbehandlung des adaptiven Frameworks: Der Handler liefert anstelle der Struktur einen entsprechenden Fehlercode (etwa über ein fehlerbehaftetes <code>ara::core::Result</code> mit einem <code>ara::core::ErrorCode</code>) zurück. Der Diagnose-Stack verwirft daraufhin die Antwortgenerierung für Nutzdaten und übermittelt stattdessen eine negative Diagnoseantwort (Negative Response Code, NRC) an den Tester. Nachbedingung für die Auswertung von <code>&lt;DataElement&gt;ReadOutput</code> ist somit stets die erfolgreiche und fehlerfreie Ermittlung aller enthaltenen Datenfelder.</p>
+<h4>错误场景</h4>
+<p>结构体 <code>&lt;DataElement&gt;ReadOutput</code> 仅映射读取操作的成功数据路径。它充当有效输出数据的载体，并非设计用于在其自身的数据字段内包含错误信号指示。</p>
+<p>如果所请求的数据在应用程序端无法确定——例如由于传感器故障、未满足前置条件或资源临时受阻——作为前置条件，不得处理 <code>&lt;DataElement&gt;ReadOutput</code> 的有效实例。在这些情况下，自适应框架的错误处理生效：处理程序返回相应的错误代码（例如通过带有 <code>ara::core::ErrorCode</code> 的含错误 <code>ara::core::Result</code>）以替代该结构体。随后，诊断栈放弃生成有效载荷数据的响应，而是向测试仪发送否定诊断响应（Negative Response Code，NRC）。因此，评估 <code>&lt;DataElement&gt;ReadOutput</code> 的后置条件始终是成功且无误地确定所有包含的数据字段。</p>
 <!-- annahmen: 1) Die konkreten Membervariablen der Struktur dürften den im ARXML-Datenmodell spezifizierten Ausgabeparametern entsprechen – Begründung: Der Payload zeigt nur die generische Syntax struct <DataElement>ReadOutput {...}. 2) Die Instanz wird vermutlich als Rückgabewert oder Teil eines ara::core::Result bzw. ara::core::Future übertragen – Begründung: Der Payload belegt nur ein struct als out-Argument-Wrapper, nennt jedoch keine konkrete Aufrufsignatur. -->
-<p class="ai-note">Dieser Leitfaden wurde durch einen KI-Assistenten auf Basis der AUTOSAR-Spezifikation R25-11 erstellt.</p>
+<p class="ai-note">本指南由 AI 助手基于 AUTOSAR 规范 R25-11 编写。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -269,32 +268,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1065cd786aae04c0c069443b71e202db9d7a07f639cc1d7d74047272c0a2adc4" data-trace-output="12e9f5a5e505737b10c0d46b5840c8fffea44d3cf1c9ebe1255711fbfbe42683" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;DataElement-Namespace&amp;gt;::&amp;lt;DataElementInterface&amp;gt;::&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; ist ein generiertes C++-Artefakt innerhalb der AUTOSAR Adaptive Platform im Diagnosemodul (&lt;code&gt;diag&lt;/code&gt;). Ihre primäre Verantwortung besteht darin, die Ausgabeargumente für eine Leseoperation (&lt;code&gt;ReadOutput&lt;/code&gt;) an einem konkreten Diagnose-Datenelement zusammenzufassen und strukturiert zu kapseln.&lt;/p&gt;
-&lt;p&gt;In modernen Fahrzeugsystemen spielen Diagnosedienste eine fundamentale Rolle bei der Fehleranalyse und Datenabfrage über Protokolle wie UDS (Unified Diagnostic Services), beispielsweise im Rahmen von Abfragen über &lt;em&gt;ReadDataByIdentifier&lt;/em&gt; (Service 0x22). Der adaptive Diagnose-Stack trennt dabei strikt zwischen der infrastrukturseitigen Protokollabwicklung und der anwendungsspezifischen Bereitstellung von Nutzdaten. Das Modul &lt;code&gt;diag&lt;/code&gt; dient als Vermittler: Es nimmt externe Diagnoseanfragen entgegen, leitet diese an die zuständige Software-Komponente weiter und überführt die gelieferten Daten in eine formale Diagnoseantwort.&lt;/p&gt;
-&lt;p&gt;An dieser Schnittstelle fungiert &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; als typisierter Datentransportbehälter. Die Platzhalter im Typnamen spiegeln das adaptive Entwurfsmuster wider: Der Bezeichner wird anhand des konfigurierten Namespace, des Interface-Namens und des Datenelements abgeleitet. Interaktionspartner sind der generische Diagnosedienst der Plattform und die anwendungsspezifische Service-Instanz, welche die eigentlichen Anwendungsdaten ermittelt. Interpretation: Die konkreten Membervariablen der Struktur dürften exakt den im ARXML-Datenmodell spezifizierten Ausgabeparametern des jeweiligen Datenelements entsprechen.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;结构体 &lt;code&gt;&amp;lt;DataElement-Namespace&amp;gt;::&amp;lt;DataElementInterface&amp;gt;::&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 是 AUTOSAR Adaptive Platform 诊断模块 (&lt;code&gt;diag&lt;/code&gt;) 内生成的 C++ 工件。其主要职责是汇总针对具体诊断数据元素执行读取操作 (&lt;code&gt;ReadOutput&lt;/code&gt;) 的输出参数，并进行结构化封装。&lt;/p&gt;
+&lt;p&gt;在现代车辆系统中，诊断服务在通过 UDS (Unified Diagnostic Services) 等协议进行故障分析和数据查询中发挥着基础性作用，例如在通过 &lt;em&gt;ReadDataByIdentifier&lt;/em&gt;（服务 0x22）进行查询的框架内。自适应诊断栈在基础设施侧的协议处理与特定于应用程序的有效载荷数据提供之间进行严格分离。模块 &lt;code&gt;diag&lt;/code&gt; 充当中介：它接收外部诊断请求，将其转发给主管软件组件，并将提供的数据转换为正式的诊断响应。&lt;/p&gt;
+&lt;p&gt;在此接口上，&lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 充当类型化数据传输容器。类型名称中的占位符反映了自适应设计模式：标识符根据配置的命名空间、接口名称和数据元素派生。交互伙伴是平台的通用诊断服务和确定实际应用程序数据的特定于应用程序的服务实例。解释：该结构体的具体成员变量可能完全对应于在 ARXML 数据模型中指定的相应数据元素的输出参数。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Als reines Datenaggregat (C++-&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; keine interne Zustandsmaschine und keine persistente Identität. Der Lebenszyklus der Struktur ist unmittelbar an die Dauer eines einzelnen Lesezugriffs gebunden.&lt;/p&gt;
-&lt;p&gt;Die Erzeugung erfolgt anwendungsseitig bei der Abarbeitung einer Diagnoseanforderung. Sobald der Leseaufruf die Anwendung erreicht, instanziiert diese die Struktur lokal auf dem Stack oder initialisiert sie direkt in einem Rückgabebehälter. Die Besitzverhältnisse liegen anfänglich ausschließlich bei der aufgerufenen Anwendungsfunktion, welche die Struktur mit den aktuellen Sensor- oder Zustandswerten befüllt. Anschließend werden die Daten an das Laufzeitsystem der Diagnose übergeben. Interpretation: Die Instanz wird vermutlich als Rückgabewert oder verpackt in einem asynchronen Ergebniscontainer (wie &lt;code&gt;ara::core::Result&lt;/code&gt; oder &lt;code&gt;ara::core::Future&lt;/code&gt;) per Move-Semantik oder Wertkopie an den Plattform-Stack übertragen.&lt;/p&gt;
-&lt;p&gt;Nachdem das Diagnose-Framework die Daten aus &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; extrahiert, serialisiert und in das UDS-Antwortpaket eingefügt hat, endet der funktionale Zweck der Instanz. Sie wird beim Verlassen des entsprechenden Gültigkeitsbereichs automatisch freigegeben. Da die Struktur keinerlei Synchronisationsmechanismen aufweist, ist sie nicht threadsicher. Ein nebenläufiger Zugriff mehrerer Threads auf dieselbe Instanz ohne externe Synchronisation ist unzulässig; stattdessen basiert das Design auf der isolierten Übergabe von Einzelwerten entlang der Aufrufhierarchie.&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;作为纯数据聚合（C++ &lt;code&gt;struct&lt;/code&gt;），&lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 没有内部状态机，也没有持久身份。该结构体的生命周期直接绑定到单次读取访问的持续时间。&lt;/p&gt;
+&lt;p&gt;在处理诊断请求时，创建操作由应用程序侧执行。读取调用一旦到达应用程序，应用程序就会在栈上本地实例化该结构体，或直接在返回容器中对其进行初始化。所有权最初完全属于被调用的应用程序函数，该函数使用当前传感器值或状态值填充该结构体。随后，数据被传递给诊断运行时系统。解释：该实例大概率作为返回值或打包在异步结果容器（如 &lt;code&gt;ara::core::Result&lt;/code&gt; 或 &lt;code&gt;ara::core::Future&lt;/code&gt;）中，通过移动语义或按值复制传输到平台栈。&lt;/p&gt;
+&lt;p&gt;在诊断框架从 &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 中提取数据、序列化并插入到 UDS 响应报文包后，该实例的功能目的便告结束。离开相应作用域时它会被自动释放。由于该结构体不具备任何同步机制，因此它不是线程安全的。在没有外部同步的情况下，多个线程并发访问同一实例是不允许的；相反，该设计基于沿调用层次结构隔离传递单个值。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die Verwendung der Struktur folgt während einer Leseabfrage einer festen Abfolge von Schritten:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;在读取查询期间，该结构体的使用遵循固定的步骤序列：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Schritt 1: Empfang der Leseanforderung&lt;/strong&gt; – Ein Diagnosetester sendet eine Leseanforderung an das Fahrzeugsteuergerät. Der Diagnose-Stack identifiziert das referenzierte Datenelement und leitet den Aufruf an den registrierten Handler der Anwendung weiter.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schritt 2: Datenerfassung durch die Anwendung&lt;/strong&gt; – Die Handler-Methode der Anwendungssoftware wird aufgerufen. Sie ermittelt die geforderten Laufzeitdaten, liest interne Sensorwerte aus oder fragt Systemparameter ab.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schritt 3: Instanziierung und Befüllung&lt;/strong&gt; – Die Anwendung erzeugt eine Instanz von &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; und belegt deren Felder mit den ermittelten Werten.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schritt 4: Rückgabe an das Framework&lt;/strong&gt; – Die fertig befüllte Struktur wird an das Diagnose-Framework zurückgemeldet, womit der erfolgreiche Abschluss der Leseoperation bestätigt wird.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Schritt 5: Serialisierung und Antwortübertragung&lt;/strong&gt; – Der Diagnose-Stack liest die Felder der Struktur aus, transformiert sie in das Zielformat und sendet die positive UDS-Antwort an den Diagnosetester.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;步骤 1：接收读取请求&lt;/strong&gt;——诊断测试仪向车辆电子控制单元发送读取请求。诊断栈识别所引用的数据元素，并将调用转发给应用程序的已注册处理程序。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;步骤 2：应用程序采集数据&lt;/strong&gt;——调用应用程序软件的处理程序方法。该方法确定所需的运行时数据，读取内部传感器值或查询系统参数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;步骤 3：实例化和填充&lt;/strong&gt;——应用程序创建 &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 的实例，并使用确定出的值填充其字段。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;步骤 4：返回框架&lt;/strong&gt;——已填充完毕的结构体反馈给诊断框架，从而确认读取操作成功完成。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;步骤 5：序列化与响应传输&lt;/strong&gt;——诊断栈读取该结构体的字段，将其转换为目标格式，并向诊断测试仪发送肯定 UDS 响应。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; bildet ausschließlich den erfolgreichen Datenpfad einer Leseoperation ab. Sie fungiert als Träger valider Ausgangsdaten und ist nicht dafür konzipiert, Fehlersignalisierungen innerhalb ihrer eigenen Datenfelder aufzunehmen.&lt;/p&gt;
-&lt;p&gt;Falls die angeforderten Daten anwendungsseitig nicht ermittelt werden können – beispielsweise aufgrund fehlerhafter Sensorik, nicht erfüllter Vorbedingungen oder temporär blockierter Ressourcen –, gilt als Vorbedingung, dass keine gültige Instanz von &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; verarbeitet wird. In diesen Fällen greift die Fehlerbehandlung des adaptiven Frameworks: Der Handler liefert anstelle der Struktur einen entsprechenden Fehlercode (etwa über ein fehlerbehaftetes &lt;code&gt;ara::core::Result&lt;/code&gt; mit einem &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;) zurück. Der Diagnose-Stack verwirft daraufhin die Antwortgenerierung für Nutzdaten und übermittelt stattdessen eine negative Diagnoseantwort (Negative Response Code, NRC) an den Tester. Nachbedingung für die Auswertung von &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; ist somit stets die erfolgreiche und fehlerfreie Ermittlung aller enthaltenen Datenfelder.&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;结构体 &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 仅映射读取操作的成功数据路径。它充当有效输出数据的载体，并非设计用于在其自身的数据字段内包含错误信号指示。&lt;/p&gt;
+&lt;p&gt;如果所请求的数据在应用程序端无法确定——例如由于传感器故障、未满足前置条件或资源临时受阻——作为前置条件，不得处理 &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 的有效实例。在这些情况下，自适应框架的错误处理生效：处理程序返回相应的错误代码（例如通过带有 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; 的含错误 &lt;code&gt;ara::core::Result&lt;/code&gt;）以替代该结构体。随后，诊断栈放弃生成有效载荷数据的响应，而是向测试仪发送否定诊断响应（Negative Response Code，NRC）。因此，评估 &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; 的后置条件始终是成功且无误地确定所有包含的数据字段。&lt;/p&gt;
 &lt;!-- annahmen: 1) Die konkreten Membervariablen der Struktur dürften den im ARXML-Datenmodell spezifizierten Ausgabeparametern entsprechen – Begründung: Der Payload zeigt nur die generische Syntax struct &lt;DataElement&gt;ReadOutput {...}. 2) Die Instanz wird vermutlich als Rückgabewert oder Teil eines ara::core::Result bzw. ara::core::Future übertragen – Begründung: Der Payload belegt nur ein struct als out-Argument-Wrapper, nennt jedoch keine konkrete Aufrufsignatur. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch einen KI-Assistenten auf Basis der AUTOSAR-Spezifikation R25-11 erstellt.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南由 AI 助手基于 AUTOSAR 规范 R25-11 编写。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

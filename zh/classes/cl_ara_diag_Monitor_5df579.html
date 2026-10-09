@@ -24,36 +24,35 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>6ed6a268d2d2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_diag_Monitor_5df579/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_diag_Monitor_5df579/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_diag_Monitor_5df579" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Klasse <code>ara::diag::Monitor</code> bildet die primäre Schnittstelle für adaptive Anwendungen zur Implementierung von Diagnoseüberwachungen (Monitoren) gemäß <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=69">AUTOSAR AP SWS Diagnostics S. 69</a>. Ihre Hauptverantwortung liegt darin, den operativen Status von Fehlererkennungspfaden an das Diagnosemanagement (Diagnostic Management, DM) zu melden und die Synchronisation zwischen der anwendungsinternen Überwachungslogik und den übergeordneten Diagnoseroutinen sicherzustellen.</p>
-<p>An der Interaktion sind im Wesentlichen drei Parteien beteiligt:</p>
+<h4>上下文</h4>
+<p>类 <code>ara::diag::Monitor</code> 构成了自适应应用程序根据 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=69">AUTOSAR AP SWS Diagnostics 第69页</a> 实现诊断监视器（Monitor）的主要接口。其主要职责是向诊断管理（Diagnostic Management，DM）报告故障检测路径的运行状态，并确保应用内部监视逻辑与上层诊断例程之间的同步。</p>
+<p>该交互主要涉及三方：</p>
 <ul>
-<li><strong>Anwendung (Überwachungsfunktion):</strong> Führt anwendungsspezifische Sensor- oder Systemprüfungen aus, ermittelt Fehlerzustände und meldet diese über <code>ReportMonitorAction()</code> <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>. Zudem implementiert sie den optionalen Initialisierungs-Callback <code>initMonitor</code>.</li>
-<li><strong>ara::diag::Monitor:</strong> Dient als standardisierter Service-Endpunkt der Adaptive Platform und kapselt die Verbindung zum modellierten Diagnoseport (<code>DiagnosticMonitorInterface</code>) <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>.</li>
-<li><strong>Diagnostic Management (DM):</strong> Verarbeitet die gemeldeten Zustände, steuert Ereignisstatusbits und leitet bei Bedarf Reinitialisierungsanfragen über das DM an die Anwendung weiter <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>.</li>
+<li><strong>应用程序（监视功能）：</strong>执行应用特定的传感器或系统检查，确定故障状态并通过 <code>ReportMonitorAction()</code> 报告这些状态 <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>。此外，它还实现可选的初始化回调 <code>initMonitor</code>。</li>
+<li><strong>ara::diag::Monitor:</strong> 作为 Adaptive Platform 的标准化服务终结点，封装了与建模诊断端口 (<code>DiagnosticMonitorInterface</code>) 的连接 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>。</li>
+<li><strong>Diagnostic Management (DM)：</strong>处理报告的状态，控制事件状态位，并在需要时通过 DM 将重新初始化请求转发给应用程序 <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>，<a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>。</li>
 </ul>
-<p>Je nach Diagnosemodell unterstützt <code>ara::diag::Monitor</code> unterschiedliche Strategien zur Entprellung (Debouncing), die bereits bei der Instanziierung fest vorgegeben werden:</p>
+<p>根据诊断模型，<code>ara::diag::Monitor</code> 支持不同的去抖（Debouncing）策略，这些策略在实例化时便已固定指定：</p>
 <ul>
-<li><strong>Monitor-intern:</strong> Die Entprellung erfolgt vollständig in der Anwendung; ein Callback zur Ermittlung des Fault Detection Counters (FDC) wird registriert <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>.</li>
-<li><strong>Zählerbasiert:</strong> Nutzt vorkonfigurierte Zählerwerte (<code>CounterBased</code>) der Plattform <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>.</li>
-<li><strong>Zeitbasiert:</strong> Nutzt zeitgesteuerte Schwellwerte (<code>TimeBased</code>) <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>.</li>
-<li><strong>Ohne Entprellung:</strong> Direkte Weitergabe unqualifizierter Testergebnisse an das DM <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a>.</li>
+<li><strong>监视器内部：</strong>去抖完全在应用程序中进行；注册用于确定 Fault Detection Counter (FDC) 的回调 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>。</li>
+<li><strong>基于计数器：</strong>利用平台的预配置计数器值 (<code>CounterBased</code>) <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>。</li>
+<li><strong>基于时间：</strong>利用时间控制的阈值 (<code>TimeBased</code>) <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>。</li>
+<li><strong>无去抖：</strong>将未限定的测试结果直接传递给 DM <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a>。</li>
 </ul>
 
-<h4>Lebenszyklus</h4>
-<p>Instanzen von <code>ara::diag::Monitor</code> sind als unteilbare Einheiten konzipiert. Die Klasse ist weder kopierbar noch verschiebbar; sowohl Kopier- und Move-Konstruktor als auch die entsprechenden Zuweisungsoperatoren sind explizit gelöscht (<code>=delete</code>) <a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683">[SWS_DM_01683]</a>, <a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684">[SWS_DM_01684]</a>, <a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685">[SWS_DM_01685]</a>, <a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686">[SWS_DM_01686]</a>. Eine Instanz verbleibt somit fest an ihrer Speicheradresse.</p>
-<p>Der Lebenszyklus gliedert sich in folgende Zustände:</p>
+<h4>生命周期</h4>
+<p><code>ara::diag::Monitor</code> 的实例被设计为不可分割的单元。该类既不可复制也不可移动；拷贝构造函数和移动构造函数以及相应的赋值运算符均被显式删除 (<code>=delete</code>) <a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683">[SWS_DM_01683]</a>，<a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684">[SWS_DM_01684]</a>，<a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685">[SWS_DM_01685]</a>，<a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686">[SWS_DM_01686]</a>。因此，实例始终固定在其内存地址上。</p>
+<p>生命周期划分为以下状态：</p>
 <ol>
-<li><strong>Nicht initialisiert:</strong> Vor Aufruf des Konstruktors existiert kein Objekt.</li>
-<li><strong>Instanziiert:</strong> Die Anwendung erzeugt das Monitor-Objekt über einen der vier ausnahmesicheren Konstruktoren <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>, <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>, <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a> unter Angabe des <code>InstanceSpecifier</code>. Zu diesem Zeitpunkt werden noch keine Nachrichten vom DM entgegengenommen.</li>
-<li><strong>Angeboten:</strong> Durch den expliziten Aufruf von <code>Offer()</code> erklärt die Anwendung ihre Bereitschaft zur Entgegennahme von Initialisierungsaufrufen (<code>initMonitor</code>) <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>. Erst in diesem Zustand ist der Kommunikationspfad zum DM vollständig aktiv.</li>
-<li><strong>Gestoppt:</strong> Mittels <code>StopOffer()</code> deaktiviert die Anwendung die Weiterleitung von Anfragen seitens des DM <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>. Nach dem Stoppen dürfte eine erneute Aktivierung über <code>Offer()</code> möglich sein, um die Weiterleitung bei Bedarf wieder aufzunehmen.</li>
+<li><strong>未初始化：</strong>调用构造函数之前不存在对象。</li>
+<li><strong>已实例化：</strong>应用程序通过四个异常安全构造函数 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>、<a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>、<a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>、<a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a> 之一并指定 <code>InstanceSpecifier</code> 来创建 Monitor 对象。此时还不接收来自 DM 的消息。</li>
+<li><strong>已提供：</strong>通过显式调用 <code>Offer()</code>，应用程序声明其已准备好接收初始化调用 (<code>initMonitor</code>) <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>。仅在此状态下，通往 DM 的通信路径才完全处于活动状态。</li>
+<li><strong>已停止：</strong>应用程序通过 <code>StopOffer()</code> 停用来自 DM 的请求转发 <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>。停止后，应该可以通过 <code>Offer()</code> 重新激活，以便在需要时恢复转发。</li>
 </ol>
-<p>Hinsichtlich der Nebenläufigkeit sind sämtliche Elementfunktionen von <code>ara::diag::Monitor</code> als nicht thread-sicher (<code>not thread-safe</code>) spezifiziert <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>. Greifen mehrere Anwendungs-Threads auf dieselbe Instanz zu, ist ein externer Synchronisationsmechanismus zwingend erforderlich.</p>
+<p>在并发性方面，<code>ara::diag::Monitor</code> 的所有成员函数均被指定为非线程安全 (<code>not thread-safe</code>) <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>，<a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>，<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>，<a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>。如果多个应用程序线程访问同一实例，则必须使用外部同步机制。</p>
 <div class="diagram" id="diag-lebenszyklus"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 405.34 126.80" style="max-width:540px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 112.4)">
 <title>MonitorLebenszyklus</title>
@@ -111,70 +110,70 @@
 </g>
 </g>
 </svg></div>
-<p class="diagram-note">Zustandsdiagramm: Zustandsübergänge einer Monitor-Instanz von der Erzeugung über die Dienstfreigabe bis zur Deaktivierung. Quellen: <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
+<p class="diagram-note">状态图：Monitor 实例从创建、服务发布到停用的状态转换。来源：<a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>、<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>、<a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
 
-<h4>Nutzungspfad</h4>
-<p>Die typische Verwendung von <code>ara::diag::Monitor</code> folgt einer festen Abfolge aus Initialisierung, Bereitschaftssignalisierung, zyklischer Statusmeldung und kontrollierter Deaktivierung:</p>
+<h4>使用路径</h4>
+<p><code>ara::diag::Monitor</code> 的典型用法遵循初始化、就绪状态通知、周期性状态报告和受控停用的固定顺序：</p>
 <ol>
-<li><strong>Konstruktion:</strong> Die Anwendung wählt den Konstruktor, der zur DEXT-Modellierung des zugehörigen Ports passt (z. B. monitor-intern mit FDC-Funktion <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a> oder zählerbasiert <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>) und übergibt die <code>initMonitor</code>-Rückruffunktion.</li>
-<li><strong>Dienst aktivieren:</strong> Vor der ersten Diagnoseverarbeitung ruft die Anwendung <code>Offer()</code> auf <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>. Das zurückgegebene <code>ara::core::Result&lt;void&gt;</code> bestätigt die fehlerfreie Aktivierung.</li>
-<li><strong>Reinitialisierung verarbeiten:</strong> Bei Änderungen des System- oder Monitorstatus kann das DM den registrierten Callback <code>initMonitor</code> ausführen, um die interne Überwachungslogik zurückzusetzen <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>.</li>
-<li><strong>Aktionen und Ergebnisse melden:</strong> Während des normalen Überwachungsbetriebs ruft die Anwendung wiederholt <code>ReportMonitorAction()</code> auf <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>. Hierbei werden Prüfergebnisse (bestanden/fehlgeschlagen) oder Steuerbefehle für das Entprellen gemeldet.</li>
-<li><strong>Dienst beenden:</strong> Beim Herunterfahren der Komponente wird <code>StopOffer()</code> aufgerufen <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>, bevor das Objekt schließlich zerstört wird.</li>
+<li><strong>构造：</strong>应用程序选择与关联端口的 DEXT 建模相匹配的构造函数（例如带有 FDC 功能的内部监视 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a> 或基于计数器 <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>），并传递 <code>initMonitor</code> 回调函数。</li>
+<li><strong>激活服务：</strong>在首次诊断处理之前，应用程序调用 <code>Offer()</code> <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>。返回的 <code>ara::core::Result&lt;void&gt;</code> 确认无错误激活。</li>
+<li><strong>处理重新初始化：</strong>在系统状态或监视器状态发生变化时，DM 可以执行已注册的回调 <code>initMonitor</code>，以重置内部监视逻辑 <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>。</li>
+<li><strong>报告操作与结果：</strong>在正常监视运行期间，应用程序重复调用 <code>ReportMonitorAction()</code> <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>。在此报告测试结果（通过/失败）或去抖控制命令。</li>
+<li><strong>终止服务：</strong>在组件关闭时，在对象最终被销毁之前调用 <code>StopOffer()</code> <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a>。</li>
 </ol>
 <div class="diagram" id="diag-nutzungspfad"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 436" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Ablauf der Diagnoseüberwachung</text><line x1="135" y1="102" x2="135" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Anwendung</text><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html">ara::diag::Monitor</a></text><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Diagnostic Management</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><rect x="40" y="218" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><rect x="40" y="300" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html">Monitor</a>(specifier, initMonitor, ...)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088">Offer</a>()</text><line x1="135" y1="166" x2="345" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;void&gt;</text><line x1="345" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><path d="M 40 218 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="233" font-size="11" font-weight="bold" fill="#28251d">opt</text><text x="96" y="233" font-size="11" font-style="italic" fill="#28251d">Reinitialisierungsbedarf</text><text x="345.0" y="258" text-anchor="middle" font-size="11" fill="#28251d">initMonitor()</text><line x1="555" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><path d="M 40 300 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="315" font-size="11" font-weight="bold" fill="#28251d">loop</text><text x="96" y="315" font-size="11" font-style="italic" fill="#28251d">Überwachungszyklus</text><text x="240.0" y="340" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543">ReportMonitorAction</a>(action)</text><line x1="135" y1="346" x2="345" y2="346" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="392" text-anchor="middle" font-size="11" fill="#28251d"><a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089">StopOffer</a>()</text><line x1="135" y1="398" x2="345" y2="398" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line></svg></div>
-<p class="diagram-note">Sequenzdiagramm: Typische Interaktionsabfolge zwischen Anwendung, Monitor und DM während des Überwachungsbetriebs. Quellen: <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>, <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>, <a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
+<p class="diagram-note">时序图：监视运行期间应用程序、Monitor 与 DM 之间的典型交互序列。来源：<a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>、<a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a>、<a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a>、<a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089">[SWS_DM_01089]</a></p>
 
-<h4>Fehlerszenarien</h4>
-<p>Fehlersituationen rund um <code>ara::diag::Monitor</code> lassen sich in statische Konfigurationsverletzungen bei der Instanziierung und dynamische Laufzeitfehler unterteilen:</p>
+<h4>错误场景</h4>
+<p>围绕 <code>ara::diag::Monitor</code> 的错误情况可分为实例化时的静态配置违规和动态运行时错误：</p>
 <table class="violations-table">
 <thead>
 <tr>
-<th>Fehler / Violation</th>
-<th>Kontext / Ursprung</th>
-<th>Bedeutung und Konsequenz</th>
+<th>错误 / 违规</th>
+<th>上下文 / 起因</th>
+<th>含义与后果</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>InstanceSpecifierMappingIntegrityViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Der übergebene <code>InstanceSpecifier</code> lässt sich im Ausführungsmodell nicht auflösen oder verweist nicht auf einen <code>PortPrototype</code>.</td>
+<td>构造函数 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td>传入的 <code>InstanceSpecifier</code> 在执行模型中无法解析，或未指向 <code>PortPrototype</code>。</td>
 </tr>
 <tr>
 <td><code>PortInterfaceMappingViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Der referenzierte Port ist nicht durch ein <code>DiagnosticMonitorInterface</code> typisiert.</td>
+<td>构造函数 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td>所引用的端口未由 <code>DiagnosticMonitorInterface</code> 定型。</td>
 </tr>
 <tr>
 <td><code>ProcessMappingViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Kein modellierter Prozess stimmt mit dem aktuellen Laufzeitprozess überein.</td>
+<td>构造函数 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td>没有任何建模进程与当前运行时进程相匹配。</td>
 </tr>
 <tr>
 <td><code>InstanceSpecifierAlreadyInUseViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
-<td>Der <code>InstanceSpecifier</code> wurde innerhalb desselben Prozesses bereits für eine andere Instanz registriert.</td>
+<td>构造函数 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a></td>
+<td><code>InstanceSpecifier</code> 已在同一进程内为另一个实例注册。</td>
 </tr>
 <tr>
 <td><code>InvalidDebouncingAlgorithmViolation</code></td>
-<td>Konstruktor <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>, <a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>, <a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>, <a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a></td>
-<td>Widerspruch zwischen dem gewählten Konstruktor und der im Modell (DEXT) konfigurierten Entprellmethode (z. B. time-based vs. counter-based).</td>
+<td>构造函数 <a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548">[SWS_DM_00548]</a>、<a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549">[SWS_DM_00549]</a>、<a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550">[SWS_DM_00550]</a>、<a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972">[SWS_DM_01972]</a></td>
+<td>所选构造函数与模型 (DEXT) 中配置的去抖方法之间存在冲突（例如 time-based 与 counter-based）。</td>
 </tr>
 <tr>
 <td><code>DiagOfferErrc::kAlreadyOffered</code></td>
 <td><code>Offer()</code> <a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088">[SWS_DM_01088]</a></td>
-<td>Rückgabe im <code>ara::core::Result</code>, falls <code>Offer()</code> aufgerufen wird, während der Dienst bereits angeboten wird (Rollback-Semantik).</td>
+<td>如果在服务已处于提供状态时调用 <code>Offer()</code>，则在 <code>ara::core::Result</code> 中返回（回滚语义）。</td>
 </tr>
 <tr>
 <td><code>UnexpectedMonitorActionHandlingViolation</code></td>
 <td><code>ReportMonitorAction()</code> <a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543">[SWS_DM_00543]</a></td>
-<td>Der übergebene Wert für <code>action</code> wird vom aktuell konfigurierten Entprellalgorithmus nicht unterstützt.</td>
+<td>传入的 <code>action</code> 值不被当前配置的去抖算法支持。</td>
 </tr>
 </tbody>
 </table>
 <!-- annahmen: 1) Nach Aufruf von StopOffer() dürfte eine erneute Aktivierung über Offer() zulässig sein – Begründung: SWS_DM_01089 spezifiziert lediglich die Deaktivierung der Weiterleitung von DM-Anfragen, verbietet ein erneutes Offerieren jedoch nicht explizit. -->
-<p class="ai-note">Dieser Leitfaden wurde durch einen KI-Kurations-Assistenten auf Basis von AUTOSAR R25-11 Spezifikationsdaten erstellt.</p>
+<p class="ai-note">本指南由 AI 策展助手基于 AUTOSAR R25-11 规范数据编写。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_diag_Monitor_5df579" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -1251,33 +1250,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="6ed6a268d2d2b083c629a88237b755ff3c189edff64457de88a8a9c1c491f675" data-trace-output="d88bf058a28f63716a04806f644dff077eb725ca8eec9450e4fc1a2e041b3d0a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Klasse &lt;code&gt;ara::diag::Monitor&lt;/code&gt; bildet die primäre Schnittstelle für adaptive Anwendungen zur Implementierung von Diagnoseüberwachungen (Monitoren) gemäß &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=69"&gt;AUTOSAR AP SWS Diagnostics S. 69&lt;/a&gt;. Ihre Hauptverantwortung liegt darin, den operativen Status von Fehlererkennungspfaden an das Diagnosemanagement (Diagnostic Management, DM) zu melden und die Synchronisation zwischen der anwendungsinternen Überwachungslogik und den übergeordneten Diagnoseroutinen sicherzustellen.&lt;/p&gt;
-&lt;p&gt;An der Interaktion sind im Wesentlichen drei Parteien beteiligt:&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;类 &lt;code&gt;ara::diag::Monitor&lt;/code&gt; 构成了自适应应用程序根据 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=69"&gt;AUTOSAR AP SWS Diagnostics 第69页&lt;/a&gt; 实现诊断监视器（Monitor）的主要接口。其主要职责是向诊断管理（Diagnostic Management，DM）报告故障检测路径的运行状态，并确保应用内部监视逻辑与上层诊断例程之间的同步。&lt;/p&gt;
+&lt;p&gt;该交互主要涉及三方：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Anwendung (Überwachungsfunktion):&lt;/strong&gt; Führt anwendungsspezifische Sensor- oder Systemprüfungen aus, ermittelt Fehlerzustände und meldet diese über &lt;code&gt;ReportMonitorAction()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Zudem implementiert sie den optionalen Initialisierungs-Callback &lt;code&gt;initMonitor&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;ara::diag::Monitor:&lt;/strong&gt; Dient als standardisierter Service-Endpunkt der Adaptive Platform und kapselt die Verbindung zum modellierten Diagnoseport (&lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Diagnostic Management (DM):&lt;/strong&gt; Verarbeitet die gemeldeten Zustände, steuert Ereignisstatusbits und leitet bei Bedarf Reinitialisierungsanfragen über das DM an die Anwendung weiter &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;应用程序（监视功能）：&lt;/strong&gt;执行应用特定的传感器或系统检查，确定故障状态并通过 &lt;code&gt;ReportMonitorAction()&lt;/code&gt; 报告这些状态 &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;。此外，它还实现可选的初始化回调 &lt;code&gt;initMonitor&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;ara::diag::Monitor:&lt;/strong&gt; 作为 Adaptive Platform 的标准化服务终结点，封装了与建模诊断端口 (&lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt;) 的连接 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Diagnostic Management (DM)：&lt;/strong&gt;处理报告的状态，控制事件状态位，并在需要时通过 DM 将重新初始化请求转发给应用程序 &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Je nach Diagnosemodell unterstützt &lt;code&gt;ara::diag::Monitor&lt;/code&gt; unterschiedliche Strategien zur Entprellung (Debouncing), die bereits bei der Instanziierung fest vorgegeben werden:&lt;/p&gt;
+&lt;p&gt;根据诊断模型，&lt;code&gt;ara::diag::Monitor&lt;/code&gt; 支持不同的去抖（Debouncing）策略，这些策略在实例化时便已固定指定：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Monitor-intern:&lt;/strong&gt; Die Entprellung erfolgt vollständig in der Anwendung; ein Callback zur Ermittlung des Fault Detection Counters (FDC) wird registriert &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zählerbasiert:&lt;/strong&gt; Nutzt vorkonfigurierte Zählerwerte (&lt;code&gt;CounterBased&lt;/code&gt;) der Plattform &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zeitbasiert:&lt;/strong&gt; Nutzt zeitgesteuerte Schwellwerte (&lt;code&gt;TimeBased&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ohne Entprellung:&lt;/strong&gt; Direkte Weitergabe unqualifizierter Testergebnisse an das DM &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;监视器内部：&lt;/strong&gt;去抖完全在应用程序中进行；注册用于确定 Fault Detection Counter (FDC) 的回调 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;基于计数器：&lt;/strong&gt;利用平台的预配置计数器值 (&lt;code&gt;CounterBased&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;基于时间：&lt;/strong&gt;利用时间控制的阈值 (&lt;code&gt;TimeBased&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;无去抖：&lt;/strong&gt;将未限定的测试结果直接传递给 DM &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Instanzen von &lt;code&gt;ara::diag::Monitor&lt;/code&gt; sind als unteilbare Einheiten konzipiert. Die Klasse ist weder kopierbar noch verschiebbar; sowohl Kopier- und Move-Konstruktor als auch die entsprechenden Zuweisungsoperatoren sind explizit gelöscht (&lt;code&gt;=delete&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683"&gt;[SWS_DM_01683]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684"&gt;[SWS_DM_01684]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685"&gt;[SWS_DM_01685]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686"&gt;[SWS_DM_01686]&lt;/a&gt;. Eine Instanz verbleibt somit fest an ihrer Speicheradresse.&lt;/p&gt;
-&lt;p&gt;Der Lebenszyklus gliedert sich in folgende Zustände:&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::diag::Monitor&lt;/code&gt; 的实例被设计为不可分割的单元。该类既不可复制也不可移动；拷贝构造函数和移动构造函数以及相应的赋值运算符均被显式删除 (&lt;code&gt;=delete&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01683" href="../spec/record.html?id=SWS_DM_01683"&gt;[SWS_DM_01683]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_01684" href="../spec/record.html?id=SWS_DM_01684"&gt;[SWS_DM_01684]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_01685" href="../spec/record.html?id=SWS_DM_01685"&gt;[SWS_DM_01685]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_01686" href="../spec/record.html?id=SWS_DM_01686"&gt;[SWS_DM_01686]&lt;/a&gt;。因此，实例始终固定在其内存地址上。&lt;/p&gt;
+&lt;p&gt;生命周期划分为以下状态：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Nicht initialisiert:&lt;/strong&gt; Vor Aufruf des Konstruktors existiert kein Objekt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziiert:&lt;/strong&gt; Die Anwendung erzeugt das Monitor-Objekt über einen der vier ausnahmesicheren Konstruktoren &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt; unter Angabe des &lt;code&gt;InstanceSpecifier&lt;/code&gt;. Zu diesem Zeitpunkt werden noch keine Nachrichten vom DM entgegengenommen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Angeboten:&lt;/strong&gt; Durch den expliziten Aufruf von &lt;code&gt;Offer()&lt;/code&gt; erklärt die Anwendung ihre Bereitschaft zur Entgegennahme von Initialisierungsaufrufen (&lt;code&gt;initMonitor&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;. Erst in diesem Zustand ist der Kommunikationspfad zum DM vollständig aktiv.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gestoppt:&lt;/strong&gt; Mittels &lt;code&gt;StopOffer()&lt;/code&gt; deaktiviert die Anwendung die Weiterleitung von Anfragen seitens des DM &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;. Nach dem Stoppen dürfte eine erneute Aktivierung über &lt;code&gt;Offer()&lt;/code&gt; möglich sein, um die Weiterleitung bei Bedarf wieder aufzunehmen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;未初始化：&lt;/strong&gt;调用构造函数之前不存在对象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;已实例化：&lt;/strong&gt;应用程序通过四个异常安全构造函数 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt; 之一并指定 &lt;code&gt;InstanceSpecifier&lt;/code&gt; 来创建 Monitor 对象。此时还不接收来自 DM 的消息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;已提供：&lt;/strong&gt;通过显式调用 &lt;code&gt;Offer()&lt;/code&gt;，应用程序声明其已准备好接收初始化调用 (&lt;code&gt;initMonitor&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;。仅在此状态下，通往 DM 的通信路径才完全处于活动状态。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;已停止：&lt;/strong&gt;应用程序通过 &lt;code&gt;StopOffer()&lt;/code&gt; 停用来自 DM 的请求转发 &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;。停止后，应该可以通过 &lt;code&gt;Offer()&lt;/code&gt; 重新激活，以便在需要时恢复转发。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Hinsichtlich der Nebenläufigkeit sind sämtliche Elementfunktionen von &lt;code&gt;ara::diag::Monitor&lt;/code&gt; als nicht thread-sicher (&lt;code&gt;not thread-safe&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;. Greifen mehrere Anwendungs-Threads auf dieselbe Instanz zu, ist ein externer Synchronisationsmechanismus zwingend erforderlich.&lt;/p&gt;
+&lt;p&gt;在并发性方面，&lt;code&gt;ara::diag::Monitor&lt;/code&gt; 的所有成员函数均被指定为非线程安全 (&lt;code&gt;not thread-safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;，&lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;。如果多个应用程序线程访问同一实例，则必须使用外部同步机制。&lt;/p&gt;
 &lt;div class="diagram" id="diag-lebenszyklus"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 405.34 126.80" style="max-width:540px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 112.4)"&gt;
 &lt;title&gt;MonitorLebenszyklus&lt;/title&gt;
@@ -1335,70 +1333,70 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Zustandsdiagramm: Zustandsübergänge einer Monitor-Instanz von der Erzeugung über die Dienstfreigabe bis zur Deaktivierung. Quellen: &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;状态图：Monitor 实例从创建、服务发布到停用的状态转换。来源：&lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Die typische Verwendung von &lt;code&gt;ara::diag::Monitor&lt;/code&gt; folgt einer festen Abfolge aus Initialisierung, Bereitschaftssignalisierung, zyklischer Statusmeldung und kontrollierter Deaktivierung:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ara::diag::Monitor&lt;/code&gt; 的典型用法遵循初始化、就绪状态通知、周期性状态报告和受控停用的固定顺序：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Konstruktion:&lt;/strong&gt; Die Anwendung wählt den Konstruktor, der zur DEXT-Modellierung des zugehörigen Ports passt (z. B. monitor-intern mit FDC-Funktion &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt; oder zählerbasiert &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;) und übergibt die &lt;code&gt;initMonitor&lt;/code&gt;-Rückruffunktion.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienst aktivieren:&lt;/strong&gt; Vor der ersten Diagnoseverarbeitung ruft die Anwendung &lt;code&gt;Offer()&lt;/code&gt; auf &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;. Das zurückgegebene &lt;code&gt;ara::core::Result&amp;lt;void&amp;gt;&lt;/code&gt; bestätigt die fehlerfreie Aktivierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reinitialisierung verarbeiten:&lt;/strong&gt; Bei Änderungen des System- oder Monitorstatus kann das DM den registrierten Callback &lt;code&gt;initMonitor&lt;/code&gt; ausführen, um die interne Überwachungslogik zurückzusetzen &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Aktionen und Ergebnisse melden:&lt;/strong&gt; Während des normalen Überwachungsbetriebs ruft die Anwendung wiederholt &lt;code&gt;ReportMonitorAction()&lt;/code&gt; auf &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Hierbei werden Prüfergebnisse (bestanden/fehlgeschlagen) oder Steuerbefehle für das Entprellen gemeldet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienst beenden:&lt;/strong&gt; Beim Herunterfahren der Komponente wird &lt;code&gt;StopOffer()&lt;/code&gt; aufgerufen &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;, bevor das Objekt schließlich zerstört wird.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;构造：&lt;/strong&gt;应用程序选择与关联端口的 DEXT 建模相匹配的构造函数（例如带有 FDC 功能的内部监视 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt; 或基于计数器 &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;），并传递 &lt;code&gt;initMonitor&lt;/code&gt; 回调函数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;激活服务：&lt;/strong&gt;在首次诊断处理之前，应用程序调用 &lt;code&gt;Offer()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;。返回的 &lt;code&gt;ara::core::Result&amp;lt;void&amp;gt;&lt;/code&gt; 确认无错误激活。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;处理重新初始化：&lt;/strong&gt;在系统状态或监视器状态发生变化时，DM 可以执行已注册的回调 &lt;code&gt;initMonitor&lt;/code&gt;，以重置内部监视逻辑 &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;报告操作与结果：&lt;/strong&gt;在正常监视运行期间，应用程序重复调用 &lt;code&gt;ReportMonitorAction()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;。在此报告测试结果（通过/失败）或去抖控制命令。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;终止服务：&lt;/strong&gt;在组件关闭时，在对象最终被销毁之前调用 &lt;code&gt;StopOffer()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;div class="diagram" id="diag-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 436" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf der Diagnoseüberwachung&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="422" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html"&gt;ara::diag::Monitor&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Diagnostic Management&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="218" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;rect x="40" y="300" width="610" height="68" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html" href="../classes/cl_ara_diag_Monitor_5df579.html"&gt;Monitor&lt;/a&gt;(specifier, initMonitor, ...)&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01088"&gt;Offer&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="166" x2="345" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html"&gt;ara::core::Result&lt;/a&gt;&amp;lt;void&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 218 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="233" font-size="11" font-weight="bold" fill="#28251d"&gt;opt&lt;/text&gt;&lt;text x="96" y="233" font-size="11" font-style="italic" fill="#28251d"&gt;Reinitialisierungsbedarf&lt;/text&gt;&lt;text x="345.0" y="258" text-anchor="middle" font-size="11" fill="#28251d"&gt;initMonitor()&lt;/text&gt;&lt;line x1="555" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 300 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="315" font-size="11" font-weight="bold" fill="#28251d"&gt;loop&lt;/text&gt;&lt;text x="96" y="315" font-size="11" font-style="italic" fill="#28251d"&gt;Überwachungszyklus&lt;/text&gt;&lt;text x="240.0" y="340" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_00543"&gt;ReportMonitorAction&lt;/a&gt;(action)&lt;/text&gt;&lt;line x1="135" y1="346" x2="345" y2="346" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="392" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089" href="../classes/cl_ara_diag_Monitor_5df579.html#SWS_DM_01089"&gt;StopOffer&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="398" x2="345" y2="398" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typische Interaktionsabfolge zwischen Anwendung, Monitor und DM während des Überwachungsbetriebs. Quellen: &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;时序图：监视运行期间应用程序、Monitor 与 DM 之间的典型交互序列。来源：&lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_01089" href="../spec/record.html?id=SWS_DM_01089"&gt;[SWS_DM_01089]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Fehlersituationen rund um &lt;code&gt;ara::diag::Monitor&lt;/code&gt; lassen sich in statische Konfigurationsverletzungen bei der Instanziierung und dynamische Laufzeitfehler unterteilen:&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;围绕 &lt;code&gt;ara::diag::Monitor&lt;/code&gt; 的错误情况可分为实例化时的静态配置违规和动态运行时错误：&lt;/p&gt;
 &lt;table class="violations-table"&gt;
 &lt;thead&gt;
 &lt;tr&gt;
-&lt;th&gt;Fehler / Violation&lt;/th&gt;
-&lt;th&gt;Kontext / Ursprung&lt;/th&gt;
-&lt;th&gt;Bedeutung und Konsequenz&lt;/th&gt;
+&lt;th&gt;错误 / 违规&lt;/th&gt;
+&lt;th&gt;上下文 / 起因&lt;/th&gt;
+&lt;th&gt;含义与后果&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;InstanceSpecifierMappingIntegrityViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der übergebene &lt;code&gt;InstanceSpecifier&lt;/code&gt; lässt sich im Ausführungsmodell nicht auflösen oder verweist nicht auf einen &lt;code&gt;PortPrototype&lt;/code&gt;.&lt;/td&gt;
+&lt;td&gt;构造函数 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;传入的 &lt;code&gt;InstanceSpecifier&lt;/code&gt; 在执行模型中无法解析，或未指向 &lt;code&gt;PortPrototype&lt;/code&gt;。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;PortInterfaceMappingViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der referenzierte Port ist nicht durch ein &lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt; typisiert.&lt;/td&gt;
+&lt;td&gt;构造函数 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;所引用的端口未由 &lt;code&gt;DiagnosticMonitorInterface&lt;/code&gt; 定型。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;ProcessMappingViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Kein modellierter Prozess stimmt mit dem aktuellen Laufzeitprozess überein.&lt;/td&gt;
+&lt;td&gt;构造函数 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;没有任何建模进程与当前运行时进程相匹配。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;InstanceSpecifierAlreadyInUseViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der &lt;code&gt;InstanceSpecifier&lt;/code&gt; wurde innerhalb desselben Prozesses bereits für eine andere Instanz registriert.&lt;/td&gt;
+&lt;td&gt;构造函数 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;InstanceSpecifier&lt;/code&gt; 已在同一进程内为另一个实例注册。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;InvalidDebouncingAlgorithmViolation&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;Konstruktor &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Widerspruch zwischen dem gewählten Konstruktor und der im Modell (DEXT) konfigurierten Entprellmethode (z. B. time-based vs. counter-based).&lt;/td&gt;
+&lt;td&gt;构造函数 &lt;a class="spec-record-ref" data-req="SWS_DM_00548" href="../spec/record.html?id=SWS_DM_00548"&gt;[SWS_DM_00548]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_00549" href="../spec/record.html?id=SWS_DM_00549"&gt;[SWS_DM_00549]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_00550" href="../spec/record.html?id=SWS_DM_00550"&gt;[SWS_DM_00550]&lt;/a&gt;、&lt;a class="spec-record-ref" data-req="SWS_DM_01972" href="../spec/record.html?id=SWS_DM_01972"&gt;[SWS_DM_01972]&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;所选构造函数与模型 (DEXT) 中配置的去抖方法之间存在冲突（例如 time-based 与 counter-based）。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;DiagOfferErrc::kAlreadyOffered&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;Offer()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_01088" href="../spec/record.html?id=SWS_DM_01088"&gt;[SWS_DM_01088]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Rückgabe im &lt;code&gt;ara::core::Result&lt;/code&gt;, falls &lt;code&gt;Offer()&lt;/code&gt; aufgerufen wird, während der Dienst bereits angeboten wird (Rollback-Semantik).&lt;/td&gt;
+&lt;td&gt;如果在服务已处于提供状态时调用 &lt;code&gt;Offer()&lt;/code&gt;，则在 &lt;code&gt;ara::core::Result&lt;/code&gt; 中返回（回滚语义）。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;UnexpectedMonitorActionHandlingViolation&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;ReportMonitorAction()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Der übergebene Wert für &lt;code&gt;action&lt;/code&gt; wird vom aktuell konfigurierten Entprellalgorithmus nicht unterstützt.&lt;/td&gt;
+&lt;td&gt;传入的 &lt;code&gt;action&lt;/code&gt; 值不被当前配置的去抖算法支持。&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;!-- annahmen: 1) Nach Aufruf von StopOffer() dürfte eine erneute Aktivierung über Offer() zulässig sein – Begründung: SWS_DM_01089 spezifiziert lediglich die Deaktivierung der Weiterleitung von DM-Anfragen, verbietet ein erneutes Offerieren jedoch nicht explizit. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch einen KI-Kurations-Assistenten auf Basis von AUTOSAR R25-11 Spezifikationsdaten erstellt.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南由 AI 策展助手基于 AUTOSAR R25-11 规范数据编写。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

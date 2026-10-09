@@ -24,57 +24,56 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>e99044a03d11</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Context</h4>
 <p>
-Die Datenstruktur <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> ist Bestandteil des Moduls <code>diag</code> innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation <code>ReadOutput</code> zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+The data structure <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> is part of the module <code>diag</code> within the AUTOSAR Adaptive Platform for release R25-11. Its primary task is to aggregate the output arguments for the operation <code>ReadOutput</code> and provide them as a typed transport structure.
 </p>
 <p>
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+In diagnostic-oriented applications, this data construct encapsulates the read payload data and associated output parameters of a specific Data Identifier (DID). Instead of passing multiple individual return parameters via pointers or references, the structure bundles all resulting values into a cohesive unit. The interaction partners include the internal diagnostic server, the implementing application layer, and the generated interface of the respective Data Identifier. Interpretation: The structure likely acts as a standardized return container that is transmitted within asynchronous call chains to keep the interface definition consistent.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>Lifecycle</h4>
 <p>
-Als reine Datenkapsel (Data Transfer Object) besitzt <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+As a pure data capsule (Data Transfer Object), <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> typically possesses the character of a value object (Value Object). Instantiation takes place on an instance basis as soon as a read request for the respective Data Identifier is processed.
 </p>
 <p>
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+Ownership depends on the chosen passing mechanism:
 </p>
 <ul>
-<li><strong>Erzeugung:</strong> Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.</li>
-<li><strong>Übergabe und Transport:</strong> Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.</li>
-<li><strong>Zerstörung:</strong> Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.</li>
+<li><strong>Creation:</strong> Instantiation presumably takes place on the side of the providing application logic, which determines the queried diagnostic values and embeds them into the structure fields.</li>
+<li><strong>Transfer and transport:</strong> The object is passed to the calling layer of Diagnostic Management by copying or moving (move semantics). When passing across interface boundaries, ownership transfers to the receiver.</li>
+<li><strong>Destruction:</strong> The lifetime ends automatically upon leaving the receiver's scope or after completion of serialization for the diagnostic response.</li>
 </ul>
 <p>
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+Since the structure does not have its own flow of control, it does not manage any internal state machines. Regarding concurrency: Because it is a pure data aggregate, no internal synchronization mechanism is likely present, meaning that simultaneous read and write accesses from different threads must be synchronized externally.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Usage Path</h4>
 <p>
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+The typical use of the data structure follows a fixed sequence within the scope of a diagnostic request to read a Data Identifier:
 </p>
 <ol>
-<li><strong>Anfrageempfang:</strong> Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle <code>&lt;DataIdentifierInterface&gt;</code> zu.</li>
-<li><strong>Verarbeitung und Datenermittlung:</strong> Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.</li>
-<li><strong>Zuweisung:</strong> Eine Instanz von <code>&lt;DataIdentifier&gt;ReadOutput</code> wird deklariert und mit den ermittelten Ergebniswerten befüllt.</li>
-<li><strong>Rückmeldung:</strong> Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.</li>
-<li><strong>Ressourcenfreigabe:</strong> Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.</li>
+<li><strong>Request receipt:</strong> A diagnostic client requests the reading of a Data Identifier via standardized diagnostic protocols. The diagnostic stack maps this request to the corresponding interface <code>&lt;DataIdentifierInterface&gt;</code>.</li>
+<li><strong>Processing and data determination:</strong> The responsible application function determines the current data values of the vehicle subsystem or internal memory.</li>
+<li><strong>Assignment:</strong> An instance of <code>&lt;DataIdentifier&gt;ReadOutput</code> is declared and populated with the determined result values.</li>
+<li><strong>Reporting back:</strong> The populated structure is returned to the diagnostic framework, which reads the fields, formats the diagnostic telegrams, and sends the response to the diagnostic client.</li>
+<li><strong>Resource release:</strong> After successful transfer and processing, the instance is destroyed.</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>Error Scenarios</h4>
 <p>
-Als reine Datenstruktur löst <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+As a pure data structure, <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> itself does not throw functional error codes or exceptions. However, potential error conditions arise in the usage context:
 </p>
 <ul>
-<li><strong>Unvollständige Initialisierung:</strong> Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.</li>
-<li><strong>Bereitstellungsfehler:</strong> Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.</li>
-<li><strong>Gültigkeitsbereichsverletzungen:</strong> Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.</li>
+<li><strong>Incomplete initialization:</strong> If not all required output parameters are correctly populated before return, downstream layers may generate incomplete or inconsistent diagnostic responses. The precondition for the return is always the complete population of all defined fields.</li>
+<li><strong>Provision error:</strong> If the application logic cannot determine the requested values (for example due to sensor or bus errors), typically no valid structure instance is forwarded, but a corresponding diagnostic error code is reported.</li>
+<li><strong>Scope violations:</strong> During asynchronous forwarding, it must be ensured that the data structure is not released prematurely as long as referencing components access it.</li>
 </ul>
 <!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls <code>diag</code> (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.</p>
+<p class="ai-note">This guide is based on the structural metadata of the AUTOSAR Adaptive module <code>diag</code> (release R25-11). Specific interface requirements and data field definitions can be found in the respective module specification.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" title="Discuss with AI">💬 Discuss with AI</button>
@@ -291,54 +290,53 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e99044a03d11e8b09b129f1b5c47ea5922c27eb4b52d94473eae5fa72ded1446" data-trace-output="5b21e6473f1200bb788b607a95f4bbc5672f78e6a2a7c1c616413fdea8550597" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Context&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation &lt;code&gt;ReadOutput&lt;/code&gt; zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+The data structure &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; is part of the module &lt;code&gt;diag&lt;/code&gt; within the AUTOSAR Adaptive Platform for release R25-11. Its primary task is to aggregate the output arguments for the operation &lt;code&gt;ReadOutput&lt;/code&gt; and provide them as a typed transport structure.
 &lt;/p&gt;
 &lt;p&gt;
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+In diagnostic-oriented applications, this data construct encapsulates the read payload data and associated output parameters of a specific Data Identifier (DID). Instead of passing multiple individual return parameters via pointers or references, the structure bundles all resulting values into a cohesive unit. The interaction partners include the internal diagnostic server, the implementing application layer, and the generated interface of the respective Data Identifier. Interpretation: The structure likely acts as a standardized return container that is transmitted within asynchronous call chains to keep the interface definition consistent.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenkapsel (Data Transfer Object) besitzt &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+As a pure data capsule (Data Transfer Object), &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; typically possesses the character of a value object (Value Object). Instantiation takes place on an instance basis as soon as a read request for the respective Data Identifier is processed.
 &lt;/p&gt;
 &lt;p&gt;
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+Ownership depends on the chosen passing mechanism:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe und Transport:&lt;/strong&gt; Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Creation:&lt;/strong&gt; Instantiation presumably takes place on the side of the providing application logic, which determines the queried diagnostic values and embeds them into the structure fields.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Transfer and transport:&lt;/strong&gt; The object is passed to the calling layer of Diagnostic Management by copying or moving (move semantics). When passing across interface boundaries, ownership transfers to the receiver.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Destruction:&lt;/strong&gt; The lifetime ends automatically upon leaving the receiver's scope or after completion of serialization for the diagnostic response.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+Since the structure does not have its own flow of control, it does not manage any internal state machines. Regarding concurrency: Because it is a pure data aggregate, no internal synchronization mechanism is likely present, meaning that simultaneous read and write accesses from different threads must be synchronized externally.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Usage Path&lt;/h4&gt;
 &lt;p&gt;
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+The typical use of the data structure follows a fixed sequence within the scope of a diagnostic request to read a Data Identifier:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Anfrageempfang:&lt;/strong&gt; Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt; zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung und Datenermittlung:&lt;/strong&gt; Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zuweisung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; wird deklariert und mit den ermittelten Ergebniswerten befüllt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ressourcenfreigabe:&lt;/strong&gt; Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Request receipt:&lt;/strong&gt; A diagnostic client requests the reading of a Data Identifier via standardized diagnostic protocols. The diagnostic stack maps this request to the corresponding interface &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Processing and data determination:&lt;/strong&gt; The responsible application function determines the current data values of the vehicle subsystem or internal memory.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Assignment:&lt;/strong&gt; An instance of &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; is declared and populated with the determined result values.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reporting back:&lt;/strong&gt; The populated structure is returned to the diagnostic framework, which reads the fields, formats the diagnostic telegrams, and sends the response to the diagnostic client.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Resource release:&lt;/strong&gt; After successful transfer and processing, the instance is destroyed.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenstruktur löst &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+As a pure data structure, &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; itself does not throw functional error codes or exceptions. However, potential error conditions arise in the usage context:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Initialisierung:&lt;/strong&gt; Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellungsfehler:&lt;/strong&gt; Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeitsbereichsverletzungen:&lt;/strong&gt; Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Incomplete initialization:&lt;/strong&gt; If not all required output parameters are correctly populated before return, downstream layers may generate incomplete or inconsistent diagnostic responses. The precondition for the return is always the complete population of all defined fields.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Provision error:&lt;/strong&gt; If the application logic cannot determine the requested values (for example due to sensor or bus errors), typically no valid structure instance is forwarded, but a corresponding diagnostic error code is reported.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Scope violations:&lt;/strong&gt; During asynchronous forwarding, it must be ensured that the data structure is not released prematurely as long as referencing components access it.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls &lt;code&gt;diag&lt;/code&gt; (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;This guide is based on the structural metadata of the AUTOSAR Adaptive module &lt;code&gt;diag&lt;/code&gt; (release R25-11). Specific interface requirements and data field definitions can be found in the respective module specification.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

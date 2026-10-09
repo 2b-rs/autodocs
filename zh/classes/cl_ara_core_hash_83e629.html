@@ -24,34 +24,33 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>bdb6fdc52cb7</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_hash_83e629/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_core_hash_83e629/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_hash_83e629" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
-<p>Die Template-Struktur <code>ara::core::hash</code> fungiert im Modul <code>core</code> der AUTOSAR Adaptive Platform als primäres Funktionsobjekt zur Ermittlung von numerischen Hash-Werten. Die Spezifikation verweist dabei auf die korrespondierende Nutzung im Kontext von <code>bitset</code>. Interpretation: <code>ara::core::hash</code> dient als fundamentale Schnittstelle, um standardisierte Hash-Werte für Adaptive-Basistypen bereitzustellen, vermutlich primär zur effizienten Integration in assoziativen Hash-Containern sowie für schlüsselbasierte Suchoperationen.</p>
-<p>Im Gesamtsystem entkoppelt <code>ara::core::hash</code> verarbeitende Algorithmen von den internen Datenstrukturen der zu hashenden Typen. Durch entsprechende Template-Spezialisierungen wird sichergestellt, dass komplexe Datenstrukturen wie Bit-Sequenzen und Basistypen nach einem einheitlichen Muster auf ganzzahlige Kennwerte abgebildet werden können, ohne dass übergeordnete Module typspezifische Hash-Routinen implementieren müssen.</p>
+<h4>上下文</h4>
+<p>模板结构 <code>ara::core::hash</code> 在 AUTOSAR Adaptive Platform 的模块 <code>core</code> 中用作确定数值哈希值的主要函数对象。规范在此指出了在 <code>bitset</code> 上下文中的相应使用。解读：<code>ara::core::hash</code> 用作基础接口，以向 Adaptive 基础类型提供标准化哈希值，推测主要是为了高效集成在关联哈希容器中以及用于基于键的搜索操作。</p>
+<p>在整个系统中，<code>ara::core::hash</code> 将处理算法与待哈希类型的内部数据结构解耦。通过相应的模板特化确保可以将位序列和基础类型等复杂数据结构按照统一模式映射到整数特征值，而上层模块无需实现类型特定的哈希例程。</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Struktur <code>ara::core::hash</code> ist als leichtgewichtiges Funktor-Objekt ausgelegt. Interpretation: Exemplare von <code>ara::core::hash</code> dürften typischerweise zustandslos und standard-konstruierbar sein, sodass ihre Instanziierung und Zerstörung keine dynamischen Systemressourcen beansprucht und vernachlässigbaren Laufzeitaufwand erzeugt.</p>
-<p>In Bezug auf Nebenläufigkeit und Lebenszyklusphasen erlaubt die Zustandslosigkeit eine flexible Handhabung. Da das Funktionsobjekt keine internen Zustandsübergänge durchläuft, können Instanzen beliebig kopiert oder direkt als temporäre Objekte am Aufrufpunkt instantiiert werden. Mehrere Threads können den Aufrufoperator nebenwirkungsfrei und parallel ausführen, solange das übergebene Zielobjekt während des Berechnungsvorgangs vor parallelen Modifikationen geschützt ist.</p>
+<h4>生命周期</h4>
+<p>结构 <code>ara::core::hash</code> 设计为轻量级仿函数对象。解读：<code>ara::core::hash</code> 的实例通常应当是无状态且可默认构造的，因此其实例化和销毁不会占用动态系统资源，且产生可忽略的运行时开销。</p>
+<p>在并发性和生命周期阶段方面，无状态性允许灵活的处理。由于函数对象不经历内部状态转换，因此可以根据需要复制实例，或者在调用点直接将其作为临时对象实例化。只要传递的目标对象在计算过程中受到保护以避免并行修改，多个线程就可以无副作用地并行执行调用运算符。</p>
 
-<h4>Nutzungspfad</h4>
-<p>Der reguläre Ablauf bei der Interaktion mit <code>ara::core::hash</code> gliedert sich in die Bereitstellung des Eingabewertes, den Aufruf des Funktors und die Auswertung des resultierenden Werts:</p>
+<h4>使用路径</h4>
+<p>与 <code>ara::core::hash</code> 交互时的常规流程分为提供输入值、调用仿函数和评估结果值三个阶段：</p>
 <ol>
-<li><strong>Vorbereitung des Ausgangswertes:</strong> Das zu verarbeitende Objekt (beispielsweise ein Bit-Muster oder ein Konfigurationselement) wird erzeugt und in einen gültigen Ausgangszustand versetzt.</li>
-<li><strong>Instanziierung des Funktors:</strong> Der Aufrufer verwendet die Template-Instanz <code>ara::core::hash&lt;T&gt;</code> für den Zieltyp <code>T</code> oder erzeugt ein anonymes temporäres Funktionsobjekt.</li>
-<li><strong>Ausführung der Berechnung:</strong> Über den Funktionsaufrufoperator wird der Hash-Algorithmus für die Instanz ausgeführt, welcher den ganzzahligen Hash-Wert berechnet und zurückliefert.</li>
-<li><strong>Verarbeitung des Ergebnisses:</strong> Das aufrufende System verwendet den Hash-Wert zur Indexberechnung, zur Identifikation von Buckets in Hashtabellen oder für schnelle Vorabvergleiche.</li>
+<li><strong>准备初始值：</strong>创建待处理的对象（例如位模式或配置元素）并使其进入有效初始状态。</li>
+<li><strong>实例化仿函数：</strong>调用方针对目标类型 <code>T</code> 使用模板实例 <code>ara::core::hash&lt;T&gt;</code> 或创建匿名的临时函数对象。</li>
+<li><strong>执行计算：</strong>通过函数调用运算符为该实例执行哈希算法，该算法计算并返回整数哈希值。</li>
+<li><strong>处理结果：</strong>调用系统使用该哈希值进行索引计算、标识哈希表中的桶或进行快速预比较。</li>
 </ol>
-<p>In den meisten Szenarien erfolgt dieser Aufruf nicht manuell, sondern transparent innerhalb generischer Container- und Tabellenstrukturen, die <code>ara::core::hash</code> als Standard-Prädikat für Schlüsseltypen heranziehen.</p>
+<p>在大多数场景中，此调用并非手动进行，而是在透明地将 <code>ara::core::hash</code> 用作键类型默认谓词的泛型容器和表结构内部进行。</p>
 
-<h4>Fehlerszenarien</h4>
-<p>Da <code>ara::core::hash</code> als rein rechnerische Transformation agiert, werden funktionale Fehlerzustände vorwiegend über Vorbedingungen und Entwurfsmuster abgefangen:</p>
+<h4>错误场景</h4>
+<p>由于 <code>ara::core::hash</code> 作为纯计算转换工作，功能性错误状态主要通过前置条件和设计模式来拦截：</p>
 <ul>
-<li><strong>Fehlende Typunterstützung:</strong> Interpretation: Für Datentypen, für die keine gültige Spezialisierung von <code>ara::core::hash</code> existiert, dürfte das Primärtemplate unvollständig oder der Aufrufoperator gelöscht sein, sodass fehlerhafte Nutzungen bereits zur Übersetzungszeit abgewiesen werden.</li>
-<li><strong>Hash-Kollisionen:</strong> Da ein diskreter Wertebereich auf einen ganzzahligen Hash-Raum abgebildet wird, können unterschiedliche Objekte denselben Hash-Wert erzeugen. Ein Hash-Wert darf daher im Anwendungsdesign nicht als kryptografisch eindeutige Identität verstanden werden; bei Übereinstimmung ist stets eine zusätzliche Gleichheitsprüfung erforderlich.</li>
-<li><strong>Ausnahmesicherheit:</strong> In deterministischen automobilen Laufzeitumgebungen wird von Hashing-Operationen erwartet, dass sie ohne dynamische Allokationen auskommen und keine Ausnahmen auslösen, um Verzögerungen und undefinierte Zustände im Kontrollfluss zu verhindern.</li>
+<li><strong>缺少类型支持：</strong>解释：对于不存在 <code>ara::core::hash</code> 有效特化的数据类型，主模板可能不完整或调用运算符已被删除，从而在编译期便拒绝错误的使用。</li>
+<li><strong>哈希冲突：</strong>由于离散值域被映射到整数哈希空间，不同的对象可能会生成相同的哈希值。因此，在应用设计中不得将哈希值视为密码学上唯一的标识；在匹配时始终需要进行额外的相等性检查。</li>
+<li><strong>异常安全性：</strong>在确定性汽车运行时环境中，哈希操作预期在没有动态分配的情况下完成且不抛出异常，以防止控制流中的延迟和未定义状态。</li>
 </ul>
 
 <!-- annahmen:
@@ -59,7 +58,7 @@
 2) Interpretation: Exemplare von ara::core::hash dürften zustandslos und standard-konstruierbar sein, wodurch parallele Aufrufe nebenwirkungsfrei und threadsicher sind. – Begründung: Funktionsobjekte für Hash-Operationen sind in modernen C++- und AUTOSAR-Standards regulär frei von veränderlichem Zustand.
 3) Interpretation: Für nicht unterstützte Datentypen ist das Primärtemplate undefiniert oder der Aufrufoperator gelöscht, um ungültige Typen zur Compilezeit abzufangen. – Begründung: Gängige Praxis in generischen C++-Bibliotheken zur statischen Typprüfung.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten von Release R25-11. Alle nicht durch den Payload belegten Verhaltensweisen sind explizit als Interpretation deklariert.</p>
+<p class="ai-note">本指南基于 Release R25-11 的规范数据。所有未由有效载荷证实的内部行为均明确声明为解释。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_hash_83e629" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -276,31 +275,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="bdb6fdc52cb7c50128d7a8d0faf2cd4b245fc17e6a8b84aa7bb45d3173a2263c" data-trace-output="0f1f8669a20cfdebb10361fca4e18060a567cb5205ab18d4224f7b7ae89d91b0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Template-Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; fungiert im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform als primäres Funktionsobjekt zur Ermittlung von numerischen Hash-Werten. Die Spezifikation verweist dabei auf die korrespondierende Nutzung im Kontext von &lt;code&gt;bitset&lt;/code&gt;. Interpretation: &lt;code&gt;ara::core::hash&lt;/code&gt; dient als fundamentale Schnittstelle, um standardisierte Hash-Werte für Adaptive-Basistypen bereitzustellen, vermutlich primär zur effizienten Integration in assoziativen Hash-Containern sowie für schlüsselbasierte Suchoperationen.&lt;/p&gt;
-&lt;p&gt;Im Gesamtsystem entkoppelt &lt;code&gt;ara::core::hash&lt;/code&gt; verarbeitende Algorithmen von den internen Datenstrukturen der zu hashenden Typen. Durch entsprechende Template-Spezialisierungen wird sichergestellt, dass komplexe Datenstrukturen wie Bit-Sequenzen und Basistypen nach einem einheitlichen Muster auf ganzzahlige Kennwerte abgebildet werden können, ohne dass übergeordnete Module typspezifische Hash-Routinen implementieren müssen.&lt;/p&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
+&lt;p&gt;模板结构 &lt;code&gt;ara::core::hash&lt;/code&gt; 在 AUTOSAR Adaptive Platform 的模块 &lt;code&gt;core&lt;/code&gt; 中用作确定数值哈希值的主要函数对象。规范在此指出了在 &lt;code&gt;bitset&lt;/code&gt; 上下文中的相应使用。解读：&lt;code&gt;ara::core::hash&lt;/code&gt; 用作基础接口，以向 Adaptive 基础类型提供标准化哈希值，推测主要是为了高效集成在关联哈希容器中以及用于基于键的搜索操作。&lt;/p&gt;
+&lt;p&gt;在整个系统中，&lt;code&gt;ara::core::hash&lt;/code&gt; 将处理算法与待哈希类型的内部数据结构解耦。通过相应的模板特化确保可以将位序列和基础类型等复杂数据结构按照统一模式映射到整数特征值，而上层模块无需实现类型特定的哈希例程。&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; ist als leichtgewichtiges Funktor-Objekt ausgelegt. Interpretation: Exemplare von &lt;code&gt;ara::core::hash&lt;/code&gt; dürften typischerweise zustandslos und standard-konstruierbar sein, sodass ihre Instanziierung und Zerstörung keine dynamischen Systemressourcen beansprucht und vernachlässigbaren Laufzeitaufwand erzeugt.&lt;/p&gt;
-&lt;p&gt;In Bezug auf Nebenläufigkeit und Lebenszyklusphasen erlaubt die Zustandslosigkeit eine flexible Handhabung. Da das Funktionsobjekt keine internen Zustandsübergänge durchläuft, können Instanzen beliebig kopiert oder direkt als temporäre Objekte am Aufrufpunkt instantiiert werden. Mehrere Threads können den Aufrufoperator nebenwirkungsfrei und parallel ausführen, solange das übergebene Zielobjekt während des Berechnungsvorgangs vor parallelen Modifikationen geschützt ist.&lt;/p&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
+&lt;p&gt;结构 &lt;code&gt;ara::core::hash&lt;/code&gt; 设计为轻量级仿函数对象。解读：&lt;code&gt;ara::core::hash&lt;/code&gt; 的实例通常应当是无状态且可默认构造的，因此其实例化和销毁不会占用动态系统资源，且产生可忽略的运行时开销。&lt;/p&gt;
+&lt;p&gt;在并发性和生命周期阶段方面，无状态性允许灵活的处理。由于函数对象不经历内部状态转换，因此可以根据需要复制实例，或者在调用点直接将其作为临时对象实例化。只要传递的目标对象在计算过程中受到保护以避免并行修改，多个线程就可以无副作用地并行执行调用运算符。&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der reguläre Ablauf bei der Interaktion mit &lt;code&gt;ara::core::hash&lt;/code&gt; gliedert sich in die Bereitstellung des Eingabewertes, den Aufruf des Funktors und die Auswertung des resultierenden Werts:&lt;/p&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
+&lt;p&gt;与 &lt;code&gt;ara::core::hash&lt;/code&gt; 交互时的常规流程分为提供输入值、调用仿函数和评估结果值三个阶段：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Vorbereitung des Ausgangswertes:&lt;/strong&gt; Das zu verarbeitende Objekt (beispielsweise ein Bit-Muster oder ein Konfigurationselement) wird erzeugt und in einen gültigen Ausgangszustand versetzt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung des Funktors:&lt;/strong&gt; Der Aufrufer verwendet die Template-Instanz &lt;code&gt;ara::core::hash&amp;lt;T&amp;gt;&lt;/code&gt; für den Zieltyp &lt;code&gt;T&lt;/code&gt; oder erzeugt ein anonymes temporäres Funktionsobjekt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausführung der Berechnung:&lt;/strong&gt; Über den Funktionsaufrufoperator wird der Hash-Algorithmus für die Instanz ausgeführt, welcher den ganzzahligen Hash-Wert berechnet und zurückliefert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung des Ergebnisses:&lt;/strong&gt; Das aufrufende System verwendet den Hash-Wert zur Indexberechnung, zur Identifikation von Buckets in Hashtabellen oder für schnelle Vorabvergleiche.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;准备初始值：&lt;/strong&gt;创建待处理的对象（例如位模式或配置元素）并使其进入有效初始状态。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;实例化仿函数：&lt;/strong&gt;调用方针对目标类型 &lt;code&gt;T&lt;/code&gt; 使用模板实例 &lt;code&gt;ara::core::hash&amp;lt;T&amp;gt;&lt;/code&gt; 或创建匿名的临时函数对象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;执行计算：&lt;/strong&gt;通过函数调用运算符为该实例执行哈希算法，该算法计算并返回整数哈希值。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;处理结果：&lt;/strong&gt;调用系统使用该哈希值进行索引计算、标识哈希表中的桶或进行快速预比较。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;In den meisten Szenarien erfolgt dieser Aufruf nicht manuell, sondern transparent innerhalb generischer Container- und Tabellenstrukturen, die &lt;code&gt;ara::core::hash&lt;/code&gt; als Standard-Prädikat für Schlüsseltypen heranziehen.&lt;/p&gt;
+&lt;p&gt;在大多数场景中，此调用并非手动进行，而是在透明地将 &lt;code&gt;ara::core::hash&lt;/code&gt; 用作键类型默认谓词的泛型容器和表结构内部进行。&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Da &lt;code&gt;ara::core::hash&lt;/code&gt; als rein rechnerische Transformation agiert, werden funktionale Fehlerzustände vorwiegend über Vorbedingungen und Entwurfsmuster abgefangen:&lt;/p&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
+&lt;p&gt;由于 &lt;code&gt;ara::core::hash&lt;/code&gt; 作为纯计算转换工作，功能性错误状态主要通过前置条件和设计模式来拦截：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Fehlende Typunterstützung:&lt;/strong&gt; Interpretation: Für Datentypen, für die keine gültige Spezialisierung von &lt;code&gt;ara::core::hash&lt;/code&gt; existiert, dürfte das Primärtemplate unvollständig oder der Aufrufoperator gelöscht sein, sodass fehlerhafte Nutzungen bereits zur Übersetzungszeit abgewiesen werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hash-Kollisionen:&lt;/strong&gt; Da ein diskreter Wertebereich auf einen ganzzahligen Hash-Raum abgebildet wird, können unterschiedliche Objekte denselben Hash-Wert erzeugen. Ein Hash-Wert darf daher im Anwendungsdesign nicht als kryptografisch eindeutige Identität verstanden werden; bei Übereinstimmung ist stets eine zusätzliche Gleichheitsprüfung erforderlich.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausnahmesicherheit:&lt;/strong&gt; In deterministischen automobilen Laufzeitumgebungen wird von Hashing-Operationen erwartet, dass sie ohne dynamische Allokationen auskommen und keine Ausnahmen auslösen, um Verzögerungen und undefinierte Zustände im Kontrollfluss zu verhindern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;缺少类型支持：&lt;/strong&gt;解释：对于不存在 &lt;code&gt;ara::core::hash&lt;/code&gt; 有效特化的数据类型，主模板可能不完整或调用运算符已被删除，从而在编译期便拒绝错误的使用。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;哈希冲突：&lt;/strong&gt;由于离散值域被映射到整数哈希空间，不同的对象可能会生成相同的哈希值。因此，在应用设计中不得将哈希值视为密码学上唯一的标识；在匹配时始终需要进行额外的相等性检查。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;异常安全性：&lt;/strong&gt;在确定性汽车运行时环境中，哈希操作预期在没有动态分配的情况下完成且不抛出异常，以防止控制流中的延迟和未定义状态。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -308,7 +306,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 2) Interpretation: Exemplare von ara::core::hash dürften zustandslos und standard-konstruierbar sein, wodurch parallele Aufrufe nebenwirkungsfrei und threadsicher sind. – Begründung: Funktionsobjekte für Hash-Operationen sind in modernen C++- und AUTOSAR-Standards regulär frei von veränderlichem Zustand.
 3) Interpretation: Für nicht unterstützte Datentypen ist das Primärtemplate undefiniert oder der Aufrufoperator gelöscht, um ungültige Typen zur Compilezeit abzufangen. – Begründung: Gängige Praxis in generischen C++-Bibliotheken zur statischen Typprüfung.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten von Release R25-11. Alle nicht durch den Payload belegten Verhaltensweisen sind explizit als Interpretation deklariert.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 Release R25-11 的规范数据。所有未由有效载荷证实的内部行为均明确声明为解释。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

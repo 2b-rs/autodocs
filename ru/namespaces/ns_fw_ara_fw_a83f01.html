@@ -19,42 +19,41 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>a11a4d898009</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_fw_ara_fw_a83f01/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ru/namespaces/ns_fw_ara_fw_a83f01/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_fw_ara_fw_a83f01" data-view-mode="editor" title="Открыть редактор курации и досье" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Курировать</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>Контекст</h4>
 <p>
-Der Namespace <code>ara::fw</code> stellt funktionale Schnittstellen und Fehlermechanismen des Adaptive-Platform-Moduls für Firewall-Funktionalität bereit. Im Zentrum der Interaktion steht die Steuerung von Firewall-Zuständen über funktionale Schnittstellen wie <code>FirewallStateSwitchInterface</code> im Zusammenspiel mit der adaptiven Anwendungslogik sowie die Fehlerbehandlung auf Basis des AUTOSAR-Standardmodells mit <code>FwErrorDomain</code> und <code>FwException</code>. Typische Interaktionspartner dürften die Firewall-Dienstinstanz innerhalb der Plattform, zustandsverwaltende Funktionscluster sowie die anwendende Software-Komponente sein, welche Regelsätze anfordert oder umschaltet.
+Пространство имен <code>ara::fw</code> предоставляет функциональные интерфейсы и механизмы обработки ошибок модуля Adaptive Platform для функциональности межсетевого экрана (firewall). В центре взаимодействия находятся управление состояниями firewall через функциональные интерфейсы, такие как <code>FirewallStateSwitchInterface</code>, во взаимодействии с логикой адаптивного приложения, а также обработка ошибок на базе стандартной модели AUTOSAR с <code>FwErrorDomain</code> и <code>FwException</code>. Типичными партнерами по взаимодействию, вероятно, являются экземпляр службы firewall внутри платформы, управляющие состоянием функциональные кластеры, а также использующий программный компонент, который запрашивает или переключает наборы правил.
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>Сценарии ошибок</h4>
 <p>
-Für die strukturierte Fehlererkennung und -behandlung nutzt der Namespace das plattformweite Fehlerkonzept über die Fehlerdomäne <code>FwErrorDomain</code>. Fehlerzustände des Moduls werden über die Aufzählung <code>FwErrc</code> typisiert <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a>.
+Для структурированного обнаружения и обработки ошибок пространство имен использует общеплатформенную концепцию ошибок через домен ошибок <code>FwErrorDomain</code>. Состояния ошибок модуля типизируются через перечисление <code>FwErrc</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a>.
 </p>
 <p>
-Folgende spezifische Fehlercodes sind im Fehlerbereich definiert:
+В области ошибок определены следующие специфические коды ошибок:
 </p>
 <ul>
-  <li><code>FwErrc::kServiceNotAvailable</code> (Wert: 1): Kennzeichnet Situationen, in denen der zugrunde liegende Firewall-Dienst nicht verfügbar oder temporär nicht erreichbar ist <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a>.</li>
-  <li><code>FwErrc::kInvalidStateDependentFirewall</code> (Wert: 2): Tritt auf, wenn eine zustandsabhängige Firewall-Konfiguration oder -Umschaltung ungültig ist oder in einen unzulässigen Zustand wechselt <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a>.</li>
+  <li><code>FwErrc::kServiceNotAvailable</code> (значение: 1): обозначает ситуации, в которых базовая служба firewall недоступна или временно недосягаема <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a>.</li>
+  <li><code>FwErrc::kInvalidStateDependentFirewall</code> (значение: 2): возникает, если зависящая от состояния конфигурация или переключение firewall недействительны либо переходят в недопустимое состояние <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a>.</li>
 </ul>
 <p>
-Die Fehlerdomäne kann threadsicher über die freie Funktion <code>GetFwErrorDomain()</code> bezogen werden <a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002">[AP_SWS_Fw_83002]</a>. Konkrete Instanzen von <code>ara::core::ErrorCode</code> werden mit <code>MakeErrorCode()</code> konstruiert, welche ebenfalls als <code>constexpr</code> und threadsicher spezifiziert ist <a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003">[AP_SWS_Fw_83003]</a>. Tritt ein Fehler in Kontexten auf, in denen Ausnahmen statt Fehlercodes ausgewertet werden, repräsentiert <code>FwException</code> diesen Zustand im Namensraum.
+Домен ошибок может быть получен потокобезопасным способом через свободную функцию <code>GetFwErrorDomain()</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002">[AP_SWS_Fw_83002]</a>. Конкретные экземпляры <code>ara::core::ErrorCode</code> конструируются с помощью <code>MakeErrorCode()</code>, которая также специфицирована как <code>constexpr</code> и является потокобезопасной <a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003">[AP_SWS_Fw_83003]</a>. Если ошибка возникает в контекстах, где вместо кодов ошибок обрабатываются исключения, это состояние в пространстве имен представляет <code>FwException</code>.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>Путь использования</h4>
 <p>
-Der reguläre Pfad zur Diagnose und Fehlercodeerzeugung im Namespace umfasst die Instanziierung des Fehlercodes und die nachfolgende Auswertung durch die aufrufende Anwendung:
+Стандартный путь диагностики и формирования кодов ошибок в пространстве имен включает инстанцирование кода ошибки и последующий анализ вызывающим приложением:
 </p>
 <ol>
-  <li>Identifikation eines Fehlerfalls (beispielsweise Dienstnichtverfügbarkeit) in einer Interaktion mit <code>FirewallStateSwitchInterface</code>.</li>
-  <li>Erzeugung des modulspezifischen <code>ara::core::ErrorCode</code> mittels <code>MakeErrorCode(ara::fw::FwErrc, ara::core::ErrorDomain::SupportDataType)</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003">[AP_SWS_Fw_83003]</a>.</li>
-  <li>Prüfung des Fehlercodes gegen die Referenz von <code>GetFwErrorDomain()</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002">[AP_SWS_Fw_83002]</a> oder direkte Auswertung der Enumeration <code>FwErrc</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a> durch die aufrufende Komponente zur Einleitung adäquater Rückfallmaßnahmen.</li>
+  <li>Идентификация ошибочного случая (например, недоступности службы) при взаимодействии с <code>FirewallStateSwitchInterface</code>.</li>
+  <li>Формирование модулеспецифичного <code>ara::core::ErrorCode</code> с помощью <code>MakeErrorCode(ara::fw::FwErrc, ara::core::ErrorDomain::SupportDataType)</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003">[AP_SWS_Fw_83003]</a>.</li>
+  <li>Проверка кода ошибки относительно ссылки <code>GetFwErrorDomain()</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002">[AP_SWS_Fw_83002]</a> или прямой анализ перечисления <code>FwErrc</code> <a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001">[AP_SWS_Fw_83001]</a> вызывающим компонентом для принятия соответствующих мер по переходу на аварийный режим.</li>
 </ol>
 
 <!-- annahmen: 1) Typische Interaktionspartner dürften die Firewall-Dienstinstanz, zustandsverwaltende Funktionscluster sowie die anwendende Software-Komponente sein – Begründung: Der Payload belegt Klassen- und Interfacenamen (FirewallStateSwitchInterface, FwException, FwErrorDomain), Details zu Interaktionspartnern sind im Payload jedoch nicht separat spezifiziert. -->
-<p class="ai-note">Dieser Leitfaden wurde automatisiert auf Basis der Spezifikation für Release R25-11 generiert.</p>
+<p class="ai-note">Настоящее руководство сгенерировано автоматически на основе спецификации для релиза R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_fw_ara_fw_a83f01" title="Обсудить с ИИ">💬 Обсудить с ИИ</button>
@@ -470,39 +469,38 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="a11a4d89800939523ca9ea7f1654eaa60ddcddc0e387417becb31f7d32c863aa" data-trace-output="adb653c99417f0f4ca9dc988f55e0d7f5a7fb673b44d5b1a9b9d71f1057078dc" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;Контекст&lt;/h4&gt;
 &lt;p&gt;
-Der Namespace &lt;code&gt;ara::fw&lt;/code&gt; stellt funktionale Schnittstellen und Fehlermechanismen des Adaptive-Platform-Moduls für Firewall-Funktionalität bereit. Im Zentrum der Interaktion steht die Steuerung von Firewall-Zuständen über funktionale Schnittstellen wie &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt; im Zusammenspiel mit der adaptiven Anwendungslogik sowie die Fehlerbehandlung auf Basis des AUTOSAR-Standardmodells mit &lt;code&gt;FwErrorDomain&lt;/code&gt; und &lt;code&gt;FwException&lt;/code&gt;. Typische Interaktionspartner dürften die Firewall-Dienstinstanz innerhalb der Plattform, zustandsverwaltende Funktionscluster sowie die anwendende Software-Komponente sein, welche Regelsätze anfordert oder umschaltet.
+Пространство имен &lt;code&gt;ara::fw&lt;/code&gt; предоставляет функциональные интерфейсы и механизмы обработки ошибок модуля Adaptive Platform для функциональности межсетевого экрана (firewall). В центре взаимодействия находятся управление состояниями firewall через функциональные интерфейсы, такие как &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt;, во взаимодействии с логикой адаптивного приложения, а также обработка ошибок на базе стандартной модели AUTOSAR с &lt;code&gt;FwErrorDomain&lt;/code&gt; и &lt;code&gt;FwException&lt;/code&gt;. Типичными партнерами по взаимодействию, вероятно, являются экземпляр службы firewall внутри платформы, управляющие состоянием функциональные кластеры, а также использующий программный компонент, который запрашивает или переключает наборы правил.
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;Сценарии ошибок&lt;/h4&gt;
 &lt;p&gt;
-Für die strukturierte Fehlererkennung und -behandlung nutzt der Namespace das plattformweite Fehlerkonzept über die Fehlerdomäne &lt;code&gt;FwErrorDomain&lt;/code&gt;. Fehlerzustände des Moduls werden über die Aufzählung &lt;code&gt;FwErrc&lt;/code&gt; typisiert &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.
+Для структурированного обнаружения и обработки ошибок пространство имен использует общеплатформенную концепцию ошибок через домен ошибок &lt;code&gt;FwErrorDomain&lt;/code&gt;. Состояния ошибок модуля типизируются через перечисление &lt;code&gt;FwErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.
 &lt;/p&gt;
 &lt;p&gt;
-Folgende spezifische Fehlercodes sind im Fehlerbereich definiert:
+В области ошибок определены следующие специфические коды ошибок:
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;FwErrc::kServiceNotAvailable&lt;/code&gt; (Wert: 1): Kennzeichnet Situationen, in denen der zugrunde liegende Firewall-Dienst nicht verfügbar oder temporär nicht erreichbar ist &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;FwErrc::kInvalidStateDependentFirewall&lt;/code&gt; (Wert: 2): Tritt auf, wenn eine zustandsabhängige Firewall-Konfiguration oder -Umschaltung ungültig ist oder in einen unzulässigen Zustand wechselt &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;FwErrc::kServiceNotAvailable&lt;/code&gt; (значение: 1): обозначает ситуации, в которых базовая служба firewall недоступна или временно недосягаема &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;FwErrc::kInvalidStateDependentFirewall&lt;/code&gt; (значение: 2): возникает, если зависящая от состояния конфигурация или переключение firewall недействительны либо переходят в недопустимое состояние &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Die Fehlerdomäne kann threadsicher über die freie Funktion &lt;code&gt;GetFwErrorDomain()&lt;/code&gt; bezogen werden &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt;. Konkrete Instanzen von &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; werden mit &lt;code&gt;MakeErrorCode()&lt;/code&gt; konstruiert, welche ebenfalls als &lt;code&gt;constexpr&lt;/code&gt; und threadsicher spezifiziert ist &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;. Tritt ein Fehler in Kontexten auf, in denen Ausnahmen statt Fehlercodes ausgewertet werden, repräsentiert &lt;code&gt;FwException&lt;/code&gt; diesen Zustand im Namensraum.
+Домен ошибок может быть получен потокобезопасным способом через свободную функцию &lt;code&gt;GetFwErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt;. Конкретные экземпляры &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; конструируются с помощью &lt;code&gt;MakeErrorCode()&lt;/code&gt;, которая также специфицирована как &lt;code&gt;constexpr&lt;/code&gt; и является потокобезопасной &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;. Если ошибка возникает в контекстах, где вместо кодов ошибок обрабатываются исключения, это состояние в пространстве имен представляет &lt;code&gt;FwException&lt;/code&gt;.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;Путь использования&lt;/h4&gt;
 &lt;p&gt;
-Der reguläre Pfad zur Diagnose und Fehlercodeerzeugung im Namespace umfasst die Instanziierung des Fehlercodes und die nachfolgende Auswertung durch die aufrufende Anwendung:
+Стандартный путь диагностики и формирования кодов ошибок в пространстве имен включает инстанцирование кода ошибки и последующий анализ вызывающим приложением:
 &lt;/p&gt;
 &lt;ol&gt;
-  &lt;li&gt;Identifikation eines Fehlerfalls (beispielsweise Dienstnichtverfügbarkeit) in einer Interaktion mit &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;Erzeugung des modulspezifischen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; mittels &lt;code&gt;MakeErrorCode(ara::fw::FwErrc, ara::core::ErrorDomain::SupportDataType)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;Prüfung des Fehlercodes gegen die Referenz von &lt;code&gt;GetFwErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt; oder direkte Auswertung der Enumeration &lt;code&gt;FwErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt; durch die aufrufende Komponente zur Einleitung adäquater Rückfallmaßnahmen.&lt;/li&gt;
+  &lt;li&gt;Идентификация ошибочного случая (например, недоступности службы) при взаимодействии с &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Формирование модулеспецифичного &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; с помощью &lt;code&gt;MakeErrorCode(ara::fw::FwErrc, ara::core::ErrorDomain::SupportDataType)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Проверка кода ошибки относительно ссылки &lt;code&gt;GetFwErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt; или прямой анализ перечисления &lt;code&gt;FwErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt; вызывающим компонентом для принятия соответствующих мер по переходу на аварийный режим.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;!-- annahmen: 1) Typische Interaktionspartner dürften die Firewall-Dienstinstanz, zustandsverwaltende Funktionscluster sowie die anwendende Software-Komponente sein – Begründung: Der Payload belegt Klassen- und Interfacenamen (FirewallStateSwitchInterface, FwException, FwErrorDomain), Details zu Interaktionspartnern sind im Payload jedoch nicht separat spezifiziert. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisiert auf Basis der Spezifikation für Release R25-11 generiert.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Настоящее руководство сгенерировано автоматически на основе спецификации для релиза R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

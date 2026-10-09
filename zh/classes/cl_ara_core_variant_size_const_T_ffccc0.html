@@ -24,55 +24,54 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>1a671cca9d56</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_variant_size_const_T_ffccc0/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_core_variant_size_const_T_ffccc0/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_variant_size_const_T_ffccc0" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die partielle Template-Spezialisierung <code>ara::core::variant_size&lt;const T&gt;</code> stellt ein Hilfstemplate zur Bestimmung der Anzahl von Alternativen innerhalb eines Varianten-Typs zur Übersetzungszeit bereit. Im Kontext des AUTOSAR-Adaptive-Moduls <code>core</code> dient das Template der Typ-Introspektion von Variantenstrukturen. Die Beschreibung im Spezifikationsbestand verweist auf die entsprechende Verwendung unter <em>[variant]</em>.
+偏特化模板 <code>ara::core::variant_size&lt;const T&gt;</code> 提供了用于在编译时确定变体类型内替代项数量的辅助模板。在 AUTOSAR Adaptive 模块 <code>core</code> 的上下文中，该模板用于变体结构的类型自省。规范中的描述指明了其在 <em>[variant]</em> 下的相应用法。
 </p>
 <p>
-Als primärer Interaktionspartner fungiert der zugrundeliegende Typ <code>T</code>, welcher typischerweise eine Ausprägung von <code>ara::core::variant</code> darstellt. Das Template erweitert die generelle Typabfrage um die Behandlung von <code>const</code>-qualifizierten Datentypen. Es ermöglicht generischen Template-Algorithmen, Metaprogrammierungsroutinen und compile-zeitlichen Prüfungen einen transparenten Zugriff auf die Dimensionsmetadaten einer Variante, unabhängig davon, ob der konkrete Argumenttyp als konstanter Typ vorliegt oder nicht.
+基础类型 <code>T</code> 作为主要交互对象，其通常表示 <code>ara::core::variant</code> 的一种表现形式。该模板扩展了通用类型查询，以处理 <code>const</code> 限定的数据类型。无论具体实参类型是否存在为常量类型，它都允许泛型模板算法、元编程例程和编译时检查透明地访问变体的维度元数据。
 </p>
 <p>
-Die Rolle der Spezialisierung ist rein deklarativ und introspektiv: Sie fungiert als Typmerkmal (Type Trait) und bildet eine Brücke zwischen der typspezifischen Varianten-Definition und generischem Metaprogrammierungs-Code, der auf Merkmale wie <code>variant_size_v</code> oder den direkten Zugriff auf statische Konstanten angewiesen ist.
+该特化的作用纯粹是声明性和自省性的：它充当类型特征（Type Trait），并在特定类型的变体定义与依赖于 <code>variant_size_v</code> 等特征或直接访问静态常量的泛型元编程代码之间架起桥梁。
 </p>
 
-<h4>Lebenszyklus und Instanziierung</h4>
+<h4>生命周期与实例化</h4>
 <p>
-Als reines Compile-Time-Konstrukt (Type Trait) besitzt <code>ara::core::variant_size&lt;const T&gt;</code> keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren keine dynamischen Speicherallokationen, keine Besitzverhältnisse und keine Zerstörungsphasen.
+作为纯编译时构造（Type Trait），<code>ara::core::variant_size&lt;const T&gt;</code> 在运行时没有动态生命周期。不存在动态内存分配、所有权关系和析构阶段。
 </p>
 <p>
-Der Lebenszyklus beschränkt sich vollständig auf die Phasen der statischen Code-Analyse und Übersetzung:
+生命周期完全局限于静态代码分析和编译阶段：
 </p>
 <ul>
-<li><strong>Template-Spezialisierung:</strong> Sobald der Compiler auf einen Ausdruck stößt, der <code>ara::core::variant_size</code> mit einem <code>const</code>-qualifizierten Typen parametrisiert, greift diese Spezialisierung anstelle des primären Templates.</li>
-<li><strong>Konstanten-Auswertung:</strong> Die Spezialisierung leitet vermutlich den Wert direkt von der unqualifizierten Spezialisierung <code>ara::core::variant_size&lt;T&gt;</code> ab. Die Ermittlung erfolgt als integraler Bestandteil der Template-Instanziierung.</li>
-<li><strong>Laufzeitlosigkeit:</strong> Da das Konstrukt lediglich statische Member-Informationen zur Verfügung stellt, entstehen zur Laufzeit keine Instanzen, kein Speicherverbrauch im Objekt-Layout und keinerlei Nebenläufigkeitskonflikte.</li>
+<li><strong>模板特化：</strong>一旦编译器遇到使用 <code>const</code> 限定类型对 <code>ara::core::variant_size</code> 进行参数化的表达式，此特化就会替代主模板生效。</li>
+<li><strong>常量求值：</strong>该特化大概直接从未限定的特化 <code>ara::core::variant_size&lt;T&gt;</code> 派生出该值。该确定过程作为模板实例化的组成部分进行。</li>
+<li><strong>无运行时开销：</strong>由于该构造仅提供静态成员信息，因此在运行时不会产生实例、对象布局中没有内存消耗，也不会发生任何并发冲突。</li>
 </ul>
 
-<h4>Nutzungspfad zur Übersetzungszeit</h4>
+<h4>编译时使用路径</h4>
 <p>
-Die typische Verwendung von <code>ara::core::variant_size&lt;const T&gt;</code> erfolgt innerhalb von generischem C++-Code oder statischen Zusicherungen, bei denen Funktionen oder Klassenstrukturen typunabhängig mit konstanten Referenzen auf Varianten arbeiten.
+<code>ara::core::variant_size&lt;const T&gt;</code> 的典型用法发生在泛型 C++ 代码或静态断言中，其中函数或类结构与对变体的常量引用无关类型地协同工作。
 </p>
 <ol>
-<li><strong>Übergabe eines konstanten Typs:</strong> Ein generischer Algorithmus erhält einen konstanten Referenztyp (beispielsweise <code>const MyVariant&amp;</code>) oder ein abgeleitetes Typlevel <code>const T</code>.</li>
-<li><strong>Abfrage der Alternativenanzahl:</strong> Über den Template-Ausdruck <code>ara::core::variant_size&lt;const T&gt;::value</code> (oder entsprechende Alias-Templates) fragt der metaprogrammierende Code die Anzahl der gespeicherten Typ-Alternativen ab.</li>
-<li><strong>Verarbeitung zur Compile-Zeit:</strong> Der resultierende ganzzahlige Wert fließt in Bedingungen wie <code>static_assert</code>, <code>std::integral_constant</code>-Ableitungen oder Template-Rekursionen ein, um Typindizes und Wertebereiche statisch zu validieren.</li>
+<li><strong>传递常量类型：</strong>泛型算法接收常量引用类型（例如 <code>const MyVariant&amp;</code>）或派生的类型层级 <code>const T</code>。</li>
+<li><strong>查询替代项数量：</strong>通过模板表达式 <code>ara::core::variant_size&lt;const T&gt;::value</code>（或相应的别名模板），元编程代码查询存储的类型替代项的数量。</li>
+<li><strong>编译时处理：</strong>生成的整数值融入诸如 <code>static_assert</code>、<code>std::integral_constant</code> 派生或模板递归等条件中，以静态验证类型索引和取值范围。</li>
 </ol>
 <p>
-Interpretation: Durch die Spezialisierung wird sichergestellt, dass Entwickler und Bibliotheksfunktionen den Typ <code>T</code> nicht manuell von CV-Qualifizierern mittels Transformationstraits (wie <code>std::remove_const</code>) bereinigen müssen, bevor eine Abfrage der Variantengröße erfolgen kann.
+Interpretation：通过该特化，确保了开发者和库函数在查询变体大小之前，无需使用变换 trait（如 <code>std::remove_const</code>）手动清除类型 <code>T</code> 中的 CV 限定符。
 </p>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, treten Fehler nicht in Form von Laufzeit-Ausnahmen oder AUTOSAR-Fehlercodes (wie <code>ara::core::ErrorCode</code>) auf. Fehlerszenarien manifestieren sich stattdessen ausnahmslos als Fehler während des Übersetzungsvorgangs.
+由于该类纯粹在编译时起作用并且不提供运行时方法，因此错误不会以运行时异常或 AUTOSAR 错误代码（如 <code>ara::core::ErrorCode</code>）的形式出现。相反，错误场景无一例外地表现为编译过程中的错误。
 </p>
 <ul>
-<li><strong>Instanziierung mit inkompatiblen Typen:</strong> Wird <code>ara::core::variant_size&lt;const T&gt;</code> mit einem Typen instanziiert, der kein Varianten-Typ ist und für dessen unqualifizierten Basistyp <code>T</code> keine gültige Spezialisierung von <code>variant_size</code> existiert, schlägt die Template-Instanziierung fehl. Dies führt zu einem direkten Übersetzungsabbruch aufgrund fehlender Member.</li>
-<li><strong>Unvollständige Typen:</strong> Wird ein unvollständiger Typ (Forward Declaration) übergeben, bevor die vollständige Klassendefinition der Variante dem Compiler bekannt ist, kann der Compiler die Größe nicht auflösen, was ebenfalls in einem Übersetzungsfehler resultiert.</li>
-<li><strong>Falsche Typqualifizierung:</strong> Die Spezialisierung deckt ausschließlich <code>const T</code> ab. Liegt eine volatile Qualifizierung vor (z.&nbsp;B. <code>volatile T</code> oder <code>const volatile T</code>), greift diese Spezialisierung nicht, was je nach Vorhandensein weiterer Traits zu abweichendem Verhalten oder Compiler-Diagnosen führen dürfte.</li>
+<li><strong>使用不兼容类型进行实例化：</strong>如果使用非变体类型且其未限定基本类型 <code>T</code> 不存在有效的 <code>variant_size</code> 特化的类型来实例化 <code>ara::core::variant_size&lt;const T&gt;</code>，则模板实例化失败。这将由于缺少成员而导致编译直接中止。</li>
+<li><strong>不完整类型：</strong>如果在变体的完整类定义为编译器所知之前传递了不完整类型（前向声明 Forward Declaration），则编译器无法解析大小，这同样会导致编译错误。</li>
+<li><strong>错误的类型限定：</strong>该特化仅覆盖 <code>const T</code>。如果存在 volatile 限定（例如 <code>volatile T</code> 或 <code>const volatile T</code>），则此特化不生效，视其他 trait 的存在情况而定，这可能会导致不同的行为或编译器诊断信息。</li>
 </ul>
 
 <!-- annahmen:
@@ -80,7 +79,7 @@ Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, t
 2) Bei Instanziierung mit inkompatiblen oder unvollständigen Typen wird ein Kompilierzeitfehler ausgelöst – Begründung: Typ-Traits für Varianten erfordern eine vollständige Definition des zugrundeliegenden Varianten-Typs.
 3) Die Auswertung erfolgt rein zur Übersetzungszeit ohne Laufzeit- und Speicheraufwand – Begründung: Die Syntax deklariert eine Struktur-Spezialisierung nach dem Muster klassischer Compile-Time-Type-Traits.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Releases R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf den bereitgestellten Spezifikationskontext.</p>
+<p class="ai-note">本指南基于 AUTOSAR Adaptive Release R25-11 的结构元数据。所有专业技术陈述均完全基于所提供的规范上下文。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_variant_size_const_T_ffccc0" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -297,52 +296,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1a671cca9d566f7501ed0aabeb5137264be9e6ca8e35f74e29749a951ccc1808" data-trace-output="bd1f48c4f8ca1cf6058994bc158a597b9a7ecf182c9e8635814c1fabe07edb9f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die partielle Template-Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; stellt ein Hilfstemplate zur Bestimmung der Anzahl von Alternativen innerhalb eines Varianten-Typs zur Übersetzungszeit bereit. Im Kontext des AUTOSAR-Adaptive-Moduls &lt;code&gt;core&lt;/code&gt; dient das Template der Typ-Introspektion von Variantenstrukturen. Die Beschreibung im Spezifikationsbestand verweist auf die entsprechende Verwendung unter &lt;em&gt;[variant]&lt;/em&gt;.
+偏特化模板 &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; 提供了用于在编译时确定变体类型内替代项数量的辅助模板。在 AUTOSAR Adaptive 模块 &lt;code&gt;core&lt;/code&gt; 的上下文中，该模板用于变体结构的类型自省。规范中的描述指明了其在 &lt;em&gt;[variant]&lt;/em&gt; 下的相应用法。
 &lt;/p&gt;
 &lt;p&gt;
-Als primärer Interaktionspartner fungiert der zugrundeliegende Typ &lt;code&gt;T&lt;/code&gt;, welcher typischerweise eine Ausprägung von &lt;code&gt;ara::core::variant&lt;/code&gt; darstellt. Das Template erweitert die generelle Typabfrage um die Behandlung von &lt;code&gt;const&lt;/code&gt;-qualifizierten Datentypen. Es ermöglicht generischen Template-Algorithmen, Metaprogrammierungsroutinen und compile-zeitlichen Prüfungen einen transparenten Zugriff auf die Dimensionsmetadaten einer Variante, unabhängig davon, ob der konkrete Argumenttyp als konstanter Typ vorliegt oder nicht.
+基础类型 &lt;code&gt;T&lt;/code&gt; 作为主要交互对象，其通常表示 &lt;code&gt;ara::core::variant&lt;/code&gt; 的一种表现形式。该模板扩展了通用类型查询，以处理 &lt;code&gt;const&lt;/code&gt; 限定的数据类型。无论具体实参类型是否存在为常量类型，它都允许泛型模板算法、元编程例程和编译时检查透明地访问变体的维度元数据。
 &lt;/p&gt;
 &lt;p&gt;
-Die Rolle der Spezialisierung ist rein deklarativ und introspektiv: Sie fungiert als Typmerkmal (Type Trait) und bildet eine Brücke zwischen der typspezifischen Varianten-Definition und generischem Metaprogrammierungs-Code, der auf Merkmale wie &lt;code&gt;variant_size_v&lt;/code&gt; oder den direkten Zugriff auf statische Konstanten angewiesen ist.
+该特化的作用纯粹是声明性和自省性的：它充当类型特征（Type Trait），并在特定类型的变体定义与依赖于 &lt;code&gt;variant_size_v&lt;/code&gt; 等特征或直接访问静态常量的泛型元编程代码之间架起桥梁。
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus und Instanziierung&lt;/h4&gt;
+&lt;h4&gt;生命周期与实例化&lt;/h4&gt;
 &lt;p&gt;
-Als reines Compile-Time-Konstrukt (Type Trait) besitzt &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren keine dynamischen Speicherallokationen, keine Besitzverhältnisse und keine Zerstörungsphasen.
+作为纯编译时构造（Type Trait），&lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; 在运行时没有动态生命周期。不存在动态内存分配、所有权关系和析构阶段。
 &lt;/p&gt;
 &lt;p&gt;
-Der Lebenszyklus beschränkt sich vollständig auf die Phasen der statischen Code-Analyse und Übersetzung:
+生命周期完全局限于静态代码分析和编译阶段：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Template-Spezialisierung:&lt;/strong&gt; Sobald der Compiler auf einen Ausdruck stößt, der &lt;code&gt;ara::core::variant_size&lt;/code&gt; mit einem &lt;code&gt;const&lt;/code&gt;-qualifizierten Typen parametrisiert, greift diese Spezialisierung anstelle des primären Templates.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Konstanten-Auswertung:&lt;/strong&gt; Die Spezialisierung leitet vermutlich den Wert direkt von der unqualifizierten Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt; ab. Die Ermittlung erfolgt als integraler Bestandteil der Template-Instanziierung.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Laufzeitlosigkeit:&lt;/strong&gt; Da das Konstrukt lediglich statische Member-Informationen zur Verfügung stellt, entstehen zur Laufzeit keine Instanzen, kein Speicherverbrauch im Objekt-Layout und keinerlei Nebenläufigkeitskonflikte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;模板特化：&lt;/strong&gt;一旦编译器遇到使用 &lt;code&gt;const&lt;/code&gt; 限定类型对 &lt;code&gt;ara::core::variant_size&lt;/code&gt; 进行参数化的表达式，此特化就会替代主模板生效。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;常量求值：&lt;/strong&gt;该特化大概直接从未限定的特化 &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt; 派生出该值。该确定过程作为模板实例化的组成部分进行。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;无运行时开销：&lt;/strong&gt;由于该构造仅提供静态成员信息，因此在运行时不会产生实例、对象布局中没有内存消耗，也不会发生任何并发冲突。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Nutzungspfad zur Übersetzungszeit&lt;/h4&gt;
+&lt;h4&gt;编译时使用路径&lt;/h4&gt;
 &lt;p&gt;
-Die typische Verwendung von &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; erfolgt innerhalb von generischem C++-Code oder statischen Zusicherungen, bei denen Funktionen oder Klassenstrukturen typunabhängig mit konstanten Referenzen auf Varianten arbeiten.
+&lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; 的典型用法发生在泛型 C++ 代码或静态断言中，其中函数或类结构与对变体的常量引用无关类型地协同工作。
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe eines konstanten Typs:&lt;/strong&gt; Ein generischer Algorithmus erhält einen konstanten Referenztyp (beispielsweise &lt;code&gt;const MyVariant&amp;amp;&lt;/code&gt;) oder ein abgeleitetes Typlevel &lt;code&gt;const T&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Abfrage der Alternativenanzahl:&lt;/strong&gt; Über den Template-Ausdruck &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;::value&lt;/code&gt; (oder entsprechende Alias-Templates) fragt der metaprogrammierende Code die Anzahl der gespeicherten Typ-Alternativen ab.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung zur Compile-Zeit:&lt;/strong&gt; Der resultierende ganzzahlige Wert fließt in Bedingungen wie &lt;code&gt;static_assert&lt;/code&gt;, &lt;code&gt;std::integral_constant&lt;/code&gt;-Ableitungen oder Template-Rekursionen ein, um Typindizes und Wertebereiche statisch zu validieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;传递常量类型：&lt;/strong&gt;泛型算法接收常量引用类型（例如 &lt;code&gt;const MyVariant&amp;amp;&lt;/code&gt;）或派生的类型层级 &lt;code&gt;const T&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;查询替代项数量：&lt;/strong&gt;通过模板表达式 &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;::value&lt;/code&gt;（或相应的别名模板），元编程代码查询存储的类型替代项的数量。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;编译时处理：&lt;/strong&gt;生成的整数值融入诸如 &lt;code&gt;static_assert&lt;/code&gt;、&lt;code&gt;std::integral_constant&lt;/code&gt; 派生或模板递归等条件中，以静态验证类型索引和取值范围。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: Durch die Spezialisierung wird sichergestellt, dass Entwickler und Bibliotheksfunktionen den Typ &lt;code&gt;T&lt;/code&gt; nicht manuell von CV-Qualifizierern mittels Transformationstraits (wie &lt;code&gt;std::remove_const&lt;/code&gt;) bereinigen müssen, bevor eine Abfrage der Variantengröße erfolgen kann.
+Interpretation：通过该特化，确保了开发者和库函数在查询变体大小之前，无需使用变换 trait（如 &lt;code&gt;std::remove_const&lt;/code&gt;）手动清除类型 &lt;code&gt;T&lt;/code&gt; 中的 CV 限定符。
 &lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, treten Fehler nicht in Form von Laufzeit-Ausnahmen oder AUTOSAR-Fehlercodes (wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;) auf. Fehlerszenarien manifestieren sich stattdessen ausnahmslos als Fehler während des Übersetzungsvorgangs.
+由于该类纯粹在编译时起作用并且不提供运行时方法，因此错误不会以运行时异常或 AUTOSAR 错误代码（如 &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;）的形式出现。相反，错误场景无一例外地表现为编译过程中的错误。
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung mit inkompatiblen Typen:&lt;/strong&gt; Wird &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt; mit einem Typen instanziiert, der kein Varianten-Typ ist und für dessen unqualifizierten Basistyp &lt;code&gt;T&lt;/code&gt; keine gültige Spezialisierung von &lt;code&gt;variant_size&lt;/code&gt; existiert, schlägt die Template-Instanziierung fehl. Dies führt zu einem direkten Übersetzungsabbruch aufgrund fehlender Member.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Typen:&lt;/strong&gt; Wird ein unvollständiger Typ (Forward Declaration) übergeben, bevor die vollständige Klassendefinition der Variante dem Compiler bekannt ist, kann der Compiler die Größe nicht auflösen, was ebenfalls in einem Übersetzungsfehler resultiert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Falsche Typqualifizierung:&lt;/strong&gt; Die Spezialisierung deckt ausschließlich &lt;code&gt;const T&lt;/code&gt; ab. Liegt eine volatile Qualifizierung vor (z.&amp;nbsp;B. &lt;code&gt;volatile T&lt;/code&gt; oder &lt;code&gt;const volatile T&lt;/code&gt;), greift diese Spezialisierung nicht, was je nach Vorhandensein weiterer Traits zu abweichendem Verhalten oder Compiler-Diagnosen führen dürfte.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;使用不兼容类型进行实例化：&lt;/strong&gt;如果使用非变体类型且其未限定基本类型 &lt;code&gt;T&lt;/code&gt; 不存在有效的 &lt;code&gt;variant_size&lt;/code&gt; 特化的类型来实例化 &lt;code&gt;ara::core::variant_size&amp;lt;const T&amp;gt;&lt;/code&gt;，则模板实例化失败。这将由于缺少成员而导致编译直接中止。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;不完整类型：&lt;/strong&gt;如果在变体的完整类定义为编译器所知之前传递了不完整类型（前向声明 Forward Declaration），则编译器无法解析大小，这同样会导致编译错误。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;错误的类型限定：&lt;/strong&gt;该特化仅覆盖 &lt;code&gt;const T&lt;/code&gt;。如果存在 volatile 限定（例如 &lt;code&gt;volatile T&lt;/code&gt; 或 &lt;code&gt;const volatile T&lt;/code&gt;），则此特化不生效，视其他 trait 的存在情况而定，这可能会导致不同的行为或编译器诊断信息。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -350,7 +348,7 @@ Da die Klasse rein compile-zeitlich wirkt und keine Laufzeitmethoden anbietet, t
 2) Bei Instanziierung mit inkompatiblen oder unvollständigen Typen wird ein Kompilierzeitfehler ausgelöst – Begründung: Typ-Traits für Varianten erfordern eine vollständige Definition des zugrundeliegenden Varianten-Typs.
 3) Die Auswertung erfolgt rein zur Übersetzungszeit ohne Laufzeit- und Speicheraufwand – Begründung: Die Syntax deklariert eine Struktur-Spezialisierung nach dem Muster klassischer Compile-Time-Type-Traits.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Releases R25-11. Alle fachlichen Aussagen stützen sich ausschließlich auf den bereitgestellten Spezifikationskontext.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive Release R25-11 的结构元数据。所有专业技术陈述均完全基于所提供的规范上下文。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

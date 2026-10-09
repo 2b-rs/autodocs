@@ -24,56 +24,55 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>6dac7d821dca</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_per_ReadWriteAccessor_30aeb5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/hi/classes/cl_ara_per_ReadWriteAccessor_30aeb5/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_per_ReadWriteAccessor_30aeb5" data-view-mode="editor" title="क्यूरेशन संपादक और ऑडिट डोजियर खोलें" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ क्यूरेट करें</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>संदर्भ</h4>
 <p>
-Die Klasse <code>ara::per::ReadWriteAccessor</code> ist Bestandteil des Moduls <code>per</code> (Persistency) der AUTOSAR Adaptive Platform im Release R25-11. Ihre Kernaufgabe besteht darin, das Lesen und Schreiben von Dateidaten innerhalb einer einheitlichen Schnittstelle bereitzustellen. Hierzu kombiniert sie die funktionalen Eigenschaften der Basisklassen <code>ReadAccessor</code> und <code>WriteAccessor</code> über Mehrfachvererbung.
+वर्ग <code>ara::per::ReadWriteAccessor</code> रिलीज़ R25-11 में AUTOSAR Adaptive Platform के <code>per</code> (Persistency) मॉड्यूल का एक घटक है। इसका मुख्य कार्य एक एकीकृत इंटरफ़ेस के भीतर फ़ाइल डेटा को पढ़ने और लिखने की सुविधा प्रदान करना है। इसके लिए, यह मल्टीपल इनहेरिटेंस के माध्यम से बेस क्लास <code>ReadAccessor</code> और <code>WriteAccessor</code> के कार्यात्मक गुणों को जोड़ता है।
 </p>
 <p>
-In der Klassenarchitektur ist <code>ara::per::ReadWriteAccessor</code> als <code>final</code> deklariert (<code>class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor</code>). Dies verhindert eine weitere Ableitung und stellt sicher, dass Implementierungsdetails der kombinierten Dateizugriffsschnittstelle nicht durch nachgelagerte Spezialisierungen überschrieben oder erweitert werden. Als Interaktionspartner fungieren einerseits die aufrufende Applikation, welche Lese- und Schreiboperationen auf persistenten Dateiinhalten ausführen möchte, und andererseits die beiden Schnittstellenverträge <code>ReadAccessor</code> sowie <code>WriteAccessor</code>, deren Funktionalitäten in diesem konkreten Accessor zusammengeführt werden.
+वर्ग वास्तुकला में, <code>ara::per::ReadWriteAccessor</code> को <code>final</code> (<code>class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor</code>) के रूप में घोषित किया गया है। यह आगे के व्युत्पन्न को रोकता है और सुनिश्चित करता है कि संयुक्त फ़ाइल एक्सेस इंटरफ़ेस के कार्यान्वयन विवरण बाद के विशेषीकरणों द्वारा ओवरराइड या विस्तारित न हों। इंटरैक्शन पार्टनर के रूप में एक ओर कॉलिंग एप्लिकेशन कार्य करता है, जो लगातार फ़ाइल सामग्री पर पढ़ने और लिखने के संचालन निष्पादित करना चाहता है, और दूसरी ओर दो इंटरफ़ेस अनुबंध <code>ReadAccessor</code> और <code>WriteAccessor</code> हैं, जिनकी कार्यात्मकताओं को इस ठोस एक्सेसॉर में संयोजित किया गया है।
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>जीवनचक्र</h4>
 <p>
-Der Lebenszyklus einer Instanz von <code>ara::per::ReadWriteAccessor</code> unterliegt strikten Vorgaben hinsichtlich Instanziierung, Ressourcenbindung und Zerstörung.
+<code>ara::per::ReadWriteAccessor</code> के एक इंस्टेंस का जीवनचक्र इंस्टेंसिएशन, संसाधन बाइंडिंग और डिस्ट्रक्शन के संबंध में सख्त दिशानिर्देशों के अधीन है।
 </p>
 <ul>
-  <li><strong>Erzeugung:</strong> Der parameterlose Standardkonstruktor ist explizit gelöscht (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>). Ein direkter Aufruf von <code>ReadWriteAccessor()</code> ist damit untersagt und schlägt zur Übersetzungszeit fehl. Die Erzeugung einer gültigen Instanz erfolgt vermutlich über spezialisierte Fabrik- oder Öffnungsfunktionen des Persistenzmoduls, welche die Bindung an eine konkrete Datei sowie Zugriffsmodi zur Laufzeit etablieren (Interpretation).</li>
-  <li><strong>Zustand und Nutzung:</strong> Nach erfolgreicher Bereitstellung befindet sich das Objekt im aktiven Betriebszustand und ermöglicht über seine Basisklassen sowohl lesende als auch schreibende Dateioperationen.</li>
-  <li><strong>Zerstörung und Aufräumarbeiten:</strong> Der Destruktor <code>~ReadWriteAccessor()</code> ist als <code>final noexcept</code> definiert (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>). Bei Erreichen des Gültigkeitsbereichs (Scope) oder expliziter Zerstörung des Objekts wird der Zugriffskontext abgebaut und die zugehörige Dateiressource deterministisch freigegeben.</li>
+  <li><strong>निर्माण:</strong> पैरामीटर रहित डिफ़ॉल्ट कंस्ट्रक्टर स्पष्ट रूप से हटा दिया गया है (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>)। <code>ReadWriteAccessor()</code> का सीधा कॉल इस प्रकार प्रतिबंधित है और संकलन समय पर विफल रहता है। एक वैध इंस्टेंस का निर्माण संभवतः Persistency मॉड्यूल के विशेष फ़ैक्टरी या ओपनिंग फ़ंक्शनों के माध्यम से होता है, जो रनटाइम पर किसी विशिष्ट फ़ाइल के साथ-साथ एक्सेस मोड के लिए बाइंडिंग स्थापित करते हैं (व्याख्या)।</li>
+  <li><strong>स्थिति और उपयोग:</strong> सफल प्रावधान के बाद, ऑब्जेक्ट सक्रिय परिचालन स्थिति में होता है और अपने बेस क्लासों के माध्यम से पढ़ने और लिखने दोनों फ़ाइल संचालन को सक्षम बनाता है।</li>
+  <li><strong>विनाश और क्लीनअप कार्य:</strong> डिस्ट्रक्टर <code>~ReadWriteAccessor()</code> को <code>final noexcept</code> (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) के रूप में परिभाषित किया गया है। स्कोप की समाप्ति पर या ऑब्जेक्ट के स्पष्ट विनाश पर, एक्सेस संदर्भ को हटा दिया जाता है और संबंधित फ़ाइल संसाधन को नियतात्मक रूप से मुक्त कर दिया जाता है।</li>
 </ul>
 <p>
-In Bezug auf die Nebenläufigkeit ist der Destruktor gemäß Spezifikation als nicht threadsicher (<code>not thread-safe</code>) eingestuft (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>). Gleichzeitig garantiert er vollständige Ausnahmesicherheit (<code>exception safe</code>) (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>), was durch den Spezifikationsbezeichner <code>noexcept</code> unterstrichen wird.
+समवर्तीता के संबंध में, विनिर्देश के अनुसार डिस्ट्रक्टर को थ्रेड-सुरक्षित नहीं (<code>not thread-safe</code>) वर्गीकृत किया गया है (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>)। साथ ही, यह पूर्ण अपवाद सुरक्षा (<code>exception safe</code>) (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) की गारंटी देता है, जिसे विनिर्देश पहचानकर्ता <code>noexcept</code> द्वारा रेखांकित किया गया है।
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>उपयोग पथ</h4>
 <p>
-Der typische Nutzungspfad von <code>ara::per::ReadWriteAccessor</code> folgt dem RAII-Muster (Resource Acquisition Is Initialization) für Dateizugriffe, bei denen simultan Lese- und Schreibberechtigungen benötigt werden:
+<code>ara::per::ReadWriteAccessor</code> का विशिष्ट उपयोग पथ फ़ाइल एक्सेस के लिए RAII पैटर्न (Resource Acquisition Is Initialization) का पालन करता है, जहाँ एक साथ पढ़ने और लिखने की अनुमतियों की आवश्यकता होती है:
 </p>
 <ol>
-  <li><strong>Anforderung des Dateizugriffs:</strong> Die Applikation fordert Zugriff auf eine Datei an. Da der Standardkonstruktor gelöscht ist (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>), erhält der Aufrufer das <code>ReadWriteAccessor</code>-Objekt typischerweise als Rückgabewert einer übergeordneten Modulfunktion des Persistenz-Subsystems.</li>
-  <li><strong>Durchführung kombinierter Operationen:</strong> Über die Schnittstellen von <code>ReadAccessor</code> und <code>WriteAccessor</code> führt die Anwendung Dateizugriffe durch. Dies umfasst das Einlesen bestehender Inhalte, Modifikationen im Datenstrom sowie das Zurückschreiben von Aktualisierungen in die Datei.</li>
-  <li><strong>Beendigung des Zugriffs:</strong> Verlässt das Accessor-Objekt seinen Gültigkeitsbereich, greift der Destruktor (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>). Dateipuffer und interne Verwaltungsinformationen dürften während der Zerstörung final bereinigt werden, ohne dass dabei Ausnahmen entweichen.</li>
+  <li><strong>फ़ाइल एक्सेस का अनुरोध:</strong> एप्लिकेशन किसी फ़ाइल तक एक्सेस का अनुरोध करता है। चूंकि डिफ़ॉल्ट कंस्ट्रक्टर हटा दिया गया है (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>), कॉलर को आमतौर पर Persistency सबसिस्टम के एक उच्च-स्तरीय मॉड्यूल फ़ंक्शन के रिटर्न मान के रूप में <code>ReadWriteAccessor</code> ऑब्जेक्ट प्राप्त होता है।</li>
+  <li><strong>संयुक्त संचालन निष्पादित करना:</strong> <code>ReadAccessor</code> और <code>WriteAccessor</code> के इंटरफेस के माध्यम से, एप्लिकेशन फ़ाइल एक्सेस करता है। इसमें मौजूदा सामग्री को पढ़ना, डेटा स्ट्रीम में संशोधन और अपडेट को वापस फ़ाइल में लिखना शामिल है।</li>
+  <li><strong>एक्सेस की समाप्ति:</strong> जब एक्सेसॉर ऑब्जेक्ट अपने स्कोप से बाहर निकलता है, तो डिस्ट्रक्टर (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) लागू होता है। विनाश के दौरान फ़ाइल बफ़र्स और आंतरिक प्रशासनिक जानकारी को अंततः बिना किसी अपवाद के बाहर निकले साफ़ किया जाना चाहिए।</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>त्रुटि परिदृश्य</h4>
 <p>
-Bei der Integration und Verwendung von <code>ara::per::ReadWriteAccessor</code> sind folgende Vorbedingungen und Fehlerszenarien zu berücksichtigen:
+<code>ara::per::ReadWriteAccessor</code> के एकीकरण और उपयोग में, निम्नलिखित पूर्व-शर्तों और त्रुटि परिदृश्यों पर विचार किया जाना चाहिए:
 </p>
 <ul>
-  <li><strong>Fehlerhafte Instanziierung:</strong> Der Versuch, ein Objekt ohne die erforderlichen Kontextparameter über einen Standardkonstruktor zu instanziieren, wird durch <code>ReadWriteAccessor() = delete</code> (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>) bereits zur Kompilierzeit als Syntax- bzw. Typfehler abgewiesen.</li>
-  <li><strong>Gleichzeitiger Zugriff und Zerstörung (Data Races):</strong> Da der Destruktor explizit als <code>not thread-safe</code> spezifiziert ist (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>), führt die Zerstörung des Accessors bei gleichzeitigem lesenden oder schreibenden Zugriff aus einem anderen Thread zu undefiniertem Verhalten (Race Condition). Aufrufer müssen durch externe Synchronisationsmaßnahmen sicherstellen, dass vor dem Aufruf des Destruktors alle laufenden Dateioperationen auf der Instanz abgeschlossen sind.</li>
-  <li><strong>Ausnahmen im Zerstörungspfad:</strong> Durch die Spezifikation als <code>noexcept</code> und die Einstufung als <code>exception safe</code> (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) ist gewährleistet, dass der Destruktor niemals eine C++-Exception nach außen wirft. Sollten beim Schließen oder Bereinigen der zugrunde liegenden Dateiressourcen interne Fehler auftreten, müssen diese intern abgefangen und behandelt werden.</li>
+  <li><strong>दोषपूर्ण इंस्टेंसिएशन:</strong> डिफ़ॉल्ट कंस्ट्रक्टर के माध्यम से आवश्यक संदर्भ पैरामीटर के बिना किसी ऑब्जेक्ट को इनिशियलाइज़ करने का प्रयास <code>ReadWriteAccessor() = delete</code> (<a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462">[SWS_PER_00462]</a>) द्वारा पहले ही संकलन समय पर सिंटैक्स या प्रकार त्रुटि के रूप में खारिज कर दिया जाता है।</li>
+  <li><strong>एक साथ एक्सेस और विनाश (Data Races):</strong> चूंकि डिस्ट्रक्टर को स्पष्ट रूप से <code>not thread-safe</code> (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) के रूप में निर्दिष्ट किया गया है, किसी अन्य थ्रेड से एक साथ पढ़ने या लिखने के एक्सेस के दौरान एक्सेसॉर का विनाश अनिर्धारित व्यवहार (Race Condition) का कारण बनता है। कॉलर्स को बाहरी सिंक्रोनाइज़ेशन उपायों के माध्यम से यह सुनिश्चित करना चाहिए कि डिस्ट्रक्टर को कॉल करने से पहले इंस्टेंस पर सभी चालू फ़ाइल संचालन पूरे हो जाएं।</li>
+  <li><strong>विनाश पथ में अपवाद:</strong> <code>noexcept</code> के रूप में विनिर्देश और <code>exception safe</code> (<a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598">[SWS_PER_00598]</a>) के रूप में वर्गीकरण द्वारा यह सुनिश्चित किया जाता है कि डिस्ट्रक्टर कभी भी C++ अपवाद बाहर नहीं फेंकता है। यदि अंतर्निहित फ़ाइल संसाधनों को बंद करते या साफ़ करते समय आंतरिक त्रुटियां होती हैं, तो उन्हें आंतरिक रूप से पकड़ा और प्रबंधित किया जाना चाहिए।</li>
 </ul>
 
 <!-- annahmen:
 1) Die Instanziierung erfolgt vermutlich über eine Fabrik- oder Öffnungsmethode der Persistenz-API – Begründung: Der Standardkonstruktor ist gemäß SWS_PER_00462 gelöscht, wodurch die Objekterzeugung über externe Verwaltungsfunktionen erfolgen muss.
 2) Dateipuffer und interne Verwaltungsressourcen dürften während des Destruktoraufrufs final synchronisiert und freigegeben werden – Begründung: Der Destruktor ist als final noexcept und exception safe spezifiziert (SWS_PER_00598) und bildet den standardmäßigen RAII-Abschluss für Dateizugriffe.
 -->
-<p class="ai-note">Dieser Klassen-Leitfaden wurde automatisiert auf Basis der Spezifikationsvorgaben von AUTOSAR Adaptive R25-11 generiert.</p>
+<p class="ai-note">यह वर्ग गाइड AUTOSAR Adaptive R25-11 के विनिर्देश दिशानिर्देशों के आधार पर स्वचालित रूप से तैयार किया गया था।</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_per_ReadWriteAccessor_30aeb5" title="एआई से चर्चा करें">💬 एआई से चर्चा करें</button>
@@ -501,53 +500,52 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="6dac7d821dca3aea1ec0d1e313e9badc36e2ece9b6fd86f9d5dee4be98a32e77" data-trace-output="4cb25d7f88df7cf8545ddf962e79b9839853bfe75ab16937a5ebfa6605d23b8b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;संदर्भ&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;per&lt;/code&gt; (Persistency) der AUTOSAR Adaptive Platform im Release R25-11. Ihre Kernaufgabe besteht darin, das Lesen und Schreiben von Dateidaten innerhalb einer einheitlichen Schnittstelle bereitzustellen. Hierzu kombiniert sie die funktionalen Eigenschaften der Basisklassen &lt;code&gt;ReadAccessor&lt;/code&gt; und &lt;code&gt;WriteAccessor&lt;/code&gt; über Mehrfachvererbung.
+वर्ग &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; रिलीज़ R25-11 में AUTOSAR Adaptive Platform के &lt;code&gt;per&lt;/code&gt; (Persistency) मॉड्यूल का एक घटक है। इसका मुख्य कार्य एक एकीकृत इंटरफ़ेस के भीतर फ़ाइल डेटा को पढ़ने और लिखने की सुविधा प्रदान करना है। इसके लिए, यह मल्टीपल इनहेरिटेंस के माध्यम से बेस क्लास &lt;code&gt;ReadAccessor&lt;/code&gt; और &lt;code&gt;WriteAccessor&lt;/code&gt; के कार्यात्मक गुणों को जोड़ता है।
 &lt;/p&gt;
 &lt;p&gt;
-In der Klassenarchitektur ist &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; als &lt;code&gt;final&lt;/code&gt; deklariert (&lt;code&gt;class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor&lt;/code&gt;). Dies verhindert eine weitere Ableitung und stellt sicher, dass Implementierungsdetails der kombinierten Dateizugriffsschnittstelle nicht durch nachgelagerte Spezialisierungen überschrieben oder erweitert werden. Als Interaktionspartner fungieren einerseits die aufrufende Applikation, welche Lese- und Schreiboperationen auf persistenten Dateiinhalten ausführen möchte, und andererseits die beiden Schnittstellenverträge &lt;code&gt;ReadAccessor&lt;/code&gt; sowie &lt;code&gt;WriteAccessor&lt;/code&gt;, deren Funktionalitäten in diesem konkreten Accessor zusammengeführt werden.
+वर्ग वास्तुकला में, &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; को &lt;code&gt;final&lt;/code&gt; (&lt;code&gt;class ReadWriteAccessor final : public ReadAccessor, public WriteAccessor&lt;/code&gt;) के रूप में घोषित किया गया है। यह आगे के व्युत्पन्न को रोकता है और सुनिश्चित करता है कि संयुक्त फ़ाइल एक्सेस इंटरफ़ेस के कार्यान्वयन विवरण बाद के विशेषीकरणों द्वारा ओवरराइड या विस्तारित न हों। इंटरैक्शन पार्टनर के रूप में एक ओर कॉलिंग एप्लिकेशन कार्य करता है, जो लगातार फ़ाइल सामग्री पर पढ़ने और लिखने के संचालन निष्पादित करना चाहता है, और दूसरी ओर दो इंटरफ़ेस अनुबंध &lt;code&gt;ReadAccessor&lt;/code&gt; और &lt;code&gt;WriteAccessor&lt;/code&gt; हैं, जिनकी कार्यात्मकताओं को इस ठोस एक्सेसॉर में संयोजित किया गया है।
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;जीवनचक्र&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus einer Instanz von &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; unterliegt strikten Vorgaben hinsichtlich Instanziierung, Ressourcenbindung und Zerstörung.
+&lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; के एक इंस्टेंस का जीवनचक्र इंस्टेंसिएशन, संसाधन बाइंडिंग और डिस्ट्रक्शन के संबंध में सख्त दिशानिर्देशों के अधीन है।
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Der parameterlose Standardkonstruktor ist explizit gelöscht (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;). Ein direkter Aufruf von &lt;code&gt;ReadWriteAccessor()&lt;/code&gt; ist damit untersagt und schlägt zur Übersetzungszeit fehl. Die Erzeugung einer gültigen Instanz erfolgt vermutlich über spezialisierte Fabrik- oder Öffnungsfunktionen des Persistenzmoduls, welche die Bindung an eine konkrete Datei sowie Zugriffsmodi zur Laufzeit etablieren (Interpretation).&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Zustand und Nutzung:&lt;/strong&gt; Nach erfolgreicher Bereitstellung befindet sich das Objekt im aktiven Betriebszustand und ermöglicht über seine Basisklassen sowohl lesende als auch schreibende Dateioperationen.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Zerstörung und Aufräumarbeiten:&lt;/strong&gt; Der Destruktor &lt;code&gt;~ReadWriteAccessor()&lt;/code&gt; ist als &lt;code&gt;final noexcept&lt;/code&gt; definiert (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;). Bei Erreichen des Gültigkeitsbereichs (Scope) oder expliziter Zerstörung des Objekts wird der Zugriffskontext abgebaut und die zugehörige Dateiressource deterministisch freigegeben.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;निर्माण:&lt;/strong&gt; पैरामीटर रहित डिफ़ॉल्ट कंस्ट्रक्टर स्पष्ट रूप से हटा दिया गया है (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;)। &lt;code&gt;ReadWriteAccessor()&lt;/code&gt; का सीधा कॉल इस प्रकार प्रतिबंधित है और संकलन समय पर विफल रहता है। एक वैध इंस्टेंस का निर्माण संभवतः Persistency मॉड्यूल के विशेष फ़ैक्टरी या ओपनिंग फ़ंक्शनों के माध्यम से होता है, जो रनटाइम पर किसी विशिष्ट फ़ाइल के साथ-साथ एक्सेस मोड के लिए बाइंडिंग स्थापित करते हैं (व्याख्या)।&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;स्थिति और उपयोग:&lt;/strong&gt; सफल प्रावधान के बाद, ऑब्जेक्ट सक्रिय परिचालन स्थिति में होता है और अपने बेस क्लासों के माध्यम से पढ़ने और लिखने दोनों फ़ाइल संचालन को सक्षम बनाता है।&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;विनाश और क्लीनअप कार्य:&lt;/strong&gt; डिस्ट्रक्टर &lt;code&gt;~ReadWriteAccessor()&lt;/code&gt; को &lt;code&gt;final noexcept&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) के रूप में परिभाषित किया गया है। स्कोप की समाप्ति पर या ऑब्जेक्ट के स्पष्ट विनाश पर, एक्सेस संदर्भ को हटा दिया जाता है और संबंधित फ़ाइल संसाधन को नियतात्मक रूप से मुक्त कर दिया जाता है।&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-In Bezug auf die Nebenläufigkeit ist der Destruktor gemäß Spezifikation als nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;) eingestuft (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;). Gleichzeitig garantiert er vollständige Ausnahmesicherheit (&lt;code&gt;exception safe&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;), was durch den Spezifikationsbezeichner &lt;code&gt;noexcept&lt;/code&gt; unterstrichen wird.
+समवर्तीता के संबंध में, विनिर्देश के अनुसार डिस्ट्रक्टर को थ्रेड-सुरक्षित नहीं (&lt;code&gt;not thread-safe&lt;/code&gt;) वर्गीकृत किया गया है (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;)। साथ ही, यह पूर्ण अपवाद सुरक्षा (&lt;code&gt;exception safe&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) की गारंटी देता है, जिसे विनिर्देश पहचानकर्ता &lt;code&gt;noexcept&lt;/code&gt; द्वारा रेखांकित किया गया है।
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;उपयोग पथ&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad von &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; folgt dem RAII-Muster (Resource Acquisition Is Initialization) für Dateizugriffe, bei denen simultan Lese- und Schreibberechtigungen benötigt werden:
+&lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; का विशिष्ट उपयोग पथ फ़ाइल एक्सेस के लिए RAII पैटर्न (Resource Acquisition Is Initialization) का पालन करता है, जहाँ एक साथ पढ़ने और लिखने की अनुमतियों की आवश्यकता होती है:
 &lt;/p&gt;
 &lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Anforderung des Dateizugriffs:&lt;/strong&gt; Die Applikation fordert Zugriff auf eine Datei an. Da der Standardkonstruktor gelöscht ist (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;), erhält der Aufrufer das &lt;code&gt;ReadWriteAccessor&lt;/code&gt;-Objekt typischerweise als Rückgabewert einer übergeordneten Modulfunktion des Persistenz-Subsystems.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Durchführung kombinierter Operationen:&lt;/strong&gt; Über die Schnittstellen von &lt;code&gt;ReadAccessor&lt;/code&gt; und &lt;code&gt;WriteAccessor&lt;/code&gt; führt die Anwendung Dateizugriffe durch. Dies umfasst das Einlesen bestehender Inhalte, Modifikationen im Datenstrom sowie das Zurückschreiben von Aktualisierungen in die Datei.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Beendigung des Zugriffs:&lt;/strong&gt; Verlässt das Accessor-Objekt seinen Gültigkeitsbereich, greift der Destruktor (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;). Dateipuffer und interne Verwaltungsinformationen dürften während der Zerstörung final bereinigt werden, ohne dass dabei Ausnahmen entweichen.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;फ़ाइल एक्सेस का अनुरोध:&lt;/strong&gt; एप्लिकेशन किसी फ़ाइल तक एक्सेस का अनुरोध करता है। चूंकि डिफ़ॉल्ट कंस्ट्रक्टर हटा दिया गया है (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;), कॉलर को आमतौर पर Persistency सबसिस्टम के एक उच्च-स्तरीय मॉड्यूल फ़ंक्शन के रिटर्न मान के रूप में &lt;code&gt;ReadWriteAccessor&lt;/code&gt; ऑब्जेक्ट प्राप्त होता है।&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;संयुक्त संचालन निष्पादित करना:&lt;/strong&gt; &lt;code&gt;ReadAccessor&lt;/code&gt; और &lt;code&gt;WriteAccessor&lt;/code&gt; के इंटरफेस के माध्यम से, एप्लिकेशन फ़ाइल एक्सेस करता है। इसमें मौजूदा सामग्री को पढ़ना, डेटा स्ट्रीम में संशोधन और अपडेट को वापस फ़ाइल में लिखना शामिल है।&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;एक्सेस की समाप्ति:&lt;/strong&gt; जब एक्सेसॉर ऑब्जेक्ट अपने स्कोप से बाहर निकलता है, तो डिस्ट्रक्टर (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) लागू होता है। विनाश के दौरान फ़ाइल बफ़र्स और आंतरिक प्रशासनिक जानकारी को अंततः बिना किसी अपवाद के बाहर निकले साफ़ किया जाना चाहिए।&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;त्रुटि परिदृश्य&lt;/h4&gt;
 &lt;p&gt;
-Bei der Integration und Verwendung von &lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; sind folgende Vorbedingungen und Fehlerszenarien zu berücksichtigen:
+&lt;code&gt;ara::per::ReadWriteAccessor&lt;/code&gt; के एकीकरण और उपयोग में, निम्नलिखित पूर्व-शर्तों और त्रुटि परिदृश्यों पर विचार किया जाना चाहिए:
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Fehlerhafte Instanziierung:&lt;/strong&gt; Der Versuch, ein Objekt ohne die erforderlichen Kontextparameter über einen Standardkonstruktor zu instanziieren, wird durch &lt;code&gt;ReadWriteAccessor() = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;) bereits zur Kompilierzeit als Syntax- bzw. Typfehler abgewiesen.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Gleichzeitiger Zugriff und Zerstörung (Data Races):&lt;/strong&gt; Da der Destruktor explizit als &lt;code&gt;not thread-safe&lt;/code&gt; spezifiziert ist (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;), führt die Zerstörung des Accessors bei gleichzeitigem lesenden oder schreibenden Zugriff aus einem anderen Thread zu undefiniertem Verhalten (Race Condition). Aufrufer müssen durch externe Synchronisationsmaßnahmen sicherstellen, dass vor dem Aufruf des Destruktors alle laufenden Dateioperationen auf der Instanz abgeschlossen sind.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Ausnahmen im Zerstörungspfad:&lt;/strong&gt; Durch die Spezifikation als &lt;code&gt;noexcept&lt;/code&gt; und die Einstufung als &lt;code&gt;exception safe&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) ist gewährleistet, dass der Destruktor niemals eine C++-Exception nach außen wirft. Sollten beim Schließen oder Bereinigen der zugrunde liegenden Dateiressourcen interne Fehler auftreten, müssen diese intern abgefangen und behandelt werden.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;दोषपूर्ण इंस्टेंसिएशन:&lt;/strong&gt; डिफ़ॉल्ट कंस्ट्रक्टर के माध्यम से आवश्यक संदर्भ पैरामीटर के बिना किसी ऑब्जेक्ट को इनिशियलाइज़ करने का प्रयास &lt;code&gt;ReadWriteAccessor() = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00462" href="../spec/record.html?id=SWS_PER_00462"&gt;[SWS_PER_00462]&lt;/a&gt;) द्वारा पहले ही संकलन समय पर सिंटैक्स या प्रकार त्रुटि के रूप में खारिज कर दिया जाता है।&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;एक साथ एक्सेस और विनाश (Data Races):&lt;/strong&gt; चूंकि डिस्ट्रक्टर को स्पष्ट रूप से &lt;code&gt;not thread-safe&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) के रूप में निर्दिष्ट किया गया है, किसी अन्य थ्रेड से एक साथ पढ़ने या लिखने के एक्सेस के दौरान एक्सेसॉर का विनाश अनिर्धारित व्यवहार (Race Condition) का कारण बनता है। कॉलर्स को बाहरी सिंक्रोनाइज़ेशन उपायों के माध्यम से यह सुनिश्चित करना चाहिए कि डिस्ट्रक्टर को कॉल करने से पहले इंस्टेंस पर सभी चालू फ़ाइल संचालन पूरे हो जाएं।&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;विनाश पथ में अपवाद:&lt;/strong&gt; &lt;code&gt;noexcept&lt;/code&gt; के रूप में विनिर्देश और &lt;code&gt;exception safe&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00598" href="../spec/record.html?id=SWS_PER_00598"&gt;[SWS_PER_00598]&lt;/a&gt;) के रूप में वर्गीकरण द्वारा यह सुनिश्चित किया जाता है कि डिस्ट्रक्टर कभी भी C++ अपवाद बाहर नहीं फेंकता है। यदि अंतर्निहित फ़ाइल संसाधनों को बंद करते या साफ़ करते समय आंतरिक त्रुटियां होती हैं, तो उन्हें आंतरिक रूप से पकड़ा और प्रबंधित किया जाना चाहिए।&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
 1) Die Instanziierung erfolgt vermutlich über eine Fabrik- oder Öffnungsmethode der Persistenz-API – Begründung: Der Standardkonstruktor ist gemäß SWS_PER_00462 gelöscht, wodurch die Objekterzeugung über externe Verwaltungsfunktionen erfolgen muss.
 2) Dateipuffer und interne Verwaltungsressourcen dürften während des Destruktoraufrufs final synchronisiert und freigegeben werden – Begründung: Der Destruktor ist als final noexcept und exception safe spezifiziert (SWS_PER_00598) und bildet den standardmäßigen RAII-Abschluss für Dateizugriffe.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde automatisiert auf Basis der Spezifikationsvorgaben von AUTOSAR Adaptive R25-11 generiert.&lt;/p&gt;
+&lt;p class="ai-note"&gt;यह वर्ग गाइड AUTOSAR Adaptive R25-11 के विनिर्देश दिशानिर्देशों के आधार पर स्वचालित रूप से तैयार किया गया था।&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

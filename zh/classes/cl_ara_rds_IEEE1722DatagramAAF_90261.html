@@ -19,62 +19,61 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>e3bc34107ebf</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_rds_IEEE1722DatagramAAF_90261/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_ara_rds_IEEE1722DatagramAAF_90261/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_rds_IEEE1722DatagramAAF_90261" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>上下文</h4>
   <p>
-    Die Klasse <code>ara::rds::IEEE1722DatagramAAF</code> stellt die funktionale Repräsentation eines Datagramms nach dem Standard IEEE 1722 für das AVTP Audio Format (AAF) innerhalb des Moduls <em>Raw Data Stream</em> (<code>rds</code>) der AUTOSAR Adaptive Platform dar. Sie dient dem strukturierten Halten und Verwalten von Protokollfeldern und Formatparametern für zeitkritische Audio-Streams über Ethernet-Netzwerke.
+    类 <code>ara::rds::IEEE1722DatagramAAF</code> 表示 AUTOSAR Adaptive Platform 的 <em>Raw Data Stream</em>（<code>rds</code>）模块中遵循 IEEE 1722 标准的 AVTP 音频格式（AAF）数据报的功能性表示。它用于对以太网网络上时间关键型音频流的协议字段和格式参数进行结构化保存与管理。
   </p>
   <p>
-    Die Klasse kapselt die protokollspezifischen Steuer- und Formatattribute des Audio-Formats. Dazu gehört das fundamentale Datenfeld <code>format</code> <a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262">[SWS_RDS_90262]</a>, das den grundlegenden Aufbau des Audio-Payloads definiert, sowie <code>streams_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263">[SWS_RDS_90263]</a> zur Festlegung der enthaltenen Audio-Kanäle beziehungsweise -Teilströme. Da sämtliche deklarierten Felder den Zugriffsmodifikator <code>protected</code> aufweisen, dürfte die Klasse primär als spezialisierbare Basisklasse innerhalb einer Klassenhierarchie für AAF-Datagramme konzipiert sein. Die Interaktion mit übergeordneten Anwendungen oder Stream-Endpunkten erfolgt somit typischerweise über abgeleitete Klassen oder spezifische Schnittstellen des RDS-Subsystems.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Der Lebenszyklus von <code>ara::rds::IEEE1722DatagramAAF</code> ist eng an die Puffer- und Streaming-Mechanismen des Raw-Data-Stream-Treibers gekoppelt. Da die Klasse keine öffentlichen Konstruktoren im Spezifikationsumfang ausweist und alle Attribute geschützt sind, erfolgt die Erzeugung von Instanzen vermutlich durch abgeleitete konkrete Datagramm-Klassen oder plattforminterne Fabriken des Moduls <code>rds</code> während des Empfangs- oder Sendevorgangs.
-  </p>
-  <p>
-    Für die Zerstörung stellt die Klasse einen virtuellen Destruktor <code>~IEEE1722DatagramAAF()</code> bereit, der explizit als <code>noexcept</code> deklariert ist <a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273">[SWS_RDS_90273]</a>. Dies garantiert eine sichere und ausnahmefreie polymorphe Bereinigung von Ressourcen über Zeiger oder Referenzen auf die Basisklasse. Das Besitzverhältnis verbleibt während der Lebensdauer in der Regel bei der verarbeitenden Streaming-Pipeline, wobei Instanzen entlang der Verarbeitungsstrecke (z. B. zwischen Netzwerk-Treiber und Audio-Verarbeitungsknoten) weitergereicht werden.
+    该类封装了音频格式的协议特定控制与格式属性。其中包括定义音频有效负载基本结构的基础数据字段 <code>format</code> <a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262">[SWS_RDS_90262]</a>，以及用于指定所包含音频通道或子流的 <code>streams_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263">[SWS_RDS_90263]</a>。由于所有声明的字段均具有访问修饰符 <code>protected</code>，因此该类推测主要被设计为 AAF 数据报类层次结构中可特化的基类。因此，与上层应用程序或流端点的交互通常通过派生类或 RDS 子系统的特定接口进行。
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>生命周期</h4>
   <p>
-    In einem typischen Anwendungsszenario wird ein <code>IEEE1722DatagramAAF</code> im Kontext der Übertragung oder des Empfangs von Audio-Rohdatenpaketen eingesetzt:
+    <code>ara::rds::IEEE1722DatagramAAF</code> 的生命周期与 Raw Data Stream 驱动程序的缓冲和流式传输机制紧密耦合。由于该类在规范范围内没有提供公共构造函数且所有属性均为受保护的，因此实例的创建推测是在接收或发送过程中由派生的具体数据报类或模块 <code>rds</code> 的平台内部工厂完成的。
+  </p>
+  <p>
+    对于销毁，该类提供了一个虚析构函数 <code>~IEEE1722DatagramAAF()</code>，其被显式声明为 <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273">[SWS_RDS_90273]</a>。这保证了通过基类的指针或引用对资源进行安全且无异常的多态清理。在生命周期内，所有权通常保留在正在处理的流式传输管道中，其中实例沿着处理链路（例如在网络驱动程序与音频处理节点之间）传递。
+  </p>
+
+  <h4>使用路径</h4>
+  <p>
+    在典型应用场景中，<code>IEEE1722DatagramAAF</code> 用于音频原始数据包的传输或接收上下文中：
   </p>
   <ul>
     <li>
-      <strong>Initialisierung und Formatfestlegung:</strong> Beim Aufbau eines Streams oder der Paketierung werden grundlegende Formatdefinitionen über das Feld <code>format</code> <a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262">[SWS_RDS_90262]</a> und die Anzahl der Ströme über <code>streams_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263">[SWS_RDS_90263]</a> konfiguriert.
+      <strong>初始化和格式定义：</strong>在建立流或进行打包时，通过字段 <code>format</code> <a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262">[SWS_RDS_90262]</a> 配置基本格式定义，并通过 <code>streams_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263">[SWS_RDS_90263]</a> 配置流的数量。
     </li>
     <li>
-      <strong>Konfiguration optionaler Audio-Attribute:</strong> Je nach Audiospezifikation werden spezifische Metadaten gesetzt. Hierzu zählen Ereignis-Flags über <code>evt</code> <a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264">[SWS_RDS_90264]</a>, die Abtastraten und Frameraten über <code>nsr</code> <a class="spec-record-ref" data-req="SWS_RDS_90268" href="../spec/record.html?id=SWS_RDS_90268">[SWS_RDS_90268]</a> und <code>nfr</code> <a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265">[SWS_RDS_90265]</a> sowie Formatparameter wie <code>bit_depth</code> <a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266">[SWS_RDS_90266]</a> und <code>channels_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267">[SWS_RDS_90267]</a>. Zusätzliche Stream-Präzisierungsparameter können über <code>sp</code> <a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269">[SWS_RDS_90269]</a> abgebildet werden.
+      <strong>可选音频属性的配置：</strong>根据音频规范设置特定的元数据。其中包括通过 <code>evt</code> <a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264">[SWS_RDS_90264]</a> 设置的事件标志、通过 <code>nsr</code> <a class="spec-record-ref" data-req="SWS_RDS_90268" href="../spec/record.html?id=SWS_RDS_90268">[SWS_RDS_90268]</a> 与 <code>nfr</code> <a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265">[SWS_RDS_90265]</a> 设置的采样率和帧率，以及诸如 <code>bit_depth</code> <a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266">[SWS_RDS_90266]</a> 和 <code>channels_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267">[SWS_RDS_90267]</a> 等格式参数。额外的流细化参数可以通过 <code>sp</code> <a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269">[SWS_RDS_90269]</a> 进行映射。
     </li>
     <li>
-      <strong>AES3-Spezifika:</strong> Für digitale Audiodatenströme nach AES3-Standard stehen die optionalen Parameter <code>aes3_data_type_h</code> <a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270">[SWS_RDS_90270]</a>, <code>aes3_data_type_l</code> <a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271">[SWS_RDS_90271]</a> sowie die Referenz <code>aes3_dt_ref</code> <a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272">[SWS_RDS_90272]</a> bereit.
+      <strong>AES3 特性：</strong>对于符合 AES3 标准的数字音频数据流，提供了可选参数 <code>aes3_data_type_h</code> <a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270">[SWS_RDS_90270]</a>、<code>aes3_data_type_l</code> <a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271">[SWS_RDS_90271]</a> 以及引用 <code>aes3_dt_ref</code> <a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272">[SWS_RDS_90272]</a>。
     </li>
     <li>
-      <strong>Verarbeitung und Übergabe:</strong> Nach dem Auslesen oder Setzen der Attribute wird das Datagramm über die Schnittstellen des RDS-Treibers serialisiert und auf das Netzwerk übertragen oder an die Audio-Sink weitergeleitet.
+      <strong>处理与传递：</strong>在读取或设置属性之后，数据报通过 RDS 驱动程序的接口进行序列化并传输到网络上，或转发至音频接收端。
     </li>
   </ul>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>错误场景</h4>
   <p>
-    Fehlersituationen bei der Nutzung von <code>IEEE1722DatagramAAF</code> stehen im Wesentlichen im Zusammenhang mit unvollständigen oder inkonsistenten Feldern des IEEE-1722-Headers:
+    使用 <code>IEEE1722DatagramAAF</code> 时的错误情况主要与 IEEE 1722 头部字段的不完整或不一致相关：
   </p>
   <ul>
     <li>
-      <strong>Fehlende optionale Felder:</strong> Zahlreiche Attribute sind als <code>ara::core::Optional</code> gekapselt, beispielsweise <code>evt</code> <a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264">[SWS_RDS_90264]</a>, <code>bit_depth</code> <a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266">[SWS_RDS_90266]</a> oder <code>channels_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267">[SWS_RDS_90267]</a>. Der Zugriff auf den Wert eines leeren Optionals ohne vorherige Prüfung führt zu Laufzeitfehlern oder Ausnahmebehandlungen in abgeleiteten Schichten.
+      <strong>缺少可选字段：</strong>许多属性封装为 <code>ara::core::Optional</code>，例如 <code>evt</code> <a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264">[SWS_RDS_90264]</a>、<code>bit_depth</code> <a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266">[SWS_RDS_90266]</a> 或 <code>channels_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267">[SWS_RDS_90267]</a>。在未预先检查的情况下访问空 Optional 的值会导致运行时错误或派生层中的异常处理。
     </li>
     <li>
-      <strong>Inkonsistente Format- und Kanalbeschreibungen:</strong> Stimmen die Angaben in <code>format</code> <a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262">[SWS_RDS_90262]</a>, <code>bit_depth</code> <a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266">[SWS_RDS_90266]</a> und <code>channels_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267">[SWS_RDS_90267]</a> nicht mit der tatsächlichen Nutzlastgröße des zugrunde liegenden Datagramms überein, kann es bei der Serialisierung oder Deserialisierung zu Pufferüberläufen oder Protokollverwerfungen im RDS-Subsystem kommen.
+      <strong>格式与通道描述不一致：</strong>如果 <code>format</code> <a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262">[SWS_RDS_90262]</a>、<code>bit_depth</code> <a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266">[SWS_RDS_90266]</a> 和 <code>channels_per_frame</code> <a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267">[SWS_RDS_90267]</a> 中的指定值与底层数据报的实际有效负载大小不一致，则在序列化或反序列化期间可能导致 RDS 子系统中的缓冲区溢出或协议丢弃。
     </li>
     <li>
-      <strong>Ausnahmesicherheit beim Abbau:</strong> Durch die Kennzeichnung des Destruktors mit <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273">[SWS_RDS_90273]</a> ist sichergestellt, dass bei der Zerstörung des Objekts keine Ausnahmen entweichen. Fehler während des Abbaus müssen intern behandelt oder protokolliert werden, um einen Programmabbruch via <code>std::terminate</code> zu verhindern.
+      <strong>析构时的异常安全性：</strong>通过使用 <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273">[SWS_RDS_90273]</a> 标记析构函数，可确保在销毁对象时不会逃逸任何异常。析构过程中的错误必须在内部处理或记录，以防止通过 <code>std::terminate</code> 导致程序终止。
     </li>
   </ul>
   <!-- annahmen: 1) Die Klasse dient aufgrund der geschützten Datenmitglieder als spezialisierbare Basisklasse für AAF-Datagramme. – Begründung: Alle Felder sind mit Zugriff 'protected' spezifiziert. 2) Instanziierung und Zuweisung erfolgen plattformintern durch Fabriken oder abgeleitete Klassen. – Begründung: Der Payload enthält ausschließlich geschützte Member und keine öffentlichen Konstruktoren. 3) Die Verwendung von ara::core::Optional reflektiert, dass bestimmte AVTP-Felder je nach Unterformat nicht zwingend vorliegen. – Begründung: Felder wie aes3_data_type_h, bit_depth und evt sind als ara::core::Optional modelliert. -->
-  <p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform R25-11 (Modul rds). Aussagen stützen sich ausschließlich auf die angegebenen Spezifikationsanforderungen.</p>
+  <p class="ai-note">本指南基于 AUTOSAR Adaptive Platform 规范 R25-11（rds 模块）。陈述仅基于所给出的规范要求。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_rds_IEEE1722DatagramAAF_90261" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -1050,59 +1049,58 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e3bc34107ebf4e8839e714cdbc44e3a298dcb8f7a9786e99ea27cab3d89bcd62" data-trace-output="e04729ee9fdd7f08723696ec99de00a52ee19f460540b36206c6cd8ee05dc0cb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;上下文&lt;/h4&gt;
   &lt;p&gt;
-    Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; stellt die funktionale Repräsentation eines Datagramms nach dem Standard IEEE 1722 für das AVTP Audio Format (AAF) innerhalb des Moduls &lt;em&gt;Raw Data Stream&lt;/em&gt; (&lt;code&gt;rds&lt;/code&gt;) der AUTOSAR Adaptive Platform dar. Sie dient dem strukturierten Halten und Verwalten von Protokollfeldern und Formatparametern für zeitkritische Audio-Streams über Ethernet-Netzwerke.
+    类 &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; 表示 AUTOSAR Adaptive Platform 的 &lt;em&gt;Raw Data Stream&lt;/em&gt;（&lt;code&gt;rds&lt;/code&gt;）模块中遵循 IEEE 1722 标准的 AVTP 音频格式（AAF）数据报的功能性表示。它用于对以太网网络上时间关键型音频流的协议字段和格式参数进行结构化保存与管理。
   &lt;/p&gt;
   &lt;p&gt;
-    Die Klasse kapselt die protokollspezifischen Steuer- und Formatattribute des Audio-Formats. Dazu gehört das fundamentale Datenfeld &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;, das den grundlegenden Aufbau des Audio-Payloads definiert, sowie &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt; zur Festlegung der enthaltenen Audio-Kanäle beziehungsweise -Teilströme. Da sämtliche deklarierten Felder den Zugriffsmodifikator &lt;code&gt;protected&lt;/code&gt; aufweisen, dürfte die Klasse primär als spezialisierbare Basisklasse innerhalb einer Klassenhierarchie für AAF-Datagramme konzipiert sein. Die Interaktion mit übergeordneten Anwendungen oder Stream-Endpunkten erfolgt somit typischerweise über abgeleitete Klassen oder spezifische Schnittstellen des RDS-Subsystems.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Der Lebenszyklus von &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; ist eng an die Puffer- und Streaming-Mechanismen des Raw-Data-Stream-Treibers gekoppelt. Da die Klasse keine öffentlichen Konstruktoren im Spezifikationsumfang ausweist und alle Attribute geschützt sind, erfolgt die Erzeugung von Instanzen vermutlich durch abgeleitete konkrete Datagramm-Klassen oder plattforminterne Fabriken des Moduls &lt;code&gt;rds&lt;/code&gt; während des Empfangs- oder Sendevorgangs.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Für die Zerstörung stellt die Klasse einen virtuellen Destruktor &lt;code&gt;~IEEE1722DatagramAAF()&lt;/code&gt; bereit, der explizit als &lt;code&gt;noexcept&lt;/code&gt; deklariert ist &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;. Dies garantiert eine sichere und ausnahmefreie polymorphe Bereinigung von Ressourcen über Zeiger oder Referenzen auf die Basisklasse. Das Besitzverhältnis verbleibt während der Lebensdauer in der Regel bei der verarbeitenden Streaming-Pipeline, wobei Instanzen entlang der Verarbeitungsstrecke (z. B. zwischen Netzwerk-Treiber und Audio-Verarbeitungsknoten) weitergereicht werden.
+    该类封装了音频格式的协议特定控制与格式属性。其中包括定义音频有效负载基本结构的基础数据字段 &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;，以及用于指定所包含音频通道或子流的 &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt;。由于所有声明的字段均具有访问修饰符 &lt;code&gt;protected&lt;/code&gt;，因此该类推测主要被设计为 AAF 数据报类层次结构中可特化的基类。因此，与上层应用程序或流端点的交互通常通过派生类或 RDS 子系统的特定接口进行。
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;生命周期&lt;/h4&gt;
   &lt;p&gt;
-    In einem typischen Anwendungsszenario wird ein &lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; im Kontext der Übertragung oder des Empfangs von Audio-Rohdatenpaketen eingesetzt:
+    &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; 的生命周期与 Raw Data Stream 驱动程序的缓冲和流式传输机制紧密耦合。由于该类在规范范围内没有提供公共构造函数且所有属性均为受保护的，因此实例的创建推测是在接收或发送过程中由派生的具体数据报类或模块 &lt;code&gt;rds&lt;/code&gt; 的平台内部工厂完成的。
+  &lt;/p&gt;
+  &lt;p&gt;
+    对于销毁，该类提供了一个虚析构函数 &lt;code&gt;~IEEE1722DatagramAAF()&lt;/code&gt;，其被显式声明为 &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;。这保证了通过基类的指针或引用对资源进行安全且无异常的多态清理。在生命周期内，所有权通常保留在正在处理的流式传输管道中，其中实例沿着处理链路（例如在网络驱动程序与音频处理节点之间）传递。
+  &lt;/p&gt;
+
+  &lt;h4&gt;使用路径&lt;/h4&gt;
+  &lt;p&gt;
+    在典型应用场景中，&lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; 用于音频原始数据包的传输或接收上下文中：
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Initialisierung und Formatfestlegung:&lt;/strong&gt; Beim Aufbau eines Streams oder der Paketierung werden grundlegende Formatdefinitionen über das Feld &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt; und die Anzahl der Ströme über &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt; konfiguriert.
+      &lt;strong&gt;初始化和格式定义：&lt;/strong&gt;在建立流或进行打包时，通过字段 &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt; 配置基本格式定义，并通过 &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt; 配置流的数量。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Konfiguration optionaler Audio-Attribute:&lt;/strong&gt; Je nach Audiospezifikation werden spezifische Metadaten gesetzt. Hierzu zählen Ereignis-Flags über &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;, die Abtastraten und Frameraten über &lt;code&gt;nsr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90268" href="../spec/record.html?id=SWS_RDS_90268"&gt;[SWS_RDS_90268]&lt;/a&gt; und &lt;code&gt;nfr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265"&gt;[SWS_RDS_90265]&lt;/a&gt; sowie Formatparameter wie &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; und &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt;. Zusätzliche Stream-Präzisierungsparameter können über &lt;code&gt;sp&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269"&gt;[SWS_RDS_90269]&lt;/a&gt; abgebildet werden.
+      &lt;strong&gt;可选音频属性的配置：&lt;/strong&gt;根据音频规范设置特定的元数据。其中包括通过 &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt; 设置的事件标志、通过 &lt;code&gt;nsr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90268" href="../spec/record.html?id=SWS_RDS_90268"&gt;[SWS_RDS_90268]&lt;/a&gt; 与 &lt;code&gt;nfr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265"&gt;[SWS_RDS_90265]&lt;/a&gt; 设置的采样率和帧率，以及诸如 &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; 和 &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt; 等格式参数。额外的流细化参数可以通过 &lt;code&gt;sp&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269"&gt;[SWS_RDS_90269]&lt;/a&gt; 进行映射。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;AES3-Spezifika:&lt;/strong&gt; Für digitale Audiodatenströme nach AES3-Standard stehen die optionalen Parameter &lt;code&gt;aes3_data_type_h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270"&gt;[SWS_RDS_90270]&lt;/a&gt;, &lt;code&gt;aes3_data_type_l&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271"&gt;[SWS_RDS_90271]&lt;/a&gt; sowie die Referenz &lt;code&gt;aes3_dt_ref&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272"&gt;[SWS_RDS_90272]&lt;/a&gt; bereit.
+      &lt;strong&gt;AES3 特性：&lt;/strong&gt;对于符合 AES3 标准的数字音频数据流，提供了可选参数 &lt;code&gt;aes3_data_type_h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270"&gt;[SWS_RDS_90270]&lt;/a&gt;、&lt;code&gt;aes3_data_type_l&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271"&gt;[SWS_RDS_90271]&lt;/a&gt; 以及引用 &lt;code&gt;aes3_dt_ref&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272"&gt;[SWS_RDS_90272]&lt;/a&gt;。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Verarbeitung und Übergabe:&lt;/strong&gt; Nach dem Auslesen oder Setzen der Attribute wird das Datagramm über die Schnittstellen des RDS-Treibers serialisiert und auf das Netzwerk übertragen oder an die Audio-Sink weitergeleitet.
+      &lt;strong&gt;处理与传递：&lt;/strong&gt;在读取或设置属性之后，数据报通过 RDS 驱动程序的接口进行序列化并传输到网络上，或转发至音频接收端。
     &lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;错误场景&lt;/h4&gt;
   &lt;p&gt;
-    Fehlersituationen bei der Nutzung von &lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; stehen im Wesentlichen im Zusammenhang mit unvollständigen oder inkonsistenten Feldern des IEEE-1722-Headers:
+    使用 &lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; 时的错误情况主要与 IEEE 1722 头部字段的不完整或不一致相关：
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Fehlende optionale Felder:&lt;/strong&gt; Zahlreiche Attribute sind als &lt;code&gt;ara::core::Optional&lt;/code&gt; gekapselt, beispielsweise &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;, &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; oder &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt;. Der Zugriff auf den Wert eines leeren Optionals ohne vorherige Prüfung führt zu Laufzeitfehlern oder Ausnahmebehandlungen in abgeleiteten Schichten.
+      &lt;strong&gt;缺少可选字段：&lt;/strong&gt;许多属性封装为 &lt;code&gt;ara::core::Optional&lt;/code&gt;，例如 &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;、&lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; 或 &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt;。在未预先检查的情况下访问空 Optional 的值会导致运行时错误或派生层中的异常处理。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Inkonsistente Format- und Kanalbeschreibungen:&lt;/strong&gt; Stimmen die Angaben in &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;, &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; und &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt; nicht mit der tatsächlichen Nutzlastgröße des zugrunde liegenden Datagramms überein, kann es bei der Serialisierung oder Deserialisierung zu Pufferüberläufen oder Protokollverwerfungen im RDS-Subsystem kommen.
+      &lt;strong&gt;格式与通道描述不一致：&lt;/strong&gt;如果 &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;、&lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; 和 &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt; 中的指定值与底层数据报的实际有效负载大小不一致，则在序列化或反序列化期间可能导致 RDS 子系统中的缓冲区溢出或协议丢弃。
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ausnahmesicherheit beim Abbau:&lt;/strong&gt; Durch die Kennzeichnung des Destruktors mit &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt; ist sichergestellt, dass bei der Zerstörung des Objekts keine Ausnahmen entweichen. Fehler während des Abbaus müssen intern behandelt oder protokolliert werden, um einen Programmabbruch via &lt;code&gt;std::terminate&lt;/code&gt; zu verhindern.
+      &lt;strong&gt;析构时的异常安全性：&lt;/strong&gt;通过使用 &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt; 标记析构函数，可确保在销毁对象时不会逃逸任何异常。析构过程中的错误必须在内部处理或记录，以防止通过 &lt;code&gt;std::terminate&lt;/code&gt; 导致程序终止。
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;!-- annahmen: 1) Die Klasse dient aufgrund der geschützten Datenmitglieder als spezialisierbare Basisklasse für AAF-Datagramme. – Begründung: Alle Felder sind mit Zugriff 'protected' spezifiziert. 2) Instanziierung und Zuweisung erfolgen plattformintern durch Fabriken oder abgeleitete Klassen. – Begründung: Der Payload enthält ausschließlich geschützte Member und keine öffentlichen Konstruktoren. 3) Die Verwendung von ara::core::Optional reflektiert, dass bestimmte AVTP-Felder je nach Unterformat nicht zwingend vorliegen. – Begründung: Felder wie aes3_data_type_h, bit_depth und evt sind als ara::core::Optional modelliert. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform R25-11 (Modul rds). Aussagen stützen sich ausschließlich auf die angegebenen Spezifikationsanforderungen.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive Platform 规范 R25-11（rds 模块）。陈述仅基于所给出的规范要求。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

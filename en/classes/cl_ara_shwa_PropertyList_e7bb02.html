@@ -19,65 +19,64 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>dbc17625de75</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_shwa_PropertyList_e7bb02/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/en/classes/cl_ara_shwa_PropertyList_e7bb02/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_shwa_PropertyList_e7bb02" data-view-mode="editor" title="Open curation editor &amp; audit dossier" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curate</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>Context</h4>
   <p>
-    Die Klasse <code>ara::shwa::PropertyList</code> stellt innerhalb des Moduls <code>shwa</code> der AUTOSAR Adaptive Platform eine strukturierte Zusammenfassung von Eigenschaften bereit. Gemäß der Klassensyntax ist der Typ als <code>final</code> deklariert, womit eine Spezialisierung über Vererbungshierarchien ausgeschlossen ist und Instanzen als in sich geschlossene Wert- oder Konfigurationsobjekte fungieren. In softwarebasierten Steuergerätesystemen dient eine solche Eigenschaftsliste als Kapselung von Attributen, Parametern oder Zustandsmerkmalen, welche bei Funktionsaufrufen an Systemkomponenten übermittelt werden.
+    The class <code>ara::shwa::PropertyList</code> provides a structured collection of properties within module <code>shwa</code> of the AUTOSAR Adaptive Platform. According to the class syntax, the type is declared as <code>final</code>, which precludes specialization via inheritance hierarchies and causes instances to function as self-contained value or configuration objects. In software-based ECU systems, such a property list serves to encapsulate attributes, parameters, or state characteristics that are transmitted to system components during function calls.
   </p>
   <p>
-    Interpretation: Die Klasse dürfte als generische Hülle für heterogene Eigenschaftstypen konzipiert sein, um funktionale Konfigurationen typsicher und flexibel zu bündeln. Die primären Interaktionspartner sind hierbei die aufrufende Anwendungslogik, welche die Liste zur Laufzeit parametriert, sowie empfangende Dienste des Moduls <code>shwa</code>, welche die enthaltenen Eigenschaften zur Initialisierung oder Betriebssteuerung verarbeiten.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Der Lebenszyklus eines Objekts der Klasse <code>ara::shwa::PropertyList</code> beginnt mit der Instanziierung über den variadischen Konstruktor <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>. Durch das Funktionstemplate <code>template &lt;typename... Properties&gt; PropertyList(Properties... props) noexcept</code> können Aufrufer eine beliebige Anzahl von Eigenschaftsobjekten unterschiedlicher Typen direkt bei der Erzeugung übergeben.
-  </p>
-  <p>
-    Hinsichtlich der Besitzverhältnisse unterliegt die Klasse den üblichen RAII-Prinzipien (Resource Acquisition Is Initialization) moderner C++-Entwurfsmuster. Instanzen werden vorzugsweise lokal auf dem Aufruf-Stack oder als Member von Verwaltungsobjekten instanziiert. Die Lebensdauer der übergebenen Eigenschaften ist an die Lebensdauer der Liste gekoppelt. Da die Klasse als <code>final</code> spezifiziert ist, ist keine polymorphe Zerstörung über Basisklassenzeiger vorgesehen; die Zerstörung erfolgt deterministisch beim Verlassen des Gültigkeitsbereichs.
-  </p>
-  <p>
-    In Bezug auf Nebenläufigkeit ist die Klasse gemäß <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> als nicht threadsicher (<code>not thread-safe</code>) ausgewiesen. Dies bedingt, dass eine Instanz von <code>ara::shwa::PropertyList</code> nicht ohne externe Synchronisation nebenläufig über mehrere Threads hinweg modifiziert oder ausgelesen werden darf. Bei Verwendung in nebenläufigen Ausführungskontexten muss die aufrufende Software die Zugriffe durch Sperrmechanismen absichern oder thread-lokale Instanzen vorhalten.
+    Interpretation: The class is likely designed as a generic wrapper for heterogeneous property types in order to bundle functional configurations in a type-safe and flexible manner. The primary interaction partners here are the calling application logic, which parameterizes the list at runtime, and receiving services of module <code>shwa</code>, which process the contained properties for initialization or operational control.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>Lifecycle</h4>
   <p>
-    Der typische Nutzungspfad umfasst die Definition der Eigenschaftsparameter, die Bündelung über den Konstruktor und die Übergabe an nachgelagerte Schnittstellen:
+    The lifecycle of an object of class <code>ara::shwa::PropertyList</code> begins with instantiation via the variadic constructor <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>. Through the function template <code>template &lt;typename... Properties&gt; PropertyList(Properties... props) noexcept</code>, callers can pass an arbitrary number of property objects of different types directly upon creation.
+  </p>
+  <p>
+    Regarding ownership, the class is subject to the usual RAII principles (Resource Acquisition Is Initialization) of modern C++ design patterns. Instances are preferably instantiated locally on the call stack or as members of management objects. The lifetime of the passed properties is tied to the lifetime of the list. Because the class is specified as <code>final</code>, no polymorphic destruction via base class pointers is intended; destruction takes place deterministically upon leaving the scope.
+  </p>
+  <p>
+    With regard to concurrency, the class is designated as not thread-safe (<code>not thread-safe</code>) according to <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>. This requires that an instance of <code>ara::shwa::PropertyList</code> must not be modified or read concurrently across multiple threads without external synchronization. When used in concurrent execution contexts, the calling software must protect accesses via locking mechanisms or maintain thread-local instances.
+  </p>
+
+  <h4>Usage Path</h4>
+  <p>
+    The typical usage path comprises defining the property parameters, bundling them via the constructor, and passing them to downstream interfaces:
   </p>
   <ol>
     <li>
-      <strong>Definition der Eigenschaften:</strong> Die aufrufende Komponente bereitet die individuellen Eigenschaftsobjekte vor, welche für den jeweiligen Anwendungsfall relevant sind.
+      <strong>Definition of properties:</strong> The calling component prepares the individual property objects that are relevant for the respective use case.
     </li>
     <li>
-      <strong>Initialisierung der Liste:</strong> Über den variadischen Konstruktor <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> wird <code>ara::shwa::PropertyList</code> unter Angabe der Argumente erzeugt. Die Template-Argumente werden hierbei durch den Compiler automatisch deduziert.
+      <strong>Initialization of the list:</strong> Via the variadic constructor <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>, <code>ara::shwa::PropertyList</code> is created specifying the arguments. The template arguments are automatically deduced by the compiler in this process.
     </li>
     <li>
-      <strong>Weitergabe an Modulfunktionen:</strong> Das fertige Konfigurationsobjekt wird an Schnittstellen des Moduls <code>shwa</code> übergeben, um spezifische Dienste zu konfigurieren oder Verarbeitungsvorgänge anzustoßen.
+      <strong>Passing to module functions:</strong> The finished configuration object is passed to interfaces of module <code>shwa</code> in order to configure specific services or trigger processing operations.
     </li>
   </ol>
   <p>
-    Interpretation: Da in der Spezifikation außer dem Konstruktor keine mutierenden Elementfunktionen ausgewiesen sind, dürfte die Klasse primär als unveränderliches Werteobjekt (Immutable Value Object) fungieren, dessen Inhalt während der Weitergabe stabil bleibt.
+    Interpretation: Since no mutating member functions other than the constructor are identified in the specification, the class is likely to function primarily as an immutable value object whose content remains stable during propagation.
   </p>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>Error Scenarios</h4>
   <p>
-    Hinsichtlich der Fehlersicherheit weist die Konstruktion von <code>ara::shwa::PropertyList</code> eine strikte Garantie auf: Gemäß <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a> ist der Konstruktor mit dem Spezifizierer <code>noexcept</code> deklariert und als ausnahmesicher (<code>exception safe</code>) eingestuft. Auf Sprachebene können bei der Erzeugung somit keine C++-Exceptions entweichen.
+    Regarding failure safety, the construction of <code>ara::shwa::PropertyList</code> exhibits a strict guarantee: according to <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>, the constructor is declared with the specifier <code>noexcept</code> and classified as exception safe (<code>exception safe</code>). At the language level, no C++ exceptions can therefore escape during creation.
   </p>
   <p>
-    Potenzielle Fehlerszenarien liegen somit primär in der fehlerhaften Handhabung der Systemumgebung oder ungültigen Vorbedingungen:
+    Potential error scenarios thus lie primarily in incorrect handling of the system environment or invalid preconditions:
   </p>
   <ul>
     <li>
-      <strong>Unerlaubter Mehrfachzugriff (Data Race):</strong> Da die Klasse nicht threadsicher ist <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>, führt ein gleichzeitiger ungeschützter Zugriff aus parallelen Threads zu undefiniertem Verhalten. Vorbedingung für jede Operation ist der exklusive Zugriff.
+      <strong>Unauthorized concurrent access (data race):</strong> Because the class is not thread-safe <a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802">[AP_SWS_SHWA_00802]</a>, concurrent unprotected access from parallel threads leads to undefined behavior. Exclusive access is a precondition for every operation.
     </li>
     <li>
-      <strong>Typinkompatibilität bei der Instanziierung:</strong> Werden Argumente übergeben, die nicht den syntaktischen oder semantischen Anforderungen der aufnehmenden Parameter genügen, schlägt die Kompilierung fehl. Dies verlagert potenzielle Laufzeitfehler weitgehend in die Übersetzungsphase.
+      <strong>Type incompatibility during instantiation:</strong> If arguments are passed that do not satisfy the syntactic or semantic requirements of the receiving parameters, compilation fails. This largely shifts potential runtime errors to the compilation phase.
     </li>
   </ul>
   <!-- annahmen: 1) Die Klasse dient als generischer Container zur Bündelung heterogener Eigenschaftstypen für shwa-Funktionen. – Begründung: Das unbeschränkte variadische Template des Konstruktors ohne weitere Typrestriktionen legt eine flexible Sammelfunktion nahe. 2) Die Instanzen fungieren primär als unveränderliche Werteobjekte. – Begründung: Der Payload führt außer dem Initialisierungskonstruktor keine mutierenden Elementfunktionen auf. -->
-  <p class="ai-note">Dieser Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikation R25-11 erstellt.</p>
+  <p class="ai-note">This guide was generated automatically based on the AUTOSAR specification R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_shwa_PropertyList_e7bb02" title="Discuss with AI">💬 Discuss with AI</button>
@@ -360,62 +359,61 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="dbc17625de75cb5782acaf94feeacee6f20f888139264d76fe216a1a51418fe3" data-trace-output="df29b10839299332e8a0cfaf5118942602eb927e0f9dd48b712b07dd3b44139d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;Context&lt;/h4&gt;
   &lt;p&gt;
-    Die Klasse &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; stellt innerhalb des Moduls &lt;code&gt;shwa&lt;/code&gt; der AUTOSAR Adaptive Platform eine strukturierte Zusammenfassung von Eigenschaften bereit. Gemäß der Klassensyntax ist der Typ als &lt;code&gt;final&lt;/code&gt; deklariert, womit eine Spezialisierung über Vererbungshierarchien ausgeschlossen ist und Instanzen als in sich geschlossene Wert- oder Konfigurationsobjekte fungieren. In softwarebasierten Steuergerätesystemen dient eine solche Eigenschaftsliste als Kapselung von Attributen, Parametern oder Zustandsmerkmalen, welche bei Funktionsaufrufen an Systemkomponenten übermittelt werden.
+    The class &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; provides a structured collection of properties within module &lt;code&gt;shwa&lt;/code&gt; of the AUTOSAR Adaptive Platform. According to the class syntax, the type is declared as &lt;code&gt;final&lt;/code&gt;, which precludes specialization via inheritance hierarchies and causes instances to function as self-contained value or configuration objects. In software-based ECU systems, such a property list serves to encapsulate attributes, parameters, or state characteristics that are transmitted to system components during function calls.
   &lt;/p&gt;
   &lt;p&gt;
-    Interpretation: Die Klasse dürfte als generische Hülle für heterogene Eigenschaftstypen konzipiert sein, um funktionale Konfigurationen typsicher und flexibel zu bündeln. Die primären Interaktionspartner sind hierbei die aufrufende Anwendungslogik, welche die Liste zur Laufzeit parametriert, sowie empfangende Dienste des Moduls &lt;code&gt;shwa&lt;/code&gt;, welche die enthaltenen Eigenschaften zur Initialisierung oder Betriebssteuerung verarbeiten.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Der Lebenszyklus eines Objekts der Klasse &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; beginnt mit der Instanziierung über den variadischen Konstruktor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. Durch das Funktionstemplate &lt;code&gt;template &amp;lt;typename... Properties&amp;gt; PropertyList(Properties... props) noexcept&lt;/code&gt; können Aufrufer eine beliebige Anzahl von Eigenschaftsobjekten unterschiedlicher Typen direkt bei der Erzeugung übergeben.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Hinsichtlich der Besitzverhältnisse unterliegt die Klasse den üblichen RAII-Prinzipien (Resource Acquisition Is Initialization) moderner C++-Entwurfsmuster. Instanzen werden vorzugsweise lokal auf dem Aufruf-Stack oder als Member von Verwaltungsobjekten instanziiert. Die Lebensdauer der übergebenen Eigenschaften ist an die Lebensdauer der Liste gekoppelt. Da die Klasse als &lt;code&gt;final&lt;/code&gt; spezifiziert ist, ist keine polymorphe Zerstörung über Basisklassenzeiger vorgesehen; die Zerstörung erfolgt deterministisch beim Verlassen des Gültigkeitsbereichs.
-  &lt;/p&gt;
-  &lt;p&gt;
-    In Bezug auf Nebenläufigkeit ist die Klasse gemäß &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; als nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;) ausgewiesen. Dies bedingt, dass eine Instanz von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; nicht ohne externe Synchronisation nebenläufig über mehrere Threads hinweg modifiziert oder ausgelesen werden darf. Bei Verwendung in nebenläufigen Ausführungskontexten muss die aufrufende Software die Zugriffe durch Sperrmechanismen absichern oder thread-lokale Instanzen vorhalten.
+    Interpretation: The class is likely designed as a generic wrapper for heterogeneous property types in order to bundle functional configurations in a type-safe and flexible manner. The primary interaction partners here are the calling application logic, which parameterizes the list at runtime, and receiving services of module &lt;code&gt;shwa&lt;/code&gt;, which process the contained properties for initialization or operational control.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;Lifecycle&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Nutzungspfad umfasst die Definition der Eigenschaftsparameter, die Bündelung über den Konstruktor und die Übergabe an nachgelagerte Schnittstellen:
+    The lifecycle of an object of class &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; begins with instantiation via the variadic constructor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. Through the function template &lt;code&gt;template &amp;lt;typename... Properties&amp;gt; PropertyList(Properties... props) noexcept&lt;/code&gt;, callers can pass an arbitrary number of property objects of different types directly upon creation.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Regarding ownership, the class is subject to the usual RAII principles (Resource Acquisition Is Initialization) of modern C++ design patterns. Instances are preferably instantiated locally on the call stack or as members of management objects. The lifetime of the passed properties is tied to the lifetime of the list. Because the class is specified as &lt;code&gt;final&lt;/code&gt;, no polymorphic destruction via base class pointers is intended; destruction takes place deterministically upon leaving the scope.
+  &lt;/p&gt;
+  &lt;p&gt;
+    With regard to concurrency, the class is designated as not thread-safe (&lt;code&gt;not thread-safe&lt;/code&gt;) according to &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. This requires that an instance of &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; must not be modified or read concurrently across multiple threads without external synchronization. When used in concurrent execution contexts, the calling software must protect accesses via locking mechanisms or maintain thread-local instances.
+  &lt;/p&gt;
+
+  &lt;h4&gt;Usage Path&lt;/h4&gt;
+  &lt;p&gt;
+    The typical usage path comprises defining the property parameters, bundling them via the constructor, and passing them to downstream interfaces:
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Definition der Eigenschaften:&lt;/strong&gt; Die aufrufende Komponente bereitet die individuellen Eigenschaftsobjekte vor, welche für den jeweiligen Anwendungsfall relevant sind.
+      &lt;strong&gt;Definition of properties:&lt;/strong&gt; The calling component prepares the individual property objects that are relevant for the respective use case.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Initialisierung der Liste:&lt;/strong&gt; Über den variadischen Konstruktor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; wird &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; unter Angabe der Argumente erzeugt. Die Template-Argumente werden hierbei durch den Compiler automatisch deduziert.
+      &lt;strong&gt;Initialization of the list:&lt;/strong&gt; Via the variadic constructor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; is created specifying the arguments. The template arguments are automatically deduced by the compiler in this process.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Weitergabe an Modulfunktionen:&lt;/strong&gt; Das fertige Konfigurationsobjekt wird an Schnittstellen des Moduls &lt;code&gt;shwa&lt;/code&gt; übergeben, um spezifische Dienste zu konfigurieren oder Verarbeitungsvorgänge anzustoßen.
+      &lt;strong&gt;Passing to module functions:&lt;/strong&gt; The finished configuration object is passed to interfaces of module &lt;code&gt;shwa&lt;/code&gt; in order to configure specific services or trigger processing operations.
     &lt;/li&gt;
   &lt;/ol&gt;
   &lt;p&gt;
-    Interpretation: Da in der Spezifikation außer dem Konstruktor keine mutierenden Elementfunktionen ausgewiesen sind, dürfte die Klasse primär als unveränderliches Werteobjekt (Immutable Value Object) fungieren, dessen Inhalt während der Weitergabe stabil bleibt.
+    Interpretation: Since no mutating member functions other than the constructor are identified in the specification, the class is likely to function primarily as an immutable value object whose content remains stable during propagation.
   &lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
   &lt;p&gt;
-    Hinsichtlich der Fehlersicherheit weist die Konstruktion von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; eine strikte Garantie auf: Gemäß &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; ist der Konstruktor mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; deklariert und als ausnahmesicher (&lt;code&gt;exception safe&lt;/code&gt;) eingestuft. Auf Sprachebene können bei der Erzeugung somit keine C++-Exceptions entweichen.
+    Regarding failure safety, the construction of &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; exhibits a strict guarantee: according to &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, the constructor is declared with the specifier &lt;code&gt;noexcept&lt;/code&gt; and classified as exception safe (&lt;code&gt;exception safe&lt;/code&gt;). At the language level, no C++ exceptions can therefore escape during creation.
   &lt;/p&gt;
   &lt;p&gt;
-    Potenzielle Fehlerszenarien liegen somit primär in der fehlerhaften Handhabung der Systemumgebung oder ungültigen Vorbedingungen:
+    Potential error scenarios thus lie primarily in incorrect handling of the system environment or invalid preconditions:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Unerlaubter Mehrfachzugriff (Data Race):&lt;/strong&gt; Da die Klasse nicht threadsicher ist &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, führt ein gleichzeitiger ungeschützter Zugriff aus parallelen Threads zu undefiniertem Verhalten. Vorbedingung für jede Operation ist der exklusive Zugriff.
+      &lt;strong&gt;Unauthorized concurrent access (data race):&lt;/strong&gt; Because the class is not thread-safe &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, concurrent unprotected access from parallel threads leads to undefined behavior. Exclusive access is a precondition for every operation.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Typinkompatibilität bei der Instanziierung:&lt;/strong&gt; Werden Argumente übergeben, die nicht den syntaktischen oder semantischen Anforderungen der aufnehmenden Parameter genügen, schlägt die Kompilierung fehl. Dies verlagert potenzielle Laufzeitfehler weitgehend in die Übersetzungsphase.
+      &lt;strong&gt;Type incompatibility during instantiation:&lt;/strong&gt; If arguments are passed that do not satisfy the syntactic or semantic requirements of the receiving parameters, compilation fails. This largely shifts potential runtime errors to the compilation phase.
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;!-- annahmen: 1) Die Klasse dient als generischer Container zur Bündelung heterogener Eigenschaftstypen für shwa-Funktionen. – Begründung: Das unbeschränkte variadische Template des Konstruktors ohne weitere Typrestriktionen legt eine flexible Sammelfunktion nahe. 2) Die Instanzen fungieren primär als unveränderliche Werteobjekte. – Begründung: Der Payload führt außer dem Initialisierungskonstruktor keine mutierenden Elementfunktionen auf. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikation R25-11 erstellt.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;This guide was generated automatically based on the AUTOSAR specification R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

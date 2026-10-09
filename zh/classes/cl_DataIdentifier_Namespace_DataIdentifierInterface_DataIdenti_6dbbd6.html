@@ -24,57 +24,56 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>e99044a03d11</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/zh/classes/cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>上下文</h4>
 <p>
-Die Datenstruktur <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> ist Bestandteil des Moduls <code>diag</code> innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation <code>ReadOutput</code> zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+数据结构 <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> 是 AUTOSAR Adaptive Platform 在 release R25-11 中模块 <code>diag</code> 的组成部分。其主要任务是汇总操作 <code>ReadOutput</code> 的输出参数，并作为类型化传输结构提供。
 </p>
 <p>
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+在面向诊断的应用程序中，此数据构造封装了特定数据标识符 (DID) 的已读取有效载荷数据和关联的输出参数。该结构体将所有生成的值捆绑在一个连续的单元中，而不是通过指针或引用传递多个单独的返回参数。交互伙伴包括内部诊断服务器、实现应用程序层以及相应数据标识符的生成接口。解释：该结构体可能充当标准化返回容器，在异步调用链中传递，以保持接口定义的一致性。
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>生命周期</h4>
 <p>
-Als reine Datenkapsel (Data Transfer Object) besitzt <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+作为纯数据封装（数据传输对象），<code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> 通常具有值类型（Value Object）的特征。一旦处理针对相关数据标识符的读取请求，就会针对实例进行创建。
 </p>
 <p>
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+所有权关系取决于所选的传递机制：
 </p>
 <ul>
-<li><strong>Erzeugung:</strong> Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.</li>
-<li><strong>Übergabe und Transport:</strong> Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.</li>
-<li><strong>Zerstörung:</strong> Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.</li>
+<li><strong>创建：</strong>实例化可能在提供方应用程序逻辑侧进行，该逻辑确定所查询的诊断值并将其嵌入到结构体字段中。</li>
+<li><strong>传递与传输：</strong>通过复制或移动（移动语义）将对象传递给诊断管理调用的层。在跨越接口边界传递时，所有权转移给接收方。</li>
+<li><strong>销毁：</strong>生命周期在离开接收方的作用域时或在完成诊断响应的序列化后自动结束。</li>
 </ul>
 <p>
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+由于该结构体没有自己的控制流，因此不管理内部状态机。在并发方面：由于它是纯数据聚合，因此可能不存在内部同步机制，来自不同线程的并发读写访问必须进行外部同步。
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>使用路径</h4>
 <p>
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+在用于读取数据标识符的诊断请求框架内，该数据结构的典型使用遵循固定的顺序：
 </p>
 <ol>
-<li><strong>Anfrageempfang:</strong> Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle <code>&lt;DataIdentifierInterface&gt;</code> zu.</li>
-<li><strong>Verarbeitung und Datenermittlung:</strong> Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.</li>
-<li><strong>Zuweisung:</strong> Eine Instanz von <code>&lt;DataIdentifier&gt;ReadOutput</code> wird deklariert und mit den ermittelten Ergebniswerten befüllt.</li>
-<li><strong>Rückmeldung:</strong> Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.</li>
-<li><strong>Ressourcenfreigabe:</strong> Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.</li>
+<li><strong>请求接收：</strong>诊断客户端通过标准化诊断协议请求读取数据标识符。诊断栈将此请求分配给相应的接口 <code>&lt;DataIdentifierInterface&gt;</code>。</li>
+<li><strong>处理与数据获取：</strong>主管应用功能获取车辆子系统或内部存储器的当前数据值。</li>
+<li><strong>赋值：</strong>声明 <code>&lt;DataIdentifier&gt;ReadOutput</code> 的一个实例，并用获取的结果值进行填充。</li>
+<li><strong>反馈：</strong>将填充后的结构返回给诊断框架，诊断框架读取各个字段，格式化诊断报文，并将响应发送给诊断客户端。</li>
+<li><strong>资源释放：</strong>在成功传递并处理后，该实例被销毁。</li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>错误场景</h4>
 <p>
-Als reine Datenstruktur löst <code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+作为纯数据结构，<code>&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput</code> 本身不会触发功能错误码或异常。但潜在的错误条件会在使用上下文中产生：
 </p>
 <ul>
-<li><strong>Unvollständige Initialisierung:</strong> Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.</li>
-<li><strong>Bereitstellungsfehler:</strong> Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.</li>
-<li><strong>Gültigkeitsbereichsverletzungen:</strong> Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.</li>
+<li><strong>未完全初始化：</strong>如果在返回前未正确填充所有必需的输出参数，下游层可能会生成不完整或不一致的诊断响应。返回的前置条件始终是完全填充所有已定义的字段。</li>
+<li><strong>提供错误：</strong>若应用逻辑无法获取所需的值（例如由于传感器或总线故障），通常不会传递有效的结构实例，而是报告相应的诊断错误码。</li>
+<li><strong>作用域违规：</strong>在异步传递时，必须确保只要有引用组件在访问该数据结构，它就不会被提前释放。</li>
 </ul>
 <!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. -->
-<p class="ai-note">Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls <code>diag</code> (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.</p>
+<p class="ai-note">本指南基于 AUTOSAR Adaptive 模块 <code>diag</code>（Release R25-11）的结构元数据。具体的接口要求和数据字段定义请参阅相应的模块规范。</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" title="与 AI 讨论">💬 与 AI 讨论</button>
@@ -291,54 +290,53 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e99044a03d11e8b09b129f1b5c47ea5922c27eb4b52d94473eae5fa72ded1446" data-trace-output="5b21e6473f1200bb788b607a95f4bbc5672f78e6a2a7c1c616413fdea8550597" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;上下文&lt;/h4&gt;
 &lt;p&gt;
-Die Datenstruktur &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform für das Release R25-11. Ihre primäre Aufgabe besteht darin, die Ausgabeargumente für die Operation &lt;code&gt;ReadOutput&lt;/code&gt; zusammenzufassen und als typisierte Transportstruktur bereitzustellen.
+数据结构 &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; 是 AUTOSAR Adaptive Platform 在 release R25-11 中模块 &lt;code&gt;diag&lt;/code&gt; 的组成部分。其主要任务是汇总操作 &lt;code&gt;ReadOutput&lt;/code&gt; 的输出参数，并作为类型化传输结构提供。
 &lt;/p&gt;
 &lt;p&gt;
-In diagnoseorientierten Anwendungen kapselt dieses Datenkonstrukt die gelesenen Nutzdaten und zugehörigen Ausgabeparameter eines spezifischen Data Identifiers (DID). Anstatt mehrere einzelne Rückgabeparameter über Zeiger oder Referenzen zu übergeben, bündelt die Struktur alle resultierenden Werte in einer zusammenhängenden Einheit. Die Interaktionspartner umfassen den internen Diagnose-Server, die implementierende Anwendungsschicht sowie die generierte Schnittstelle des jeweiligen Data Identifiers. Interpretation: Die Struktur dürfte dabei als standardisierter Rückgabebehälter fungieren, der innerhalb asynchroner Aufrufketten übermittelt wird, um die Schnittstellendefinition konsistent zu halten.
+在面向诊断的应用程序中，此数据构造封装了特定数据标识符 (DID) 的已读取有效载荷数据和关联的输出参数。该结构体将所有生成的值捆绑在一个连续的单元中，而不是通过指针或引用传递多个单独的返回参数。交互伙伴包括内部诊断服务器、实现应用程序层以及相应数据标识符的生成接口。解释：该结构体可能充当标准化返回容器，在异步调用链中传递，以保持接口定义的一致性。
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;生命周期&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenkapsel (Data Transfer Object) besitzt &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; typischerweise den Charakter eines Wertetyps (Value Object). Die Erzeugung erfolgt instanzbezogen, sobald ein Leseauftrag für den betreffenden Data Identifier abgearbeitet wird.
+作为纯数据封装（数据传输对象），&lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; 通常具有值类型（Value Object）的特征。一旦处理针对相关数据标识符的读取请求，就会针对实例进行创建。
 &lt;/p&gt;
 &lt;p&gt;
-Die Besitzverhältnisse richten sich nach dem gewählten Übergabemechanismus:
+所有权关系取决于所选的传递机制：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Erzeugung:&lt;/strong&gt; Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik, welche die abgefragten Diagnosewerte ermittelt und in die Strukturfelder einbettet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Übergabe und Transport:&lt;/strong&gt; Das Objekt wird durch Kopieren oder Verschieben (Move-Semantik) an die aufrufende Schicht des Diagnose-Managements weitergegeben. Bei der Weitergabe über Schnittstellengrenzen hinweg geht der Besitz an den Empfänger über.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Die Lebensdauer endet automatisch mit dem Verlassen des Gültigkeitsbereichs des Empfängers oder nach Abschluss der Serialisierung für die Diagnoseantwort.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;创建：&lt;/strong&gt;实例化可能在提供方应用程序逻辑侧进行，该逻辑确定所查询的诊断值并将其嵌入到结构体字段中。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;传递与传输：&lt;/strong&gt;通过复制或移动（移动语义）将对象传递给诊断管理调用的层。在跨越接口边界传递时，所有权转移给接收方。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;销毁：&lt;/strong&gt;生命周期在离开接收方的作用域时或在完成诊断响应的序列化后自动结束。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Da die Struktur keinen eigenen Kontrollfluss besitzt, verwaltet sie keine internen Zustandsmaschinen. Hinsichtlich der Nebenläufigkeit gilt: Da es sich um ein reines Datenaggregat handelt, dürfte kein interner Synchronisationsmechanismus vorhanden sein, sodass gleichzeitige Lese- und Schreibzugriffe von verschiedenen Threads aus extern synchronisiert werden müssen.
+由于该结构体没有自己的控制流，因此不管理内部状态机。在并发方面：由于它是纯数据聚合，因此可能不存在内部同步机制，来自不同线程的并发读写访问必须进行外部同步。
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;使用路径&lt;/h4&gt;
 &lt;p&gt;
-Der typische Einsatz der Datenstruktur folgt einer festen Abfolge im Rahmen einer Diagnoseanfrage zur Auslesung eines Data Identifiers:
+在用于读取数据标识符的诊断请求框架内，该数据结构的典型使用遵循固定的顺序：
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Anfrageempfang:&lt;/strong&gt; Ein Diagnose-Client fordert über standardisierte Diagnoseprotokolle das Auslesen eines Data Identifiers an. Der Diagnose-Stack ordnet diese Anfrage der entsprechenden Schnittstelle &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt; zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung und Datenermittlung:&lt;/strong&gt; Die zuständige Anwendungsfunktion ermittelt die aktuellen Datenwerte des Fahrzeugsubsystems oder internen Speichers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Zuweisung:&lt;/strong&gt; Eine Instanz von &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; wird deklariert und mit den ermittelten Ergebniswerten befüllt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Rückmeldung:&lt;/strong&gt; Die befüllte Struktur wird an das Diagnose-Framework zurückgeliefert, welches die Felder ausliest, die Diagnosetelegramme formatiert und die Antwort an den Diagnose-Client versendet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ressourcenfreigabe:&lt;/strong&gt; Nach erfolgreicher Übergabe und Verarbeitung wird die Instanz aufgelöst.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;请求接收：&lt;/strong&gt;诊断客户端通过标准化诊断协议请求读取数据标识符。诊断栈将此请求分配给相应的接口 &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;处理与数据获取：&lt;/strong&gt;主管应用功能获取车辆子系统或内部存储器的当前数据值。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;赋值：&lt;/strong&gt;声明 &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; 的一个实例，并用获取的结果值进行填充。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;反馈：&lt;/strong&gt;将填充后的结构返回给诊断框架，诊断框架读取各个字段，格式化诊断报文，并将响应发送给诊断客户端。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;资源释放：&lt;/strong&gt;在成功传递并处理后，该实例被销毁。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;错误场景&lt;/h4&gt;
 &lt;p&gt;
-Als reine Datenstruktur löst &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; selbst keine funktionalen Fehlercodes oder Ausnahmen aus. Potenzielle Fehlerbedingungen entstehen jedoch im Nutzungskontext:
+作为纯数据结构，&lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; 本身不会触发功能错误码或异常。但潜在的错误条件会在使用上下文中产生：
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Unvollständige Initialisierung:&lt;/strong&gt; Werden nicht alle erforderlichen Ausgabeparameter vor der Rückgabe korrekt befüllt, können nachgelagerte Schichten unvollständige oder inkonsistente Diagnoseantworten erzeugen. Vorbedingung für die Rückgabe ist stets die vollständige Belegung aller definierten Felder.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereitstellungsfehler:&lt;/strong&gt; Kann die Anwendungslogik die geforderten Werte nicht ermitteln (beispielsweise durch Sensor- oder Busfehler), wird üblicherweise keine gültige Strukturinstanz weitergeleitet, sondern ein entsprechender Diagnosefehlercode gemeldet.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Gültigkeitsbereichsverletzungen:&lt;/strong&gt; Bei asynchroner Weitergabe muss sichergestellt sein, dass die Datenstruktur nicht vorzeitig freigegeben wird, solange referenzierende Komponenten darauf zugreifen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;未完全初始化：&lt;/strong&gt;如果在返回前未正确填充所有必需的输出参数，下游层可能会生成不完整或不一致的诊断响应。返回的前置条件始终是完全填充所有已定义的字段。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;提供错误：&lt;/strong&gt;若应用逻辑无法获取所需的值（例如由于传感器或总线故障），通常不会传递有效的结构实例，而是报告相应的诊断错误码。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;作用域违规：&lt;/strong&gt;在异步传递时，必须确保只要有引用组件在访问该数据结构，它就不会被提前释放。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten des AUTOSAR-Adaptive-Moduls &lt;code&gt;diag&lt;/code&gt; (Release R25-11). Spezifische Schnittstellenanforderungen und Datenfelddefinitionen sind der jeweiligen Modulspezifikation zu entnehmen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;本指南基于 AUTOSAR Adaptive 模块 &lt;code&gt;diag&lt;/code&gt;（Release R25-11）的结构元数据。具体的接口要求和数据字段定义请参阅相应的模块规范。&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

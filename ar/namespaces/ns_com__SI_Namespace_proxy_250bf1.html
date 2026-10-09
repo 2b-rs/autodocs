@@ -20,53 +20,52 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>c45b35af67f2</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/namespaces/ns_com__SI_Namespace_proxy_250bf1/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/namespaces/ns_com__SI_Namespace_proxy_250bf1/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-ns_com__SI_Namespace_proxy_250bf1" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>السياق</h4>
 <p>
-Der Namespace <code>&lt;SI-Namespace&gt;::proxy</code> kapselt die clientseitigen Schnittstellen und Kommunikationsartefakte eines definierten Service Interface (<code>&lt;SI&gt;</code>) innerhalb des Funktionsclusters Communication Management (<code>com</code>) der AUTOSAR Adaptive Platform. Im Zentrum dieses Namespace steht die generierte Proxy-Klasse <code>&lt;SI&gt;Proxy</code>. Sie dient anwendungsinternen Software-Komponenten als Stellvertreter (Proxy-Muster), um Dienstleistungen einer bereitgestellten Service-Instanz in Anspruch zu nehmen.
+تغلف مساحة الأسماء <code>&lt;SI-Namespace&gt;::proxy</code> واجهات العميل وقطع الاتصال البرمجية الخاصة بواجهة خدمة محددة (<code>&lt;SI&gt;</code>) داخل المجموعة الوظيفية Communication Management (<code>com</code>) لـ AUTOSAR Adaptive Platform. في قلب مساحة الأسماء هذه توجد فئة الوكيل المُولدة <code>&lt;SI&gt;Proxy</code>. وهي تعمل كوخيل (نمط الوكيل) لمكونات البرمجيات الداخلية للتطبيق للاستفادة من خدمات نسخة خدمة متوفرة.
 </p>
 <p>
-Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Schnittstellen für Methodenaufrufe, Event-Abonnements und Feldzugriffe. Anwendungskomponenten interagieren direkt mit <code>&lt;SI&gt;Proxy</code>, ohne Details über die zugrundeliegende Interprozess- oder Netzwerkkommunikation kennen zu müssen. Das Kommunikationsmanagement transformiert diese Aufrufe in anbindungsspezifische Protokolle. Vermutlich fungiert <code>&lt;SI&gt;Proxy</code> als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform.
+تكمن المسؤولية الأساسية لمساحة الأسماء في توفير واجهات آمنة من حيث النوع لاستدعاءات الطرق، واشتراكات الأحداث، والوصول إلى الحقول. تتفاعل مكونات التطبيق مباشرة مع <code>&lt;SI&gt;Proxy</code> دون الحاجة إلى معرفة تفاصيل حول الاتصال الأساسي بين العمليات أو اتصال الشبكة. تحوّل إدارة الاتصالات هذه الاستدعاءات إلى بروتوكولات خاصة بالربط. يُفترض أن <code>&lt;SI&gt;Proxy</code> يعمل كجسر مباشر بين الواجهات الخاصة بالنطاق لواجهة الخدمة وآليات وقت التشغيل العامة للمنصة.
 </p>
 
-<h4>Lebenszyklus</h4>
+<h4>دورة الحياة</h4>
 <p>
-Der Lebenszyklus von Instanzen im Namespace <code>&lt;SI-Namespace&gt;::proxy</code> ist eng an die Verfügbarkeit korrespondierender Service-Instanzen auf Plattformebene gekoppelt. Typischerweise durchläuft ein Proxy folgende Phasen:
+ترتبط دورة حياة النسخ في مساحة الأسماء <code>&lt;SI-Namespace&gt;::proxy</code> ارتباطًا وثيقًا بتوافر نسخ الخدمة المقابلة على مستوى المنصة. يمر الوكيل عادةً بالمراحل التالية:
 </p>
 <ul>
-<li><strong>Auffinden und Handle-Auflösung:</strong> Vor der Konstruktion einer Instanz von <code>&lt;SI&gt;Proxy</code> ermittelt die Anwendung über Mechanismen des Service Discovery ein gültiges Dienst-Handle (<code>HandleType</code>).</li>
-<li><strong>Instanziierung:</strong> Mit der Übergabe eines spezifischen Handles an den Konstruktor wird das Proxy-Objekt gebunden. Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein, sodass eine Zerstörung oder Ungültigkeit der Service-Verbindung den Proxy unbrauchbar macht.</li>
-<li><strong>Betrieb und Ereignisverwaltung:</strong> Während der Betriebsphase verwaltet der Proxy aktive Subskriptionen, Puffer für empfangene Event-Daten sowie asynchrone Zukunftsobjekte für Methodenrückgaben.</li>
-<li><strong>Freigabe und Zerstörung:</strong> Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Zerstörung des Proxy-Objekts werden alle bestehenden Abonnements und Kanalbindungen bereinigt, um Ressourcenlecks zu verhindern.</li>
+<li><strong>العثور وحل المقبض:</strong> قبل بناء نسخة من <code>&lt;SI&gt;Proxy</code>، يحدد التطبيق مقبض خدمة صالحًا (<code>HandleType</code>) عبر آليات Service Discovery.</li>
+<li><strong>إنشاء النسخة:</strong> يتم ربط كائن الوكيل بتمرير مقبض محدد إلى المنشئ. يُرجح أن تكون دورة حياة نسخة الوكيل مرتبطة بصلاحية مقبض الخدمة الأساسي، بحيث يؤدي إتلاف اتصال الخدمة أو عدم صلاحيته إلى جعل الوكيل غير قابل للاستخدام.</li>
+<li><strong>التشغيل وإدارة الأحداث:</strong> خلال مرحلة التشغيل، يدير الوكيل الاشتراكات النشطة، والمخازن المؤقتة لبيانات الأحداث المستلمة، بالإضافة إلى كائنات المستقبل غير المتزامنة لإرجاع الطرق.</li>
+<li><strong>التحرير والإتلاف:</strong> عند الخروج من نطاق الصلاحية أو عند الإتلاف الصريح لكائن الوكيل، يتم تنظيف جميع الاشتراكات وروابط القنوات الحالية لمنع تسرب الموارد.</li>
 </ul>
 <p>
-Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Methodenaufrufe oder Event-Abfragen über <code>&lt;SI&gt;Proxy</code> potenziell nebenläufig aus unterschiedlichen Threads einer Anwendung erfolgen können, sofern das zugrundeliegende Anwendungsdesign dies vorsieht.
+فيما يتعلق بالتزامن، تجدر الإشارة إلى أن استدعاءات الطرق أو استعلامات الأحداث عبر <code>&lt;SI&gt;Proxy</code> يمكن أن تحدث بشكل متزامن من خيوط مختلفة لأحد التطبيقات، بشرط أن يتيح تصميم التطبيق الأساسي ذلك.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>مسار الاستخدام</h4>
 <p>
-Der typische Nutzungspfad für Komponenten, die auf den Namespace <code>&lt;SI-Namespace&gt;::proxy</code> zugreifen, folgt einem standardisierten Ablauf zur Diensteinbindung:
+يتبع مسار الاستخدام النموذجي للمكونات التي تصل إلى مساحة الأسماء <code>&lt;SI-Namespace&gt;::proxy</code> تسلسلاً قياسيًا لدمج الخدمة:
 </p>
 <ol>
-<li><strong>Dienstsuche initiieren:</strong> Die Anwendung startet eine synchrone oder asynchrone Suche nach Instanzen des Service Interface <code>&lt;SI&gt;</code> über die entsprechenden Schnittstellen der Plattform.</li>
-<li><strong>Handle-Auswahl:</strong> Nach erfolgreicher Entdeckung wählt die Konsumentenseite ein passendes Instanz-Handle aus der Trefferliste aus.</li>
-<li><strong>Proxy-Erzeugung:</strong> Die Anwendung instanziiert <code>&lt;SI&gt;Proxy</code> unter Verwendung des gewählten Handles.</li>
-<li><strong>Event-Subskription und Feld-Registrierung:</strong> Für asynchrone Ereignisse abonniert der Client die gewünschten Events über die Sub-Objekte des Proxys. Gegebenenfalls werden Callbacks oder Polling-Strategien registriert.</li>
-<li><strong>Dienstaufruf:</strong> Der Client initiiert Methodenaufrufe über den Proxy, welche asynchron Zukunftsobjekte zurückliefern, oder greift auf Felder lesend bzw. schreibend zu.</li>
-<li><strong>Bereinigung:</strong> Nach Abschluss der Interaktionen werden Abonnements beendet und der Proxy zerstört.</li>
+<li><strong>بدء البحث عن الخدمة:</strong> يبدأ التطبيق بحثًا متزامنًا أو غير متزامن عن نسخ واجهة الخدمة <code>&lt;SI&gt;</code> عبر الواجهات المقابلة للمنصة.</li>
+<li><strong>اختيار المقبض:</strong> بعد الاكتشاف الناجح، يختار جانب المستهلك مقبض نسخة مناسبًا من قائمة النتائج.</li>
+<li><strong>إنشاء الوكيل:</strong> ينشئ التطبيق نسخة من <code>&lt;SI&gt;Proxy</code> باستخدام المقبض المختار.</li>
+<li><strong>الاشتراك في الأحداث وتسجيل الحقول:</strong> بالنسبة للأحداث غير المتزامنة، يشترك العميل في الأحداث المطلوبة عبر الكائنات الفرعية للوكيل (Proxy). وعند الاقتضاء، يتم تسجيل عمليات معاودة الاتصال (Callbacks) أو استراتيجيات الاستقصاء (Polling).</li>
+<li><strong>استدعاء الخدمة:</strong> يبدأ العميل استدعاءات الدوال عبر الوكيل، والتي تُرجع كائنات مستقبلية (Future Objects) بشكل غير متزامن، أو يصل إلى الحقول للقراءة أو الكتابة.</li>
+<li><strong>التنظيف:</strong> بعد اكتمال التفاعلات، يتم إنهاء الاشتراكات وتدمير الوكيل.</li>
 </ol>
 <p>
-Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben, da Methodenaufrufe ohne gebundene Service-Instanz semantisch ungültig sind.
+تفسير: من المرجح أن مسار الاستخدام النموذجي يفرض إلزاميًا الترتيب الصارم للعثور على المقبض (Handle)، وإنشاء مثيل الوكيل، ومعالجة الاتصال اللاحقة، نظراً لأن استدعاءات الدوال دون ربطها بمثيل خدمة تكون غير صالحة دلالياً.
 </p>
 <!-- annahmen:
 1) Vermutlich fungiert <SI>Proxy als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform. – Begründung: Der Payload enthält ausschließlich den Klassennamen ohne detaillierte Architekturbeschreibung.
 2) Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein. – Begründung: Der Payload enthält keine Spezifikationsanforderungen zur Handle-Lebensdauer.
 3) Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben. – Begründung: Ablaufdetails fehlen im Payload.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11. Da im Payload keine Spezifikations-Records oder Dokumentstellen hinterlegt sind, wurden funktionale Zusammenhänge neutral anhand der architekturellen Rolle von Service-Interface-Proxies abgeleitet.</p>
+<p class="ai-note">يستند هذا الدليل إلى البيانات الوصفية المتاحة للإصدار R25-11. ونظراً لعدم وجود سجلات مواصفات أو مراجع وثائق في حمولة البيانات، فقد تم استنتاج العلاقات الوظيفية بشكل محايد بناءً على الدور المعماري لوكلاء واجهات الخدمة (Service Interface Proxies).</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-ns_com__SI_Namespace_proxy_250bf1" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -320,50 +319,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="c45b35af67f2780069a8e137cc3559c43776878f655dca887d03a5f4aaa241b6" data-trace-output="a5d895c4cf9d89f81827b3cee2c0f8869e01edd608a3fa8008e9decb51cf22b5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;السياق&lt;/h4&gt;
 &lt;p&gt;
-Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; kapselt die clientseitigen Schnittstellen und Kommunikationsartefakte eines definierten Service Interface (&lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt;) innerhalb des Funktionsclusters Communication Management (&lt;code&gt;com&lt;/code&gt;) der AUTOSAR Adaptive Platform. Im Zentrum dieses Namespace steht die generierte Proxy-Klasse &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;. Sie dient anwendungsinternen Software-Komponenten als Stellvertreter (Proxy-Muster), um Dienstleistungen einer bereitgestellten Service-Instanz in Anspruch zu nehmen.
+تغلف مساحة الأسماء &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; واجهات العميل وقطع الاتصال البرمجية الخاصة بواجهة خدمة محددة (&lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt;) داخل المجموعة الوظيفية Communication Management (&lt;code&gt;com&lt;/code&gt;) لـ AUTOSAR Adaptive Platform. في قلب مساحة الأسماء هذه توجد فئة الوكيل المُولدة &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;. وهي تعمل كوخيل (نمط الوكيل) لمكونات البرمجيات الداخلية للتطبيق للاستفادة من خدمات نسخة خدمة متوفرة.
 &lt;/p&gt;
 &lt;p&gt;
-Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Schnittstellen für Methodenaufrufe, Event-Abonnements und Feldzugriffe. Anwendungskomponenten interagieren direkt mit &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;, ohne Details über die zugrundeliegende Interprozess- oder Netzwerkkommunikation kennen zu müssen. Das Kommunikationsmanagement transformiert diese Aufrufe in anbindungsspezifische Protokolle. Vermutlich fungiert &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform.
+تكمن المسؤولية الأساسية لمساحة الأسماء في توفير واجهات آمنة من حيث النوع لاستدعاءات الطرق، واشتراكات الأحداث، والوصول إلى الحقول. تتفاعل مكونات التطبيق مباشرة مع &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; دون الحاجة إلى معرفة تفاصيل حول الاتصال الأساسي بين العمليات أو اتصال الشبكة. تحوّل إدارة الاتصالات هذه الاستدعاءات إلى بروتوكولات خاصة بالربط. يُفترض أن &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; يعمل كجسر مباشر بين الواجهات الخاصة بالنطاق لواجهة الخدمة وآليات وقت التشغيل العامة للمنصة.
 &lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;h4&gt;دورة الحياة&lt;/h4&gt;
 &lt;p&gt;
-Der Lebenszyklus von Instanzen im Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; ist eng an die Verfügbarkeit korrespondierender Service-Instanzen auf Plattformebene gekoppelt. Typischerweise durchläuft ein Proxy folgende Phasen:
+ترتبط دورة حياة النسخ في مساحة الأسماء &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; ارتباطًا وثيقًا بتوافر نسخ الخدمة المقابلة على مستوى المنصة. يمر الوكيل عادةً بالمراحل التالية:
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Auffinden und Handle-Auflösung:&lt;/strong&gt; Vor der Konstruktion einer Instanz von &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; ermittelt die Anwendung über Mechanismen des Service Discovery ein gültiges Dienst-Handle (&lt;code&gt;HandleType&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Mit der Übergabe eines spezifischen Handles an den Konstruktor wird das Proxy-Objekt gebunden. Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein, sodass eine Zerstörung oder Ungültigkeit der Service-Verbindung den Proxy unbrauchbar macht.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Betrieb und Ereignisverwaltung:&lt;/strong&gt; Während der Betriebsphase verwaltet der Proxy aktive Subskriptionen, Puffer für empfangene Event-Daten sowie asynchrone Zukunftsobjekte für Methodenrückgaben.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Freigabe und Zerstörung:&lt;/strong&gt; Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Zerstörung des Proxy-Objekts werden alle bestehenden Abonnements und Kanalbindungen bereinigt, um Ressourcenlecks zu verhindern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;العثور وحل المقبض:&lt;/strong&gt; قبل بناء نسخة من &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt;، يحدد التطبيق مقبض خدمة صالحًا (&lt;code&gt;HandleType&lt;/code&gt;) عبر آليات Service Discovery.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;إنشاء النسخة:&lt;/strong&gt; يتم ربط كائن الوكيل بتمرير مقبض محدد إلى المنشئ. يُرجح أن تكون دورة حياة نسخة الوكيل مرتبطة بصلاحية مقبض الخدمة الأساسي، بحيث يؤدي إتلاف اتصال الخدمة أو عدم صلاحيته إلى جعل الوكيل غير قابل للاستخدام.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التشغيل وإدارة الأحداث:&lt;/strong&gt; خلال مرحلة التشغيل، يدير الوكيل الاشتراكات النشطة، والمخازن المؤقتة لبيانات الأحداث المستلمة، بالإضافة إلى كائنات المستقبل غير المتزامنة لإرجاع الطرق.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التحرير والإتلاف:&lt;/strong&gt; عند الخروج من نطاق الصلاحية أو عند الإتلاف الصريح لكائن الوكيل، يتم تنظيف جميع الاشتراكات وروابط القنوات الحالية لمنع تسرب الموارد.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;
-Hinsichtlich der Nebenläufigkeit ist zu beachten, dass Methodenaufrufe oder Event-Abfragen über &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; potenziell nebenläufig aus unterschiedlichen Threads einer Anwendung erfolgen können, sofern das zugrundeliegende Anwendungsdesign dies vorsieht.
+فيما يتعلق بالتزامن، تجدر الإشارة إلى أن استدعاءات الطرق أو استعلامات الأحداث عبر &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; يمكن أن تحدث بشكل متزامن من خيوط مختلفة لأحد التطبيقات، بشرط أن يتيح تصميم التطبيق الأساسي ذلك.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad für Komponenten, die auf den Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; zugreifen, folgt einem standardisierten Ablauf zur Diensteinbindung:
+يتبع مسار الاستخدام النموذجي للمكونات التي تصل إلى مساحة الأسماء &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; تسلسلاً قياسيًا لدمج الخدمة:
 &lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Dienstsuche initiieren:&lt;/strong&gt; Die Anwendung startet eine synchrone oder asynchrone Suche nach Instanzen des Service Interface &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; über die entsprechenden Schnittstellen der Plattform.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Handle-Auswahl:&lt;/strong&gt; Nach erfolgreicher Entdeckung wählt die Konsumentenseite ein passendes Instanz-Handle aus der Trefferliste aus.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Proxy-Erzeugung:&lt;/strong&gt; Die Anwendung instanziiert &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; unter Verwendung des gewählten Handles.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Event-Subskription und Feld-Registrierung:&lt;/strong&gt; Für asynchrone Ereignisse abonniert der Client die gewünschten Events über die Sub-Objekte des Proxys. Gegebenenfalls werden Callbacks oder Polling-Strategien registriert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dienstaufruf:&lt;/strong&gt; Der Client initiiert Methodenaufrufe über den Proxy, welche asynchron Zukunftsobjekte zurückliefern, oder greift auf Felder lesend bzw. schreibend zu.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bereinigung:&lt;/strong&gt; Nach Abschluss der Interaktionen werden Abonnements beendet und der Proxy zerstört.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;بدء البحث عن الخدمة:&lt;/strong&gt; يبدأ التطبيق بحثًا متزامنًا أو غير متزامن عن نسخ واجهة الخدمة &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; عبر الواجهات المقابلة للمنصة.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;اختيار المقبض:&lt;/strong&gt; بعد الاكتشاف الناجح، يختار جانب المستهلك مقبض نسخة مناسبًا من قائمة النتائج.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;إنشاء الوكيل:&lt;/strong&gt; ينشئ التطبيق نسخة من &lt;code&gt;&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; باستخدام المقبض المختار.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;الاشتراك في الأحداث وتسجيل الحقول:&lt;/strong&gt; بالنسبة للأحداث غير المتزامنة، يشترك العميل في الأحداث المطلوبة عبر الكائنات الفرعية للوكيل (Proxy). وعند الاقتضاء، يتم تسجيل عمليات معاودة الاتصال (Callbacks) أو استراتيجيات الاستقصاء (Polling).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;استدعاء الخدمة:&lt;/strong&gt; يبدأ العميل استدعاءات الدوال عبر الوكيل، والتي تُرجع كائنات مستقبلية (Future Objects) بشكل غير متزامن، أو يصل إلى الحقول للقراءة أو الكتابة.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;التنظيف:&lt;/strong&gt; بعد اكتمال التفاعلات، يتم إنهاء الاشتراكات وتدمير الوكيل.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;
-Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben, da Methodenaufrufe ohne gebundene Service-Instanz semantisch ungültig sind.
+تفسير: من المرجح أن مسار الاستخدام النموذجي يفرض إلزاميًا الترتيب الصارم للعثور على المقبض (Handle)، وإنشاء مثيل الوكيل، ومعالجة الاتصال اللاحقة، نظراً لأن استدعاءات الدوال دون ربطها بمثيل خدمة تكون غير صالحة دلالياً.
 &lt;/p&gt;
 &lt;!-- annahmen:
 1) Vermutlich fungiert &lt;SI&gt;Proxy als direkte Brücke zwischen den domänenspezifischen Schnittstellen des Service Interface und den generischen Laufzeitmechanismen der Plattform. – Begründung: Der Payload enthält ausschließlich den Klassennamen ohne detaillierte Architekturbeschreibung.
 2) Der Lebenszyklus der Proxy-Instanz dürfte an die Gültigkeit des zugrundeliegenden Service-Handles gekoppelt sein. – Begründung: Der Payload enthält keine Spezifikationsanforderungen zur Handle-Lebensdauer.
 3) Interpretation: Der typische Nutzungspfad dürfte zwingend die strikte Reihenfolge von Handle-Findung, Proxy-Instanziierung und nachgelagerter Kommunikationsabwicklung vorschreiben. – Begründung: Ablaufdetails fehlen im Payload.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den verfügbaren Metadaten des Releases R25-11. Da im Payload keine Spezifikations-Records oder Dokumentstellen hinterlegt sind, wurden funktionale Zusammenhänge neutral anhand der architekturellen Rolle von Service-Interface-Proxies abgeleitet.&lt;/p&gt;
+&lt;p class="ai-note"&gt;يستند هذا الدليل إلى البيانات الوصفية المتاحة للإصدار R25-11. ونظراً لعدم وجود سجلات مواصفات أو مراجع وثائق في حمولة البيانات، فقد تم استنتاج العلاقات الوظيفية بشكل محايد بناءً على الدور المعماري لوكلاء واجهات الخدمة (Service Interface Proxies).&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

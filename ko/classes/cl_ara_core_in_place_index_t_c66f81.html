@@ -24,49 +24,48 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>5cb7fb8ac08a</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_in_place_index_t_c66f81/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_core_in_place_index_t_c66f81/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_in_place_index_t_c66f81" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-Die Klassenvorlage <code>ara::core::in_place_index_t</code> dient innerhalb des Moduls <code>core</code> der AUTOSAR Adaptive Platform als typbasierte Markierung zur Unterscheidung von Konstruktionspfaden bei varianten Datenstrukturen. Konkret kennzeichnet dieser Typ eine Operation, die ein Objekt direkt an Ort und Stelle („in-place“) konstruiert, anstatt temporäre Instanzen zu erzeugen und diese anschließend zu kopieren oder zu verschieben.
+클래스 템플릿 <code>ara::core::in_place_index_t</code>은 AUTOSAR Adaptive Platform의 <code>core</code> 모듈 내에서 가변(variant) 데이터 구조의 생성 경로를 구분하기 위한 타입 기반 태그 역할을 합니다. 구체적으로 이 타입은 임시 인스턴스를 생성한 후 이를 복사하거나 이동하는 대신 대상 위치에 직접(“in-place”) 객체를 생성하는 연산을 나타냅니다.
 </p>
 <p>
-Als primärer Interaktionspartner fungiert die Container-Klasse <code>ara::core::Variant</code>. Instanzen von <code>ara::core::in_place_index_t</code> werden an ausgewählte Konstruktoren von <code>ara::core::Variant</code> übergeben, um die eindeutige Absicht zu signalisieren, dass der an der durch den Template-Parameter <code>Index</code> spezifizierten Position enthaltene Typ unmittelbar im Speicherbereich der Variante initialisiert werden soll. Dadurch wird ein Kopiervorgang des Zielobjekts vollständig vermieden, was insbesondere für ressourceneffiziente oder nicht kopierbare Typen im sicherheitskritischen Kontext der AUTOSAR Adaptive Platform von zentraler Bedeutung ist.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Die Erzeugung einer Instanz von <code>ara::core::in_place_index_t</code> erfolgt über den expliziten Standardkonstruktor, der als <code>explicit in_place_index_t() noexcept = default;</code> spezifiziert ist <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. Für die Nutzung muss die Header-Datei <code>ara/core/utility.h</code> eingebunden werden <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>.
-</p>
-<p>
-Da <code>ara::core::in_place_index_t</code> als reiner Tag-Typ konzipiert ist, besitzt er keine dynamischen Ressourcen oder inneren Zustandsvariablen. Instanzen dieses Typs werden typischerweise als reine Funktionsargumente temporär auf dem Aufrufstapel erzeugt oder als konstante Ausdrücke instanziiert. Die Zerstörung des Objekts ist trivial und erfordert keinerlei Bereinigungsschritte. Bezüglich der Nebenläufigkeit ist die Instanziierung und Übergabe des Tag-Typs inhärent thread-sicher, da keine veränderlichen geteilten Daten existieren.
+주요 상호작용 대상은 컨테이너 클래스 <code>ara::core::Variant</code>입니다. <code>ara::core::in_place_index_t</code>의 인스턴스는 템플릿 매개변수 <code>Index</code>에 의해 지정된 위치에 포함된 타입이 베리언트의 메모리 영역에서 즉시 초기화되어야 한다는 명확한 의도를 알리기 위해 <code>ara::core::Variant</code>의 선택된 생성자로 전달됩니다. 이를 통해 대상 객체의 복사 작업이 완전히 방지되며, 이는 AUTOSAR Adaptive Platform의 안전 필수 컨텍스트에서 리소스 효율적인 타입이나 복사 불가능한 타입에 특히 중요한 의미를 갖습니다.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>수명 주기</h4>
 <p>
-Der typische Nutzungspfad gliedert sich in die Festlegung des Zielindex zur Übersetzungszeit, die Instanziierung des Tags und die In-Place-Konstruktion innerhalb der Variante:
+<code>ara::core::in_place_index_t</code> 인스턴스의 생성은 <code>explicit in_place_index_t() noexcept = default;</code>로 지정된 명시적 기본 생성자를 통해 수행됩니다<a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. 사용하려면 헤더 파일 <code>ara/core/utility.h</code>을 포함해야 합니다<a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>.
+</p>
+<p>
+<code>ara::core::in_place_index_t</code>은 순수 태그 타입으로 설계되었으므로 동적 리소스나 내부 상태 변수를 가지지 않습니다. 이 타입의 인스턴스는 일반적으로 순수 함수 인수로 호출 스택에 임시로 생성되거나 상수 표현식으로 인스턴스화됩니다. 객체의 소멸은 단순하며 어떠한 정리 단계도 필요하지 않습니다. 동시성과 관련하여, 변경 가능한 공유 데이터가 존재하지 않으므로 태그 타입의 인스턴스화 및 전달은 본질적으로 스레드 안전합니다.
+</p>
+
+<h4>사용 경로</h4>
+<p>
+일반적인 사용 경로는 컴파일 시점의 대상 인덱스 결정, 태그 인스턴스화, 그리고 베리언트 내 인플레이스(in-place) 생성으로 구성됩니다:
 </p>
 <ul>
-  <li><strong>Indexauswahl zur Übersetzungszeit:</strong> Der Entwickler bestimmt anhand der Typenliste von <code>ara::core::Variant</code> den nullbasierten Positionsindex des Zieltyps, der innerhalb des Speicherbereichs der Variante instanziiert werden soll.</li>
-  <li><strong>Übergabe an den Konstruktor:</strong> Eine Instanz von <code>ara::core::in_place_index_t&lt;Index&gt;</code> wird zusammen mit den Konstruktorargumenten für das Zieldatum an den entsprechenden Konstruktor von <code>ara::core::Variant</code> übergeben. Durch die explizite Markierung wird verhindert, dass der Konstruktor versehentlich mit einer impliziten Typkonvertierung verwechselt wird.</li>
-  <li><strong>Direkte Konstruktion:</strong> Die Variante verwendet die übergebenen Argumente, um das innere Objekt ohne Kopiervorgang („without any copying taking place“) direkt am vorgesehenen Speicherort zu erzeugen. Vermutlich dient dieser Mechanismus als funktionale Entsprechung zum Standard-C++-Typ <code>std::in_place_index_t</code>.</li>
+  <li><strong>컴파일 시점의 인덱스 선택:</strong> 개발자는 <code>ara::core::Variant</code>의 타입 목록을 기반으로 베리언트의 메모리 영역 내에서 인스턴스화할 대상 타입의 0부터 시작하는 위치 인덱스를 결정합니다.</li>
+  <li><strong>생성자로 전달:</strong> <code>ara::core::in_place_index_t&lt;Index&gt;</code>의 인스턴스는 대상 데이터를 위한 생성자 인수와 함께 <code>ara::core::Variant</code>의 해당 생성자로 전달됩니다. 명시적인 태그 표시를 통해 생성자가 암시적 타입 변환과 실수로 혼동되는 것을 방지합니다.</li>
+  <li><strong>직접 생성:</strong> 베리언트는 전달된 인수를 사용하여 복사 작업 없이(“without any copying taking place”) 의도한 메모리 위치에 직접 내부 객체를 생성합니다. 해석: 이 메커니즘은 표준 C++ 타입 <code>std::in_place_index_t</code>에 대한 기능적 대응물 역할을 하는 것으로 보입니다.</li>
 </ul>
 
-<h4>Fehlerszenarien</h4>
+<h4>오류 시나리오</h4>
 <p>
-Hinsichtlich der Exception-Sicherheit ist der Standardkonstruktor von <code>ara::core::in_place_index_t</code> als <code>exception safe</code> spezifiziert und mit dem Spezifizierer <code>noexcept</code> versehen <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. Die Erzeugung des Tag-Objekts selbst kann daher unter keinen Umständen eine Ausnahme werfen oder Laufzeitfehler auslösen.
+예외 안전성 측면에서 <code>ara::core::in_place_index_t</code>의 기본 생성자는 <code>exception safe</code>로 지정되어 있으며 지정자 <code>noexcept</code>가 부여되어 있습니다 <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>. 따라서 태그 객체 자체의 생성은 어떠한 상황에서도 예외를 발생시키거나 런타임 오류를 일으킬 수 없습니다.
 </p>
 <p>
-Fehlerszenarien bei der Verwendung verlagern sich somit vollständig auf die umgebende Logik:
+따라서 사용 시의 오류 시나리오는 전적으로 이를 둘러싼 로직으로 이전됩니다:
 </p>
 <ul>
-  <li>Wird für den Template-Parameter <code>Index</code> ein Wert gewählt, der außerhalb des gültigen Indexbereichs der Zielvariante liegt, führt dies zu einem Kompilierungsfehler bei der Instanziierung der Konstruktor-Überladung.</li>
-  <li>Treten während der eigentlichen In-Place-Konstruktion des Zieltyps innerhalb der Variante Ausnahmen auf, unterliegen diese den Ausnahme- und Garantierichtlinien des konstruierten Nutztyps sowie von <code>ara::core::Variant</code>, berühren jedoch nicht die Stabilität von <code>ara::core::in_place_index_t</code>.</li>
+  <li>템플릿 매개변수 <code>Index</code>에 대상 배리언트의 유효한 인덱스 범위를 벗어나는 값을 선택하면 생성자 오버로드의 인스턴스화 시 컴파일 오류가 발생합니다.</li>
+  <li>배리언트 내에서 대상 유형의 실제 인플레이스 생성 중에 예외가 발생할 경우, 이는 <code>ara::core::Variant</code>뿐만 아니라 생성된 사용 유형의 예외 및 보증 가이드라인을 따르지만 <code>ara::core::in_place_index_t</code>의 안정성에는 영향을 미치지 않습니다.</li>
 </ul>
 <!-- annahmen: 1) ara::core::in_place_index_t fungiert vermutlich als direkte funktionale Entsprechung zu std::in_place_index_t aus C++17 – Begründung: Name, Template-Struktur mit std::size_t Index und die beschriebene Interaktion mit Variant entsprechen exakt dem C++-Standardmuster. -->
-<p class="ai-note">Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.</p>
+<p class="ai-note">본 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 사양을 기반으로 합니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_in_place_index_t_c66f81" title="AI와 토론">💬 AI와 토론</button>
@@ -374,46 +373,45 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5cb7fb8ac08ae9261f8be040812295f2a571ab76e69ed1dd8dfd00fe2e0fa712" data-trace-output="a64a304f4666342fec883f7a82684f15b04929ec153dffb3e5986a125a5ed437" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-Die Klassenvorlage &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; dient innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform als typbasierte Markierung zur Unterscheidung von Konstruktionspfaden bei varianten Datenstrukturen. Konkret kennzeichnet dieser Typ eine Operation, die ein Objekt direkt an Ort und Stelle („in-place“) konstruiert, anstatt temporäre Instanzen zu erzeugen und diese anschließend zu kopieren oder zu verschieben.
+클래스 템플릿 &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;은 AUTOSAR Adaptive Platform의 &lt;code&gt;core&lt;/code&gt; 모듈 내에서 가변(variant) 데이터 구조의 생성 경로를 구분하기 위한 타입 기반 태그 역할을 합니다. 구체적으로 이 타입은 임시 인스턴스를 생성한 후 이를 복사하거나 이동하는 대신 대상 위치에 직접(“in-place”) 객체를 생성하는 연산을 나타냅니다.
 &lt;/p&gt;
 &lt;p&gt;
-Als primärer Interaktionspartner fungiert die Container-Klasse &lt;code&gt;ara::core::Variant&lt;/code&gt;. Instanzen von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; werden an ausgewählte Konstruktoren von &lt;code&gt;ara::core::Variant&lt;/code&gt; übergeben, um die eindeutige Absicht zu signalisieren, dass der an der durch den Template-Parameter &lt;code&gt;Index&lt;/code&gt; spezifizierten Position enthaltene Typ unmittelbar im Speicherbereich der Variante initialisiert werden soll. Dadurch wird ein Kopiervorgang des Zielobjekts vollständig vermieden, was insbesondere für ressourceneffiziente oder nicht kopierbare Typen im sicherheitskritischen Kontext der AUTOSAR Adaptive Platform von zentraler Bedeutung ist.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Die Erzeugung einer Instanz von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; erfolgt über den expliziten Standardkonstruktor, der als &lt;code&gt;explicit in_place_index_t() noexcept = default;&lt;/code&gt; spezifiziert ist &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. Für die Nutzung muss die Header-Datei &lt;code&gt;ara/core/utility.h&lt;/code&gt; eingebunden werden &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-Da &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; als reiner Tag-Typ konzipiert ist, besitzt er keine dynamischen Ressourcen oder inneren Zustandsvariablen. Instanzen dieses Typs werden typischerweise als reine Funktionsargumente temporär auf dem Aufrufstapel erzeugt oder als konstante Ausdrücke instanziiert. Die Zerstörung des Objekts ist trivial und erfordert keinerlei Bereinigungsschritte. Bezüglich der Nebenläufigkeit ist die Instanziierung und Übergabe des Tag-Typs inhärent thread-sicher, da keine veränderlichen geteilten Daten existieren.
+주요 상호작용 대상은 컨테이너 클래스 &lt;code&gt;ara::core::Variant&lt;/code&gt;입니다. &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;의 인스턴스는 템플릿 매개변수 &lt;code&gt;Index&lt;/code&gt;에 의해 지정된 위치에 포함된 타입이 베리언트의 메모리 영역에서 즉시 초기화되어야 한다는 명확한 의도를 알리기 위해 &lt;code&gt;ara::core::Variant&lt;/code&gt;의 선택된 생성자로 전달됩니다. 이를 통해 대상 객체의 복사 작업이 완전히 방지되며, 이는 AUTOSAR Adaptive Platform의 안전 필수 컨텍스트에서 리소스 효율적인 타입이나 복사 불가능한 타입에 특히 중요한 의미를 갖습니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad gliedert sich in die Festlegung des Zielindex zur Übersetzungszeit, die Instanziierung des Tags und die In-Place-Konstruktion innerhalb der Variante:
+&lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; 인스턴스의 생성은 &lt;code&gt;explicit in_place_index_t() noexcept = default;&lt;/code&gt;로 지정된 명시적 기본 생성자를 통해 수행됩니다&lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. 사용하려면 헤더 파일 &lt;code&gt;ara/core/utility.h&lt;/code&gt;을 포함해야 합니다&lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+&lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;은 순수 태그 타입으로 설계되었으므로 동적 리소스나 내부 상태 변수를 가지지 않습니다. 이 타입의 인스턴스는 일반적으로 순수 함수 인수로 호출 스택에 임시로 생성되거나 상수 표현식으로 인스턴스화됩니다. 객체의 소멸은 단순하며 어떠한 정리 단계도 필요하지 않습니다. 동시성과 관련하여, 변경 가능한 공유 데이터가 존재하지 않으므로 태그 타입의 인스턴스화 및 전달은 본질적으로 스레드 안전합니다.
+&lt;/p&gt;
+
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;
+일반적인 사용 경로는 컴파일 시점의 대상 인덱스 결정, 태그 인스턴스화, 그리고 베리언트 내 인플레이스(in-place) 생성으로 구성됩니다:
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Indexauswahl zur Übersetzungszeit:&lt;/strong&gt; Der Entwickler bestimmt anhand der Typenliste von &lt;code&gt;ara::core::Variant&lt;/code&gt; den nullbasierten Positionsindex des Zieltyps, der innerhalb des Speicherbereichs der Variante instanziiert werden soll.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Übergabe an den Konstruktor:&lt;/strong&gt; Eine Instanz von &lt;code&gt;ara::core::in_place_index_t&amp;lt;Index&amp;gt;&lt;/code&gt; wird zusammen mit den Konstruktorargumenten für das Zieldatum an den entsprechenden Konstruktor von &lt;code&gt;ara::core::Variant&lt;/code&gt; übergeben. Durch die explizite Markierung wird verhindert, dass der Konstruktor versehentlich mit einer impliziten Typkonvertierung verwechselt wird.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Direkte Konstruktion:&lt;/strong&gt; Die Variante verwendet die übergebenen Argumente, um das innere Objekt ohne Kopiervorgang („without any copying taking place“) direkt am vorgesehenen Speicherort zu erzeugen. Vermutlich dient dieser Mechanismus als funktionale Entsprechung zum Standard-C++-Typ &lt;code&gt;std::in_place_index_t&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;컴파일 시점의 인덱스 선택:&lt;/strong&gt; 개발자는 &lt;code&gt;ara::core::Variant&lt;/code&gt;의 타입 목록을 기반으로 베리언트의 메모리 영역 내에서 인스턴스화할 대상 타입의 0부터 시작하는 위치 인덱스를 결정합니다.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;생성자로 전달:&lt;/strong&gt; &lt;code&gt;ara::core::in_place_index_t&amp;lt;Index&amp;gt;&lt;/code&gt;의 인스턴스는 대상 데이터를 위한 생성자 인수와 함께 &lt;code&gt;ara::core::Variant&lt;/code&gt;의 해당 생성자로 전달됩니다. 명시적인 태그 표시를 통해 생성자가 암시적 타입 변환과 실수로 혼동되는 것을 방지합니다.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;직접 생성:&lt;/strong&gt; 베리언트는 전달된 인수를 사용하여 복사 작업 없이(“without any copying taking place”) 의도한 메모리 위치에 직접 내부 객체를 생성합니다. 해석: 이 메커니즘은 표준 C++ 타입 &lt;code&gt;std::in_place_index_t&lt;/code&gt;에 대한 기능적 대응물 역할을 하는 것으로 보입니다.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
 &lt;p&gt;
-Hinsichtlich der Exception-Sicherheit ist der Standardkonstruktor von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt; als &lt;code&gt;exception safe&lt;/code&gt; spezifiziert und mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; versehen &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. Die Erzeugung des Tag-Objekts selbst kann daher unter keinen Umständen eine Ausnahme werfen oder Laufzeitfehler auslösen.
+예외 안전성 측면에서 &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;의 기본 생성자는 &lt;code&gt;exception safe&lt;/code&gt;로 지정되어 있으며 지정자 &lt;code&gt;noexcept&lt;/code&gt;가 부여되어 있습니다 &lt;a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032"&gt;[SWS_CORE_04032]&lt;/a&gt;. 따라서 태그 객체 자체의 생성은 어떠한 상황에서도 예외를 발생시키거나 런타임 오류를 일으킬 수 없습니다.
 &lt;/p&gt;
 &lt;p&gt;
-Fehlerszenarien bei der Verwendung verlagern sich somit vollständig auf die umgebende Logik:
+따라서 사용 시의 오류 시나리오는 전적으로 이를 둘러싼 로직으로 이전됩니다:
 &lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;Wird für den Template-Parameter &lt;code&gt;Index&lt;/code&gt; ein Wert gewählt, der außerhalb des gültigen Indexbereichs der Zielvariante liegt, führt dies zu einem Kompilierungsfehler bei der Instanziierung der Konstruktor-Überladung.&lt;/li&gt;
-  &lt;li&gt;Treten während der eigentlichen In-Place-Konstruktion des Zieltyps innerhalb der Variante Ausnahmen auf, unterliegen diese den Ausnahme- und Garantierichtlinien des konstruierten Nutztyps sowie von &lt;code&gt;ara::core::Variant&lt;/code&gt;, berühren jedoch nicht die Stabilität von &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;템플릿 매개변수 &lt;code&gt;Index&lt;/code&gt;에 대상 배리언트의 유효한 인덱스 범위를 벗어나는 값을 선택하면 생성자 오버로드의 인스턴스화 시 컴파일 오류가 발생합니다.&lt;/li&gt;
+  &lt;li&gt;배리언트 내에서 대상 유형의 실제 인플레이스 생성 중에 예외가 발생할 경우, 이는 &lt;code&gt;ara::core::Variant&lt;/code&gt;뿐만 아니라 생성된 사용 유형의 예외 및 보증 가이드라인을 따르지만 &lt;code&gt;ara::core::in_place_index_t&lt;/code&gt;의 안정성에는 영향을 미치지 않습니다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen: 1) ara::core::in_place_index_t fungiert vermutlich als direkte funktionale Entsprechung zu std::in_place_index_t aus C++17 – Begründung: Name, Template-Struktur mit std::size_t Index und die beschriebene Interaktion mit Variant entsprechen exakt dem C++-Standardmuster. --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p class="ai-note"&gt;본 가이드는 AUTOSAR Adaptive Platform 릴리스 R25-11의 사양을 기반으로 합니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

@@ -19,55 +19,54 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>4dd7542ccf2b</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_rds_IEEE1722DatagramAVTPDUCommonStreamHeaderFields_90234/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_rds_IEEE1722DatagramAVTPDUCommonStreamHeaderFields_90234/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_rds_IEEE1722DatagramAVTPDUCommonStreamHeaderFields_90234" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-Die Klasse <code>ara::rds::IEEE1722DatagramAVTPDUCommonStreamHeaderFields</code> bildet innerhalb des Moduls <code>rds</code> (Raw Data Stream) der AUTOSAR Adaptive Platform die standardisierten Header-Felder eines IEEE-1722-AVTPDU-Streams (Audio Video Transport Protocol Data Unit) ab. Der Header <code>ara/rds/raw_data_stream_IEEE1722.h</code> deklariert diesen Datentyp als strukturellen Bestandteil zur Kapselung von AVTP-Datenströmen.
+클래스 <code>ara::rds::IEEE1722DatagramAVTPDUCommonStreamHeaderFields</code>은 AUTOSAR Adaptive Platform의 <code>rds</code>(Raw Data Stream) 모듈 내에서 IEEE 1722 AVTPDU(Audio Video Transport Protocol Data Unit) 스트림의 표준화된 헤더 필드를 매핑합니다. 헤더 <code>ara/rds/raw_data_stream_IEEE1722.h</code>는 이 데이터 타입을 AVTP 데이터 스트림을 캡슐화하기 위한 구조적 구성 요소로 선언합니다.
 </p>
 <p>
-Die Klasse übernimmt die Verantwortung, grundlegende Metadaten des Transportprotokolls nach IEEE 1722 bereitzustellen. Hierzu zählen unter anderem Zeitstempel über die Synchronisationsschnittstelle <code>ara::tsync::Timestamp</code> <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a>, Sequenznummern zur Erkennung von Paketverlusten <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a> sowie protokollspezifische Flags und Kennungen wie Zeitunsicherheiten (<var>tu</var>) <a class="spec-record-ref" data-req="SWS_RDS_90241" href="../spec/record.html?id=SWS_RDS_90241">[SWS_RDS_90241]</a>, Zeitstempel-Validitätsmerkmale (<var>tv</var>) <a class="spec-record-ref" data-req="SWS_RDS_90236" href="../spec/record.html?id=SWS_RDS_90236">[SWS_RDS_90236]</a>, Media-Restart-Flags (<var>mr</var>) <a class="spec-record-ref" data-req="SWS_RDS_90239" href="../spec/record.html?id=SWS_RDS_90239">[SWS_RDS_90239]</a>, Adressierungsattribute (<var>mac_address</var>) <a class="spec-record-ref" data-req="SWS_RDS_90238" href="../spec/record.html?id=SWS_RDS_90238">[SWS_RDS_90238]</a> und eindeutige Stream-Identifikatoren (<var>unique_id</var>) <a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235">[SWS_RDS_90235]</a>. Da sämtliche Datenmitglieder mit dem Zugriffsmodifizierer <code>protected</code> versehen sind, fungiert die Klasse primär als wiederverwendbare Basisklasse für spezialisierte IEEE-1722-Datagrammstrukturen innerhalb der Streaming-Pipeline.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Die Instanziierung erfolgt im regulären Betrieb nicht isoliert über die Basisklasse, sondern vermittelt über konkrete abgeleitete Datagrammklassen, welche die Repräsentation vollständiger AVTPDU-Nachrichten für Sende- oder Empfangskanäle übernehmen. Die Lebensdauer eines Objekts ist typischerweise an die Verarbeitung des jeweiligen Netzwerk-Frames oder Datenpakets innerhalb des Raw-Data-Stream-Puffers gekoppelt.
-</p>
-<p>
-Für die Zerstörung stellt die Klasse einen virtuellen Destruktor bereit, der als <code>noexcept</code> spezifiziert ist <a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242">[SWS_RDS_90242]</a>. Dies stellt sicher, dass abgeleitete Datagramm-Instanzen bei polymorpher Verwaltung über Basisklassenzeiger oder Referenzen sicher und ohne Ausnahmeauslösung deallokiert werden können. Hinsichtlich der Nebenläufigkeit besitzt die Klasse keine internen Synchronisationsmechanismen; Instanzen sind für den exklusiven Zugriff innerhalb des ausführenden Verarbeitungsstrangs der RDS-Pipeline konzipiert.
+이 클래스는 IEEE 1722에 따른 전송 프로토콜의 기본 메타데이터를 제공하는 책임을 담당합니다. 여기에는 동기화 인터페이스 <code>ara::tsync::Timestamp</code>을 통한 타임스탬프 <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a>, 패킷 손실 감지를 위한 시퀀스 번호 <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a>, 그리고 시간 불확실성(<var>tu</var>) <a class="spec-record-ref" data-req="SWS_RDS_90241" href="../spec/record.html?id=SWS_RDS_90241">[SWS_RDS_90241]</a>, 타임스탬프 유효성 플래그(<var>tv</var>) <a class="spec-record-ref" data-req="SWS_RDS_90236" href="../spec/record.html?id=SWS_RDS_90236">[SWS_RDS_90236]</a>, 미디어 재시작 플래그(<var>mr</var>) <a class="spec-record-ref" data-req="SWS_RDS_90239" href="../spec/record.html?id=SWS_RDS_90239">[SWS_RDS_90239]</a>, 주소 지정 속성(<var>mac_address</var>) <a class="spec-record-ref" data-req="SWS_RDS_90238" href="../spec/record.html?id=SWS_RDS_90238">[SWS_RDS_90238]</a> 및 고유 스트림 식별자(<var>unique_id</var>) <a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235">[SWS_RDS_90235]</a>과 같은 프로토콜 특정 플래그 및 식별자가 포함됩니다. 모든 데이터 멤버에 접근 한정자 <code>protected</code>이 지정되어 있으므로, 이 클래스는 주로 스트리밍 파이프라인 내에서 특수화된 IEEE 1722 데이터그램 구조를 위한 재사용 가능한 기본 클래스 역할을 합니다.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>수명 주기</h4>
 <p>
-Der reguläre Verarbeitungsablauf umfasst die Ableitung, Befüllung und schrittweise Auswertung der Stream-Header-Informationen bei der Paketverarbeitung:
+정상 작동 시 인스턴스화는 기본 클래스를 통해 단독으로 수행되지 않고, 송신 또는 수신 채널을 위한 완전한 AVTPDU 메시지의 표현을 담당하는 구체적인 파생 데이터그램 클래스를 매개로 수행됩니다. 객체의 수명은 일반적으로 Raw Data Stream 버퍼 내에서 해당 네트워크 프레임 또는 데이터 패킷의 처리와 연결됩니다.
+</p>
+<p>
+소멸을 위해 이 클래스는 <code>noexcept</code>으로 명시된 가상 소멸자를 제공합니다 <a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242">[SWS_RDS_90242]</a>. 이를 통해 파생 데이터그램 인스턴스가 기본 클래스 포인터 또는 참조를 통해 다형적으로 관리될 때 예외를 발생시키지 않고 안전하게 할당 해제될 수 있습니다. 동시성 측면에서 이 클래스는 내부 동기화 메커니즘을 포함하지 않으며, 인스턴스는 RDS 파이프라인의 실행 처리 흐름 내에서 독점적으로 접근하도록 설계되었습니다.
+</p>
+
+<h4>사용 경로</h4>
+<p>
+일반적인 처리 워크플로는 패킷 처리 시 스트림 헤더 정보를 파생하고 채우며 단계별로 평가하는 과정을 포함합니다:
 </p>
 <ol>
 <li>
-<strong>Spezialisierung und Initialisierung:</strong> Eine abgeleitete Klasse instanziiert die Header-Felder im Zuge des Parsens eines eingehenden Ethernet-Frames oder der Konstruktion eines ausgehenden AVTP-Streams.
+<strong>특수화 및 초기화:</strong> 파생 클래스는 수신 이더넷 프레임을 파싱하거나 송신 AVTP 스트림을 구성하는 과정에서 헤더 필드를 인스턴스화합니다.
 </li>
 <li>
-<strong>Verwaltung optionaler Header-Werte:</strong> Sämtliche geschützten Attribute sind als <code>ara::core::Optional</code> typisiert. Felder wie die Sequenznummer <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a>, der AVTP-Zeitstempel <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a> oder Stream-Identifikatoren <a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235">[SWS_RDS_90235]</a> werden nur belegt, wenn das konkrete AVTPDU-Format diese vorsieht.
+<strong>선택적 헤더 값 관리:</strong> 모든 보호된 속성은 <code>ara::core::Optional</code>으로 타입이 지정됩니다. 시퀀스 번호 <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a>, AVTP 타임스탬프 <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a> 또는 스트림 식별자 <a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235">[SWS_RDS_90235]</a>과 같은 필드는 구체적인 AVTPDU 포맷에서 해당 필드를 제공하는 경우에만 채워집니다.
 </li>
 <li>
-<strong>Auswertung in der Verarbeitungslogik:</strong> Nachgeschaltete Schichten des RDS-Treibers greifen über Schnittstellen der abgeleiteten Klasse auf die Header-Werte zu, um beispielsweise über den Zeitstempel <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a> eine Medienwiedergabe zu synchronisieren oder anhand der Sequenznummer <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a> Lücken im Datenstrom festzustellen.
+<strong>처리 로직에서의 평가:</strong> RDS 드라이버의 하위 계층은 파생 클래스의 인터페이스를 통해 헤더 값에 접근하여, 예를 들어 타임스탬프 <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a>을 통해 미디어 재생을 동기화하거나 시퀀스 번호 <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a>을 기반으로 데이터 스트림의 누락을 감지합니다.
 </li>
 <li>
-<strong>Ressourcenfreigabe:</strong> Nach Abschluss der Nutzlastverarbeitung wird das Datagramm über den virtuellen Destruktor freigegeben <a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242">[SWS_RDS_90242]</a>.
+<strong>리소스 해제:</strong> 페이로드 처리가 완료된 후 데이터그램은 가상 소멸자를 통해 해제됩니다 <a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242">[SWS_RDS_90242]</a>.
 </li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>오류 시나리오</h4>
 <p>
-Da die Klasse rein strukturierende Datenhaltung für Protokoll-Header betreibt und keine komplexen Eigenoperationen ausführt, treten Laufzeitfehler primär durch ungültigen Zugriff auf nicht gesetzte optionale Felder oder fehlerhafte Lebenszyklusverwaltung auf:
+이 클래스는 프로토콜 헤더에 대한 순수한 구조적 데이터 저장만을 수행하고 복잡한 자체 연산을 실행하지 않으므로, 런타임 오류는 주로 설정되지 않은 선택적 필드에 대한 잘못된 접근이나 부적절한 수명 주기 관리로 인해 발생합니다:
 </p>
 <ul>
 <li>
-<strong>Zugriff auf unvollständige Stream-Header:</strong> Der unbedachte Zugriff auf leere <code>ara::core::Optional</code>-Member (wie <var>avtp_timestamp</var> <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a> oder <var>sequenceNum</var> <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a>) ohne vorherige Prüfung mittels <code>has_value()</code> führt zu fehlschlagenden Dereferenzierungen. Abgeleitete Zugriffsmethoden müssen das Vorhandensein der optionalen Werte vor der Auswertung validieren.
+<strong>불완전한 스트림 헤더에 대한 접근:</strong> <code>has_value()</code>을 사용한 사전 확인 없이 비어 있는 <code>ara::core::Optional</code> 멤버(<var>avtp_timestamp</var> <a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237">[SWS_RDS_90237]</a> 또는 <var>sequenceNum</var> <a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240">[SWS_RDS_90240]</a> 등)에 부주의하게 접근하면 역참조 실패가 발생합니다. 파생 접근 메서드는 평가 전에 선택적 값의 존재 여부를 검증해야 합니다.
 </li>
 <li>
-<strong>Ausnahmesicherheit beim Abbau:</strong> Der virtuelle Destruktor ist als <code>noexcept</code> deklariert <a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242">[SWS_RDS_90242]</a>. Hierdurch wird garantiert, dass selbst bei vorzeitigen Fehlern in der Verarbeitungs-Pipeline oder beim Verlassen von Gültigkeitsbereichen während der Stack-Abwicklung keine Folgeausnahmen ausgelöst werden.
+<strong>해제 시의 예외 안전성:</strong> 가상 소멸자는 <code>noexcept</code>으로 선언되어 있습니다 <a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242">[SWS_RDS_90242]</a>. 이를 통해 처리 파이프라인에서 조기 오류가 발생하거나 스택 해제 중 유효 범위를 벗어날 때도 후속 예외가 발생하지 않도록 보장합니다.
 </li>
 </ul>
 <!-- annahmen:
@@ -75,7 +74,7 @@ Da die Klasse rein strukturierende Datenhaltung für Protokoll-Header betreibt u
 2) Interpretation: Die Kapselung der Header-Felder in ara::core::Optional begründet sich darin, dass je nach AVTPDU-Subtyp oder Profil nicht alle Felder der IEEE-1722-Spezifikation zwingend im Frame belegt sein müssen. – Begründung: Typische AVTP-Protokollvarianten variieren in den tatsächlich transportierten Header-Bestandteilen.
 3) Interpretation: Die Instanzen sind nicht thread-sicher und für den sequenziellen Ablauf innerhalb eines Verarbeitungsstrangs gedacht. – Begründung: Der Payload enthält keinerlei Hinweise auf interne Synchronisationsmechanismen (wie Mutexe oder atomare Typen).
 -->
-<p class="ai-note">Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des AUTOSAR-Adaptive-Releases R25-11 zum Modul rds.</p>
+<p class="ai-note">이 가이드는 rds 모듈에 대한 AUTOSAR Adaptive 릴리스 R25-11의 사양 요구사항만을 기반으로 합니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_rds_IEEE1722DatagramAVTPDUCommonStreamHeaderFields_90234" title="AI와 토론">💬 AI와 토론</button>
@@ -799,52 +798,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="4dd7542ccf2b803bc98996d407044f2bcebd3de622f2dd13255017912b2c2412" data-trace-output="1c73e59e323bdb3ef1ed308071a7578ad14821ee24abc151a59d6ac2491b3395" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramAVTPDUCommonStreamHeaderFields&lt;/code&gt; bildet innerhalb des Moduls &lt;code&gt;rds&lt;/code&gt; (Raw Data Stream) der AUTOSAR Adaptive Platform die standardisierten Header-Felder eines IEEE-1722-AVTPDU-Streams (Audio Video Transport Protocol Data Unit) ab. Der Header &lt;code&gt;ara/rds/raw_data_stream_IEEE1722.h&lt;/code&gt; deklariert diesen Datentyp als strukturellen Bestandteil zur Kapselung von AVTP-Datenströmen.
+클래스 &lt;code&gt;ara::rds::IEEE1722DatagramAVTPDUCommonStreamHeaderFields&lt;/code&gt;은 AUTOSAR Adaptive Platform의 &lt;code&gt;rds&lt;/code&gt;(Raw Data Stream) 모듈 내에서 IEEE 1722 AVTPDU(Audio Video Transport Protocol Data Unit) 스트림의 표준화된 헤더 필드를 매핑합니다. 헤더 &lt;code&gt;ara/rds/raw_data_stream_IEEE1722.h&lt;/code&gt;는 이 데이터 타입을 AVTP 데이터 스트림을 캡슐화하기 위한 구조적 구성 요소로 선언합니다.
 &lt;/p&gt;
 &lt;p&gt;
-Die Klasse übernimmt die Verantwortung, grundlegende Metadaten des Transportprotokolls nach IEEE 1722 bereitzustellen. Hierzu zählen unter anderem Zeitstempel über die Synchronisationsschnittstelle &lt;code&gt;ara::tsync::Timestamp&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt;, Sequenznummern zur Erkennung von Paketverlusten &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt; sowie protokollspezifische Flags und Kennungen wie Zeitunsicherheiten (&lt;var&gt;tu&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90241" href="../spec/record.html?id=SWS_RDS_90241"&gt;[SWS_RDS_90241]&lt;/a&gt;, Zeitstempel-Validitätsmerkmale (&lt;var&gt;tv&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90236" href="../spec/record.html?id=SWS_RDS_90236"&gt;[SWS_RDS_90236]&lt;/a&gt;, Media-Restart-Flags (&lt;var&gt;mr&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90239" href="../spec/record.html?id=SWS_RDS_90239"&gt;[SWS_RDS_90239]&lt;/a&gt;, Adressierungsattribute (&lt;var&gt;mac_address&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90238" href="../spec/record.html?id=SWS_RDS_90238"&gt;[SWS_RDS_90238]&lt;/a&gt; und eindeutige Stream-Identifikatoren (&lt;var&gt;unique_id&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235"&gt;[SWS_RDS_90235]&lt;/a&gt;. Da sämtliche Datenmitglieder mit dem Zugriffsmodifizierer &lt;code&gt;protected&lt;/code&gt; versehen sind, fungiert die Klasse primär als wiederverwendbare Basisklasse für spezialisierte IEEE-1722-Datagrammstrukturen innerhalb der Streaming-Pipeline.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Die Instanziierung erfolgt im regulären Betrieb nicht isoliert über die Basisklasse, sondern vermittelt über konkrete abgeleitete Datagrammklassen, welche die Repräsentation vollständiger AVTPDU-Nachrichten für Sende- oder Empfangskanäle übernehmen. Die Lebensdauer eines Objekts ist typischerweise an die Verarbeitung des jeweiligen Netzwerk-Frames oder Datenpakets innerhalb des Raw-Data-Stream-Puffers gekoppelt.
-&lt;/p&gt;
-&lt;p&gt;
-Für die Zerstörung stellt die Klasse einen virtuellen Destruktor bereit, der als &lt;code&gt;noexcept&lt;/code&gt; spezifiziert ist &lt;a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242"&gt;[SWS_RDS_90242]&lt;/a&gt;. Dies stellt sicher, dass abgeleitete Datagramm-Instanzen bei polymorpher Verwaltung über Basisklassenzeiger oder Referenzen sicher und ohne Ausnahmeauslösung deallokiert werden können. Hinsichtlich der Nebenläufigkeit besitzt die Klasse keine internen Synchronisationsmechanismen; Instanzen sind für den exklusiven Zugriff innerhalb des ausführenden Verarbeitungsstrangs der RDS-Pipeline konzipiert.
+이 클래스는 IEEE 1722에 따른 전송 프로토콜의 기본 메타데이터를 제공하는 책임을 담당합니다. 여기에는 동기화 인터페이스 &lt;code&gt;ara::tsync::Timestamp&lt;/code&gt;을 통한 타임스탬프 &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt;, 패킷 손실 감지를 위한 시퀀스 번호 &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt;, 그리고 시간 불확실성(&lt;var&gt;tu&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90241" href="../spec/record.html?id=SWS_RDS_90241"&gt;[SWS_RDS_90241]&lt;/a&gt;, 타임스탬프 유효성 플래그(&lt;var&gt;tv&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90236" href="../spec/record.html?id=SWS_RDS_90236"&gt;[SWS_RDS_90236]&lt;/a&gt;, 미디어 재시작 플래그(&lt;var&gt;mr&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90239" href="../spec/record.html?id=SWS_RDS_90239"&gt;[SWS_RDS_90239]&lt;/a&gt;, 주소 지정 속성(&lt;var&gt;mac_address&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90238" href="../spec/record.html?id=SWS_RDS_90238"&gt;[SWS_RDS_90238]&lt;/a&gt; 및 고유 스트림 식별자(&lt;var&gt;unique_id&lt;/var&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235"&gt;[SWS_RDS_90235]&lt;/a&gt;과 같은 프로토콜 특정 플래그 및 식별자가 포함됩니다. 모든 데이터 멤버에 접근 한정자 &lt;code&gt;protected&lt;/code&gt;이 지정되어 있으므로, 이 클래스는 주로 스트리밍 파이프라인 내에서 특수화된 IEEE 1722 데이터그램 구조를 위한 재사용 가능한 기본 클래스 역할을 합니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Der reguläre Verarbeitungsablauf umfasst die Ableitung, Befüllung und schrittweise Auswertung der Stream-Header-Informationen bei der Paketverarbeitung:
+정상 작동 시 인스턴스화는 기본 클래스를 통해 단독으로 수행되지 않고, 송신 또는 수신 채널을 위한 완전한 AVTPDU 메시지의 표현을 담당하는 구체적인 파생 데이터그램 클래스를 매개로 수행됩니다. 객체의 수명은 일반적으로 Raw Data Stream 버퍼 내에서 해당 네트워크 프레임 또는 데이터 패킷의 처리와 연결됩니다.
+&lt;/p&gt;
+&lt;p&gt;
+소멸을 위해 이 클래스는 &lt;code&gt;noexcept&lt;/code&gt;으로 명시된 가상 소멸자를 제공합니다 &lt;a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242"&gt;[SWS_RDS_90242]&lt;/a&gt;. 이를 통해 파생 데이터그램 인스턴스가 기본 클래스 포인터 또는 참조를 통해 다형적으로 관리될 때 예외를 발생시키지 않고 안전하게 할당 해제될 수 있습니다. 동시성 측면에서 이 클래스는 내부 동기화 메커니즘을 포함하지 않으며, 인스턴스는 RDS 파이프라인의 실행 처리 흐름 내에서 독점적으로 접근하도록 설계되었습니다.
+&lt;/p&gt;
+
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;
+일반적인 처리 워크플로는 패킷 처리 시 스트림 헤더 정보를 파생하고 채우며 단계별로 평가하는 과정을 포함합니다:
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;strong&gt;Spezialisierung und Initialisierung:&lt;/strong&gt; Eine abgeleitete Klasse instanziiert die Header-Felder im Zuge des Parsens eines eingehenden Ethernet-Frames oder der Konstruktion eines ausgehenden AVTP-Streams.
+&lt;strong&gt;특수화 및 초기화:&lt;/strong&gt; 파생 클래스는 수신 이더넷 프레임을 파싱하거나 송신 AVTP 스트림을 구성하는 과정에서 헤더 필드를 인스턴스화합니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Verwaltung optionaler Header-Werte:&lt;/strong&gt; Sämtliche geschützten Attribute sind als &lt;code&gt;ara::core::Optional&lt;/code&gt; typisiert. Felder wie die Sequenznummer &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt;, der AVTP-Zeitstempel &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt; oder Stream-Identifikatoren &lt;a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235"&gt;[SWS_RDS_90235]&lt;/a&gt; werden nur belegt, wenn das konkrete AVTPDU-Format diese vorsieht.
+&lt;strong&gt;선택적 헤더 값 관리:&lt;/strong&gt; 모든 보호된 속성은 &lt;code&gt;ara::core::Optional&lt;/code&gt;으로 타입이 지정됩니다. 시퀀스 번호 &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt;, AVTP 타임스탬프 &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt; 또는 스트림 식별자 &lt;a class="spec-record-ref" data-req="SWS_RDS_90235" href="../spec/record.html?id=SWS_RDS_90235"&gt;[SWS_RDS_90235]&lt;/a&gt;과 같은 필드는 구체적인 AVTPDU 포맷에서 해당 필드를 제공하는 경우에만 채워집니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Auswertung in der Verarbeitungslogik:&lt;/strong&gt; Nachgeschaltete Schichten des RDS-Treibers greifen über Schnittstellen der abgeleiteten Klasse auf die Header-Werte zu, um beispielsweise über den Zeitstempel &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt; eine Medienwiedergabe zu synchronisieren oder anhand der Sequenznummer &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt; Lücken im Datenstrom festzustellen.
+&lt;strong&gt;처리 로직에서의 평가:&lt;/strong&gt; RDS 드라이버의 하위 계층은 파생 클래스의 인터페이스를 통해 헤더 값에 접근하여, 예를 들어 타임스탬프 &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt;을 통해 미디어 재생을 동기화하거나 시퀀스 번호 &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt;을 기반으로 데이터 스트림의 누락을 감지합니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Ressourcenfreigabe:&lt;/strong&gt; Nach Abschluss der Nutzlastverarbeitung wird das Datagramm über den virtuellen Destruktor freigegeben &lt;a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242"&gt;[SWS_RDS_90242]&lt;/a&gt;.
+&lt;strong&gt;리소스 해제:&lt;/strong&gt; 페이로드 처리가 완료된 후 데이터그램은 가상 소멸자를 통해 해제됩니다 &lt;a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242"&gt;[SWS_RDS_90242]&lt;/a&gt;.
 &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
 &lt;p&gt;
-Da die Klasse rein strukturierende Datenhaltung für Protokoll-Header betreibt und keine komplexen Eigenoperationen ausführt, treten Laufzeitfehler primär durch ungültigen Zugriff auf nicht gesetzte optionale Felder oder fehlerhafte Lebenszyklusverwaltung auf:
+이 클래스는 프로토콜 헤더에 대한 순수한 구조적 데이터 저장만을 수행하고 복잡한 자체 연산을 실행하지 않으므로, 런타임 오류는 주로 설정되지 않은 선택적 필드에 대한 잘못된 접근이나 부적절한 수명 주기 관리로 인해 발생합니다:
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;strong&gt;Zugriff auf unvollständige Stream-Header:&lt;/strong&gt; Der unbedachte Zugriff auf leere &lt;code&gt;ara::core::Optional&lt;/code&gt;-Member (wie &lt;var&gt;avtp_timestamp&lt;/var&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt; oder &lt;var&gt;sequenceNum&lt;/var&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt;) ohne vorherige Prüfung mittels &lt;code&gt;has_value()&lt;/code&gt; führt zu fehlschlagenden Dereferenzierungen. Abgeleitete Zugriffsmethoden müssen das Vorhandensein der optionalen Werte vor der Auswertung validieren.
+&lt;strong&gt;불완전한 스트림 헤더에 대한 접근:&lt;/strong&gt; &lt;code&gt;has_value()&lt;/code&gt;을 사용한 사전 확인 없이 비어 있는 &lt;code&gt;ara::core::Optional&lt;/code&gt; 멤버(&lt;var&gt;avtp_timestamp&lt;/var&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90237" href="../spec/record.html?id=SWS_RDS_90237"&gt;[SWS_RDS_90237]&lt;/a&gt; 또는 &lt;var&gt;sequenceNum&lt;/var&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90240" href="../spec/record.html?id=SWS_RDS_90240"&gt;[SWS_RDS_90240]&lt;/a&gt; 등)에 부주의하게 접근하면 역참조 실패가 발생합니다. 파생 접근 메서드는 평가 전에 선택적 값의 존재 여부를 검증해야 합니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Ausnahmesicherheit beim Abbau:&lt;/strong&gt; Der virtuelle Destruktor ist als &lt;code&gt;noexcept&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242"&gt;[SWS_RDS_90242]&lt;/a&gt;. Hierdurch wird garantiert, dass selbst bei vorzeitigen Fehlern in der Verarbeitungs-Pipeline oder beim Verlassen von Gültigkeitsbereichen während der Stack-Abwicklung keine Folgeausnahmen ausgelöst werden.
+&lt;strong&gt;해제 시의 예외 안전성:&lt;/strong&gt; 가상 소멸자는 &lt;code&gt;noexcept&lt;/code&gt;으로 선언되어 있습니다 &lt;a class="spec-record-ref" data-req="SWS_RDS_90242" href="../spec/record.html?id=SWS_RDS_90242"&gt;[SWS_RDS_90242]&lt;/a&gt;. 이를 통해 처리 파이프라인에서 조기 오류가 발생하거나 스택 해제 중 유효 범위를 벗어날 때도 후속 예외가 발생하지 않도록 보장합니다.
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- annahmen:
@@ -852,7 +850,7 @@ Da die Klasse rein strukturierende Datenhaltung für Protokoll-Header betreibt u
 2) Interpretation: Die Kapselung der Header-Felder in ara::core::Optional begründet sich darin, dass je nach AVTPDU-Subtyp oder Profil nicht alle Felder der IEEE-1722-Spezifikation zwingend im Frame belegt sein müssen. – Begründung: Typische AVTP-Protokollvarianten variieren in den tatsächlich transportierten Header-Bestandteilen.
 3) Interpretation: Die Instanzen sind nicht thread-sicher und für den sequenziellen Ablauf innerhalb eines Verarbeitungsstrangs gedacht. – Begründung: Der Payload enthält keinerlei Hinweise auf interne Synchronisationsmechanismen (wie Mutexe oder atomare Typen).
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsvorgaben des AUTOSAR-Adaptive-Releases R25-11 zum Modul rds.&lt;/p&gt;
+&lt;p class="ai-note"&gt;이 가이드는 rds 모듈에 대한 AUTOSAR Adaptive 릴리스 R25-11의 사양 요구사항만을 기반으로 합니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

@@ -24,34 +24,33 @@
   <span class="ai-badge-label">GERADO POR IA</span>
   <span class="ai-review-state">não revisado</span>
   <span class="ai-trace-meta">Modelo: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperatura: nicht steuerbar · Prompt: <code>bdb6fdc52cb7</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_hash_83e629/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedência: perfil, hash de prompt, hash de saída, execuções, revisão">Procedência</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/pt/classes/cl_ara_core_hash_83e629/anchor_r25_11.json" target="_blank" rel="noopener" title="Procedência: perfil, hash de prompt, hash de saída, execuções, revisão">Procedência</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_hash_83e629" data-view-mode="editor" title="Abrir editor de curadoria e dossiê" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ Curar</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Nota editorial:</strong> Este guia técnico está atualmente em processo de tradução. A versão de referência original é exibida abaixo.</div>
-<h4>Kontext</h4>
-<p>Die Template-Struktur <code>ara::core::hash</code> fungiert im Modul <code>core</code> der AUTOSAR Adaptive Platform als primäres Funktionsobjekt zur Ermittlung von numerischen Hash-Werten. Die Spezifikation verweist dabei auf die korrespondierende Nutzung im Kontext von <code>bitset</code>. Interpretation: <code>ara::core::hash</code> dient als fundamentale Schnittstelle, um standardisierte Hash-Werte für Adaptive-Basistypen bereitzustellen, vermutlich primär zur effizienten Integration in assoziativen Hash-Containern sowie für schlüsselbasierte Suchoperationen.</p>
-<p>Im Gesamtsystem entkoppelt <code>ara::core::hash</code> verarbeitende Algorithmen von den internen Datenstrukturen der zu hashenden Typen. Durch entsprechende Template-Spezialisierungen wird sichergestellt, dass komplexe Datenstrukturen wie Bit-Sequenzen und Basistypen nach einem einheitlichen Muster auf ganzzahlige Kennwerte abgebildet werden können, ohne dass übergeordnete Module typspezifische Hash-Routinen implementieren müssen.</p>
+<h4>Contexto</h4>
+<p>No módulo <code>core</code> da AUTOSAR Adaptive Platform, a estrutura de template <code>ara::core::hash</code> atua como o objeto-função primário para a determinação de valores numéricos de hash. A especificação faz referência ao uso correspondente no contexto de <code>bitset</code>. Interpretação: <code>ara::core::hash</code> serve como interface fundamental para disponibilizar valores de hash padronizados para tipos básicos do Adaptive, presumivelmente primário para a integração eficiente em contêineres associativos de hash, bem como para operações de busca baseadas em chaves.</p>
+<p>No sistema geral, <code>ara::core::hash</code> desacopla os algoritmos de processamento das estruturas de dados internas dos tipos a serem submetidos ao hash. Por meio de especializações de template correspondentes, assegura-se que estruturas de dados complexas, como sequências de bits e tipos básicos, possam ser mapeadas em valores numéricos inteiros segundo um padrão uniforme, sem que módulos de nível superior precisem implementar rotinas de hash específicas para cada tipo.</p>
 
-<h4>Lebenszyklus</h4>
-<p>Die Struktur <code>ara::core::hash</code> ist als leichtgewichtiges Funktor-Objekt ausgelegt. Interpretation: Exemplare von <code>ara::core::hash</code> dürften typischerweise zustandslos und standard-konstruierbar sein, sodass ihre Instanziierung und Zerstörung keine dynamischen Systemressourcen beansprucht und vernachlässigbaren Laufzeitaufwand erzeugt.</p>
-<p>In Bezug auf Nebenläufigkeit und Lebenszyklusphasen erlaubt die Zustandslosigkeit eine flexible Handhabung. Da das Funktionsobjekt keine internen Zustandsübergänge durchläuft, können Instanzen beliebig kopiert oder direkt als temporäre Objekte am Aufrufpunkt instantiiert werden. Mehrere Threads können den Aufrufoperator nebenwirkungsfrei und parallel ausführen, solange das übergebene Zielobjekt während des Berechnungsvorgangs vor parallelen Modifikationen geschützt ist.</p>
+<h4>Ciclo de vida</h4>
+<p>A estrutura <code>ara::core::hash</code> é projetada como um objeto functor leve. Interpretação: exemplares de <code>ara::core::hash</code> devem tipicamente ser sem estado e construtíveis por padrão, de modo que sua instanciação e destruição não demandem recursos dinâmicos do sistema e gerem sobrecarga de tempo de execução insignificante.</p>
+<p>Em relação à concorrência e às fases do ciclo de vida, a ausência de estado permite um manuseio flexível. Como o objeto-função não passa por transições internas de estado, as instâncias podem ser copiadas livremente ou instanciadas diretamente como objetos temporários no ponto de chamada. Múltiplas threads podem executar o operador de chamada em paralelo e sem efeitos colaterais, desde que o objeto de destino passado esteja protegido contra modificações paralelas durante o processo de cálculo.</p>
 
-<h4>Nutzungspfad</h4>
-<p>Der reguläre Ablauf bei der Interaktion mit <code>ara::core::hash</code> gliedert sich in die Bereitstellung des Eingabewertes, den Aufruf des Funktors und die Auswertung des resultierenden Werts:</p>
+<h4>Caminho de utilização</h4>
+<p>O fluxo regular na interação com <code>ara::core::hash</code> divide-se na disponibilização do valor de entrada, na chamada do functor e na avaliação do valor resultante:</p>
 <ol>
-<li><strong>Vorbereitung des Ausgangswertes:</strong> Das zu verarbeitende Objekt (beispielsweise ein Bit-Muster oder ein Konfigurationselement) wird erzeugt und in einen gültigen Ausgangszustand versetzt.</li>
-<li><strong>Instanziierung des Funktors:</strong> Der Aufrufer verwendet die Template-Instanz <code>ara::core::hash&lt;T&gt;</code> für den Zieltyp <code>T</code> oder erzeugt ein anonymes temporäres Funktionsobjekt.</li>
-<li><strong>Ausführung der Berechnung:</strong> Über den Funktionsaufrufoperator wird der Hash-Algorithmus für die Instanz ausgeführt, welcher den ganzzahligen Hash-Wert berechnet und zurückliefert.</li>
-<li><strong>Verarbeitung des Ergebnisses:</strong> Das aufrufende System verwendet den Hash-Wert zur Indexberechnung, zur Identifikation von Buckets in Hashtabellen oder für schnelle Vorabvergleiche.</li>
+<li><strong>Preparação do valor inicial:</strong> O objeto a ser processado (por exemplo, um padrão de bits ou um elemento de configuração) é criado e colocado em um estado inicial válido.</li>
+<li><strong>Instanciação do functor:</strong> O chamador utiliza a instância de template <code>ara::core::hash&lt;T&gt;</code> para o tipo de destino <code>T</code> ou cria um objeto de função temporário anônimo.</li>
+<li><strong>Execução do cálculo:</strong> Por meio do operador de chamada de função, o algoritmo de hash é executado para a instância, o qual calcula e retorna o valor de hash inteiro.</li>
+<li><strong>Processamento do resultado:</strong> O sistema chamador utiliza o valor de hash para o cálculo de índices, para a identificação de buckets em tabelas de hash ou para comparações prévias rápidas.</li>
 </ol>
-<p>In den meisten Szenarien erfolgt dieser Aufruf nicht manuell, sondern transparent innerhalb generischer Container- und Tabellenstrukturen, die <code>ara::core::hash</code> als Standard-Prädikat für Schlüsseltypen heranziehen.</p>
+<p>Na maioria dos cenários, esta chamada não ocorre manualmente, mas de forma transparente dentro de estruturas genéricas de contêineres e tabelas que utilizam <code>ara::core::hash</code> como predicado padrão para tipos de chave.</p>
 
-<h4>Fehlerszenarien</h4>
-<p>Da <code>ara::core::hash</code> als rein rechnerische Transformation agiert, werden funktionale Fehlerzustände vorwiegend über Vorbedingungen und Entwurfsmuster abgefangen:</p>
+<h4>Cenários de erro</h4>
+<p>Como <code>ara::core::hash</code> atua como uma transformação puramente computacional, estados de erro funcionais são tratados predominantemente por meio de pré-condições e padrões de projeto:</p>
 <ul>
-<li><strong>Fehlende Typunterstützung:</strong> Interpretation: Für Datentypen, für die keine gültige Spezialisierung von <code>ara::core::hash</code> existiert, dürfte das Primärtemplate unvollständig oder der Aufrufoperator gelöscht sein, sodass fehlerhafte Nutzungen bereits zur Übersetzungszeit abgewiesen werden.</li>
-<li><strong>Hash-Kollisionen:</strong> Da ein diskreter Wertebereich auf einen ganzzahligen Hash-Raum abgebildet wird, können unterschiedliche Objekte denselben Hash-Wert erzeugen. Ein Hash-Wert darf daher im Anwendungsdesign nicht als kryptografisch eindeutige Identität verstanden werden; bei Übereinstimmung ist stets eine zusätzliche Gleichheitsprüfung erforderlich.</li>
-<li><strong>Ausnahmesicherheit:</strong> In deterministischen automobilen Laufzeitumgebungen wird von Hashing-Operationen erwartet, dass sie ohne dynamische Allokationen auskommen und keine Ausnahmen auslösen, um Verzögerungen und undefinierte Zustände im Kontrollfluss zu verhindern.</li>
+<li><strong>Fehlende Typunterstützung:</strong> Interpretação: para tipos de dados para os quais não exista uma especialização válida de <code>ara::core::hash</code>, o template primário deve estar incompleto ou o operador de chamada deve estar excluído, de modo que usos incorretos sejam rejeitados já em tempo de compilação.</li>
+<li><strong>Hash-Kollisionen:</strong> Como uma faixa discreta de valores é mapeada em um espaço inteiro de hash, objetos diferentes podem gerar o mesmo valor de hash. Portanto, no design da aplicação, um valor de hash não deve ser compreendido como uma identidade criptograficamente única; em caso de correspondência, é sempre necessária uma verificação de igualdade adicional.</li>
+<li><strong>Ausnahmesicherheit:</strong> Em ambientes de execução automotivos determinísticos, espera-se que as operações de hashing operem sem alocações dinâmicas e não lancem exceções, a fim de evitar atrasos e estados indefinidos no fluxo de controle.</li>
 </ul>
 
 <!-- annahmen:
@@ -59,7 +58,7 @@
 2) Interpretation: Exemplare von ara::core::hash dürften zustandslos und standard-konstruierbar sein, wodurch parallele Aufrufe nebenwirkungsfrei und threadsicher sind. – Begründung: Funktionsobjekte für Hash-Operationen sind in modernen C++- und AUTOSAR-Standards regulär frei von veränderlichem Zustand.
 3) Interpretation: Für nicht unterstützte Datentypen ist das Primärtemplate undefiniert oder der Aufrufoperator gelöscht, um ungültige Typen zur Compilezeit abzufangen. – Begründung: Gängige Praxis in generischen C++-Bibliotheken zur statischen Typprüfung.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Spezifikationsdaten von Release R25-11. Alle nicht durch den Payload belegten Verhaltensweisen sind explizit als Interpretation deklariert.</p>
+<p class="ai-note">Este guia baseia-se nos dados de especificação da Release R25-11. Todos os comportamentos não comprovados pelo payload são explicitamente declarados como interpretação.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_hash_83e629" title="Discutir com IA">💬 Discutir com IA</button>
@@ -276,31 +275,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="bdb6fdc52cb7c50128d7a8d0faf2cd4b245fc17e6a8b84aa7bb45d3173a2263c" data-trace-output="0f1f8669a20cfdebb10361fca4e18060a567cb5205ab18d4224f7b7ae89d91b0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Nota editorial:&lt;/strong&gt; Este guia técnico está atualmente em processo de tradução. A versão de referência original é exibida abaixo.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
-&lt;p&gt;Die Template-Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; fungiert im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform als primäres Funktionsobjekt zur Ermittlung von numerischen Hash-Werten. Die Spezifikation verweist dabei auf die korrespondierende Nutzung im Kontext von &lt;code&gt;bitset&lt;/code&gt;. Interpretation: &lt;code&gt;ara::core::hash&lt;/code&gt; dient als fundamentale Schnittstelle, um standardisierte Hash-Werte für Adaptive-Basistypen bereitzustellen, vermutlich primär zur effizienten Integration in assoziativen Hash-Containern sowie für schlüsselbasierte Suchoperationen.&lt;/p&gt;
-&lt;p&gt;Im Gesamtsystem entkoppelt &lt;code&gt;ara::core::hash&lt;/code&gt; verarbeitende Algorithmen von den internen Datenstrukturen der zu hashenden Typen. Durch entsprechende Template-Spezialisierungen wird sichergestellt, dass komplexe Datenstrukturen wie Bit-Sequenzen und Basistypen nach einem einheitlichen Muster auf ganzzahlige Kennwerte abgebildet werden können, ohne dass übergeordnete Module typspezifische Hash-Routinen implementieren müssen.&lt;/p&gt;
+&lt;h4&gt;Contexto&lt;/h4&gt;
+&lt;p&gt;No módulo &lt;code&gt;core&lt;/code&gt; da AUTOSAR Adaptive Platform, a estrutura de template &lt;code&gt;ara::core::hash&lt;/code&gt; atua como o objeto-função primário para a determinação de valores numéricos de hash. A especificação faz referência ao uso correspondente no contexto de &lt;code&gt;bitset&lt;/code&gt;. Interpretação: &lt;code&gt;ara::core::hash&lt;/code&gt; serve como interface fundamental para disponibilizar valores de hash padronizados para tipos básicos do Adaptive, presumivelmente primário para a integração eficiente em contêineres associativos de hash, bem como para operações de busca baseadas em chaves.&lt;/p&gt;
+&lt;p&gt;No sistema geral, &lt;code&gt;ara::core::hash&lt;/code&gt; desacopla os algoritmos de processamento das estruturas de dados internas dos tipos a serem submetidos ao hash. Por meio de especializações de template correspondentes, assegura-se que estruturas de dados complexas, como sequências de bits e tipos básicos, possam ser mapeadas em valores numéricos inteiros segundo um padrão uniforme, sem que módulos de nível superior precisem implementar rotinas de hash específicas para cada tipo.&lt;/p&gt;
 
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;Die Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; ist als leichtgewichtiges Funktor-Objekt ausgelegt. Interpretation: Exemplare von &lt;code&gt;ara::core::hash&lt;/code&gt; dürften typischerweise zustandslos und standard-konstruierbar sein, sodass ihre Instanziierung und Zerstörung keine dynamischen Systemressourcen beansprucht und vernachlässigbaren Laufzeitaufwand erzeugt.&lt;/p&gt;
-&lt;p&gt;In Bezug auf Nebenläufigkeit und Lebenszyklusphasen erlaubt die Zustandslosigkeit eine flexible Handhabung. Da das Funktionsobjekt keine internen Zustandsübergänge durchläuft, können Instanzen beliebig kopiert oder direkt als temporäre Objekte am Aufrufpunkt instantiiert werden. Mehrere Threads können den Aufrufoperator nebenwirkungsfrei und parallel ausführen, solange das übergebene Zielobjekt während des Berechnungsvorgangs vor parallelen Modifikationen geschützt ist.&lt;/p&gt;
+&lt;h4&gt;Ciclo de vida&lt;/h4&gt;
+&lt;p&gt;A estrutura &lt;code&gt;ara::core::hash&lt;/code&gt; é projetada como um objeto functor leve. Interpretação: exemplares de &lt;code&gt;ara::core::hash&lt;/code&gt; devem tipicamente ser sem estado e construtíveis por padrão, de modo que sua instanciação e destruição não demandem recursos dinâmicos do sistema e gerem sobrecarga de tempo de execução insignificante.&lt;/p&gt;
+&lt;p&gt;Em relação à concorrência e às fases do ciclo de vida, a ausência de estado permite um manuseio flexível. Como o objeto-função não passa por transições internas de estado, as instâncias podem ser copiadas livremente ou instanciadas diretamente como objetos temporários no ponto de chamada. Múltiplas threads podem executar o operador de chamada em paralelo e sem efeitos colaterais, desde que o objeto de destino passado esteja protegido contra modificações paralelas durante o processo de cálculo.&lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
-&lt;p&gt;Der reguläre Ablauf bei der Interaktion mit &lt;code&gt;ara::core::hash&lt;/code&gt; gliedert sich in die Bereitstellung des Eingabewertes, den Aufruf des Funktors und die Auswertung des resultierenden Werts:&lt;/p&gt;
+&lt;h4&gt;Caminho de utilização&lt;/h4&gt;
+&lt;p&gt;O fluxo regular na interação com &lt;code&gt;ara::core::hash&lt;/code&gt; divide-se na disponibilização do valor de entrada, na chamada do functor e na avaliação do valor resultante:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Vorbereitung des Ausgangswertes:&lt;/strong&gt; Das zu verarbeitende Objekt (beispielsweise ein Bit-Muster oder ein Konfigurationselement) wird erzeugt und in einen gültigen Ausgangszustand versetzt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instanziierung des Funktors:&lt;/strong&gt; Der Aufrufer verwendet die Template-Instanz &lt;code&gt;ara::core::hash&amp;lt;T&amp;gt;&lt;/code&gt; für den Zieltyp &lt;code&gt;T&lt;/code&gt; oder erzeugt ein anonymes temporäres Funktionsobjekt.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausführung der Berechnung:&lt;/strong&gt; Über den Funktionsaufrufoperator wird der Hash-Algorithmus für die Instanz ausgeführt, welcher den ganzzahligen Hash-Wert berechnet und zurückliefert.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Verarbeitung des Ergebnisses:&lt;/strong&gt; Das aufrufende System verwendet den Hash-Wert zur Indexberechnung, zur Identifikation von Buckets in Hashtabellen oder für schnelle Vorabvergleiche.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Preparação do valor inicial:&lt;/strong&gt; O objeto a ser processado (por exemplo, um padrão de bits ou um elemento de configuração) é criado e colocado em um estado inicial válido.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Instanciação do functor:&lt;/strong&gt; O chamador utiliza a instância de template &lt;code&gt;ara::core::hash&amp;lt;T&amp;gt;&lt;/code&gt; para o tipo de destino &lt;code&gt;T&lt;/code&gt; ou cria um objeto de função temporário anônimo.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Execução do cálculo:&lt;/strong&gt; Por meio do operador de chamada de função, o algoritmo de hash é executado para a instância, o qual calcula e retorna o valor de hash inteiro.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Processamento do resultado:&lt;/strong&gt; O sistema chamador utiliza o valor de hash para o cálculo de índices, para a identificação de buckets em tabelas de hash ou para comparações prévias rápidas.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;In den meisten Szenarien erfolgt dieser Aufruf nicht manuell, sondern transparent innerhalb generischer Container- und Tabellenstrukturen, die &lt;code&gt;ara::core::hash&lt;/code&gt; als Standard-Prädikat für Schlüsseltypen heranziehen.&lt;/p&gt;
+&lt;p&gt;Na maioria dos cenários, esta chamada não ocorre manualmente, mas de forma transparente dentro de estruturas genéricas de contêineres e tabelas que utilizam &lt;code&gt;ara::core::hash&lt;/code&gt; como predicado padrão para tipos de chave.&lt;/p&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
-&lt;p&gt;Da &lt;code&gt;ara::core::hash&lt;/code&gt; als rein rechnerische Transformation agiert, werden funktionale Fehlerzustände vorwiegend über Vorbedingungen und Entwurfsmuster abgefangen:&lt;/p&gt;
+&lt;h4&gt;Cenários de erro&lt;/h4&gt;
+&lt;p&gt;Como &lt;code&gt;ara::core::hash&lt;/code&gt; atua como uma transformação puramente computacional, estados de erro funcionais são tratados predominantemente por meio de pré-condições e padrões de projeto:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Fehlende Typunterstützung:&lt;/strong&gt; Interpretation: Für Datentypen, für die keine gültige Spezialisierung von &lt;code&gt;ara::core::hash&lt;/code&gt; existiert, dürfte das Primärtemplate unvollständig oder der Aufrufoperator gelöscht sein, sodass fehlerhafte Nutzungen bereits zur Übersetzungszeit abgewiesen werden.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hash-Kollisionen:&lt;/strong&gt; Da ein diskreter Wertebereich auf einen ganzzahligen Hash-Raum abgebildet wird, können unterschiedliche Objekte denselben Hash-Wert erzeugen. Ein Hash-Wert darf daher im Anwendungsdesign nicht als kryptografisch eindeutige Identität verstanden werden; bei Übereinstimmung ist stets eine zusätzliche Gleichheitsprüfung erforderlich.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Ausnahmesicherheit:&lt;/strong&gt; In deterministischen automobilen Laufzeitumgebungen wird von Hashing-Operationen erwartet, dass sie ohne dynamische Allokationen auskommen und keine Ausnahmen auslösen, um Verzögerungen und undefinierte Zustände im Kontrollfluss zu verhindern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlende Typunterstützung:&lt;/strong&gt; Interpretação: para tipos de dados para os quais não exista uma especialização válida de &lt;code&gt;ara::core::hash&lt;/code&gt;, o template primário deve estar incompleto ou o operador de chamada deve estar excluído, de modo que usos incorretos sejam rejeitados já em tempo de compilação.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Hash-Kollisionen:&lt;/strong&gt; Como uma faixa discreta de valores é mapeada em um espaço inteiro de hash, objetos diferentes podem gerar o mesmo valor de hash. Portanto, no design da aplicação, um valor de hash não deve ser compreendido como uma identidade criptograficamente única; em caso de correspondência, é sempre necessária uma verificação de igualdade adicional.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ausnahmesicherheit:&lt;/strong&gt; Em ambientes de execução automotivos determinísticos, espera-se que as operações de hashing operem sem alocações dinâmicas e não lancem exceções, a fim de evitar atrasos e estados indefinidos no fluxo de controle.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;!-- annahmen:
@@ -308,7 +306,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 2) Interpretation: Exemplare von ara::core::hash dürften zustandslos und standard-konstruierbar sein, wodurch parallele Aufrufe nebenwirkungsfrei und threadsicher sind. – Begründung: Funktionsobjekte für Hash-Operationen sind in modernen C++- und AUTOSAR-Standards regulär frei von veränderlichem Zustand.
 3) Interpretation: Für nicht unterstützte Datentypen ist das Primärtemplate undefiniert oder der Aufrufoperator gelöscht, um ungültige Typen zur Compilezeit abzufangen. – Begründung: Gängige Praxis in generischen C++-Bibliotheken zur statischen Typprüfung.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten von Release R25-11. Alle nicht durch den Payload belegten Verhaltensweisen sind explizit als Interpretation deklariert.&lt;/p&gt;
+&lt;p class="ai-note"&gt;Este guia baseia-se nos dados de especificação da Release R25-11. Todos os comportamentos não comprovados pelo payload são explicitamente declarados como interpretação.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

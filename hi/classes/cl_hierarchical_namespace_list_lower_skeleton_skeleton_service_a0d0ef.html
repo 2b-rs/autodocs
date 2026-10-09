@@ -20,65 +20,64 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>4a9713a1a7c9</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/hi/classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef" data-view-mode="editor" title="क्यूरेशन संपादक और ऑडिट डोजियर खोलें" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ क्यूरेट करें</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>संदर्भ</h4>
   <p>
-    Die Klasse <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> bildet die serverseitige Basisabstraktion für die Bereitstellung eines Service-Interfaces innerhalb des Moduls für Kommunikationsmanagement (<code>com</code>) der AUTOSAR Adaptive Platform. Als generiertes Schnittstellengerüst übernimmt das Skeleton die Vermittlerrolle zwischen der plattformspezifischen Kommunikationsinfrastruktur (wie etwa einer SOME/IP-Bindung) und der anwendungsspezifischen Dienstanbieter-Implementierung. Es entkoppelt die Service-Geschäftslogik von Protokolldetails, der Nachrichten-Deserialisierung sowie dem zugrunde liegenden Dispatching.
+    Class <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> AUTOSAR Adaptive Platform के संचार प्रबंधन मॉड्यूल (<code>com</code>) के भीतर एक service interface प्रदान करने के लिए सर्वर-साइड आधार अमूर्तन का निर्माण करती है। एक जनरेट किए गए इंटरफ़ेस कंकाल के रूप में, Skeleton प्लेटफ़ॉर्म-विशिष्ट संचार अवसंरचना (जैसे कि SOME/IP बाइंडिंग) और एप्लिकेशन-विशिष्ट सेवा प्रदाता कार्यान्वयन के बीच मध्यस्थ की भूमिका निभाता है। यह सेवा व्यावसायिक तर्क को प्रोटोकॉल विवरणों, संदेश डीसीरियलाइज़ेशन और अंतर्निहित डिस्पैचिंग से अलग करता है।
   </p>
   <p>
-    Im Gesamtsystem interagiert die Skeleton-Klasse mit drei wesentlichen Partnern:
-  </p>
-  <ul>
-    <li>
-      <strong>Dienstanwendung (Service Provider):</strong> Die konkrete Anwendung leitet von der Skeleton-Klasse ab und implementiert die reinen virtuellen Methodenfunktionen für reguläre Anfrage-Antwort-Muster <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a> sowie Fire-and-Forget-Methoden <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.
-    </li>
-    <li>
-      <strong>Kommunikationsinfrastruktur (Middleware):</strong> Die Laufzeitumgebung empfängt eingehende Anforderungsnachrichten von Service-Clients, deserialisiert die übertragenen Daten und reicht diese zur Methodenausführung an das Skeleton weiter <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=99">AUTOSAR_AP_SWS_CommunicationManagement S. 99</a>.
-    </li>
-    <li>
-      <strong>Asynchroner Ausführungskontext:</strong> Über Rückgabetypen wie <code>ara::core::Future</code> wird die Entkopplung von Aufrufannahme und asynchroner Ergebnisbereitstellung realisiert <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.
-    </li>
-  </ul>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Die Instanziierung des abgeleiteten Skeleton-Objekts erfolgt explizit durch die Dienstanwendung. Bei der Erzeugung über den Konstruktor wird zwingend der Verarbeitungsmodus für Methodenaufrufe (<code>ara::com::MethodCallProcessingMode</code>) übergeben <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>. Dieser Modus legt fest, wie eingehende Methodenaufrufe thread- und ablaufseitig verarbeitet werden:
+    संपूर्ण सिस्टम में, Skeleton class तीन प्रमुख भागीदारों के साथ इंटरैक्ट करती है:
   </p>
   <ul>
     <li>
-      <strong>Ereignisgesteuerte Verarbeitung (<code>kEvent</code> bzw. <code>kEventSingleThread</code>):</strong> Sobald eine eingehende Anforderungsnachricht deserialisiert wurde, wird die korrespondierende virtuelle Methode der Skeleton-Klasse unmittelbar im Rahmen des Nachrichtenempfangs aufgerufen <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>.
+      <strong>सेवा प्रदाता (Service Provider):</strong> ठोस एप्लिकेशन Skeleton class से व्युत्पन्न होती है और नियमित अनुरोध-प्रतिक्रिया पैटर्न <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a> के साथ-साथ fire-and-forget विधियों <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a> के लिए शुद्ध वर्चुअल मेथड फ़ंक्शंस को लागू करती है।
     </li>
     <li>
-      <strong>Gepufferte Polling-Verarbeitung (<code>kPoll</code>):</strong> Eingehende Nachrichten werden vorgehalten und erst dann zur Ausführung gebracht, wenn die Anwendung die Abarbeitung aktiv über die dafür vorgesehene Polling-Schnittstelle anstößt <a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307">[SWS_CM_10307]</a>.
+      <strong>संचार अवसंरचना (Middleware):</strong> रनटाइम वातावरण service clients से आने वाले अनुरोध संदेशों को प्राप्त करता है, प्रेषित डेटा को deserialize करता है और विधि निष्पादन के लिए इसे Skeleton को आगे भेजता है <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=99">AUTOSAR_AP_SWS_CommunicationManagement पृ. 99</a>।
+    </li>
+    <li>
+      <strong>एसिंक्रोनस निष्पादन संदर्भ:</strong> <code>ara::core::Future</code> जैसे return types के माध्यम से कॉल स्वीकृति और एसिंक्रोनस परिणाम प्रावधान के अलगाव को साकार किया जाता है <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>।
+    </li>
+  </ul>
+
+  <h4>जीवनचक्र</h4>
+  <p>
+    व्युत्पन्न Skeleton ऑब्जेक्ट का इंस्टेंस निर्माण स्पष्ट रूप से सेवा एप्लिकेशन द्वारा किया जाता है। Constructor के माध्यम से निर्माण के समय विधि कॉल के लिए प्रसंस्करण मोड (<code>ara::com::MethodCallProcessingMode</code>) अनिवार्य रूप से पास किया जाता है <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>। यह मोड यह निर्धारित करता है कि आने वाले विधि कॉल को थ्रेड और निष्पादन प्रवाह के स्तर पर कैसे संसाधित किया जाता है:
+  </p>
+  <ul>
+    <li>
+      <strong>इवेंट-संचालित प्रसंस्करण (<code>kEvent</code> या <code>kEventSingleThread</code>):</strong> जैसे ही आने वाले अनुरोध संदेश को deserialize किया जाता है, संदेश प्राप्ति के भाग के रूप में Skeleton class की संबंधित वर्चुअल विधि को तुरंत कॉल किया जाता है <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>।
+    </li>
+    <li>
+      <strong>बफ़र्ड पोलिंग प्रसंस्करण (<code>kPoll</code>):</strong> आने वाले संदेशों को बनाए रखा जाता है और उन्हें केवल तभी निष्पादित किया जाता है जब एप्लिकेशन निर्दिष्ट polling interface के माध्यम से प्रसंस्करण को सक्रिय रूप से शुरू करता है <a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307">[SWS_CM_10307]</a>।
     </li>
   </ul>
   <p>
-    Die Lebensdauer des Skeleton-Objekts liegt vollständig in der Verantwortung der erzeugenden Dienstanwendung. Vor der Zerstörung der Instanz sollte der Dienst geregelt abgemeldet werden (Interpretation: Eine kontrollierte Beendigung stellt sicher, dass keine Methodenaufrufe mehr auf freigegebene Ressourcen der Dienstanwendung zugreifen und offene asynchrone Berechnungen sauber abgeschlossen werden können).
+    Skeleton ऑब्जेक्ट का जीवनकाल पूरी तरह से इसे बनाने वाले सेवा एप्लिकेशन की ज़िम्मेदारी है। Instance के नष्ट होने से पहले सेवा को व्यवस्थित रूप से अपंजीकृत किया जाना चाहिए (व्याख्या: एक नियंत्रित समाप्ति यह सुनिश्चित करती है कि कोई भी विधि कॉल सेवा एप्लिकेशन के जारी किए गए संसाधनों तक नहीं पहुंचे और खुली एसिंक्रोनस गणनाओं को ठीक से पूरा किया जा सके)।
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>उपयोग पथ</h4>
   <p>
-    Der typische Nutzungsablauf für die Bereitstellung eines Dienstes über das Skeleton umfasst folgende Schritte:
+    Skeleton के माध्यम से सेवा प्रदान करने के लिए विशिष्ट उपयोग प्रवाह में निम्नलिखित चरण शामिल हैं:
   </p>
   <ol>
     <li>
-      <strong>Schnittstellenimplementierung:</strong> Die Dienstanwendung leitet von <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> ab und implementiert die rein virtuellen Methoden:
+      <strong>इंटरफ़ेस कार्यान्वयन:</strong> सेवा एप्लिकेशन <code>{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton</code> से व्युत्पन्न होता है और शुद्ध वर्चुअल विधियों को लागू करता है:
       <ul>
-        <li>Reguläre Methoden mit Rückgabewert implementieren die Signatur <code>virtual ara::core::Future&lt;{&lt;method-name&gt;}Output&gt; {&lt;method-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.</li>
-        <li>Einwegmethoden ohne Rückantwort implementieren <code>virtual void {&lt;fnfmethod-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.</li>
+        <li>रिटर्न मान वाली नियमित विधियाँ हस्ताक्षर <code>virtual ara::core::Future&lt;{&lt;method-name&gt;}Output&gt; {&lt;method-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a> को लागू करती हैं।</li>
+        <li>बिना किसी प्रतिक्रिया वाली एकतरफ़ा विधियाँ <code>virtual void {&lt;fnfmethod-name&gt;}(...) noexcept = 0</code> <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a> को लागू करती हैं।</li>
       </ul>
     </li>
     <li>
-      <strong>Instanziierung:</strong> Die abgeleitete Skeleton-Klasse wird mit dem gewünschten <code>MethodCallProcessingMode</code> konstruiert <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>.
+      <strong>इंस्टेंस निर्माण:</strong> व्युत्पन्न Skeleton class का निर्माण वांछित <code>MethodCallProcessingMode</code> के साथ किया जाता है <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>।
     </li>
     <li>
-      <strong>Methodenausführung:</strong> Beim Eintreffen von Anfragen ruft die Middleware die implementierte Methode auf <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>.
+      <strong>विधि निष्पादन:</strong> अनुरोध प्राप्त होने पर, middleware लागू की गई विधि को कॉल करता है <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>।
     </li>
     <li>
-      <strong>Ergebnisrückgabe:</strong> Bei regulären Methoden liefert die Dienstanwendung ein <code>ara::core::Future</code> mit dem erzeugten <code>Output</code>-Objekt zurück <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, welches durch die Middleware serialisiert und als Antwortnachricht an den Client versendet wird. Bei Fire-and-Forget-Methoden erfolgt keinerlei Antwortübermittlung <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>.
+      <strong>परिणाम वापसी:</strong> नियमित विधियों के लिए, सेवा एप्लिकेशन जनरेट किए गए <code>Output</code> ऑब्जेक्ट के साथ एक <code>ara::core::Future</code> लौटाता है <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, जिसे middleware द्वारा क्रमबद्ध किया जाता है और क्लाइंट को प्रतिक्रिया संदेश के रूप में भेजा जाता है। Fire-and-forget विधियों के मामले में, कोई भी प्रतिक्रिया प्रेषित नहीं की जाती है <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>।
     </li>
   </ol>
 
@@ -88,23 +87,23 @@
 [SWS_CM_00191]</title><path d="M 40 258 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="273" font-size="11" font-weight="bold" fill="#28251d">alt</text><text x="96" y="273" font-size="11" font-style="italic" fill="#28251d">Reguläre Methode</text></g><text x="240.0" y="298" text-anchor="middle" font-size="11" fill="#28251d">&lt;method-name&gt;(Argumente)</text><line x1="345" y1="304" x2="135" y2="304" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><g class="seq-tip"><title>Rückgabe ara::core::Future&lt;Output&gt;
 [SWS_CM_99556]</title><text x="240.0" y="332" text-anchor="middle" font-size="11" fill="#28251d">Rückgabe <a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt;Output&gt;</text><line x1="135" y1="338" x2="345" y2="338" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line></g><text x="450.0" y="366" text-anchor="middle" font-size="11" fill="#28251d">Antwortnachricht senden</text><line x1="345" y1="372" x2="555" y2="372" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><g class="seq-tip"><title>Fire-and-Forget Methode
 [SWS_CM_90434]</title><line x1="40" y1="394" x2="650" y2="394" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="409" font-size="11" font-style="italic" fill="#28251d">Fire-and-Forget Methode</text></g><text x="240.0" y="437" text-anchor="middle" font-size="11" fill="#28251d">&lt;fnfmethod-name&gt;(Argumente)</text><line x1="345" y1="443" x2="135" y2="443" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 135 457 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></path><text x="189" y="472" text-anchor="start" font-size="11" fill="#28251d">Verarbeitung ohne Antwort</text></svg></div>
-  <p class="diagram-note">Sequenzdiagramm: Typischer Ablauf der Methodenverarbeitung über das Skeleton. Quellen: <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>, <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>, <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a> [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]</p>
+  <p class="diagram-note">अनुक्रम आरेख: Skeleton के माध्यम से विधि प्रसंस्करण का विशिष्ट प्रवाह। स्रोत: <a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130">[SWS_CM_00130]</a>, <a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306">[SWS_CM_10306]</a>, <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>, <a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556">[SWS_CM_99556]</a>, <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a> [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]</p>
 
-  <h4>Fehlerszenarien</h4>
+  <h4>त्रुटि परिदृश्य</h4>
   <p>
-    Hinsichtlich des Fehlerverhaltens unterscheiden sich Methodenaufrufe grundlegend anhand ihrer Kommunikationssemantik:
+    त्रुटि व्यवहार के संबंध में, विधि कॉल अपने संचार सिमेंटिक्स के आधार पर मौलिक रूप से भिन्न होते हैं:
   </p>
   <ul>
     <li>
-      <strong>Reguläre Methoden:</strong> Die Schnittstelle ist als <code>noexcept</code> deklariert und erfordert Ausnahmesicherheit (<code>exception safe</code>) <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>. Scheitert eine Methodenverarbeitung, wird der Fehler nicht über C++-Exceptions gemeldet, sondern asynchron über das zurückgegebene <code>ara::core::Future</code> transportiert. Im Fehlerfall enthält dieses entweder einen Fehlercode aus <code>ara::com::ComErrc</code> oder einen domänenspezifischen Anwendungsfehler vom Typ <code>ApApplicationError</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>.
+      <strong>नियमित विधियाँ:</strong> इंटरफ़ेस को <code>noexcept</code> के रूप में घोषित किया गया है और इसके लिए exception safety (<code>exception safe</code>) की आवश्यकता होती है <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a>। यदि कोई विधि प्रसंस्करण विफल हो जाता है, तो त्रुटि की सूचना C++ exceptions के माध्यम से नहीं दी जाती है, बल्कि लौटाए गए <code>ara::core::Future</code> के माध्यम से एसिंक्रोनस रूप से प्रेषित की जाती है। विफलता की स्थिति में, इसमें या तो <code>ara::com::ComErrc</code> से एक त्रुटि कोड होता है या <code>ApApplicationError</code> <a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191">[SWS_CM_00191]</a> प्रकार की एक डोमेन-विशिष्ट एप्लिकेशन त्रुटि होती है।
     </li>
     <li>
-      <strong>Fire-and-Forget-Methoden:</strong> Auch diese Methoden sind als <code>noexcept</code> deklariert und müssen ausnahmesicher implementiert werden <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>. Da konstruktionsbedingt kein Rückkanal zum aufrufenden Client existiert, können weder Erfolgs- noch Fehlerinformationen übertragen werden. Tritt während der Bearbeitung ein Fehler auf, muss dieser intern innerhalb des Service-Providers behandelt werden (Interpretation: Lokale Protokollierung oder interne Kompensationsmaßnahmen sind für Fire-and-Forget-Methoden zwingend erforderlich, da keine Fehlerübertragung an den Client stattfindet).
+      <strong>Fire-and-Forget विधियाँ:</strong> ये विधियाँ भी <code>noexcept</code> के रूप में घोषित हैं और इन्हें exception-safe तरीके से लागू किया जाना चाहिए <a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434">[SWS_CM_90434]</a>। चूंकि डिज़ाइन के अनुसार कॉल करने वाले क्लाइंट के लिए कोई रिटर्न चैनल मौजूद नहीं है, इसलिए न तो सफलता और न ही त्रुटि की जानकारी प्रेषित की जा सकती है। यदि प्रसंस्करण के दौरान कोई त्रुटि होती है, तो इसे सेवा प्रदाता के भीतर आंतरिक रूप से संभाला जाना चाहिए (व्याख्या: Fire-and-forget विधियों के लिए स्थानीय लॉगिंग या आंतरिक क्षतिपूर्ति उपाय अनिवार्य हैं, क्योंकि क्लाइंट को कोई त्रुटि प्रेषण नहीं होता है)।
     </li>
   </ul>
 
   <!-- annahmen: 1) Kontrollierte Beendigung vor Zerstörung – Begründung: Verhindert fehlerhafte Zugriffe bei noch offenen asynchronen Vorgängen. 2) Interne Fehlerbehandlung bei Fire-and-Forget – Begründung: Signatur besitzt void-Rückgabe und keinen Fehlerrückkanal an den Aufrufer. -->
-  <p class="ai-note">Dieser Klassen-Leitfaden wurde auf Basis der AUTOSAR Adaptive Platform Spezifikation für Release R25-11 erstellt.</p>
+  <p class="ai-note">यह क्लास गाइड रिलीज़ R25-11 के लिए AUTOSAR Adaptive Platform विनिर्देश के आधार पर बनाया गया था।</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef" title="एआई से चर्चा करें">💬 एआई से चर्चा करें</button>
@@ -548,62 +547,61 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="4a9713a1a7c99e6498d1a2a60a897fec486da6102ff23ea8677d3c373a7b0386" data-trace-output="db5288a426d918bb7b2dc8e362970ede62c10f9f85d1e8605b600ea6e6e161b1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;संदर्भ&lt;/h4&gt;
   &lt;p&gt;
-    Die Klasse &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; bildet die serverseitige Basisabstraktion für die Bereitstellung eines Service-Interfaces innerhalb des Moduls für Kommunikationsmanagement (&lt;code&gt;com&lt;/code&gt;) der AUTOSAR Adaptive Platform. Als generiertes Schnittstellengerüst übernimmt das Skeleton die Vermittlerrolle zwischen der plattformspezifischen Kommunikationsinfrastruktur (wie etwa einer SOME/IP-Bindung) und der anwendungsspezifischen Dienstanbieter-Implementierung. Es entkoppelt die Service-Geschäftslogik von Protokolldetails, der Nachrichten-Deserialisierung sowie dem zugrunde liegenden Dispatching.
+    Class &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; AUTOSAR Adaptive Platform के संचार प्रबंधन मॉड्यूल (&lt;code&gt;com&lt;/code&gt;) के भीतर एक service interface प्रदान करने के लिए सर्वर-साइड आधार अमूर्तन का निर्माण करती है। एक जनरेट किए गए इंटरफ़ेस कंकाल के रूप में, Skeleton प्लेटफ़ॉर्म-विशिष्ट संचार अवसंरचना (जैसे कि SOME/IP बाइंडिंग) और एप्लिकेशन-विशिष्ट सेवा प्रदाता कार्यान्वयन के बीच मध्यस्थ की भूमिका निभाता है। यह सेवा व्यावसायिक तर्क को प्रोटोकॉल विवरणों, संदेश डीसीरियलाइज़ेशन और अंतर्निहित डिस्पैचिंग से अलग करता है।
   &lt;/p&gt;
   &lt;p&gt;
-    Im Gesamtsystem interagiert die Skeleton-Klasse mit drei wesentlichen Partnern:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Dienstanwendung (Service Provider):&lt;/strong&gt; Die konkrete Anwendung leitet von der Skeleton-Klasse ab und implementiert die reinen virtuellen Methodenfunktionen für reguläre Anfrage-Antwort-Muster &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; sowie Fire-and-Forget-Methoden &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Kommunikationsinfrastruktur (Middleware):&lt;/strong&gt; Die Laufzeitumgebung empfängt eingehende Anforderungsnachrichten von Service-Clients, deserialisiert die übertragenen Daten und reicht diese zur Methodenausführung an das Skeleton weiter &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;AUTOSAR_AP_SWS_CommunicationManagement S. 99&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Asynchroner Ausführungskontext:&lt;/strong&gt; Über Rückgabetypen wie &lt;code&gt;ara::core::Future&lt;/code&gt; wird die Entkopplung von Aufrufannahme und asynchroner Ergebnisbereitstellung realisiert &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Die Instanziierung des abgeleiteten Skeleton-Objekts erfolgt explizit durch die Dienstanwendung. Bei der Erzeugung über den Konstruktor wird zwingend der Verarbeitungsmodus für Methodenaufrufe (&lt;code&gt;ara::com::MethodCallProcessingMode&lt;/code&gt;) übergeben &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;. Dieser Modus legt fest, wie eingehende Methodenaufrufe thread- und ablaufseitig verarbeitet werden:
+    संपूर्ण सिस्टम में, Skeleton class तीन प्रमुख भागीदारों के साथ इंटरैक्ट करती है:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ereignisgesteuerte Verarbeitung (&lt;code&gt;kEvent&lt;/code&gt; bzw. &lt;code&gt;kEventSingleThread&lt;/code&gt;):&lt;/strong&gt; Sobald eine eingehende Anforderungsnachricht deserialisiert wurde, wird die korrespondierende virtuelle Methode der Skeleton-Klasse unmittelbar im Rahmen des Nachrichtenempfangs aufgerufen &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
+      &lt;strong&gt;सेवा प्रदाता (Service Provider):&lt;/strong&gt; ठोस एप्लिकेशन Skeleton class से व्युत्पन्न होती है और नियमित अनुरोध-प्रतिक्रिया पैटर्न &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; के साथ-साथ fire-and-forget विधियों &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; के लिए शुद्ध वर्चुअल मेथड फ़ंक्शंस को लागू करती है।
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Gepufferte Polling-Verarbeitung (&lt;code&gt;kPoll&lt;/code&gt;):&lt;/strong&gt; Eingehende Nachrichten werden vorgehalten und erst dann zur Ausführung gebracht, wenn die Anwendung die Abarbeitung aktiv über die dafür vorgesehene Polling-Schnittstelle anstößt &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;.
+      &lt;strong&gt;संचार अवसंरचना (Middleware):&lt;/strong&gt; रनटाइम वातावरण service clients से आने वाले अनुरोध संदेशों को प्राप्त करता है, प्रेषित डेटा को deserialize करता है और विधि निष्पादन के लिए इसे Skeleton को आगे भेजता है &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;AUTOSAR_AP_SWS_CommunicationManagement पृ. 99&lt;/a&gt;।
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;एसिंक्रोनस निष्पादन संदर्भ:&lt;/strong&gt; &lt;code&gt;ara::core::Future&lt;/code&gt; जैसे return types के माध्यम से कॉल स्वीकृति और एसिंक्रोनस परिणाम प्रावधान के अलगाव को साकार किया जाता है &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;।
+    &lt;/li&gt;
+  &lt;/ul&gt;
+
+  &lt;h4&gt;जीवनचक्र&lt;/h4&gt;
+  &lt;p&gt;
+    व्युत्पन्न Skeleton ऑब्जेक्ट का इंस्टेंस निर्माण स्पष्ट रूप से सेवा एप्लिकेशन द्वारा किया जाता है। Constructor के माध्यम से निर्माण के समय विधि कॉल के लिए प्रसंस्करण मोड (&lt;code&gt;ara::com::MethodCallProcessingMode&lt;/code&gt;) अनिवार्य रूप से पास किया जाता है &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;। यह मोड यह निर्धारित करता है कि आने वाले विधि कॉल को थ्रेड और निष्पादन प्रवाह के स्तर पर कैसे संसाधित किया जाता है:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;
+      &lt;strong&gt;इवेंट-संचालित प्रसंस्करण (&lt;code&gt;kEvent&lt;/code&gt; या &lt;code&gt;kEventSingleThread&lt;/code&gt;):&lt;/strong&gt; जैसे ही आने वाले अनुरोध संदेश को deserialize किया जाता है, संदेश प्राप्ति के भाग के रूप में Skeleton class की संबंधित वर्चुअल विधि को तुरंत कॉल किया जाता है &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;।
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;बफ़र्ड पोलिंग प्रसंस्करण (&lt;code&gt;kPoll&lt;/code&gt;):&lt;/strong&gt; आने वाले संदेशों को बनाए रखा जाता है और उन्हें केवल तभी निष्पादित किया जाता है जब एप्लिकेशन निर्दिष्ट polling interface के माध्यम से प्रसंस्करण को सक्रिय रूप से शुरू करता है &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;।
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;p&gt;
-    Die Lebensdauer des Skeleton-Objekts liegt vollständig in der Verantwortung der erzeugenden Dienstanwendung. Vor der Zerstörung der Instanz sollte der Dienst geregelt abgemeldet werden (Interpretation: Eine kontrollierte Beendigung stellt sicher, dass keine Methodenaufrufe mehr auf freigegebene Ressourcen der Dienstanwendung zugreifen und offene asynchrone Berechnungen sauber abgeschlossen werden können).
+    Skeleton ऑब्जेक्ट का जीवनकाल पूरी तरह से इसे बनाने वाले सेवा एप्लिकेशन की ज़िम्मेदारी है। Instance के नष्ट होने से पहले सेवा को व्यवस्थित रूप से अपंजीकृत किया जाना चाहिए (व्याख्या: एक नियंत्रित समाप्ति यह सुनिश्चित करती है कि कोई भी विधि कॉल सेवा एप्लिकेशन के जारी किए गए संसाधनों तक नहीं पहुंचे और खुली एसिंक्रोनस गणनाओं को ठीक से पूरा किया जा सके)।
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;उपयोग पथ&lt;/h4&gt;
   &lt;p&gt;
-    Der typische Nutzungsablauf für die Bereitstellung eines Dienstes über das Skeleton umfasst folgende Schritte:
+    Skeleton के माध्यम से सेवा प्रदान करने के लिए विशिष्ट उपयोग प्रवाह में निम्नलिखित चरण शामिल हैं:
   &lt;/p&gt;
   &lt;ol&gt;
     &lt;li&gt;
-      &lt;strong&gt;Schnittstellenimplementierung:&lt;/strong&gt; Die Dienstanwendung leitet von &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; ab und implementiert die rein virtuellen Methoden:
+      &lt;strong&gt;इंटरफ़ेस कार्यान्वयन:&lt;/strong&gt; सेवा एप्लिकेशन &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; से व्युत्पन्न होता है और शुद्ध वर्चुअल विधियों को लागू करता है:
       &lt;ul&gt;
-        &lt;li&gt;Reguläre Methoden mit Rückgabewert implementieren die Signatur &lt;code&gt;virtual ara::core::Future&amp;lt;{&amp;lt;method-name&amp;gt;}Output&amp;gt; {&amp;lt;method-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.&lt;/li&gt;
-        &lt;li&gt;Einwegmethoden ohne Rückantwort implementieren &lt;code&gt;virtual void {&amp;lt;fnfmethod-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.&lt;/li&gt;
+        &lt;li&gt;रिटर्न मान वाली नियमित विधियाँ हस्ताक्षर &lt;code&gt;virtual ara::core::Future&amp;lt;{&amp;lt;method-name&amp;gt;}Output&amp;gt; {&amp;lt;method-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; को लागू करती हैं।&lt;/li&gt;
+        &lt;li&gt;बिना किसी प्रतिक्रिया वाली एकतरफ़ा विधियाँ &lt;code&gt;virtual void {&amp;lt;fnfmethod-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; को लागू करती हैं।&lt;/li&gt;
       &lt;/ul&gt;
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Instanziierung:&lt;/strong&gt; Die abgeleitete Skeleton-Klasse wird mit dem gewünschten &lt;code&gt;MethodCallProcessingMode&lt;/code&gt; konstruiert &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;.
+      &lt;strong&gt;इंस्टेंस निर्माण:&lt;/strong&gt; व्युत्पन्न Skeleton class का निर्माण वांछित &lt;code&gt;MethodCallProcessingMode&lt;/code&gt; के साथ किया जाता है &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;।
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Methodenausführung:&lt;/strong&gt; Beim Eintreffen von Anfragen ruft die Middleware die implementierte Methode auf &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
+      &lt;strong&gt;विधि निष्पादन:&lt;/strong&gt; अनुरोध प्राप्त होने पर, middleware लागू की गई विधि को कॉल करता है &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;।
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Ergebnisrückgabe:&lt;/strong&gt; Bei regulären Methoden liefert die Dienstanwendung ein &lt;code&gt;ara::core::Future&lt;/code&gt; mit dem erzeugten &lt;code&gt;Output&lt;/code&gt;-Objekt zurück &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, welches durch die Middleware serialisiert und als Antwortnachricht an den Client versendet wird. Bei Fire-and-Forget-Methoden erfolgt keinerlei Antwortübermittlung &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
+      &lt;strong&gt;परिणाम वापसी:&lt;/strong&gt; नियमित विधियों के लिए, सेवा एप्लिकेशन जनरेट किए गए &lt;code&gt;Output&lt;/code&gt; ऑब्जेक्ट के साथ एक &lt;code&gt;ara::core::Future&lt;/code&gt; लौटाता है &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, जिसे middleware द्वारा क्रमबद्ध किया जाता है और क्लाइंट को प्रतिक्रिया संदेश के रूप में भेजा जाता है। Fire-and-forget विधियों के मामले में, कोई भी प्रतिक्रिया प्रेषित नहीं की जाती है &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;।
     &lt;/li&gt;
   &lt;/ol&gt;
 
@@ -613,23 +611,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 [SWS_CM_00191]&lt;/title&gt;&lt;path d="M 40 258 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="273" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="273" font-size="11" font-style="italic" fill="#28251d"&gt;Reguläre Methode&lt;/text&gt;&lt;/g&gt;&lt;text x="240.0" y="298" text-anchor="middle" font-size="11" fill="#28251d"&gt;&amp;lt;method-name&amp;gt;(Argumente)&lt;/text&gt;&lt;line x1="345" y1="304" x2="135" y2="304" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Rückgabe ara::core::Future&amp;lt;Output&amp;gt;
 [SWS_CM_99556]&lt;/title&gt;&lt;text x="240.0" y="332" text-anchor="middle" font-size="11" fill="#28251d"&gt;Rückgabe &lt;a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html"&gt;ara::core::Future&lt;/a&gt;&amp;lt;Output&amp;gt;&lt;/text&gt;&lt;line x1="135" y1="338" x2="345" y2="338" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;text x="450.0" y="366" text-anchor="middle" font-size="11" fill="#28251d"&gt;Antwortnachricht senden&lt;/text&gt;&lt;line x1="345" y1="372" x2="555" y2="372" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Fire-and-Forget Methode
 [SWS_CM_90434]&lt;/title&gt;&lt;line x1="40" y1="394" x2="650" y2="394" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="409" font-size="11" font-style="italic" fill="#28251d"&gt;Fire-and-Forget Methode&lt;/text&gt;&lt;/g&gt;&lt;text x="240.0" y="437" text-anchor="middle" font-size="11" fill="#28251d"&gt;&amp;lt;fnfmethod-name&amp;gt;(Argumente)&lt;/text&gt;&lt;line x1="345" y1="443" x2="135" y2="443" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 135 457 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="472" text-anchor="start" font-size="11" fill="#28251d"&gt;Verarbeitung ohne Antwort&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Sequenzdiagramm: Typischer Ablauf der Methodenverarbeitung über das Skeleton. Quellen: &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]&lt;/p&gt;
+  &lt;p class="diagram-note"&gt;अनुक्रम आरेख: Skeleton के माध्यम से विधि प्रसंस्करण का विशिष्ट प्रवाह। स्रोत: &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+  &lt;h4&gt;त्रुटि परिदृश्य&lt;/h4&gt;
   &lt;p&gt;
-    Hinsichtlich des Fehlerverhaltens unterscheiden sich Methodenaufrufe grundlegend anhand ihrer Kommunikationssemantik:
+    त्रुटि व्यवहार के संबंध में, विधि कॉल अपने संचार सिमेंटिक्स के आधार पर मौलिक रूप से भिन्न होते हैं:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Reguläre Methoden:&lt;/strong&gt; Die Schnittstelle ist als &lt;code&gt;noexcept&lt;/code&gt; deklariert und erfordert Ausnahmesicherheit (&lt;code&gt;exception safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;. Scheitert eine Methodenverarbeitung, wird der Fehler nicht über C++-Exceptions gemeldet, sondern asynchron über das zurückgegebene &lt;code&gt;ara::core::Future&lt;/code&gt; transportiert. Im Fehlerfall enthält dieses entweder einen Fehlercode aus &lt;code&gt;ara::com::ComErrc&lt;/code&gt; oder einen domänenspezifischen Anwendungsfehler vom Typ &lt;code&gt;ApApplicationError&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
+      &lt;strong&gt;नियमित विधियाँ:&lt;/strong&gt; इंटरफ़ेस को &lt;code&gt;noexcept&lt;/code&gt; के रूप में घोषित किया गया है और इसके लिए exception safety (&lt;code&gt;exception safe&lt;/code&gt;) की आवश्यकता होती है &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;। यदि कोई विधि प्रसंस्करण विफल हो जाता है, तो त्रुटि की सूचना C++ exceptions के माध्यम से नहीं दी जाती है, बल्कि लौटाए गए &lt;code&gt;ara::core::Future&lt;/code&gt; के माध्यम से एसिंक्रोनस रूप से प्रेषित की जाती है। विफलता की स्थिति में, इसमें या तो &lt;code&gt;ara::com::ComErrc&lt;/code&gt; से एक त्रुटि कोड होता है या &lt;code&gt;ApApplicationError&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; प्रकार की एक डोमेन-विशिष्ट एप्लिकेशन त्रुटि होती है।
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Fire-and-Forget-Methoden:&lt;/strong&gt; Auch diese Methoden sind als &lt;code&gt;noexcept&lt;/code&gt; deklariert und müssen ausnahmesicher implementiert werden &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;. Da konstruktionsbedingt kein Rückkanal zum aufrufenden Client existiert, können weder Erfolgs- noch Fehlerinformationen übertragen werden. Tritt während der Bearbeitung ein Fehler auf, muss dieser intern innerhalb des Service-Providers behandelt werden (Interpretation: Lokale Protokollierung oder interne Kompensationsmaßnahmen sind für Fire-and-Forget-Methoden zwingend erforderlich, da keine Fehlerübertragung an den Client stattfindet).
+      &lt;strong&gt;Fire-and-Forget विधियाँ:&lt;/strong&gt; ये विधियाँ भी &lt;code&gt;noexcept&lt;/code&gt; के रूप में घोषित हैं और इन्हें exception-safe तरीके से लागू किया जाना चाहिए &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;। चूंकि डिज़ाइन के अनुसार कॉल करने वाले क्लाइंट के लिए कोई रिटर्न चैनल मौजूद नहीं है, इसलिए न तो सफलता और न ही त्रुटि की जानकारी प्रेषित की जा सकती है। यदि प्रसंस्करण के दौरान कोई त्रुटि होती है, तो इसे सेवा प्रदाता के भीतर आंतरिक रूप से संभाला जाना चाहिए (व्याख्या: Fire-and-forget विधियों के लिए स्थानीय लॉगिंग या आंतरिक क्षतिपूर्ति उपाय अनिवार्य हैं, क्योंकि क्लाइंट को कोई त्रुटि प्रेषण नहीं होता है)।
     &lt;/li&gt;
   &lt;/ul&gt;
 
   &lt;!-- annahmen: 1) Kontrollierte Beendigung vor Zerstörung – Begründung: Verhindert fehlerhafte Zugriffe bei noch offenen asynchronen Vorgängen. 2) Interne Fehlerbehandlung bei Fire-and-Forget – Begründung: Signatur besitzt void-Rückgabe und keinen Fehlerrückkanal an den Aufrufer. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde auf Basis der AUTOSAR Adaptive Platform Spezifikation für Release R25-11 erstellt.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;यह क्लास गाइड रिलीज़ R25-11 के लिए AUTOSAR Adaptive Platform विनिर्देश के आधार पर बनाया गया था।&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

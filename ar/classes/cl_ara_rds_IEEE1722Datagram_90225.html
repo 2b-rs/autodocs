@@ -19,52 +19,51 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>62b99d9b9f9b</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_rds_IEEE1722Datagram_90225/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ar/classes/cl_ara_rds_IEEE1722Datagram_90225/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_rds_IEEE1722Datagram_90225" data-view-mode="editor" title="فتح محرر التقييم وملف التدقيق" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ تقييم</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-  <h4>Kontext</h4>
+  <h4>السياق</h4>
   <p>
-    Die Klasse <code>ara::rds::IEEE1722Datagram</code> kapselt die Repräsentation von Datagrammen nach dem IEEE-1722-Standard innerhalb des Moduls für Rohdatenströme (<em>Raw Data Stream</em>, <code>rds</code>) der AUTOSAR Adaptive Platform. Das IEEE-1722-Protokoll (<em>Audio Video Transport Protocol</em>, AVTP) dient der zeitkritischen Übertragung von multimedialen Daten, Steuerinformationen und zeitgestempelten Datenströmen über Ethernet-Netzwerke im Fahrzeug.
+    تغلف الفئة <code>ara::rds::IEEE1722Datagram</code> تمثيل مخططات البيانات وفقًا لمعيار IEEE-1722 داخل وحدة تدفقات البيانات الخام (<em>Raw Data Stream</em>، <code>rds</code>) التابعة لـ AUTOSAR Adaptive Platform. يُستخدم بروتوكول IEEE-1722 (<em>Audio Video Transport Protocol</em>، AVTP) للنقل الحرج زمنيًا للبيانات متعددة الوسائط، ومعلومات التحكم، وتدفقات البيانات ذات الطوابع الزمنية عبر شبكات Ethernet في المركبة.
   </p>
   <p>
-    In diesem Umfeld übernimmt <code>ara::rds::IEEE1722Datagram</code> die Rolle eines standardisierten Transportcontainers für ankommende oder zu versendende AVTP-Nutzlasten. Da die zentralen Datenfelder als <code>protected</code> deklariert sind und die Klasse über einen virtuellen Destruktor <a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228">[SWS_RDS_90228]</a> verfügt, dürfte die Klasse primär als polymorphe Basisklasse für spezifischere Datagramm-Implementierungen oder modulintern verwaltete Speicherstrukturen dienen. Interaktionspartner sind hierbei einerseits die Stream-Schnittstellen des RDS-Subsystems, welche Netzwerkpakete empfangen oder einspeisen, und andererseits anwendungsspezifische Verarbeitungskomponenten, welche die AVTP-Paketdaten auswerten oder befüllen.
-  </p>
-
-  <h4>Lebenszyklus</h4>
-  <p>
-    Der Lebenszyklus eines <code>ara::rds::IEEE1722Datagram</code> wird maßgeblich durch das Besitzkonzept der gekapselten Nutzdaten bestimmt. Das Byte-Array für die Datagrammdaten wird intern über den Zeigertyp <code>std::unique_ptr&lt;ara::core::Byte[]&gt; data</code> gehalten <a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226">[SWS_RDS_90226]</a>. Dies verdeutlicht, dass die Instanz das alleinige Eigentumsrecht an dem zugeordneten Rohdatenpuffer besitzt.
-  </p>
-  <p>
-    Interpretation: Durch den Einsatz von <code>std::unique_ptr</code> dürfte die Klasse strikte Move-Semantik erzwingen und Kopieroperationen unterbinden, was für die ressourcenschonende und latenzarme Übertragung kontinuierlicher Datenströme ohne Speicherduplizierung essenziell ist. Die Länge des aktuell im Puffer enthaltenen Datenstroms wird parallel über das geschützte Feld <code>std::uint16_t stream_data_length</code> geführt <a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227">[SWS_RDS_90227]</a>.
-  </p>
-  <p>
-    Das Ende des Lebenszyklus wird durch den virtuellen Destruktor <code>~IEEE1722Datagram() noexcept</code> geregelt <a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228">[SWS_RDS_90228]</a>. Dessen virtuelle Deklaration stellt sicher, dass beim Löschen eines Datagramms über einen Basisklassenzeiger auch die Destruktoren etwaiger spezialisierter Unterklassen ordnungsgemäß durchlaufen werden. Beim Abbau der Instanz gibt der <code>std::unique_ptr</code> den allokierten Speicherbereich für die Rohdaten automatisch und ausnahmesicher frei. Hinsichtlich der Nebenläufigkeit ist zu beachten, dass eine Datagramm-Instanz aufgrund der exklusiven Zeigersemantik nicht ohne Synchronisation zwischen mehreren Ausführungskontexten geteilt werden sollte; typischerweise wird die Eigentümerschaft via Move an den nächsten Verarbeitungsschritt übergeben.
+    في هذا السياق، تتولى <code>ara::rds::IEEE1722Datagram</code> دور حاوية نقل قياسية لحمولات AVTP المفيدة القادمة أو المطلوب إرسالها. ونظرًا لأن حقول البيانات المركزية مصرح عنها كـ <code>protected</code> وتمتلك الفئة مدمرًا افتراضيًا <a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228">[SWS_RDS_90228]</a>، فمن المرجح أن تعمل الفئة أساسًا كفئة أساسية متعددة الأشكال (Polymorphic Base Class) لتنفيذات مخططات بيانات أكثر تخصصًا أو لهياكل ذاكرة مدارة داخليًا ضمن الوحدة. وتتمثل أطراف التفاعل هنا من ناحية في واجهات التدفق للنظام الفرعي RDS، والتي تستقبل حزم الشبكة أو تغذيها، ومن ناحية أخرى في مكونات المعالجة الخاصة بالتطبيق، والتي تقيم بيانات حزم AVTP أو تملؤها.
   </p>
 
-  <h4>Nutzungspfad</h4>
+  <h4>دورة الحياة</h4>
   <p>
-    Da im Spezifikationsauszug keine öffentlichen Fabrikfunktionen oder parametrisierten Standardkonstruktoren ausgewiesen sind, dürfte die Instanziierung und Initialisierung typischerweise in spezialisierten Unterklassen oder durch treiberinterne Factory-Mechanismen des RDS-Stacks erfolgen.
+    تتحدد دورة حياة <code>ara::rds::IEEE1722Datagram</code> بشكل حاسم بواسطة مفهوم ملكية البيانات المفيدة المغلفة. ويتم الاحتفاظ بمصفوفة البايتات لبيانات مخطط البيانات داخليًا عبر نوع المؤشر <code>std::unique_ptr&lt;ara::core::Byte[]&gt; data</code> <a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226">[SWS_RDS_90226]</a>. ويوضح هذا أن المثيل يمتلك حق الملكية الحصري للمخزن المؤقت للبيانات الخام المخصص.
   </p>
   <p>
-    Ein typischer Verarbeitungsablauf gliedert sich in folgende Schritte:
+    تفسير: من خلال استخدام <code>std::unique_ptr</code>، يُرجح أن تفرض الفئة دلالات نقل (Move Semantics) صارمة وتمنع عمليات النسخ، وهو أمر أساسي للنقل الاقتصادي في استخدام الموارد والمنخفض في زمن الوصول لتدفقات البيانات المستمرة دون تكرار للذاكرة. ويتم تتبع طول تدفق البيانات الموجود حاليًا في المخزن المؤقت بالتوازي عبر الحقل المحمي <code>std::uint16_t stream_data_length</code> <a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227">[SWS_RDS_90227]</a>.
+  </p>
+  <p>
+    يتم تنظيم نهاية دورة الحياة بواسطة المدمر الافتراضي <code>~IEEE1722Datagram() noexcept</code> <a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228">[SWS_RDS_90228]</a>. ويضمن تصريحه الافتراضي أنه عند حذف مخطط بيانات عبر مؤشر فئة أساسية، يتم أيضًا تنفيذ مدمرات أي فئات فرعية متخصصة بشكل صحيح. وعند تفكيك المثيل، يحرر <code>std::unique_ptr</code> نطاق الذاكرة المخصص للبيانات الخام تلقائيًا وبأمان من الاستثناءات. وفيما يتعلق بالتزامن، تجدر الإشارة إلى أنه لا ينبغي مشاركة مثيل مخطط البيانات بين سياقات تنفيذ متعددة دون مزامنة نظرًا لدلالات المؤشر الحصرية؛ وعادةً ما يتم نقل الملكية عبر Move إلى خطوة المعالجة التالية.
+  </p>
+
+  <h4>مسار الاستخدام</h4>
+  <p>
+    نظرًا لعدم تحديد دوال مصنع عامة أو دوال بناء قياسية ذات معاملات في مقتطف المواصفات، يُرجح أن يتم إنشاء المثيل والتهيئة عادةً في فئات فرعية متخصصة أو من خلال آليات مصنع داخلية لبرنامج التشغيل خاصة بمكدس RDS.
+  </p>
+  <p>
+    ينقسم مسار المعالجة النموذجي إلى الخطوات التالية:
   </p>
   <ul>
     <li>
-      <strong>Allokation und Pufferbindung:</strong> Eine abgeleitete Klasse oder der RDS-Stack alloziert einen Rohdatenpuffer passender Größe und übergibt die Kontrolle an das Datenelement <code>data</code> <a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226">[SWS_RDS_90226]</a>.
+      <strong>التخصيص وربط المخزن المؤقت:</strong> تخصص فئة مشتقة أو مكدس RDS مخزنًا مؤقتًا للبيانات الخام بحجم مناسب وتسلم التحكم إلى عنصر البيانات <code>data</code> <a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226">[SWS_RDS_90226]</a>.
     </li>
     <li>
-      <strong>Längeninitialisierung:</strong> Die Nutzdatenlänge des Streams wird über das geschützte Attribut <code>stream_data_length</code> hinterlegt <a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227">[SWS_RDS_90227]</a>, um die exakte Grenze der im Puffer gültigen IEEE-1722-Bytes festzuhalten.
+      <strong>تهيئة الطول:</strong> يتم تخزين طول البيانات المفيدة للتدفق عبر السمة المحمية <code>stream_data_length</code> <a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227">[SWS_RDS_90227]</a>، لتسجيل الحد الدقيق لبايتات IEEE-1722 الصالحة في المخزن المؤقت.
     </li>
     <li>
-      <strong>Konsum oder Übertragung:</strong> Das Datagramm wird an das verarbeitende System übergeben. Die Auswertung der Daten erfolgt entsprechend den IEEE-1722-Headervorgaben.
+      <strong>الاستهلاك أو النقل:</strong> يتم تسليم مخطط البيانات إلى النظام المعالج. ويتم تقييم البيانات وفقًا لمحددات ترويسة IEEE-1722.
     </li>
     <li>
-      <strong>Destruktion:</strong> Nach Abschluss der Verarbeitung wird das Datagramm freigegeben, wobei der virtuelle Destruktor <code>~IEEE1722Datagram()</code> aufgerufen wird <a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228">[SWS_RDS_90228]</a> und die Ressourcenfreigabe ohne Auslösen von Exceptions garantiert.
+      <strong>التدمير:</strong> بعد اكتمال المعالجة، يتم تحرير مخطط البيانات، حيث يُستدعى المدمر الافتراضي <code>~IEEE1722Datagram()</code> <a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228">[SWS_RDS_90228]</a> مع ضمان تحرير الموارد دون إطلاق استثناءات.
     </li>
   </ul>
   <!-- annahmen: 1) Da data und stream_data_length geschützt sind und der Destruktor virtuell ist, dürfte die Klasse als ableitbare Basisklasse konzipiert sein. – Begründung: Schutzstufe protected und virtual Destruktor erfordern Unterklassen für den Datenzugriff. 2) Durch std::unique_ptr für data dürfte die Klasse Move-Semantik nutzen und Kopieroperationen ausschließen. – Begründung: Standardsemantik von std::unique_ptr erzwingt exklusiven Besitz. 3) Die Initialisierung der Datenfelder dürfte durch Subklassenkonstruktoren oder treiberinterne Fabriken erfolgen. – Begründung: Keine öffentlichen Konstruktoren im Spezifikationsauszug enthalten. -->
-  <p class="ai-note">Dieser Leitfaden basiert ausschließlich auf der AUTOSAR-Spezifikation für das Modul Raw Data Stream (RDS) in Release R25-11.</p>
+  <p class="ai-note">يعتمد هذا الدليل حصريًا على مواصفات AUTOSAR لوحدة Raw Data Stream (RDS) في الإصدار R25-11.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_rds_IEEE1722Datagram_90225" title="مناقشة مع الذكاء الاصطناعي">💬 مناقشة مع الذكاء الاصطناعي</button>
@@ -473,49 +472,48 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="62b99d9b9f9b2195118aeef1e2c3dfd6470ea3163f06d214e1301fdbb1dcc37d" data-trace-output="f16e8e4e795504f5dd433d599f6d86f87addb869e3873a053863c43109efd73c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-  &lt;h4&gt;Kontext&lt;/h4&gt;
+  &lt;h4&gt;السياق&lt;/h4&gt;
   &lt;p&gt;
-    Die Klasse &lt;code&gt;ara::rds::IEEE1722Datagram&lt;/code&gt; kapselt die Repräsentation von Datagrammen nach dem IEEE-1722-Standard innerhalb des Moduls für Rohdatenströme (&lt;em&gt;Raw Data Stream&lt;/em&gt;, &lt;code&gt;rds&lt;/code&gt;) der AUTOSAR Adaptive Platform. Das IEEE-1722-Protokoll (&lt;em&gt;Audio Video Transport Protocol&lt;/em&gt;, AVTP) dient der zeitkritischen Übertragung von multimedialen Daten, Steuerinformationen und zeitgestempelten Datenströmen über Ethernet-Netzwerke im Fahrzeug.
+    تغلف الفئة &lt;code&gt;ara::rds::IEEE1722Datagram&lt;/code&gt; تمثيل مخططات البيانات وفقًا لمعيار IEEE-1722 داخل وحدة تدفقات البيانات الخام (&lt;em&gt;Raw Data Stream&lt;/em&gt;، &lt;code&gt;rds&lt;/code&gt;) التابعة لـ AUTOSAR Adaptive Platform. يُستخدم بروتوكول IEEE-1722 (&lt;em&gt;Audio Video Transport Protocol&lt;/em&gt;، AVTP) للنقل الحرج زمنيًا للبيانات متعددة الوسائط، ومعلومات التحكم، وتدفقات البيانات ذات الطوابع الزمنية عبر شبكات Ethernet في المركبة.
   &lt;/p&gt;
   &lt;p&gt;
-    In diesem Umfeld übernimmt &lt;code&gt;ara::rds::IEEE1722Datagram&lt;/code&gt; die Rolle eines standardisierten Transportcontainers für ankommende oder zu versendende AVTP-Nutzlasten. Da die zentralen Datenfelder als &lt;code&gt;protected&lt;/code&gt; deklariert sind und die Klasse über einen virtuellen Destruktor &lt;a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228"&gt;[SWS_RDS_90228]&lt;/a&gt; verfügt, dürfte die Klasse primär als polymorphe Basisklasse für spezifischere Datagramm-Implementierungen oder modulintern verwaltete Speicherstrukturen dienen. Interaktionspartner sind hierbei einerseits die Stream-Schnittstellen des RDS-Subsystems, welche Netzwerkpakete empfangen oder einspeisen, und andererseits anwendungsspezifische Verarbeitungskomponenten, welche die AVTP-Paketdaten auswerten oder befüllen.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-  &lt;p&gt;
-    Der Lebenszyklus eines &lt;code&gt;ara::rds::IEEE1722Datagram&lt;/code&gt; wird maßgeblich durch das Besitzkonzept der gekapselten Nutzdaten bestimmt. Das Byte-Array für die Datagrammdaten wird intern über den Zeigertyp &lt;code&gt;std::unique_ptr&amp;lt;ara::core::Byte[]&amp;gt; data&lt;/code&gt; gehalten &lt;a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226"&gt;[SWS_RDS_90226]&lt;/a&gt;. Dies verdeutlicht, dass die Instanz das alleinige Eigentumsrecht an dem zugeordneten Rohdatenpuffer besitzt.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Interpretation: Durch den Einsatz von &lt;code&gt;std::unique_ptr&lt;/code&gt; dürfte die Klasse strikte Move-Semantik erzwingen und Kopieroperationen unterbinden, was für die ressourcenschonende und latenzarme Übertragung kontinuierlicher Datenströme ohne Speicherduplizierung essenziell ist. Die Länge des aktuell im Puffer enthaltenen Datenstroms wird parallel über das geschützte Feld &lt;code&gt;std::uint16_t stream_data_length&lt;/code&gt; geführt &lt;a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227"&gt;[SWS_RDS_90227]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Das Ende des Lebenszyklus wird durch den virtuellen Destruktor &lt;code&gt;~IEEE1722Datagram() noexcept&lt;/code&gt; geregelt &lt;a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228"&gt;[SWS_RDS_90228]&lt;/a&gt;. Dessen virtuelle Deklaration stellt sicher, dass beim Löschen eines Datagramms über einen Basisklassenzeiger auch die Destruktoren etwaiger spezialisierter Unterklassen ordnungsgemäß durchlaufen werden. Beim Abbau der Instanz gibt der &lt;code&gt;std::unique_ptr&lt;/code&gt; den allokierten Speicherbereich für die Rohdaten automatisch und ausnahmesicher frei. Hinsichtlich der Nebenläufigkeit ist zu beachten, dass eine Datagramm-Instanz aufgrund der exklusiven Zeigersemantik nicht ohne Synchronisation zwischen mehreren Ausführungskontexten geteilt werden sollte; typischerweise wird die Eigentümerschaft via Move an den nächsten Verarbeitungsschritt übergeben.
+    في هذا السياق، تتولى &lt;code&gt;ara::rds::IEEE1722Datagram&lt;/code&gt; دور حاوية نقل قياسية لحمولات AVTP المفيدة القادمة أو المطلوب إرسالها. ونظرًا لأن حقول البيانات المركزية مصرح عنها كـ &lt;code&gt;protected&lt;/code&gt; وتمتلك الفئة مدمرًا افتراضيًا &lt;a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228"&gt;[SWS_RDS_90228]&lt;/a&gt;، فمن المرجح أن تعمل الفئة أساسًا كفئة أساسية متعددة الأشكال (Polymorphic Base Class) لتنفيذات مخططات بيانات أكثر تخصصًا أو لهياكل ذاكرة مدارة داخليًا ضمن الوحدة. وتتمثل أطراف التفاعل هنا من ناحية في واجهات التدفق للنظام الفرعي RDS، والتي تستقبل حزم الشبكة أو تغذيها، ومن ناحية أخرى في مكونات المعالجة الخاصة بالتطبيق، والتي تقيم بيانات حزم AVTP أو تملؤها.
   &lt;/p&gt;
 
-  &lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+  &lt;h4&gt;دورة الحياة&lt;/h4&gt;
   &lt;p&gt;
-    Da im Spezifikationsauszug keine öffentlichen Fabrikfunktionen oder parametrisierten Standardkonstruktoren ausgewiesen sind, dürfte die Instanziierung und Initialisierung typischerweise in spezialisierten Unterklassen oder durch treiberinterne Factory-Mechanismen des RDS-Stacks erfolgen.
+    تتحدد دورة حياة &lt;code&gt;ara::rds::IEEE1722Datagram&lt;/code&gt; بشكل حاسم بواسطة مفهوم ملكية البيانات المفيدة المغلفة. ويتم الاحتفاظ بمصفوفة البايتات لبيانات مخطط البيانات داخليًا عبر نوع المؤشر &lt;code&gt;std::unique_ptr&amp;lt;ara::core::Byte[]&amp;gt; data&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226"&gt;[SWS_RDS_90226]&lt;/a&gt;. ويوضح هذا أن المثيل يمتلك حق الملكية الحصري للمخزن المؤقت للبيانات الخام المخصص.
   &lt;/p&gt;
   &lt;p&gt;
-    Ein typischer Verarbeitungsablauf gliedert sich in folgende Schritte:
+    تفسير: من خلال استخدام &lt;code&gt;std::unique_ptr&lt;/code&gt;، يُرجح أن تفرض الفئة دلالات نقل (Move Semantics) صارمة وتمنع عمليات النسخ، وهو أمر أساسي للنقل الاقتصادي في استخدام الموارد والمنخفض في زمن الوصول لتدفقات البيانات المستمرة دون تكرار للذاكرة. ويتم تتبع طول تدفق البيانات الموجود حاليًا في المخزن المؤقت بالتوازي عبر الحقل المحمي &lt;code&gt;std::uint16_t stream_data_length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227"&gt;[SWS_RDS_90227]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p&gt;
+    يتم تنظيم نهاية دورة الحياة بواسطة المدمر الافتراضي &lt;code&gt;~IEEE1722Datagram() noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228"&gt;[SWS_RDS_90228]&lt;/a&gt;. ويضمن تصريحه الافتراضي أنه عند حذف مخطط بيانات عبر مؤشر فئة أساسية، يتم أيضًا تنفيذ مدمرات أي فئات فرعية متخصصة بشكل صحيح. وعند تفكيك المثيل، يحرر &lt;code&gt;std::unique_ptr&lt;/code&gt; نطاق الذاكرة المخصص للبيانات الخام تلقائيًا وبأمان من الاستثناءات. وفيما يتعلق بالتزامن، تجدر الإشارة إلى أنه لا ينبغي مشاركة مثيل مخطط البيانات بين سياقات تنفيذ متعددة دون مزامنة نظرًا لدلالات المؤشر الحصرية؛ وعادةً ما يتم نقل الملكية عبر Move إلى خطوة المعالجة التالية.
+  &lt;/p&gt;
+
+  &lt;h4&gt;مسار الاستخدام&lt;/h4&gt;
+  &lt;p&gt;
+    نظرًا لعدم تحديد دوال مصنع عامة أو دوال بناء قياسية ذات معاملات في مقتطف المواصفات، يُرجح أن يتم إنشاء المثيل والتهيئة عادةً في فئات فرعية متخصصة أو من خلال آليات مصنع داخلية لبرنامج التشغيل خاصة بمكدس RDS.
+  &lt;/p&gt;
+  &lt;p&gt;
+    ينقسم مسار المعالجة النموذجي إلى الخطوات التالية:
   &lt;/p&gt;
   &lt;ul&gt;
     &lt;li&gt;
-      &lt;strong&gt;Allokation und Pufferbindung:&lt;/strong&gt; Eine abgeleitete Klasse oder der RDS-Stack alloziert einen Rohdatenpuffer passender Größe und übergibt die Kontrolle an das Datenelement &lt;code&gt;data&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226"&gt;[SWS_RDS_90226]&lt;/a&gt;.
+      &lt;strong&gt;التخصيص وربط المخزن المؤقت:&lt;/strong&gt; تخصص فئة مشتقة أو مكدس RDS مخزنًا مؤقتًا للبيانات الخام بحجم مناسب وتسلم التحكم إلى عنصر البيانات &lt;code&gt;data&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90226" href="../spec/record.html?id=SWS_RDS_90226"&gt;[SWS_RDS_90226]&lt;/a&gt;.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Längeninitialisierung:&lt;/strong&gt; Die Nutzdatenlänge des Streams wird über das geschützte Attribut &lt;code&gt;stream_data_length&lt;/code&gt; hinterlegt &lt;a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227"&gt;[SWS_RDS_90227]&lt;/a&gt;, um die exakte Grenze der im Puffer gültigen IEEE-1722-Bytes festzuhalten.
+      &lt;strong&gt;تهيئة الطول:&lt;/strong&gt; يتم تخزين طول البيانات المفيدة للتدفق عبر السمة المحمية &lt;code&gt;stream_data_length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90227" href="../spec/record.html?id=SWS_RDS_90227"&gt;[SWS_RDS_90227]&lt;/a&gt;، لتسجيل الحد الدقيق لبايتات IEEE-1722 الصالحة في المخزن المؤقت.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Konsum oder Übertragung:&lt;/strong&gt; Das Datagramm wird an das verarbeitende System übergeben. Die Auswertung der Daten erfolgt entsprechend den IEEE-1722-Headervorgaben.
+      &lt;strong&gt;الاستهلاك أو النقل:&lt;/strong&gt; يتم تسليم مخطط البيانات إلى النظام المعالج. ويتم تقييم البيانات وفقًا لمحددات ترويسة IEEE-1722.
     &lt;/li&gt;
     &lt;li&gt;
-      &lt;strong&gt;Destruktion:&lt;/strong&gt; Nach Abschluss der Verarbeitung wird das Datagramm freigegeben, wobei der virtuelle Destruktor &lt;code&gt;~IEEE1722Datagram()&lt;/code&gt; aufgerufen wird &lt;a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228"&gt;[SWS_RDS_90228]&lt;/a&gt; und die Ressourcenfreigabe ohne Auslösen von Exceptions garantiert.
+      &lt;strong&gt;التدمير:&lt;/strong&gt; بعد اكتمال المعالجة، يتم تحرير مخطط البيانات، حيث يُستدعى المدمر الافتراضي &lt;code&gt;~IEEE1722Datagram()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90228" href="../spec/record.html?id=SWS_RDS_90228"&gt;[SWS_RDS_90228]&lt;/a&gt; مع ضمان تحرير الموارد دون إطلاق استثناءات.
     &lt;/li&gt;
   &lt;/ul&gt;
   &lt;!-- annahmen: 1) Da data und stream_data_length geschützt sind und der Destruktor virtuell ist, dürfte die Klasse als ableitbare Basisklasse konzipiert sein. – Begründung: Schutzstufe protected und virtual Destruktor erfordern Unterklassen für den Datenzugriff. 2) Durch std::unique_ptr für data dürfte die Klasse Move-Semantik nutzen und Kopieroperationen ausschließen. – Begründung: Standardsemantik von std::unique_ptr erzwingt exklusiven Besitz. 3) Die Initialisierung der Datenfelder dürfte durch Subklassenkonstruktoren oder treiberinterne Fabriken erfolgen. – Begründung: Keine öffentlichen Konstruktoren im Spezifikationsauszug enthalten. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der AUTOSAR-Spezifikation für das Modul Raw Data Stream (RDS) in Release R25-11.&lt;/p&gt;
+  &lt;p class="ai-note"&gt;يعتمد هذا الدليل حصريًا على مواصفات AUTOSAR لوحدة Raw Data Stream (RDS) في الإصدار R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>

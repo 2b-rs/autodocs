@@ -24,61 +24,60 @@
   <span class="ai-badge-label">AI-GENERATED</span>
   <span class="ai-review-state">unreviewed</span>
   <span class="ai-trace-meta">Model: <code>gemini-3.8-flash-medium</code> · Effort: <code>medium</code> · Temperature: nicht steuerbar · Prompt: <code>7a91de511d59</code></span>
-  <a class="btn-trace-inspect" href="../../ai/traces/classes/cl_ara_core_in_place_t_343915/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
+  <a class="btn-trace-inspect" href="../../ai/traces/ko/classes/cl_ara_core_in_place_t_343915/anchor_r25_11.json" target="_blank" rel="noopener" title="Provenance: profile, prompt hash, output hash, runs, review">Provenance</a>
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-cl_ara_core_in_place_t_343915" data-view-mode="editor" title="큐레이션 편집기 및 감사 서류 열기" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 큐레이션</button>
 </div>
-<div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;">ℹ️ <strong>Editorial notice:</strong> This technical guide is currently undergoing translation. The original reference version is shown below.</div>
-<h4>Kontext</h4>
+<h4>컨텍스트</h4>
 <p>
-Die Struktur <code>ara::core::in_place_t</code> fungiert im Modul <code>core</code> der AUTOSAR Adaptive Platform als sogenannter Tag-Typ (Disambiguierungs-Typ). Ihre zentrale Aufgabe besteht darin, Operationen zu kennzeichnen, die direkt vor Ort („in-place“) ausgeführt werden sollen. Konkret dient eine Instanz dieses Typs als Signalgeber bei der Übergabe an ausgewählte Konstruktoren von <code>ara::core::Optional</code>. Dadurch wird signalisiert, dass der im Container gehaltene Zieltyp direkt im Speicherbereich des Containers konstruiert werden soll, ohne dass dafür temporäre Objekte erzeugt, kopiert oder verschoben werden müssen.
+구조체 <code>ara::core::in_place_t</code>은 AUTOSAR Adaptive Platform의 모듈 <code>core</code>에서 이른바 태그 유형(명확화 유형)으로 작동합니다. 이것의 핵심 역할은 직접 그 자리에서("in-place") 실행되어야 하는 작업을 표시하는 것입니다. 구체적으로 이 유형의 인스턴스는 <code>ara::core::Optional</code>의 선택된 생성자로 전달될 때 신호 전달자 역할을 합니다. 이를 통해 컨테이너에 유지되는 대상 유형이 임시 객체를 생성, 복사 또는 이동할 필요 없이 컨테이너의 메모리 영역에 직접 생성되어야 함을 나타냅니다.
 </p>
 <p>
-In modernen C++-Architekturen der funktionalen Sicherheit und Ressourceneffizienz spielen In-Place-Mechanismen eine wesentliche Rolle. Sie erlauben die Instanziierung von Typen, die weder kopierbar noch verschiebbar sind, oder deren Kopiervorgang aufgrund dynamischer Allokationen oder großer Datenstrukturen vermieden werden soll. Die Struktur <code>ara::core::in_place_t</code> interagiert in diesem Kontext primär mit <code>ara::core::Optional</code> und dem Anwendungs-Code, der die Objekterzeugung steuert.
-</p>
-
-<h4>Lebenszyklus</h4>
-<p>
-Der Lebenszyklus von <code>ara::core::in_place_t</code> ist extrem leichtgewichtig. Die Struktur wird über den Header <code>#include "ara/core/utility.h"</code> bereitgestellt und definiert einen expliziten Standardkonstruktor:
-</p>
-<p>
-Gemäß <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> ist der Default-Konstruktor als <code>explicit in_place_t() noexcept = default;</code> deklariert. Da es sich um eine leere Struktur handelt, umfasst der Lebenszyklus keine komplexen Zustandsübergänge, Allokationen oder Besitzverhältnisse.
-</p>
-<p>
-Interpretation: Als reiner Tag-Typ besitzt <code>ara::core::in_place_t</code> keinen internen Zustand, sodass Instanzen beliebig nebenläufig erzeugt, kopiert oder als temporäre Werte an Funktionen übergeben werden können, ohne dass Synchronisationsmechanismen erforderlich wären. Typischerweise entsteht eine Instanz nur als temporäres Übergangsobjekt im Aufrufkontext eines Zielkonstruktors und wird unmittelbar nach Abschluss des Ausdrucks wieder zerstört.
+기능 안전 및 리소스 효율성을 중시하는 최신 C++ 아키텍처에서 인플레이스 메커니즘은 필수적인 역할을 수행합니다. 이는 복사나 이동이 불가능한 유형이나 동적 할당 또는 대규모 데이터 구조로 인해 복사 작업을 피해야 하는 유형의 인스턴스화를 허용합니다. 이 맥락에서 구조체 <code>ara::core::in_place_t</code>은 주로 <code>ara::core::Optional</code> 및 객체 생성을 제어하는 애플리케이션 코드와 상호 작용합니다.
 </p>
 
-<h4>Nutzungspfad</h4>
+<h4>수명 주기</h4>
 <p>
-Der typische Nutzungspfad von <code>ara::core::in_place_t</code> gliedert sich in folgende Schritte:
+<code>ara::core::in_place_t</code>의 라이프사이클은 극도로 경량입니다. 이 구조체는 헤더 <code>#include "ara/core/utility.h"</code>을 통해 제공되며 명시적 기본 생성자를 정의합니다:
+</p>
+<p>
+<a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>에 따라 기본 생성자는 <code>explicit in_place_t() noexcept = default;</code>(으)로 선언됩니다. 빈 구조체이므로 라이프사이클에는 복잡한 상태 전이, 할당 또는 소유권 관계가 포함되지 않습니다.
+</p>
+<p>
+해석: 순수 태그 유형인 <code>ara::core::in_place_t</code>은 내부 상태를 갖지 않으므로, 동기화 메커니즘 없이도 인스턴스를 임의로 동시에 생성, 복사하거나 함수에 임시 값으로 전달할 수 있습니다. 일반적으로 인스턴스는 대상 생성자의 호출 컨텍스트에서 임시 전이 객체로만 생성되며 표현식이 완료된 직후 다시 소멸됩니다.
+</p>
+
+<h4>사용 경로</h4>
+<p>
+<code>ara::core::in_place_t</code>의 일반적인 사용 경로는 다음 단계로 구분됩니다:
 </p>
 <ol>
 <li>
-<strong>Einbinden der Header-Datei:</strong> Die Bereitstellung des Typs erfolgt über das Einbinden von <code>#include "ara/core/utility.h"</code> gemäß <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>.
+<strong>헤더 파일 포함:</strong> 유형 제공은 <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>에 따른 <code>#include "ara/core/utility.h"</code>의 포함을 통해 이루어집니다.
 </li>
 <li>
-<strong>Instanziierung des Tag-Objekts:</strong> Zur Initialisierung wird eine Instanz von <code>ara::core::in_place_t</code> erzeugt. Aufgrund des expliziten Konstruktors nach <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> erfolgt dies üblicherweise durch direkte Wertinitialisierung (beispielsweise <code>ara::core::in_place_t{}</code>).
+<strong>태그 객체 인스턴스화:</strong> 초기화를 위해 <code>ara::core::in_place_t</code>의 인스턴스가 생성됩니다. <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>에 따른 명시적 생성자로 인해 이는 일반적으로 직접 값 초기화(예: <code>ara::core::in_place_t{}</code>)를 통해 수행됩니다.
 </li>
 <li>
-<strong>Übergabe an den Container-Konstruktor:</strong> Die Instanz wird als erstes Argument an einen dafür vorgesehenen Konstruktor von <code>ara::core::Optional</code> übergeben, gefolgt von den Konstruktorargumenten des einzubettenden Nutztyps.
+<strong>컨테이너 생성자로 전달:</strong> 인스턴스는 <code>ara::core::Optional</code>의 지정된 생성자에 첫 번째 인수로 전달되며, 그 뒤에 임베딩할 사용 유형의 생성자 인수가 이어집니다.
 </li>
 <li>
-<strong>Direkte Konstruktion im Zielspeicher:</strong> <code>ara::core::Optional</code> wertet den Tag aus und leitet die nachfolgenden Argumente an den Konstruktor des gekapselten Werts weiter. Das Nutzwertobjekt wird direkt im internen Speicher von <code>ara::core::Optional</code> erzeugt, ohne dass Kopier- oder Verschiebeoperationen stattfinden.
+<strong>대상 메모리에 직접 생성:</strong> <code>ara::core::Optional</code>은 태그를 평가하고 후속 인수를 캡슐화된 값의 생성자로 전달합니다. 유효 값 객체는 복사 또는 이동 작업 없이 <code>ara::core::Optional</code>의 내부 메모리에 직접 생성됩니다.
 </li>
 </ol>
 
-<h4>Fehlerszenarien</h4>
+<h4>오류 시나리오</h4>
 <p>
-Für die Erzeugung von <code>ara::core::in_place_t</code> sind keine Fehlerszenarien vorgesehen. Der Standardkonstruktor ist gemäß <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> mit <code>noexcept</code> ausgezeichnet und gilt als ausnahmesicher („exception safe“). Eine Fehlbedienung bei der Objekterzeugung von <code>in_place_t</code> selbst führt nicht zu Laufzeitfehlern, sondern wird durch das Typsystem zur Übersetzungszeit abgefangen.
+<code>ara::core::in_place_t</code>의 생성에 대해서는 어떠한 오류 시나리오도 예정되어 있지 않습니다. 기본 생성자는 <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>에 따라 <code>noexcept</code>(으)로 지정되어 있으며 예외에 안전한("exception safe") 것으로 간주됩니다. <code>in_place_t</code> 자체의 객체 생성 시 오작동은 런타임 오류로 이어지지 않고 컴파일 시점에 타입 시스템에 의해 포착됩니다.
 </p>
 <p>
-Interpretation: Durch die Kennzeichnung des Konstruktors mit <code>explicit</code> nach <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a> dürfte eine unbeabsichtigte implizite Typumwandlung aus leeren Initialisierungslisten (wie <code>{}</code>) verhindert werden. Aufrufer müssen die Instanziierung bewusst und typgenau formulieren, wodurch Mehrdeutigkeiten bei überladenen Konstruktoren von <code>ara::core::Optional</code> vermieden werden. Sollte bei der In-Place-Konstruktion des im Container gehaltenen Zielobjekts eine Ausnahme ausgelöst werden, geht diese nicht von <code>ara::core::in_place_t</code> aus, sondern unterliegt der Ausnahmesicherheit des Konstruktors des Nutzwertes.
+해석: <a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012">[SWS_CORE_04012]</a>에 따라 생성자를 <code>explicit</code>(으)로 표시함으로써 빈 초기화 목록(예: <code>{}</code>)으로부터의 의도치 않은 암시적 형 변환이 방지될 것으로 보입니다. 호출자는 인스턴스화를 명시적이고 유형에 맞게 작성해야 하므로 <code>ara::core::Optional</code>의 오버로드된 생성자에서 모호성이 방지됩니다. 컨테이너에 유지되는 대상 객체의 인플레이스 생성 중에 예외가 발생하는 경우, 이는 <code>ara::core::in_place_t</code>에서 기인한 것이 아니며 유효 값 생성자의 예외 안전성을 따릅니다.
 </p>
 
 <!-- annahmen:
 1) Interpretation: Als reiner Tag-Typ besitzt ara::core::in_place_t keinen internen Zustand und erfordert keine Synchronisation bei nebenläufigem Zugriff. – Begründung: Der Payload spezifiziert eine leere struct ohne Datenmitglieder und mit trivialem Default-Konstruktor.
 2) Interpretation: Das Schlüsselwort explicit am Default-Konstruktor dürfte implizite Konvertierungen aus leeren Initialisierungslisten {} unterbinden und so Überladungskonflikte bei ara::core::Optional verhindern. – Begründung: SWS_CORE_04012 deklariert explicit in_place_t() noexcept = default, was in modernem C++ typischerweise zur Vermeidung unabsichtlicher impliziter Tag-Konstruktionen dient.
 -->
-<p class="ai-note">Dieser Leitfaden basiert auf den Anforderungen der AUTOSAR-Adaptive-Spezifikation R25-11. Alle normativen Festlegungen zu Signaturen, Header-Zuordnungen und Ausnahmeverhalten stammen aus den referenzierten SWS-Einträgen.</p>
+<p class="ai-note">본 가이드는 AUTOSAR Adaptive 사양 R25-11의 요구사항을 기반으로 합니다. 서명, 헤더 할당 및 예외 동작에 대한 모든 규범적 정의는 참조된 SWS 항목에서 비롯됩니다.</p>
 
 <div class="ai-commentary-actions">
   <button type="button" class="btn-discuss-ai" data-open-discuss="ai-guide-cl_ara_core_in_place_t_343915" title="AI와 토론">💬 AI와 토론</button>
@@ -386,58 +385,57 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
           <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="7a91de511d596814af262f9d193757974c271a61a3fcfa14a77f522a0dfb2edf" data-trace-output="1f13ee716fb9698d783935be30fa5295147d8692643d1024aa20200dbc46278e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
 
-&lt;div class="ai-lang-notice" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; margin:8px 0 12px 0; font-size:0.85rem;"&gt;ℹ️ &lt;strong&gt;Editorial notice:&lt;/strong&gt; This technical guide is currently undergoing translation. The original reference version is shown below.&lt;/div&gt;
-&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;h4&gt;컨텍스트&lt;/h4&gt;
 &lt;p&gt;
-Die Struktur &lt;code&gt;ara::core::in_place_t&lt;/code&gt; fungiert im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform als sogenannter Tag-Typ (Disambiguierungs-Typ). Ihre zentrale Aufgabe besteht darin, Operationen zu kennzeichnen, die direkt vor Ort („in-place“) ausgeführt werden sollen. Konkret dient eine Instanz dieses Typs als Signalgeber bei der Übergabe an ausgewählte Konstruktoren von &lt;code&gt;ara::core::Optional&lt;/code&gt;. Dadurch wird signalisiert, dass der im Container gehaltene Zieltyp direkt im Speicherbereich des Containers konstruiert werden soll, ohne dass dafür temporäre Objekte erzeugt, kopiert oder verschoben werden müssen.
+구조체 &lt;code&gt;ara::core::in_place_t&lt;/code&gt;은 AUTOSAR Adaptive Platform의 모듈 &lt;code&gt;core&lt;/code&gt;에서 이른바 태그 유형(명확화 유형)으로 작동합니다. 이것의 핵심 역할은 직접 그 자리에서("in-place") 실행되어야 하는 작업을 표시하는 것입니다. 구체적으로 이 유형의 인스턴스는 &lt;code&gt;ara::core::Optional&lt;/code&gt;의 선택된 생성자로 전달될 때 신호 전달자 역할을 합니다. 이를 통해 컨테이너에 유지되는 대상 유형이 임시 객체를 생성, 복사 또는 이동할 필요 없이 컨테이너의 메모리 영역에 직접 생성되어야 함을 나타냅니다.
 &lt;/p&gt;
 &lt;p&gt;
-In modernen C++-Architekturen der funktionalen Sicherheit und Ressourceneffizienz spielen In-Place-Mechanismen eine wesentliche Rolle. Sie erlauben die Instanziierung von Typen, die weder kopierbar noch verschiebbar sind, oder deren Kopiervorgang aufgrund dynamischer Allokationen oder großer Datenstrukturen vermieden werden soll. Die Struktur &lt;code&gt;ara::core::in_place_t&lt;/code&gt; interagiert in diesem Kontext primär mit &lt;code&gt;ara::core::Optional&lt;/code&gt; und dem Anwendungs-Code, der die Objekterzeugung steuert.
-&lt;/p&gt;
-
-&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
-&lt;p&gt;
-Der Lebenszyklus von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; ist extrem leichtgewichtig. Die Struktur wird über den Header &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; bereitgestellt und definiert einen expliziten Standardkonstruktor:
-&lt;/p&gt;
-&lt;p&gt;
-Gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; ist der Default-Konstruktor als &lt;code&gt;explicit in_place_t() noexcept = default;&lt;/code&gt; deklariert. Da es sich um eine leere Struktur handelt, umfasst der Lebenszyklus keine komplexen Zustandsübergänge, Allokationen oder Besitzverhältnisse.
-&lt;/p&gt;
-&lt;p&gt;
-Interpretation: Als reiner Tag-Typ besitzt &lt;code&gt;ara::core::in_place_t&lt;/code&gt; keinen internen Zustand, sodass Instanzen beliebig nebenläufig erzeugt, kopiert oder als temporäre Werte an Funktionen übergeben werden können, ohne dass Synchronisationsmechanismen erforderlich wären. Typischerweise entsteht eine Instanz nur als temporäres Übergangsobjekt im Aufrufkontext eines Zielkonstruktors und wird unmittelbar nach Abschluss des Ausdrucks wieder zerstört.
+기능 안전 및 리소스 효율성을 중시하는 최신 C++ 아키텍처에서 인플레이스 메커니즘은 필수적인 역할을 수행합니다. 이는 복사나 이동이 불가능한 유형이나 동적 할당 또는 대규모 데이터 구조로 인해 복사 작업을 피해야 하는 유형의 인스턴스화를 허용합니다. 이 맥락에서 구조체 &lt;code&gt;ara::core::in_place_t&lt;/code&gt;은 주로 &lt;code&gt;ara::core::Optional&lt;/code&gt; 및 객체 생성을 제어하는 애플리케이션 코드와 상호 작용합니다.
 &lt;/p&gt;
 
-&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;h4&gt;수명 주기&lt;/h4&gt;
 &lt;p&gt;
-Der typische Nutzungspfad von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; gliedert sich in folgende Schritte:
+&lt;code&gt;ara::core::in_place_t&lt;/code&gt;의 라이프사이클은 극도로 경량입니다. 이 구조체는 헤더 &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt;을 통해 제공되며 명시적 기본 생성자를 정의합니다:
+&lt;/p&gt;
+&lt;p&gt;
+&lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;에 따라 기본 생성자는 &lt;code&gt;explicit in_place_t() noexcept = default;&lt;/code&gt;(으)로 선언됩니다. 빈 구조체이므로 라이프사이클에는 복잡한 상태 전이, 할당 또는 소유권 관계가 포함되지 않습니다.
+&lt;/p&gt;
+&lt;p&gt;
+해석: 순수 태그 유형인 &lt;code&gt;ara::core::in_place_t&lt;/code&gt;은 내부 상태를 갖지 않으므로, 동기화 메커니즘 없이도 인스턴스를 임의로 동시에 생성, 복사하거나 함수에 임시 값으로 전달할 수 있습니다. 일반적으로 인스턴스는 대상 생성자의 호출 컨텍스트에서 임시 전이 객체로만 생성되며 표현식이 완료된 직후 다시 소멸됩니다.
+&lt;/p&gt;
+
+&lt;h4&gt;사용 경로&lt;/h4&gt;
+&lt;p&gt;
+&lt;code&gt;ara::core::in_place_t&lt;/code&gt;의 일반적인 사용 경로는 다음 단계로 구분됩니다:
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;strong&gt;Einbinden der Header-Datei:&lt;/strong&gt; Die Bereitstellung des Typs erfolgt über das Einbinden von &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;.
+&lt;strong&gt;헤더 파일 포함:&lt;/strong&gt; 유형 제공은 &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;에 따른 &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt;의 포함을 통해 이루어집니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Instanziierung des Tag-Objekts:&lt;/strong&gt; Zur Initialisierung wird eine Instanz von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; erzeugt. Aufgrund des expliziten Konstruktors nach &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; erfolgt dies üblicherweise durch direkte Wertinitialisierung (beispielsweise &lt;code&gt;ara::core::in_place_t{}&lt;/code&gt;).
+&lt;strong&gt;태그 객체 인스턴스화:&lt;/strong&gt; 초기화를 위해 &lt;code&gt;ara::core::in_place_t&lt;/code&gt;의 인스턴스가 생성됩니다. &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;에 따른 명시적 생성자로 인해 이는 일반적으로 직접 값 초기화(예: &lt;code&gt;ara::core::in_place_t{}&lt;/code&gt;)를 통해 수행됩니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Übergabe an den Container-Konstruktor:&lt;/strong&gt; Die Instanz wird als erstes Argument an einen dafür vorgesehenen Konstruktor von &lt;code&gt;ara::core::Optional&lt;/code&gt; übergeben, gefolgt von den Konstruktorargumenten des einzubettenden Nutztyps.
+&lt;strong&gt;컨테이너 생성자로 전달:&lt;/strong&gt; 인스턴스는 &lt;code&gt;ara::core::Optional&lt;/code&gt;의 지정된 생성자에 첫 번째 인수로 전달되며, 그 뒤에 임베딩할 사용 유형의 생성자 인수가 이어집니다.
 &lt;/li&gt;
 &lt;li&gt;
-&lt;strong&gt;Direkte Konstruktion im Zielspeicher:&lt;/strong&gt; &lt;code&gt;ara::core::Optional&lt;/code&gt; wertet den Tag aus und leitet die nachfolgenden Argumente an den Konstruktor des gekapselten Werts weiter. Das Nutzwertobjekt wird direkt im internen Speicher von &lt;code&gt;ara::core::Optional&lt;/code&gt; erzeugt, ohne dass Kopier- oder Verschiebeoperationen stattfinden.
+&lt;strong&gt;대상 메모리에 직접 생성:&lt;/strong&gt; &lt;code&gt;ara::core::Optional&lt;/code&gt;은 태그를 평가하고 후속 인수를 캡슐화된 값의 생성자로 전달합니다. 유효 값 객체는 복사 또는 이동 작업 없이 &lt;code&gt;ara::core::Optional&lt;/code&gt;의 내부 메모리에 직접 생성됩니다.
 &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;h4&gt;오류 시나리오&lt;/h4&gt;
 &lt;p&gt;
-Für die Erzeugung von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; sind keine Fehlerszenarien vorgesehen. Der Standardkonstruktor ist gemäß &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; mit &lt;code&gt;noexcept&lt;/code&gt; ausgezeichnet und gilt als ausnahmesicher („exception safe“). Eine Fehlbedienung bei der Objekterzeugung von &lt;code&gt;in_place_t&lt;/code&gt; selbst führt nicht zu Laufzeitfehlern, sondern wird durch das Typsystem zur Übersetzungszeit abgefangen.
+&lt;code&gt;ara::core::in_place_t&lt;/code&gt;의 생성에 대해서는 어떠한 오류 시나리오도 예정되어 있지 않습니다. 기본 생성자는 &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;에 따라 &lt;code&gt;noexcept&lt;/code&gt;(으)로 지정되어 있으며 예외에 안전한("exception safe") 것으로 간주됩니다. &lt;code&gt;in_place_t&lt;/code&gt; 자체의 객체 생성 시 오작동은 런타임 오류로 이어지지 않고 컴파일 시점에 타입 시스템에 의해 포착됩니다.
 &lt;/p&gt;
 &lt;p&gt;
-Interpretation: Durch die Kennzeichnung des Konstruktors mit &lt;code&gt;explicit&lt;/code&gt; nach &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; dürfte eine unbeabsichtigte implizite Typumwandlung aus leeren Initialisierungslisten (wie &lt;code&gt;{}&lt;/code&gt;) verhindert werden. Aufrufer müssen die Instanziierung bewusst und typgenau formulieren, wodurch Mehrdeutigkeiten bei überladenen Konstruktoren von &lt;code&gt;ara::core::Optional&lt;/code&gt; vermieden werden. Sollte bei der In-Place-Konstruktion des im Container gehaltenen Zielobjekts eine Ausnahme ausgelöst werden, geht diese nicht von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; aus, sondern unterliegt der Ausnahmesicherheit des Konstruktors des Nutzwertes.
+해석: &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;에 따라 생성자를 &lt;code&gt;explicit&lt;/code&gt;(으)로 표시함으로써 빈 초기화 목록(예: &lt;code&gt;{}&lt;/code&gt;)으로부터의 의도치 않은 암시적 형 변환이 방지될 것으로 보입니다. 호출자는 인스턴스화를 명시적이고 유형에 맞게 작성해야 하므로 &lt;code&gt;ara::core::Optional&lt;/code&gt;의 오버로드된 생성자에서 모호성이 방지됩니다. 컨테이너에 유지되는 대상 객체의 인플레이스 생성 중에 예외가 발생하는 경우, 이는 &lt;code&gt;ara::core::in_place_t&lt;/code&gt;에서 기인한 것이 아니며 유효 값 생성자의 예외 안전성을 따릅니다.
 &lt;/p&gt;
 
 &lt;!-- annahmen:
 1) Interpretation: Als reiner Tag-Typ besitzt ara::core::in_place_t keinen internen Zustand und erfordert keine Synchronisation bei nebenläufigem Zugriff. – Begründung: Der Payload spezifiziert eine leere struct ohne Datenmitglieder und mit trivialem Default-Konstruktor.
 2) Interpretation: Das Schlüsselwort explicit am Default-Konstruktor dürfte implizite Konvertierungen aus leeren Initialisierungslisten {} unterbinden und so Überladungskonflikte bei ara::core::Optional verhindern. – Begründung: SWS_CORE_04012 deklariert explicit in_place_t() noexcept = default, was in modernem C++ typischerweise zur Vermeidung unabsichtlicher impliziter Tag-Konstruktionen dient.
 --&gt;
-&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Anforderungen der AUTOSAR-Adaptive-Spezifikation R25-11. Alle normativen Festlegungen zu Signaturen, Header-Zuordnungen und Ausnahmeverhalten stammen aus den referenzierten SWS-Einträgen.&lt;/p&gt;
+&lt;p class="ai-note"&gt;본 가이드는 AUTOSAR Adaptive 사양 R25-11의 요구사항을 기반으로 합니다. 서명, 헤더 할당 및 예외 동작에 대한 모든 규범적 정의는 참조된 SWS 항목에서 비롯됩니다.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
