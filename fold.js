@@ -14,6 +14,8 @@
 //     werden hervorgehoben und klappen History/Diff auf.
 (function () {
   "use strict";
+  // Lokaler Dienst: relativ auf localhost, sonst über die geprüfte localhost-Adresse (ai-access.js).
+  function localApi(path) { var a = typeof window !== "undefined" && window.AiAccess; return a && a.localUrl ? a.localUrl(path) : path; }
 
   function oeffnePfad(el) {
     var geoeffnet = false;
@@ -718,10 +720,11 @@
               applyHotfix(el, matched, _fragmentCache[fragKey], rel);
             } else {
               var pfx = getRootBasePrefix();
-              var fragUrl = pfx + "_src/" + fragKey;
+              // Öffentlicher Pfad zuerst (die Website enthält kein _src/), lokal Rückfall auf _src/.
+              var fragUrl = pfx + fragKey;
               fetch(fragUrl)
                 .then(function (r) {
-                  if (!r.ok) return fetch(pfx + fragKey);
+                  if (!r.ok) return fetch(pfx + "_src/" + fragKey);
                   return r;
                 })
                 .then(function (r) {
@@ -913,6 +916,12 @@
     });
   });
 
+  var TOGGLE_NAMES = {
+    de: ["Dunkles Design", "Kompakte Ansicht"], en: ["Dark mode", "Compact mode"], es: ["Modo oscuro", "Vista compacta"],
+    pt: ["Modo escuro", "Vista compacta"], fr: ["Mode sombre", "Affichage compact"], ru: ["Тёмная тема", "Компактный вид"],
+    ar: ["الوضع الداكن", "عرض مضغوط"], hi: ["डार्क मोड", "संक्षिप्त दृश्य"], ko: ["다크 모드", "간결한 보기"],
+    zh: ["深色模式", "紧凑视图"], nl: ["Donkere modus", "Compacte weergave"]
+  };
   function syncShellControls() {
     var root = document.documentElement;
     var themeBtn = document.querySelector("[data-theme-toggle]");
@@ -920,13 +929,18 @@
     var prefsLabel = document.querySelector("[data-prefs-label]");
     var theme = root.getAttribute("data-theme") || "light";
     var dens = root.getAttribute("data-density") || "comfortable";
+    // Symbolknöpfe in der Breadcrumb-Zeile behalten ihr Symbol; Name in Tooltip und aria-label.
+    var lang = (root.getAttribute("lang") || "en").split("-")[0];
+    var names = TOGGLE_NAMES[lang] || TOGGLE_NAMES.en;
     if (themeBtn) {
       themeBtn.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
-      themeBtn.textContent = theme === "dark" ? "Dark" : "Light";
+      if (themeBtn.hasAttribute("data-icon-toggle")) { themeBtn.title = names[0]; themeBtn.setAttribute("aria-label", names[0]); }
+      else themeBtn.textContent = theme === "dark" ? "Dark" : "Light";
     }
     if (densBtn) {
       densBtn.setAttribute("aria-pressed", dens === "compact" ? "true" : "false");
-      densBtn.textContent = dens === "compact" ? "Compact" : "Comfortable";
+      if (densBtn.hasAttribute("data-icon-toggle")) { densBtn.title = names[1]; densBtn.setAttribute("aria-label", names[1]); }
+      else densBtn.textContent = dens === "compact" ? "Compact" : "Comfortable";
     }
     if (prefsLabel) {
       prefsLabel.textContent = (theme === "dark" ? "Dark" : "Light") + " · " + (dens === "compact" ? "Compact" : "Comfort");
@@ -1004,6 +1018,42 @@
     syncShellControls();
     bindDossierControls();
     bindSnippetCurationControls();
+    bindGuideTabs();
+  }
+
+  // Reiter „User Guide“ / „Implementer's Guide“ an Elementen (ARIA tablist, Klick + Pfeiltasten)
+  function bindGuideTabs() {
+    if (bindGuideTabs.done) return;
+    bindGuideTabs.done = true;
+    function activate(tab, focus) {
+      var list = tab.closest('[role="tablist"]');
+      if (!list) return;
+      list.querySelectorAll('[role="tab"]').forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(t.getAttribute("aria-controls"));
+        if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+    }
+    document.addEventListener("click", function (e) {
+      var tab = e.target.closest && e.target.closest('.guide-tabs [role="tab"]');
+      if (tab) activate(tab, false);
+    });
+    document.addEventListener("keydown", function (e) {
+      var tab = e.target.closest && e.target.closest('.guide-tabs [role="tab"]');
+      if (!tab) return;
+      var tabs = Array.prototype.slice.call(tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]'));
+      var i = tabs.indexOf(tab), rtl = getComputedStyle(tab).direction === "rtl", next = -1;
+      if (e.key === "ArrowRight") next = i + (rtl ? -1 : 1);
+      else if (e.key === "ArrowLeft") next = i + (rtl ? 1 : -1);
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = tabs.length - 1;
+      else return;
+      e.preventDefault();
+      activate(tabs[(next + tabs.length) % tabs.length], true);
+    });
   }
 
   function bindSnippetCurationControls() {
@@ -1013,8 +1063,16 @@
     // Gegenstand des geöffneten Dossiers (Klasse, Namespace, Modul …) statt eines festen Ersatzwerts
     function dossierSubject() {
       var m = document.querySelector("dialog.dossier-modal[open]");
-      return m ? m.id.replace(/^dossier-modal-/, "") : "";
+      return m ? m.id.replace(/^dossier-modal-(?:impl-)?/, "") : "";
     }
+    // Guide-Art des geöffneten Dossiers: „impl“ (Implementer's Guide) oder „user“ (Standard/Altdaten)
+    function activeGuideKind() {
+      var m = document.querySelector("dialog.dossier-modal[open]");
+      if (!m) return "user";
+      return (m.getAttribute("data-guide-kind") === "impl" || /^dossier-modal-impl-/.test(m.id)) ? "impl" : "user";
+    }
+    // Vote-Schlüssel nach (guide_kind, snippet_id): „user“ = unveränderte ID (Altdaten), „impl“ mit Präfix
+    function voteKey(id, kind) { return (kind || activeGuideKind()) === "impl" ? "impl:" + id : id; }
     function dEl(id) {
       var m = document.querySelector("dialog.dossier-modal[open]");
       var hit = null;
@@ -1238,10 +1296,10 @@
       }
     }
 
-    function storeVote(snippetId, data) {
+    function storeVote(snippetId, data, kind) {
       try {
-        var votes = loadVotes();
-        votes[snippetId] = Object.assign({}, votes[snippetId] || {}, data);
+        var votes = loadVotes(), gk = kind || activeGuideKind(), key = voteKey(snippetId, gk);
+        votes[key] = Object.assign({}, votes[key] || {}, data, { guide_kind: gk });
         localStorage.setItem(VOTE_STORE, JSON.stringify(votes));
       } catch (e) {}
     }
@@ -1285,7 +1343,7 @@
       var localVotes = loadVotes();
       dScope().querySelectorAll(".snippet-card[data-snippet-id]").forEach(function (card) {
         var sId = card.getAttribute("data-snippet-id");
-        var record = localVotes[sId];
+        var record = localVotes[voteKey(sId)];
         var badge = card.querySelector('[data-badge-for="' + sId + '"]');
         var btnConfirm = card.querySelector('.curation-btn[data-action="confirm"][data-snippet="' + sId + '"]');
         var btnDismiss = card.querySelector('.curation-btn[data-action="dismiss"][data-snippet="' + sId + '"]');
@@ -1385,7 +1443,7 @@
         if (attachedDiscussionItems.has(sId)) {
           currentStatus = "in-discussion";
         } else {
-          var v = votes[sId];
+          var v = votes[voteKey(sId)];
           if (v && v.queued) {
             currentStatus = "queued";
           } else if (v && (v.vote === "confirm" || v.vote === "justified_confirm")) {
@@ -2855,7 +2913,7 @@
 
         modal.querySelectorAll(".snippet-card").forEach(function (card) {
           var sId = card.getAttribute("data-snippet-id") || card.id;
-          var rec = localVotes[sId] || {};
+          var rec = localVotes[voteKey(sId)] || {};
           var status = rec.vote || (rec.queued ? "queued" : "unrated");
           var titleEl = card.querySelector("strong");
           var docTitle = titleEl ? titleEl.textContent.trim() : "";
@@ -3003,11 +3061,11 @@
         var bId = btnClearBadge.getAttribute("data-clear-badge-for");
         if (bId) {
           var votes = loadVotes();
-          delete votes[bId];
+          delete votes[voteKey(bId)];
           try { localStorage.setItem(VOTE_STORE, JSON.stringify(votes)); } catch (err) {}
 
           var pkg = loadReviewPackage();
-          var nextPkg = pkg.filter(function (x) { return x.id !== bId; });
+          var nextPkg = pkg.filter(function (x) { return !(x.id === bId && (x.guide_kind || "user") === activeGuideKind()); });
           if (nextPkg.length !== pkg.length) {
             storeReviewPackage(nextPkg);
           }
@@ -3016,7 +3074,7 @@
             fetch("/api/curation/vote", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ snippet_id: bId, item_id: bId, vote: "reset" })
+              body: JSON.stringify({ snippet_id: bId, item_id: bId, vote: "reset", guide_kind: activeGuideKind() })
             }).catch(function () {});
           } catch (err) {}
 
@@ -3066,7 +3124,7 @@
             fetch("/api/curation/vote", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ snippet_id: sId, item_id: sId, vote: "confirm" })
+              body: JSON.stringify({ snippet_id: sId, item_id: sId, vote: "confirm", guide_kind: activeGuideKind() })
             }).catch(function () {});
           } catch (err) {}
         });
@@ -3084,7 +3142,7 @@
             fetch("/api/curation/vote", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ snippet_id: sId, item_id: sId, vote: "dismiss" })
+              body: JSON.stringify({ snippet_id: sId, item_id: sId, vote: "dismiss", guide_kind: activeGuideKind() })
             }).catch(function () {});
           } catch (err) {}
         });
@@ -3326,7 +3384,7 @@
           fetch("/api/curation/vote", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ snippet_id: sId, vote: "confirm" })
+            body: JSON.stringify({ snippet_id: sId, vote: "confirm", guide_kind: activeGuideKind() })
           }).catch(function () {});
         } catch (err) {}
         return;
@@ -3343,7 +3401,7 @@
           fetch("/api/curation/vote", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ snippet_id: sId, item_id: sId, vote: "dismiss" })
+            body: JSON.stringify({ snippet_id: sId, item_id: sId, vote: "dismiss", guide_kind: activeGuideKind() })
           }).catch(function () {});
         } catch (err) {}
         return;
@@ -3715,6 +3773,52 @@
       };
     }
 
+    // Kontext für Anfragen mit eigenem Schlüssel: Text der Karten im Fokus, wie der
+    // Nutzer ihn sieht (Form wie package_context in _src/tools/ai_discuss.py).
+    function workbenchContext(ids, primaryId) {
+      function item(id) {
+        var c = dEl(id);
+        if (!c) return { record_id: id, requirement_text: "" };
+        var body = c.querySelector(".snippet-card-body");
+        var head = "[" + (c.getAttribute("data-sws") || id) + "] " + (c.getAttribute("data-name") || id) +
+          (c.getAttribute("data-doc") ? " (" + c.getAttribute("data-doc") + ")" : "");
+        return { record_id: id, requirement_text: head + "\n" + (body ? body.textContent.replace(/\s+/g, " ").trim() : "") };
+      }
+      var path = location.pathname;
+      var primary = item(primaryId);
+      return {
+        record_id: primaryId,
+        universe: /\/adaptive\//.test(path) ? "AUTOSAR Adaptive Platform" : "AUTOSAR Classic Platform",
+        module: dossierSubject(),
+        requirement_text: primary.requirement_text.slice(0, 6000),
+        attached_items: ids.filter(function (id) { return id !== primaryId; }).map(item)
+      };
+    }
+
+    // Herkunft der Antwort (Zugang und Modell) unter der Sprechblase.
+    function appendAnswerMeta(bubble, text) {
+      if (!text) return;
+      var meta = document.createElement("div");
+      meta.className = "chat-answer-meta";
+      meta.textContent = text;
+      bubble.appendChild(meta);
+    }
+
+    function showWorkbenchProposal(data, attachedIds, primaryId) {
+      var propBox = dEl("chat-pane-proposal-box");
+      if (!propBox) return;
+      if (!data || !data.suggestion) { propBox.hidden = true; return; }
+      var propText = dEl("chat-pane-proposal-text");
+      var propBtn = dEl("btn-submit-workbench-proposal");
+      if (!propText || !propBtn) return;
+      propText.textContent = data.suggestion + "\n\nBegründung: " + (data.rationale || "");
+      propBox.hidden = false;
+      propBtn.dataset.suggestion = data.suggestion;
+      propBtn.dataset.rationale = data.rationale || "";
+      propBtn.dataset.attachedIds = JSON.stringify(attachedIds);
+      propBtn.dataset.primaryId = primaryId;
+    }
+
     async function sendWorkbenchMessage(message) {
       var thread = dEl("chat-pane-thread");
       if (!thread) return;
@@ -3734,53 +3838,59 @@
       thread.appendChild(assistantBubble);
       thread.scrollTop = thread.scrollHeight;
 
+      var access = window.AiAccess;
+      var aiRoute = access ? await access.route() : { kind: "local" };
+      if (aiRoute.kind === "none") {
+        // Ohne Anmeldung oder Modell: Einladung statt simulierter Antwort.
+        assistantBubble.textContent = "";
+        assistantBubble.appendChild(access.gate(aiRoute.reason));
+        var inp = dEl("chat-pane-input");
+        if (inp) inp.value = message;
+        thread.scrollTop = thread.scrollHeight;
+        return;
+      }
+      if (aiRoute.kind === "byok") {
+        assistantBubble.textContent = "KI überlegt… (" + access.routeLabel(aiRoute) + ")";
+        try {
+          var reply = await access.discuss({
+            route: aiRoute,
+            message: message,
+            context: workbenchContext(attachedIds, primaryId),
+            onDelta: function (delta, all) {
+              assistantBubble.textContent = all;
+              thread.scrollTop = thread.scrollHeight;
+            }
+          });
+          assistantBubble.textContent = reply.reply;
+          appendAnswerMeta(assistantBubble, access.answerLabel(reply, aiRoute));
+          showWorkbenchProposal(reply, attachedIds, primaryId);
+        } catch (err) {
+          assistantBubble.textContent = "⚠️ Keine KI-Antwort: " + String((err && err.message) || err);
+        }
+        thread.scrollTop = thread.scrollHeight;
+        return;
+      }
+
       try {
-        var res = await fetch("/api/discuss", {
+        var res = await fetch(localApi("/api/discuss"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "chat",
             record_id: primaryId,
             attached_ids: attachedIds,
-            message: message
+            message: message,
+            provider: aiRoute.cli || undefined
           })
         });
         var data = await res.json();
         assistantBubble.textContent = data.reply || data.error || "Keine Antwort erhalten.";
-
-        var propBox = dEl("chat-pane-proposal-box");
-        if (data.suggestion) {
-          var propText = dEl("chat-pane-proposal-text");
-          var propBtn = dEl("btn-submit-workbench-proposal");
-          if (propBox && propText && propBtn) {
-            propText.textContent = data.suggestion + "\n\nBegründung: " + (data.rationale || "");
-            propBox.hidden = false;
-            propBtn.dataset.suggestion = data.suggestion;
-            propBtn.dataset.rationale = data.rationale || "";
-            propBtn.dataset.attachedIds = JSON.stringify(attachedIds);
-            propBtn.dataset.primaryId = primaryId;
-          }
-        } else if (propBox) {
-          propBox.hidden = true;
-        }
+        if (data.reply && access) appendAnswerMeta(assistantBubble, access.answerLabel(data, aiRoute));
+        showWorkbenchProposal(data, attachedIds, primaryId);
       } catch (err) {
         var offlineReply = getOfflineWorkbenchReply(attachedIds, message);
         assistantBubble.textContent = offlineReply.reply;
-        var propBox = dEl("chat-pane-proposal-box");
-        if (offlineReply.suggestion) {
-          var propText = dEl("chat-pane-proposal-text");
-          var propBtn = dEl("btn-submit-workbench-proposal");
-          if (propBox && propText && propBtn) {
-            propText.textContent = offlineReply.suggestion + "\n\nBegründung: " + offlineReply.rationale;
-            propBox.hidden = false;
-            propBtn.dataset.suggestion = offlineReply.suggestion;
-            propBtn.dataset.rationale = offlineReply.rationale;
-            propBtn.dataset.attachedIds = JSON.stringify(attachedIds);
-            propBtn.dataset.primaryId = primaryId;
-          }
-        } else if (propBox) {
-          propBox.hidden = true;
-        }
+        showWorkbenchProposal(offlineReply, attachedIds, primaryId);
       }
       thread.scrollTop = thread.scrollHeight;
     }
@@ -3807,7 +3917,8 @@
       var targetSet = new Set(attachedIds);
 
       // Filter out previous decisions for these ids so the new decision replaces it
-      var nextPkg = pkg.filter(function (x) { return !targetSet.has(x.id); });
+      var gk = activeGuideKind();
+      var nextPkg = pkg.filter(function (x) { return !(targetSet.has(x.id) && (x.guide_kind || "user") === gk); });
 
       attachedIds.forEach(function (id) {
         var card = dEl(id);
@@ -3819,6 +3930,7 @@
         var decision = {
           id: id,
           kind: "curation_request",
+          guide_kind: gk,
           outcome: "reject",
           decided_by: ident.name,
           identity: ident.mode,
@@ -3826,6 +3938,7 @@
           rationale: rationale || ("Beanstandung für " + id + " (" + name + "): " + (suggestion || "Ausschluss/Revision")),
           decision_basis: {
             target_module: dossierSubject(),
+            guide_kind: gk,
             item_id: id,
             source_element: sws,
             source_name: name,
@@ -3842,7 +3955,7 @@
           fetch("/api/curation/vote", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ item_id: id, snippet_id: id, vote: "dismiss", rationale: rationale, reviewer: ident.name })
+            body: JSON.stringify({ item_id: id, snippet_id: id, vote: "dismiss", guide_kind: activeGuideKind(), rationale: rationale, reviewer: ident.name })
           }).catch(function () {});
         } catch (e) {}
       });
@@ -3925,14 +4038,16 @@
         var pkgIds = new Set();
         pkg.forEach(function (d) {
           if (d && d.id && d.kind === "curation_request") {
-            pkgIds.add(d.id);
-            storeVote(d.id, { vote: d.outcome === "accept" ? "confirm" : "dismiss", queued: true, rationale: d.rationale });
+            pkgIds.add(voteKey(d.id, d.guide_kind || "user"));
+            storeVote(d.id, { vote: d.outcome === "accept" ? "confirm" : "dismiss", queued: true, rationale: d.rationale }, d.guide_kind || "user");
           }
         });
         var currentVotes = loadVotes();
         Object.keys(currentVotes).forEach(function (sid) {
           if (currentVotes[sid].queued && !pkgIds.has(sid)) {
-            storeVote(sid, { queued: false });
+            var upd = loadVotes();
+            upd[sid] = Object.assign({}, upd[sid], { queued: false });
+            try { localStorage.setItem(VOTE_STORE, JSON.stringify(upd)); } catch (e) {}
           }
         });
         syncReviewBar();

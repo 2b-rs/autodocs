@@ -30,7 +30,11 @@
       ghNone: "Not connected", ghSkip: "You can also export the package as JSON without a token.",
       processDoc: "Read the curator decision process",
       cancel: "Cancel", decisions: "decisions", decision: "decision",
-      pageReviewTitle: "%n API element%s with review needed"
+      pageReviewTitle: "%n API element%s with review needed",
+      ghWeb: "Submit via GitHub in the browser", ghWebHint: "No token needed: GitHub opens a pre-filled issue, you only click “Submit new issue”.",
+      ghWebOpened: "GitHub form opened. “Submit new issue” sends the package.",
+      ghWebClip: "The package is long and is on your clipboard – paste it into the GitHub form.",
+      ghPaste: "<!-- Paste the content from your clipboard here -->"
     },
     de: {
       count: "Reviews im Paket", review: "Requirement validieren", accept: "Freigeben", reject: "Ablehnen",
@@ -56,21 +60,45 @@
       ghNone: "Nicht verbunden", ghSkip: "Du kannst das Paket auch ohne Token als JSON exportieren.",
       processDoc: "Ablauf des Curator-Entscheidungsprozesses lesen",
       cancel: "Abbrechen", decisions: "Entscheidungen", decision: "Entscheidung",
-      pageReviewTitle: "%n API-Element%s mit Review-Bedarf"
+      pageReviewTitle: "%n API-Element%s mit Review-Bedarf",
+      ghWeb: "Über GitHub im Browser absenden", ghWebHint: "Kein Token nötig: GitHub öffnet ein vorausgefülltes Issue, du klickst nur noch auf „Submit new issue“.",
+      ghWebOpened: "GitHub-Formular geöffnet. Mit „Submit new issue“ geht das Paket ab.",
+      ghWebClip: "Das Paket ist lang und liegt in der Zwischenablage – füge es im GitHub-Formular ein.",
+      ghPaste: "<!-- Inhalt aus der Zwischenablage hier einfügen -->"
     },
-    es: { count: "Revisiones en el paquete", review: "Validar requisito", accept: "Aprobar", reject: "Rechazar", who: "Decidido por", why: "Justificación", save: "Añadir al paquete", saved: "Decisión añadida al paquete.", submit: "Enviar paquete", token: "Conectar GitHub", connected: "GitHub conectado", fallback: "Exportar JSON", empty: "El paquete está vacío.", required: "Se requieren decisión, identidad y justificación.", warn: "Alternativa sin autenticación: la identidad es autodeclarada, por lo que la tasa de aceptación puede ser menor.", sent: "Paquete de revisión enviado como incidencia de GitHub.", pkgTitle: "Paquete de revisión", close: "Cerrar", remove: "Quitar", clear: "Vaciar", ghTitle: "Conectar GitHub", ghConnect: "Conectar", ghDisconnect: "Desconectar", cancel: "Cancelar", pageReviewTitle: "%n elemento%s de API con revisión pendiente", processDoc: "Leer el proceso de decisión del curador" },
-    pt: { count: "Revisões no pacote", review: "Validar requisito", accept: "Aprovar", reject: "Rejeitar", who: "Decidido por", why: "Justificativa", save: "Adicionar ao pacote", saved: "Decisão adicionada ao pacote.", submit: "Enviar pacote", token: "Conectar GitHub", connected: "GitHub conectado", fallback: "Exportar JSON", empty: "O pacote está vazio.", required: "Decisão, identidade e justificativa são obrigatórias.", warn: "Alternativa sem autenticação: a identidade é autodeclarada, portanto a taxa de aceitação pode ser menor.", sent: "Pacote de revisão enviado como issue do GitHub.", pkgTitle: "Pacote de revisão", close: "Fechar", remove: "Remover", clear: "Limpar", ghTitle: "Conectar GitHub", ghConnect: "Conectar", ghDisconnect: "Desconectar", cancel: "Cancelar", pageReviewTitle: "%n elemento%s de API com necessidade de revisão", processDoc: "Ler o processo de decisão do curador" },
-    fr: { count: "Revues dans le lot", review: "Valider l'exigence", accept: "Approuver", reject: "Rejeter", who: "Décidé par", why: "Justification", save: "Ajouter au lot", saved: "Décision ajoutée au lot.", submit: "Envoyer le lot", token: "Connecter GitHub", connected: "GitHub connecté", fallback: "Exporter le JSON", empty: "Le lot est vide.", required: "Décision, identité et justification sont obligatoires.", warn: "Repli sans authentification : l'identité est déclarative, le taux d'acceptation peut donc être plus faible.", sent: "Lot de revue envoyé comme ticket GitHub.", pkgTitle: "Lot de revue", close: "Fermer", remove: "Retirer", clear: "Tout effacer", ghTitle: "Connecter GitHub", ghConnect: "Connecter", ghDisconnect: "Déconnecter", cancel: "Annuler", pageReviewTitle: "%n élément%s d'API nécessitant une revue", processDoc: "Lire le processus de décision du curateur" },
-    ru: { count: "Проверок в пакете", review: "Проверить требование", accept: "Принять", reject: "Отклонить", who: "Решение принял", why: "Обоснование", save: "Добавить в пакет", saved: "Решение добавлено в пакет.", submit: "Отправить пакет", token: "Подключить GitHub", connected: "GitHub подключён", fallback: "Экспорт JSON", empty: "Пакет пуст.", required: "Требуются решение, личность и обоснование.", warn: "Резервный путь без аутентификации: личность указывается самостоятельно, поэтому доля принятых решений может быть ниже.", sent: "Пакет проверок отправлен как issue на GitHub.", pkgTitle: "Пакет проверок", close: "Закрыть", remove: "Убрать", clear: "Очистить", ghTitle: "Подключить GitHub", ghConnect: "Подключить", ghDisconnect: "Отключить", cancel: "Отмена", pageReviewTitle: "%n элемент%s API, требующ%s проверки", processDoc: "Ознакомиться с процессом решений куратора" },
-    ar: { count: "المراجعات في الحزمة", review: "التحقق من المتطلب", accept: "اعتماد", reject: "رفض", who: "قرَّره", why: "التبرير", save: "إضافة إلى الحزمة", saved: "تمت إضافة القرار إلى الحزمة.", submit: "إرسال الحزمة", token: "ربط GitHub", connected: "تم ربط GitHub", fallback: "تصدير JSON", empty: "الحزمة فارغة.", required: "القرار والهوية والتبرير مطلوبة.", warn: "مسار بديل بدون توثيق: الهوية مُصرَّح بها ذاتيًا، لذلك قد تكون نسبة القبول أقل.", sent: "تم إرسال حزمة المراجعة كمسألة على GitHub.", pkgTitle: "حزمة المراجعة", close: "إغلاق", remove: "إزالة", clear: "مسح الكل", ghTitle: "ربط GitHub", ghConnect: "ربط", ghDisconnect: "فصل", cancel: "إلغاء", pageReviewTitle: "%n عنصر%s API يحتاج إلى مراجعة", processDoc: "الاطلاع على عملية اتخاذ قرار المنسق" },
-    hi: { count: "पैकेज में समीक्षाएँ", review: "आवश्यकता सत्यापित करें", accept: "स्वीकृत करें", reject: "अस्वीकार करें", who: "निर्णयकर्ता", why: "औचित्य", save: "पैकेज में जोड़ें", saved: "निर्णय पैकेज में जोड़ा गया।", submit: "पैकेज भेजें", token: "GitHub जोड़ें", connected: "GitHub जुड़ा", fallback: "JSON निर्यात करें", empty: "पैकेज खाली है।", required: "निर्णय, पहचान और औचित्य आवश्यक हैं।", warn: "बिना प्रमाणीकरण वाला विकल्प: पहचान स्वयं-घोषित है, इसलिए स्वीकृति दर कम हो सकती है।", sent: "समीक्षा पैकेज GitHub issue के रूप में भेजा गया।", pkgTitle: "समीक्षा पैकेज", close: "बंद करें", remove: "हटाएँ", clear: "सब हटाएँ", ghTitle: "GitHub जोड़ें", ghConnect: "जोड़ें", ghDisconnect: "हटाएँ", cancel: "रद्द करें", pageReviewTitle: "समीक्षा आवश्यक %n API तत्व", processDoc: "क्यूरेटर निर्णय प्रक्रिया पढ़ें" },
-    ko: { count: "패키지 내 검토", review: "요구사항 검증", accept: "승인", reject: "거부", who: "결정자", why: "근거", save: "패키지에 추가", saved: "결정이 패키지에 추가되었습니다.", submit: "패키지 제출", token: "GitHub 연결", connected: "GitHub 연결됨", fallback: "JSON 내보내기", empty: "패키지가 비어 있습니다.", required: "결정, 신원, 근거가 모두 필요합니다.", warn: "인증 없는 대체 경로: 신원이 자기 신고이므로 수용률이 낮을 수 있습니다.", sent: "검토 패키지를 GitHub 이슈로 제출했습니다.", pkgTitle: "검토 패키지", close: "닫기", remove: "제거", clear: "모두 삭제", ghTitle: "GitHub 연결", ghConnect: "연결", ghDisconnect: "연결 해제", cancel: "취소", pageReviewTitle: "검토가 필요한 API 요소 %n개", processDoc: "큐레이터 결정 프로세스 보기" },
-    zh: { count: "包中的评审", review: "验证需求", accept: "批准", reject: "拒绝", who: "决定人", why: "理由", save: "加入包", saved: "决定已加入包。", submit: "提交数据包", token: "连接 GitHub", connected: "GitHub 已连接", fallback: "导出 JSON", empty: "数据包为空。", required: "必须填写决定、身份和理由。", warn: "未认证的备用方式：身份为自行声明，因此接受率可能较低。", sent: "评审包已作为 GitHub issue 提交。", pkgTitle: "评审包", close: "关闭", remove: "移除", clear: "全部清除", ghTitle: "连接 GitHub", ghConnect: "连接", ghDisconnect: "断开", cancel: "取消", pageReviewTitle: "需要审查的 %n 个 API 元素", processDoc: "阅读策展人决策流程" },
-    nl: { count: "Reviews in pakket", review: "Requirement valideren", accept: "Goedkeuren", reject: "Afwijzen", who: "Beslist door", why: "Motivering", save: "Aan pakket toevoegen", saved: "Beslissing aan het pakket toegevoegd.", submit: "Pakket verzenden", token: "GitHub verbinden", connected: "GitHub verbonden", fallback: "JSON exporteren", empty: "Het pakket is leeg.", required: "Beslissing, identiteit en motivering zijn verplicht.", warn: "Fallback zonder geäuthenticeerde identiteit: de opgegeven identiteit is zelfverklaard, daarom kan de acceptatiegraad lager zijn.", sent: "Reviewpakket als GitHub-issue verzonden.", pkgTitle: "Reviewpakket", close: "Sluiten", remove: "Verwijderen", clear: "Alles wissen", ghTitle: "GitHub verbinden", ghConnect: "Verbinden", ghDisconnect: "Verbreken", cancel: "Annuleren", pageReviewTitle: "%n API-element%s met beoordelingsbehoefte", processDoc: "Lees het besluitvormingsproces van de curator" }
+    es: { count: "Revisiones en el paquete", review: "Validar requisito", accept: "Aprobar", reject: "Rechazar", who: "Decidido por", why: "Justificación", save: "Añadir al paquete", saved: "Decisión añadida al paquete.", submit: "Enviar paquete", token: "Conectar GitHub", connected: "GitHub conectado", fallback: "Exportar JSON", empty: "El paquete está vacío.", required: "Se requieren decisión, identidad y justificación.", warn: "Alternativa sin autenticación: la identidad es autodeclarada, por lo que la tasa de aceptación puede ser menor.", sent: "Paquete de revisión enviado como incidencia de GitHub.", pkgTitle: "Paquete de revisión", close: "Cerrar", remove: "Quitar", clear: "Vaciar", ghTitle: "Conectar GitHub", ghConnect: "Conectar", ghDisconnect: "Desconectar", cancel: "Cancelar", pageReviewTitle: "%n elemento%s de API con revisión pendiente", processDoc: "Leer el proceso de decisión del curador", ghWeb: "Enviar mediante GitHub en el navegador", ghWebHint: "Sin token: GitHub abre una incidencia rellenada, solo tienes que pulsar «Submit new issue».", ghWebOpened: "Formulario de GitHub abierto. «Submit new issue» envía el paquete.", ghWebClip: "El paquete es largo y está en el portapapeles: pégalo en el formulario de GitHub.", ghPaste: "<!-- Pega aquí el contenido del portapapeles -->" },
+    pt: { count: "Revisões no pacote", review: "Validar requisito", accept: "Aprovar", reject: "Rejeitar", who: "Decidido por", why: "Justificativa", save: "Adicionar ao pacote", saved: "Decisão adicionada ao pacote.", submit: "Enviar pacote", token: "Conectar GitHub", connected: "GitHub conectado", fallback: "Exportar JSON", empty: "O pacote está vazio.", required: "Decisão, identidade e justificativa são obrigatórias.", warn: "Alternativa sem autenticação: a identidade é autodeclarada, portanto a taxa de aceitação pode ser menor.", sent: "Pacote de revisão enviado como issue do GitHub.", pkgTitle: "Pacote de revisão", close: "Fechar", remove: "Remover", clear: "Limpar", ghTitle: "Conectar GitHub", ghConnect: "Conectar", ghDisconnect: "Desconectar", cancel: "Cancelar", pageReviewTitle: "%n elemento%s de API com necessidade de revisão", processDoc: "Ler o processo de decisão do curador", ghWeb: "Enviar pelo GitHub no navegador", ghWebHint: "Sem token: o GitHub abre uma issue preenchida, basta clicar em “Submit new issue”.", ghWebOpened: "Formulário do GitHub aberto. “Submit new issue” envia o pacote.", ghWebClip: "O pacote é longo e está na área de transferência – cole-o no formulário do GitHub.", ghPaste: "<!-- Cole aqui o conteúdo da área de transferência -->" },
+    fr: { count: "Revues dans le lot", review: "Valider l'exigence", accept: "Approuver", reject: "Rejeter", who: "Décidé par", why: "Justification", save: "Ajouter au lot", saved: "Décision ajoutée au lot.", submit: "Envoyer le lot", token: "Connecter GitHub", connected: "GitHub connecté", fallback: "Exporter le JSON", empty: "Le lot est vide.", required: "Décision, identité et justification sont obligatoires.", warn: "Repli sans authentification : l'identité est déclarative, le taux d'acceptation peut donc être plus faible.", sent: "Lot de revue envoyé comme ticket GitHub.", pkgTitle: "Lot de revue", close: "Fermer", remove: "Retirer", clear: "Tout effacer", ghTitle: "Connecter GitHub", ghConnect: "Connecter", ghDisconnect: "Déconnecter", cancel: "Annuler", pageReviewTitle: "%n élément%s d'API nécessitant une revue", processDoc: "Lire le processus de décision du curateur", ghWeb: "Envoyer via GitHub dans le navigateur", ghWebHint: "Sans jeton : GitHub ouvre un ticket prérempli, il suffit de cliquer sur « Submit new issue ».", ghWebOpened: "Formulaire GitHub ouvert. « Submit new issue » envoie le lot.", ghWebClip: "Le lot est long et se trouve dans le presse-papiers – collez-le dans le formulaire GitHub.", ghPaste: "<!-- Collez ici le contenu du presse-papiers -->" },
+    ru: { count: "Проверок в пакете", review: "Проверить требование", accept: "Принять", reject: "Отклонить", who: "Решение принял", why: "Обоснование", save: "Добавить в пакет", saved: "Решение добавлено в пакет.", submit: "Отправить пакет", token: "Подключить GitHub", connected: "GitHub подключён", fallback: "Экспорт JSON", empty: "Пакет пуст.", required: "Требуются решение, личность и обоснование.", warn: "Резервный путь без аутентификации: личность указывается самостоятельно, поэтому доля принятых решений может быть ниже.", sent: "Пакет проверок отправлен как issue на GitHub.", pkgTitle: "Пакет проверок", close: "Закрыть", remove: "Убрать", clear: "Очистить", ghTitle: "Подключить GitHub", ghConnect: "Подключить", ghDisconnect: "Отключить", cancel: "Отмена", pageReviewTitle: "%n элемент%s API, требующ%s проверки", processDoc: "Ознакомиться с процессом решений куратора", ghWeb: "Отправить через GitHub в браузере", ghWebHint: "Токен не нужен: GitHub откроет заполненный issue, останется нажать «Submit new issue».", ghWebOpened: "Форма GitHub открыта. «Submit new issue» отправит пакет.", ghWebClip: "Пакет длинный и скопирован в буфер обмена — вставьте его в форму GitHub.", ghPaste: "<!-- Вставьте сюда содержимое буфера обмена -->" },
+    ar: { count: "المراجعات في الحزمة", review: "التحقق من المتطلب", accept: "اعتماد", reject: "رفض", who: "قرَّره", why: "التبرير", save: "إضافة إلى الحزمة", saved: "تمت إضافة القرار إلى الحزمة.", submit: "إرسال الحزمة", token: "ربط GitHub", connected: "تم ربط GitHub", fallback: "تصدير JSON", empty: "الحزمة فارغة.", required: "القرار والهوية والتبرير مطلوبة.", warn: "مسار بديل بدون توثيق: الهوية مُصرَّح بها ذاتيًا، لذلك قد تكون نسبة القبول أقل.", sent: "تم إرسال حزمة المراجعة كمسألة على GitHub.", pkgTitle: "حزمة المراجعة", close: "إغلاق", remove: "إزالة", clear: "مسح الكل", ghTitle: "ربط GitHub", ghConnect: "ربط", ghDisconnect: "فصل", cancel: "إلغاء", pageReviewTitle: "%n عنصر%s API يحتاج إلى مراجعة", processDoc: "الاطلاع على عملية اتخاذ قرار المنسق", ghWeb: "الإرسال عبر GitHub في المتصفح", ghWebHint: "لا حاجة إلى رمز: يفتح GitHub مسألة معبأة مسبقًا، وما عليك إلا النقر على «Submit new issue».", ghWebOpened: "فُتح نموذج GitHub. زر «Submit new issue» يرسل الحزمة.", ghWebClip: "الحزمة طويلة وهي في الحافظة – الصقها في نموذج GitHub.", ghPaste: "<!-- الصق محتوى الحافظة هنا -->" },
+    hi: { count: "पैकेज में समीक्षाएँ", review: "आवश्यकता सत्यापित करें", accept: "स्वीकृत करें", reject: "अस्वीकार करें", who: "निर्णयकर्ता", why: "औचित्य", save: "पैकेज में जोड़ें", saved: "निर्णय पैकेज में जोड़ा गया।", submit: "पैकेज भेजें", token: "GitHub जोड़ें", connected: "GitHub जुड़ा", fallback: "JSON निर्यात करें", empty: "पैकेज खाली है।", required: "निर्णय, पहचान और औचित्य आवश्यक हैं।", warn: "बिना प्रमाणीकरण वाला विकल्प: पहचान स्वयं-घोषित है, इसलिए स्वीकृति दर कम हो सकती है।", sent: "समीक्षा पैकेज GitHub issue के रूप में भेजा गया।", pkgTitle: "समीक्षा पैकेज", close: "बंद करें", remove: "हटाएँ", clear: "सब हटाएँ", ghTitle: "GitHub जोड़ें", ghConnect: "जोड़ें", ghDisconnect: "हटाएँ", cancel: "रद्द करें", pageReviewTitle: "समीक्षा आवश्यक %n API तत्व", processDoc: "क्यूरेटर निर्णय प्रक्रिया पढ़ें", ghWeb: "ब्राउज़र में GitHub से भेजें", ghWebHint: "टोकन की ज़रूरत नहीं: GitHub पहले से भरा issue खोलता है, बस “Submit new issue” पर क्लिक करें।", ghWebOpened: "GitHub फ़ॉर्म खुल गया। “Submit new issue” पैकेज भेजता है।", ghWebClip: "पैकेज लंबा है और क्लिपबोर्ड में है – इसे GitHub फ़ॉर्म में पेस्ट करें।", ghPaste: "<!-- क्लिपबोर्ड की सामग्री यहाँ पेस्ट करें -->" },
+    ko: { count: "패키지 내 검토", review: "요구사항 검증", accept: "승인", reject: "거부", who: "결정자", why: "근거", save: "패키지에 추가", saved: "결정이 패키지에 추가되었습니다.", submit: "패키지 제출", token: "GitHub 연결", connected: "GitHub 연결됨", fallback: "JSON 내보내기", empty: "패키지가 비어 있습니다.", required: "결정, 신원, 근거가 모두 필요합니다.", warn: "인증 없는 대체 경로: 신원이 자기 신고이므로 수용률이 낮을 수 있습니다.", sent: "검토 패키지를 GitHub 이슈로 제출했습니다.", pkgTitle: "검토 패키지", close: "닫기", remove: "제거", clear: "모두 삭제", ghTitle: "GitHub 연결", ghConnect: "연결", ghDisconnect: "연결 해제", cancel: "취소", pageReviewTitle: "검토가 필요한 API 요소 %n개", processDoc: "큐레이터 결정 프로세스 보기", ghWeb: "브라우저에서 GitHub로 제출", ghWebHint: "토큰이 필요 없습니다. GitHub가 미리 채운 이슈를 열면 “Submit new issue”만 누르세요.", ghWebOpened: "GitHub 양식이 열렸습니다. “Submit new issue”를 누르면 패키지가 제출됩니다.", ghWebClip: "패키지가 길어서 클립보드에 복사했습니다. GitHub 양식에 붙여넣으세요.", ghPaste: "<!-- 클립보드 내용을 여기에 붙여넣으세요 -->" },
+    zh: { count: "包中的评审", review: "验证需求", accept: "批准", reject: "拒绝", who: "决定人", why: "理由", save: "加入包", saved: "决定已加入包。", submit: "提交数据包", token: "连接 GitHub", connected: "GitHub 已连接", fallback: "导出 JSON", empty: "数据包为空。", required: "必须填写决定、身份和理由。", warn: "未认证的备用方式：身份为自行声明，因此接受率可能较低。", sent: "评审包已作为 GitHub issue 提交。", pkgTitle: "评审包", close: "关闭", remove: "移除", clear: "全部清除", ghTitle: "连接 GitHub", ghConnect: "连接", ghDisconnect: "断开", cancel: "取消", pageReviewTitle: "需要审查的 %n 个 API 元素", processDoc: "阅读策展人决策流程", ghWeb: "在浏览器中通过 GitHub 提交", ghWebHint: "无需令牌：GitHub 会打开已填写的 issue，只需点击“Submit new issue”。", ghWebOpened: "已打开 GitHub 表单。点击“Submit new issue”即可提交数据包。", ghWebClip: "数据包较长，已复制到剪贴板——请粘贴到 GitHub 表单中。", ghPaste: "<!-- 在此粘贴剪贴板内容 -->" },
+    nl: { count: "Reviews in pakket", review: "Requirement valideren", accept: "Goedkeuren", reject: "Afwijzen", who: "Beslist door", why: "Motivering", save: "Aan pakket toevoegen", saved: "Beslissing aan het pakket toegevoegd.", submit: "Pakket verzenden", token: "GitHub verbinden", connected: "GitHub verbonden", fallback: "JSON exporteren", empty: "Het pakket is leeg.", required: "Beslissing, identiteit en motivering zijn verplicht.", warn: "Fallback zonder geäuthenticeerde identiteit: de opgegeven identiteit is zelfverklaard, daarom kan de acceptatiegraad lager zijn.", sent: "Reviewpakket als GitHub-issue verzonden.", pkgTitle: "Reviewpakket", close: "Sluiten", remove: "Verwijderen", clear: "Alles wissen", ghTitle: "GitHub verbinden", ghConnect: "Verbinden", ghDisconnect: "Verbreken", cancel: "Annuleren", pageReviewTitle: "%n API-element%s met beoordelingsbehoefte", processDoc: "Lees het besluitvormingsproces van de curator", ghWeb: "Via GitHub in de browser versturen", ghWebHint: "Geen token nodig: GitHub opent een vooraf ingevuld issue, je klikt alleen nog op ‘Submit new issue’.", ghWebOpened: "GitHub-formulier geopend. ‘Submit new issue’ verstuurt het pakket.", ghWebClip: "Het pakket is lang en staat op je klembord – plak het in het GitHub-formulier.", ghPaste: "<!-- Plak hier de inhoud van je klembord -->" }
   };
 
   var lang = (document.documentElement.lang || "en").split("-")[0];
-  var t = Object.assign({}, L.en, L[lang] || {});
+  // Beschriftung der Guide-Art „Implementer's Guide“ in Kurationseinträgen des Pakets
+  var IMPL_GUIDE_LABEL = {
+    de: "Implementer's Guide", en: "Implementer's Guide", es: "Guía del implementador", pt: "Guia do implementador",
+    fr: "Guide de l'implémenteur", ru: "Руководство разработчика реализации", ar: "دليل المنفِّذ",
+    hi: "इम्प्लीमेंटर गाइड", ko: "구현자 가이드", zh: "实现者指南", nl: "Implementer's Guide"
+  };
+  // Drawer: Feedback-Einstieg und GitHub-Status (Kopfleiste hat nur noch einen Knopf).
+  var L2 = {
+    de: { drawerTitle: "Feedback & Kuration", fbBtn: "Feedback / Mangel melden", ghRow: "GitHub", ghAs: "angemeldet als %s", ghOn: "Token hinterlegt", ghNone: "nicht verbunden – Absenden über ein vorausgefülltes Issue", ghConnect: "Verbinden", ghManage: "Verwalten" },
+    en: { drawerTitle: "Feedback & Curation", fbBtn: "Send feedback / report a defect", ghRow: "GitHub", ghAs: "signed in as %s", ghOn: "token stored", ghNone: "not connected – submit through a prefilled issue", ghConnect: "Connect", ghManage: "Manage" },
+    es: { drawerTitle: "Comentarios y curación", fbBtn: "Enviar comentarios / informar de un defecto", ghAs: "conectado como %s", ghOn: "token guardado", ghNone: "no conectado – envío mediante una incidencia rellenada", ghConnect: "Conectar", ghManage: "Gestionar" },
+    pt: { drawerTitle: "Feedback e curadoria", fbBtn: "Enviar feedback / relatar defeito", ghAs: "conectado como %s", ghOn: "token guardado", ghNone: "não conectado – envio por uma issue pré-preenchida", ghConnect: "Conectar", ghManage: "Gerir" },
+    fr: { drawerTitle: "Avis et modération", fbBtn: "Donner un avis / signaler un défaut", ghAs: "connecté en tant que %s", ghOn: "jeton enregistré", ghNone: "non connecté – envoi via un ticket prérempli", ghConnect: "Connecter", ghManage: "Gérer" },
+    ru: { drawerTitle: "Отзывы и курация", fbBtn: "Отзыв / сообщить о дефекте", ghAs: "вход выполнен как %s", ghOn: "токен сохранён", ghNone: "не подключено – отправка через заполненный issue", ghConnect: "Подключить", ghManage: "Управлять" },
+    ar: { drawerTitle: "الملاحظات والتقييم", fbBtn: "إرسال ملاحظات / الإبلاغ عن خلل", ghAs: "مسجّل الدخول باسم %s", ghOn: "الرمز محفوظ", ghNone: "غير متصل – الإرسال عبر بلاغ معبأ مسبقًا", ghConnect: "اتصال", ghManage: "إدارة" },
+    hi: { drawerTitle: "प्रतिक्रिया और क्यूरेशन", fbBtn: "प्रतिक्रिया / दोष की सूचना दें", ghAs: "%s के रूप में साइन इन", ghOn: "टोकन सहेजा गया", ghNone: "कनेक्ट नहीं – पहले से भरे issue से भेजें", ghConnect: "कनेक्ट करें", ghManage: "प्रबंधित करें" },
+    ko: { drawerTitle: "피드백 및 큐레이션", fbBtn: "피드백 / 결함 신고", ghAs: "%s(으)로 로그인됨", ghOn: "토큰 저장됨", ghNone: "연결 안 됨 – 미리 채운 이슈로 제출", ghConnect: "연결", ghManage: "관리" },
+    zh: { drawerTitle: "反馈与策展", fbBtn: "反馈 / 报告缺陷", ghAs: "已登录为 %s", ghOn: "已保存令牌", ghNone: "未连接 – 通过预填的 issue 提交", ghConnect: "连接", ghManage: "管理" },
+    nl: { drawerTitle: "Feedback & curatie", fbBtn: "Feedback / defect melden", ghAs: "aangemeld als %s", ghOn: "token opgeslagen", ghNone: "niet verbonden – indienen via een vooraf ingevuld issue", ghConnect: "Verbinden", ghManage: "Beheren" }
+  };
+  var t = Object.assign({}, L.en, L2.en, L[lang] || {}, L2[lang] || {});
 
   // %n -> open count, %s -> plural suffix ("e" for German, "s" for most
   // Latin-script languages, dropped entirely for languages without plural
@@ -161,11 +189,15 @@
       '<div class="rv-drawer-scrim" data-close></div>' +
       '<aside class="rv-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="rv-drawer-title">' +
         '<header class="rv-drawer-head">' +
-          '<div><h2 id="rv-drawer-title">' + esc(t.pkgTitle) + '</h2>' +
+          '<div><h2 id="rv-drawer-title">' + esc(t.drawerTitle) + '</h2>' +
           '<p class="rv-drawer-sub">' + esc(t.pkgSub) + '</p>' +
           '<p class="rv-modal-note">' + processDocLink("curator-decision-protocol", t.processDoc) + '</p></div>' +
           '<button type="button" class="rv-icon-btn" data-close aria-label="' + esc(t.close) + '">' + ICON.x + '</button>' +
         '</header>' +
+        '<div class="rv-drawer-tools">' +
+          '<button type="button" class="rv-btn" data-feedback-open aria-haspopup="dialog" aria-controls="feedback-dialog">' + esc(t.fbBtn) + '</button>' +
+          '<div class="rv-gh-row" data-gh-row></div>' +
+        '</div>' +
         '<div class="rv-drawer-body"></div>' +
         '<footer class="rv-drawer-foot">' +
           '<button type="button" class="rv-btn rv-btn-quiet" data-clear>' + esc(t.clear) + '</button>' +
@@ -180,20 +212,36 @@
       if (e.target.closest("[data-close]")) closeDrawer();
       var rm = e.target.closest("[data-remove]");
       if (rm) {
-        var id = rm.getAttribute("data-remove");
-        store(load().filter(function (x) { return x.id !== id; }));
+        var id = rm.getAttribute("data-remove"), gk = rm.getAttribute("data-guide-kind") || "user";
+        store(load().filter(function (x) { return !(x.id === id && (x.guide_kind || "user") === gk); }));
         renderDrawer();
       }
       if (e.target.closest("[data-clear]") && load().length) { store([]); renderDrawer(); }
       if (e.target.closest("[data-export]")) exportPackage();
       if (e.target.closest("[data-submit]")) submitPackage();
+      if (e.target.closest("[data-gh-manage]")) openGithub(false);
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !drawer.hidden) closeDrawer();
     });
   }
 
+  function renderGhRow() {
+    var row = drawer.querySelector("[data-gh-row]");
+    if (!row) return;
+    var on = !!activeToken();
+    var state = on ? (ghLogin ? t.ghAs.replace("%s", "@" + ghLogin) : t.ghOn) : t.ghNone;
+    row.innerHTML = '<span class="rv-gh-ico' + (on ? " is-on" : "") + '">' + ICON.gh + '</span>' +
+      '<span class="rv-gh-text"><strong>' + esc(t.ghRow || "GitHub") + '</strong> ' + esc(state) + '</span>' +
+      '<button type="button" class="rv-btn rv-btn-quiet" data-gh-manage>' + esc(on ? t.ghManage : t.ghConnect) + '</button>';
+    if (on && !ghLogin && !renderGhRow.pending) {
+      renderGhRow.pending = true;
+      verify(activeToken()).then(function (u) { ghLogin = u.login; }).catch(function () {})
+        .then(function () { renderGhRow.pending = false; if (ghLogin) renderGhRow(); });
+    }
+  }
   function renderDrawer() {
+    renderGhRow();
     var body = drawer.querySelector(".rv-drawer-body"), items = load();
     if (!items.length) {
       body.innerHTML = '<div class="rv-empty">' + ICON.pkg +
@@ -221,7 +269,8 @@
               '<span class="rv-chip ' + (ok ? "is-accept" : "is-reject") + '">' +
                 (ok ? ICON.ok : ICON.no) + esc(clabel) + '</span>' +
               '<a class="rv-item-id" href="#' + esc(d.id) + '" title="' + esc(t.edit) + '">' + esc(d.id) + '</a>' +
-              '<button type="button" class="rv-icon-btn rv-icon-btn-sm" data-remove="' + esc(d.id) + '" aria-label="' + esc(t.remove) + '">' + ICON.x + '</button>' +
+              (d.guide_kind === "impl" ? '<span class="rv-chip is-impl" data-guide-kind="impl">' + esc(IMPL_GUIDE_LABEL[lang] || IMPL_GUIDE_LABEL.en) + '</span>' : '') +
+              '<button type="button" class="rv-icon-btn rv-icon-btn-sm" data-remove="' + esc(d.id) + '" data-guide-kind="' + esc(d.guide_kind || "user") + '" aria-label="' + esc(t.remove) + '">' + ICON.x + '</button>' +
             '</div>' +
             '<p class="rv-item-why">' + esc(d.rationale) + '</p>' +
             '<p class="rv-item-meta">' + esc(d.decided_by) + ' · ' + esc(new Date(d.decided_at).toLocaleString(lang)) + '</p>' +
@@ -283,6 +332,7 @@
             '<input type="password" class="rv-input" data-gh-token placeholder="github_pat_…" autocomplete="off" spellcheck="false">' +
           '</label>' +
           '<label class="rv-check"><input type="checkbox" data-gh-remember checked><span>' + esc(t.ghRemember) + '</span></label>' +
+          '<div class="rv-web" data-gh-web-box hidden><button type="button" class="rv-btn rv-btn-primary" data-gh-web>' + ICON.gh + '<span>' + esc(t.ghWeb) + '</span></button><p class="rv-modal-note">' + esc(t.ghWebHint) + '</p></div>' +
           '<p class="rv-modal-note rv-modal-note-quiet">' + esc(t.ghSkip) + '</p><p class="rv-auth-legend">' + (activeToken() ? ICON.auth + esc(t.connected) : ICON.noauth + esc(t.ghNone)) + '</p>' +
         '</div>' +
         '<footer class="rv-modal-foot">' +
@@ -298,6 +348,7 @@
       if (e.target.closest("[data-close]")) closeGithub();
       if (e.target.closest("[data-gh-forget]")) { setToken(""); ghStatus(null); toast(t.ghNone); }
       if (e.target.closest("[data-gh-connect]")) connectGithub();
+      if (e.target.closest("[data-gh-web]")) { closeGithub(); submitViaBrowser(); }
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !gh.hidden) closeGithub();
@@ -461,7 +512,8 @@
   var sessionToken = "";
   function activeToken() { return token() || sessionToken; }
 
-  function openGithub() {
+  function openGithub(forSubmit) {
+    gh.querySelector("[data-gh-web-box]").hidden = !forSubmit;
     gh.hidden = false;
     requestAnimationFrame(function () { gh.classList.add("is-open"); });
     ghStatus(null);
@@ -490,10 +542,36 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   }
 
+  // Kurationsanfragen (kind=curation_request) gehen an den Eingang curation-gate.yml,
+  // der nur Issues mit „Kuration“ im Titel aufnimmt.
+  function packageTitle(decisions) {
+    var cur = decisions.some(function (d) { return d.kind === "curation_request"; });
+    return (cur ? "Kuration: Review-Paket (" : "Requirement review package (") + decisions.length + ")";
+  }
+
+  // Ohne Token: vorausgefülltes Issue im Browser; GitHub ordnet es dem angemeldeten Konto zu.
+  async function submitViaBrowser() {
+    var decisions = load();
+    if (!decisions.length) { toast(t.empty, "error"); return; }
+    var payload = { schema: "review-package@v1", identity: "self_declared",
+                    submitted_at: new Date().toISOString(), decisions: decisions };
+    var body = "```json\n" + JSON.stringify(payload, null, 2) + "\n```";
+    var base = "https://github.com/" + repo() + "/issues/new?title=" + encodeURIComponent(packageTitle(decisions)) + "&body=";
+    var url = base + encodeURIComponent(body);
+    var clip = false;
+    if (url.length > 7500) {
+      try { await navigator.clipboard.writeText(body); } catch (e) {}
+      url = base + encodeURIComponent(t.ghPaste);
+      clip = true;
+    }
+    window.open(url, "_blank", "noopener");
+    toast(clip ? t.ghWebClip : t.ghWebOpened);
+  }
+
   async function submitPackage() {
     var decisions = load();
     if (!decisions.length) { toast(t.empty, "error"); return; }
-    if (!activeToken()) { openGithub(); return; }
+    if (!activeToken()) { openGithub(true); return; }
     var payload = { schema: "review-package@v1", identity: "github_authenticated",
                     submitted_at: new Date().toISOString(), decisions: decisions };
     try {
@@ -501,7 +579,7 @@
         method: "POST",
         headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + activeToken(),
                    "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Requirement review package (" + decisions.length + ")",
+        body: JSON.stringify({ title: packageTitle(decisions),
                                body: "```json\n" + JSON.stringify(payload, null, 2) + "\n```" })
       });
       if (!r.ok) throw new Error("GitHub: " + r.status + " " + (await r.text()).slice(0, 200));
@@ -607,7 +685,7 @@
       b.addEventListener("click", function () { drawer.hidden ? openDrawer() : closeDrawer(); });
     });
     document.querySelectorAll("[data-review-token]").forEach(function (b) {
-      b.addEventListener("click", openGithub);
+      b.addEventListener("click", function () { openGithub(false); });
     });
     document.querySelectorAll("[data-review-submit]").forEach(function (b) {
       b.addEventListener("click", submitPackage);

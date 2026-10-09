@@ -127,8 +127,11 @@
 
   function isClassicPage() {
     if (typeof window === "undefined" || typeof document === "undefined") return false;
-    // Namespace-Seiten haben ihr eigenes einheitliches Layout (ns-index.js)
-    if (document.querySelector("section.nsx")) return false;
+    // Namespace-Seiten haben ihr eigenes einheitliches Layout (ns-index.js); auf
+    // Classic-Modulseiten (section.nsx-mod) übernimmt es nur im Kompaktmodus
+    var nsx = document.querySelector("section.nsx");
+    if (nsx && (!nsx.classList.contains("nsx-mod") ||
+        document.documentElement.getAttribute("data-density") === "compact")) return false;
     var pathname = window.location.pathname || "";
     if (pathname.indexOf("/classic/") !== -1 || pathname.endsWith("classic") || pathname.endsWith("classic.html")) {
       return true;
@@ -173,12 +176,15 @@
         currentItem = null;
       } else if (tag === "p" && child.classList.contains("lead") && currentModule && currentModule.items.length === 0) {
         currentModule.headerElements.push(child);
-      } else if (tag === "h3" && child.classList.contains("recname")) {
-        var kindSpan = child.querySelector(".kind");
+      } else if ((tag === "h3" && child.classList.contains("recname")) ||
+                 (tag === "article" && child.querySelector(":scope > h3.recname"))) {
+        // Modulseiten fassen jedes Element in ein eigenes article.rec (Anker = SWS-ID)
+        var head = tag === "article" ? child.querySelector(":scope > h3.recname") : child;
+        var kindSpan = head.querySelector(".kind");
         var kind = kindSpan ? kindSpan.textContent.trim().toLowerCase() : "function";
-        var swsSpan = child.querySelector(".sws");
+        var swsSpan = head.querySelector(".sws");
         var swsText = swsSpan ? swsSpan.textContent.trim().replace(/^\[|\]$/g, "") : "";
-        var itemName = extractItemName(child);
+        var itemName = extractItemName(head);
 
         var item = {
           name: itemName,

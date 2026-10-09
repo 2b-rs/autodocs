@@ -8,6 +8,9 @@
    - Mittlere Folds (User Guide, Themenkarte, Detailansicht) lassen sich per Griff
      umsortieren; der Inspektor ist in der Breite veränderbar. Beides wird lokal
      gemerkt.
+   - Classic-Modulseiten (section.nsx-mod): gleiches Verhalten ohne Klassenseiten; die
+     Elemente des Modul-Records erscheinen in der Detailansicht, im Komfortmodus bleibt
+     die Seite unverändert.
    - Release-Kontext (#release=… bzw. ?release=…): entfallene Elemente werden
      markiert; ohne Elementdaten für das Release erscheint ein Hinweis.
    Ohne Skript bleibt die Seite als Liste mit Dokumentation vollständig lesbar. */
@@ -71,11 +74,21 @@
     applyRelease();
     // Dichte „Comfortable“: bisherige flache Seite (Übersichten, Diagramm, Dokumentation);
     // „Compact“: interaktive Ansicht. Ein Wechsel der Dichte lädt die Seite neu.
+    // Classic-Modulseiten: Die Übersicht ist aus dem Modul-Record abgeleitet; im
+    // Komfortmodus entfällt sie, der Record darüber ist die bisherige Seite.
+    var isMod = root.classList.contains("nsx-mod");
     if (document.documentElement.getAttribute("data-density") !== "compact") {
-      flattenClassIndex(document.querySelector("main") || document.body);
+      if (isMod) root.remove();
+      else flattenClassIndex(document.querySelector("main") || document.body);
       return;
     }
     if (root.classList.contains("nsx-small")) return;
+    // Modulseite: Der Record bleibt Datenquelle; seine Elemente erscheinen in der Detailansicht
+    var modName = root.getAttribute("data-module") || "";
+    if (isMod) {
+      var modRec = document.getElementById(root.getAttribute("data-rec") || "");
+      if (modRec) modRec.hidden = true;
+    }
 
     root.classList.add("nsx-live");
     var map = root.querySelector(".nsx-map");
@@ -120,13 +133,17 @@
     // ---- Dokumentationsabschnitte: Inhalt erscheint nur noch in der Detailansicht
     document.querySelectorAll("details.nsx-doc").forEach(function (d) { d.hidden = true; });
 
-    // ---- User Guide des Namespace als erster Fold der Mitte
-    var guideFold = null;
-    for (var p = root.previousElementSibling; p; p = p.previousElementSibling) {
+    // ---- User Guide und Implementer's Guide der Seite als erste Folds der Mitte (Dokumentreihenfolge)
+    var guideFold = null, seenKinds = {};
+    for (var p = root.previousElementSibling, prevP; p; p = prevP) {
+      prevP = p.previousElementSibling;   // vor dem Umhängen merken
       if (p.tagName === "DETAILS" && p.classList.contains("fold") && !p.classList.contains("nsx-doc") && p.querySelector(".ai")) {
+        var gkind = p.classList.contains("impl-fold") ? "impl" : "guide";
+        if (seenKinds[gkind]) continue;
+        seenKinds[gkind] = true;
         p.classList.add("nsx-fold");
-        p.setAttribute("data-fold", "guide");
-        guideFold = p;
+        p.setAttribute("data-fold", gkind);
+        if (gkind === "guide" || !guideFold) guideFold = p;
         var sm = p.querySelector("summary");
         if (sm && !sm.querySelector(".nsx-grip")) {
           var gr = document.createElement("span");
@@ -136,7 +153,6 @@
           sm.insertBefore(gr, sm.firstChild);
         }
         folds.insertBefore(p, folds.firstChild);
-        break;
       }
     }
 
@@ -274,7 +290,7 @@
     // Knopf im Panel, Pfeil-ab am Reiter) löst ihn wieder. Tastatur: Pfeil-auf am
     // Griff des obersten Folds dockt an.
     var tdock = null, popFold = null;
-    function canTitleDock(f) { return !!(title && f && /^(guide|map|uml)$/.test(f.getAttribute("data-fold") || "")); }
+    function canTitleDock(f) { return !!(title && f && /^(guide|impl|map|uml)$/.test(f.getAttribute("data-fold") || "")); }
     function foldLabel(f) {
       var h = f.querySelector("summary > h2");
       if (!h) return f.getAttribute("data-fold");
@@ -709,6 +725,8 @@
         if (n) { a.setAttribute("data-jump", n); a.setAttribute("href", "#" + rows[n].id); return; }
         var m = /\/(cl_[A-Za-z0-9_]+)\.html$/.exec(u.pathname);
         if (m && ext[m[1]]) { a.classList.add("nsx-ext"); a.title = ext[m[1]]; }
+        var mf = isMod && /\/([^\/]+\.html)$/.exec(u.pathname);
+        if (mf && ext[mf[1]]) { a.classList.add("nsx-ext"); a.title = ext[mf[1]]; }
       });
     }
     function fnSig(name, ctx) {
@@ -816,6 +834,15 @@
         if (!m || !ext[m[1]] || seen[n]) return;
         seen[n] = 1;
         out.push('<li><a href="' + esc(a.getAttribute("href").split("#")[0]) + '" class="nsx-ext">' + esc(n) + '</a> <span class="nsx-pkg">' + esc(ext[m[1]]) + "</span></li>");
+      });
+      // Modulseiten: Typen anderer Module (Plattform-, ComStack-, Std-Typen) aus der Signatur
+      if (isMod) recs.forEach(function (rec) {
+        rec.querySelectorAll(":scope > pre.syntax a[href]").forEach(function (a) {
+          var href = a.getAttribute("href"), f = href.split("#")[0], n = a.textContent.trim();
+          if (!f || !n || seen[n]) return;
+          seen[n] = 1;
+          out.push('<li><a href="' + esc(href) + '" class="nsx-ext">' + esc(n) + '</a> <span class="nsx-pkg">' + esc(ext[f] || f) + "</span></li>");
+        });
       });
       [["out", out], ["in", relItems(words(r, "data-in"), name)], ["uses", isClass ? [] : relItems(words(r, "data-uses"), name)]].forEach(function (x) {
         if (x[1].length) section(labels[x[0]], x[1].length).insertAdjacentHTML("beforeend", "<ul>" + x[1].join("") + "</ul>");
@@ -985,7 +1012,8 @@
       var qn = info.qname || name;
       detTitle.innerHTML = (k ? '<span class="kind">' + esc(k.trim()) + "</span> " : "")
         + (href ? '<a class="nsx-detname" href="' + esc(href) + '">' + esc(qn) + "</a>" : '<span class="nsx-detname">' + esc(qn) + "</span>")
-        + (info.sws ? " " + info.sws : "");
+        + (info.sws ? " " + info.sws : "")
+        + (isMod && modName ? ' <span class="nsx-modbadge"><span class="kind">' + esc(labels.mod || "") + "</span> " + esc(modName) + "</span>" : "");
       var vis = chips[name] && /(?:^|\s)(vis-[a-z]+)/.exec(chips[name].className);
       detFold.setAttribute("data-vis", vis ? vis[1] : "");
     }
@@ -1128,8 +1156,13 @@
           var ti = recordTitle(name, recs[0]);
           if (recs.length > 1) ti.sws = "";
           setTitle(name, ti);
-          var usage = wrap.querySelector("article.rec .ai.usage");
-          if (usage && usage.textContent.trim()) dockDetailAi(usage, esc(labels.ai || ""), null);
+          // Mit Guide-Reitern (User Guide / Implementer's Guide) den ganzen Reiterblock andocken,
+          // sonst bliebe im Körper ein leerer Reiter zurück; Beschriftung = einziger Reiter bzw. „Guides“.
+          var gtabs = wrap.querySelector("article.rec .guide-tabs");
+          var gbtn = gtabs ? gtabs.querySelectorAll('[role="tab"]') : [];
+          var usage = gtabs || wrap.querySelector("article.rec .ai.usage");
+          var ulab = gbtn.length > 1 ? "Guides" : gbtn.length ? esc(gbtn[0].textContent) : esc(labels.ai || "");
+          if (usage && usage.textContent.trim()) dockDetailAi(usage, ulab, gtabs ? gtabs.querySelector(".guide-panel") : null);
         }
         linkOwnNames(detBody);
         detBody.style.minHeight = "";
@@ -1439,8 +1472,9 @@
     fromHash();
   }
   function boot() {
+    var any = !!document.querySelector("section.nsx");    // vor init: Modulseiten entfernen sie im Komfortmodus
     document.querySelectorAll("section.nsx").forEach(init);
-    if (window.MutationObserver && document.querySelector("section.nsx")) {
+    if (window.MutationObserver && any) {
       var dens = document.documentElement.getAttribute("data-density");
       new MutationObserver(function () {
         if (document.documentElement.getAttribute("data-density") !== dens) location.reload();

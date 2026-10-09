@@ -14,6 +14,8 @@
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
+  // Lokaler Dienst: relativ auf localhost, sonst über die geprüfte localhost-Adresse (ai-access.js).
+  function localApi(path) { var a = typeof window !== "undefined" && window.AiAccess; return a && a.localUrl ? a.localUrl(path) : path; }
 
   var PRIVACY_BADGE = "Keine internen Geheimnisse übertragen";
   var CONTEXT_TEXT_LIMIT = 6000;
@@ -340,11 +342,17 @@
   }
 
   function pageMeta() {
+    // Universum aus dem Pfad (classic/…, adaptive/…), Modul aus der Seitenüberschrift;
+    // der erste Brotkrumen ist „Start“ und taugt dafür nicht.
+    var path = (typeof location !== "undefined" && location.pathname) || "";
     var rel = document.querySelector("header .rel");
-    var crumb = document.querySelector("nav.crumbs a.vis-app, nav.crumbs a");
+    var h1 = document.querySelector("main h1");
+    var universe = /\/classic\//.test(path) ? "AUTOSAR Classic Platform"
+      : /\/adaptive\//.test(path) ? "AUTOSAR Adaptive Platform"
+      : (rel ? rel.textContent.replace(/\s+/g, " ").trim() : "AUTOSAR Adaptive Platform");
     return {
-      universe: rel ? rel.textContent.replace(/\s+/g, " ").trim() : "AUTOSAR Adaptive Platform",
-      module: crumb ? crumb.textContent.replace(/\s+/g, " ").trim() : ""
+      universe: universe,
+      module: h1 ? h1.textContent.replace(/\s+/g, " ").trim() : ""
     };
   }
 
@@ -498,6 +506,12 @@
     note.textContent = PANEL.authority;
 
     panel.appendChild(head);
+    if (typeof window !== "undefined" && window.AiAccess) {
+      var accessRow = document.createElement("div");
+      accessRow.className = "discuss-access";
+      accessRow.appendChild(window.AiAccess.chip());
+      panel.appendChild(accessRow);
+    }
     panel.appendChild(thread);
     panel.appendChild(quick);
     panel.appendChild(compose);
@@ -625,8 +639,21 @@
       renderInspector();
     }
 
+    function isNetworkError(error) {
+      return error instanceof TypeError || /Failed to fetch|NetworkError|Load failed|Unexpected token|JSON/i.test(String(error && error.message));
+    }
+
+    // Kleine Zeile unter der Antwort: welcher Zugang und welches Modell geantwortet haben.
+    function addAnswerMeta(bubbleEl, text) {
+      if (!text || !bubbleEl) return;
+      var meta = document.createElement("div");
+      meta.className = "discuss-answer-meta";
+      meta.textContent = text;
+      bubbleEl.appendChild(meta);
+    }
+
     async function postDiscuss(payload) {
-      var response = await fetch("/api/discuss", {
+      var response = await fetch(localApi("/api/discuss"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -676,8 +703,46 @@
         streamTextEl.textContent = "⚠️ Keine KI-Antwort: " + msg;
       }
 
-      try {
-        var response = await fetch("/api/discuss", {
+      // Route: eigener Schlüssel (BYOK, direkt beim Anbieter), lokale CLI über /api/discuss
+      // oder – ohne Anmeldung/Modell – eine Einladungskarte statt eines Fehlers.
+      var access = typeof window !== "undefined" ? window.AiAccess : null;
+      var aiRoute = access ? await access.route() : { kind: "local" };
+      if (aiRoute.kind === "none") {
+        assistantBubble.classList.remove("pending");
+        assistantBubble.textContent = "";
+        assistantBubble.appendChild(access.gate(aiRoute.reason));
+        state.messages.pop();
+        input.value = text;
+        state.busy = false;
+        sendButton.disabled = false;
+        return;
+      }
+      if (aiRoute.kind === "byok") {
+        hzBadge.textContent = access.routeLabel(aiRoute);
+        streamTextEl.textContent = "KI überlegt…";
+        try {
+          answer = await access.discuss({
+            route: aiRoute,
+            message: text,
+            context: state.context,
+            onDelta: function (delta, all) {
+              accumulated = all;
+              streamTextEl.textContent = all;
+              assistantBubble.classList.remove("pending");
+            }
+          });
+          streamTextEl.textContent = answer.reply;
+          assistantBubble.classList.remove("pending");
+          hzBadge.style.display = "none";
+          mode.textContent = "Eigener Schlüssel";
+          addAnswerMeta(assistantBubble, access.answerLabel(answer, aiRoute));
+        } catch (error) {
+          mode.textContent = "Fehler";
+          showFailure(String((error && error.message) || error));
+          answer = null;
+        }
+      } else try {
+        var response = await fetch(localApi("/api/discuss"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -688,7 +753,8 @@
             stream: true,
             record_id: state.context && state.context.record_id,
             message: text,
-            context: state.context
+            context: state.context,
+            provider: aiRoute.cli || undefined
           })
         });
 
@@ -764,6 +830,7 @@
         answer = null;
       }
 
+      if (!failure && answer && aiRoute.kind !== "byok" && access) addAnswerMeta(assistantBubble, access.answerLabel(answer, aiRoute));
       state.messages.push(failure ? {
         role: "assistant error",
         text: "⚠️ Keine KI-Antwort: " + failure,
@@ -773,7 +840,9 @@
         role: "assistant",
         text: (answer && answer.reply) || accumulated || "",
         suggestion: (answer && answer.suggestion) || null,
-        rationale: (answer && answer.rationale) || ""
+        rationale: (answer && answer.rationale) || "",
+        provider: (answer && answer.provider) || "",
+        model: (answer && answer.model) || ""
       });
       persist();
       state.busy = false;
@@ -800,6 +869,18 @@
         });
         showProposal(data.proposal);
       } catch (error) {
+        if (isNetworkError(error) && window.AiAccess) {
+          // Ohne Backend (öffentliche Seite): Vorschlag geht als GitHub-Issue an den Kurationseingang.
+          showProposal({
+            proposal_id: "github-issue",
+            via: "github-issue",
+            target_record: state.context && state.context.record_id,
+            suggested_text: suggestion,
+            rationale: rationale,
+            proposed_diff: suggestion
+          });
+          return;
+        }
         mode.textContent = "Offline";
         warning.textContent = "Änderungsvorschlag nicht abgeleitet: Server nicht erreichbar oder Fehler (" + String((error && error.message) || error) + ").";
       }
@@ -813,6 +894,26 @@
       state.busy = true;
       submit.disabled = true;
       var result;
+      if (state.proposal.via === "github-issue") {
+        var last = null;
+        for (var j = state.messages.length - 1; j >= 0; j -= 1) {
+          if (state.messages[j].role === "assistant") { last = state.messages[j]; break; }
+        }
+        var issue = window.AiAccess.proposalIssue({
+          record_id: state.proposal.target_record,
+          suggestion: state.proposal.suggested_text,
+          rationale: state.proposal.rationale,
+          provider: last && last.provider,
+          model: last && last.model
+        });
+        await window.AiAccess.openIssue(issue.title, issue.body);
+        warning.textContent = "Vorschlag als GitHub-Issue vorbereitet. Nach dem Absenden prüft ihn ein Mensch; er ist nicht freigegeben.";
+        bubble("assistant", warning.textContent);
+        state.busy = false;
+        submit.disabled = false;
+        persist();
+        return;
+      }
       try {
         var data = await postDiscuss({
           action: "submit",
