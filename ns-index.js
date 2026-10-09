@@ -42,6 +42,33 @@
     var m = /(?:^|&)release=([^&]*)/.exec(h) || /[?&]release=([^&#]+)/.exec(location.search || "");
     return m ? String(m[1]).trim() : "";
   }
+  // Anker der Seite: ein Ziel (Eintrag nsx-e-…, Record-ID) plus Schlüssel=Wert-Teile (release=, ai=, at=),
+  // durch „&“ getrennt. Das Ziel steht vorn, die Reihenfolge der übrigen Teile bleibt erhalten.
+  function hashParts() {
+    var h = (location.hash || "").replace(/^#/, "");
+    try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
+    var out = { target: "", params: [] };
+    h.split("&").forEach(function (x) {
+      if (!x) return;
+      if (x.indexOf("=") > 0) out.params.push(x);
+      else if (!out.target) out.target = x;
+    });
+    return out;
+  }
+  function hasParam(parts, key) {
+    return parts.params.some(function (x) { return x.split("=")[0] === key; });
+  }
+  // Auswahl im Anker festhalten, ohne Verlaufseintrag und ohne hashchange: Neuladen, geteilte Links und
+  // der Sprachumschalter (fold.js) führen so zum selben Eintrag. Leseposition (at=) gilt dann nicht mehr.
+  function writeHash(target, ai) {
+    var parts = hashParts();
+    var keep = parts.params.filter(function (x) { var k = x.split("=")[0]; return k !== "at" && k !== "ai"; });
+    if (target && ai) keep.push("ai=1");
+    var next = (target ? [target] : []).concat(keep).join("&");
+    next = next ? "#" + next : "";
+    if (next === (location.hash || "")) return;
+    try { history.replaceState(history.state, "", location.pathname + location.search + next); } catch (e) { /* file:// u. ä. */ }
+  }
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var behavior = reduceMotion ? "auto" : "smooth";
 
@@ -1382,6 +1409,7 @@
     }
     function setDetailAi(open) {
       if (!dTab || !dPanel) return;
+      if (selected && selAnchor) writeHash(selAnchor, open);
       dPanel.hidden = !open;
       dTab.setAttribute("aria-expanded", String(open));
       detFold.classList.toggle("nsx-dp-open", open);
@@ -1535,6 +1563,7 @@
         if (top < outline.scrollTop || top > outline.scrollTop + outline.clientHeight - 20) outline.scrollTop = top - outline.clientHeight / 3;
       });
     }
+    var selAnchor = "";   // Anker der Auswahl im URL-Hash (Eintrag nsx-e-… oder Record-ID)
     // opts.origin: "map" (Themenkarte), "side" (Gliederung, Inspektor), "nav" (Anker von außen)
     // opts.from: angeklicktes Element; opts.ai / opts.anchor: Sprungziel in der Detailansicht
     function select(name, opts) {
@@ -1547,6 +1576,8 @@
       anchorEl = opts.from && folds.contains(opts.from) ? opts.from : firstVisibleFold();
       if (anchorEl === detFold) anchorEl = null;
       selected = name;
+      selAnchor = opts.anchor && recOwner[opts.anchor] === name ? opts.anchor : (rows[name].id || "");
+      writeHash(selAnchor, !!opts.ai);
       root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
       (oitems[name] || []).forEach(function (o) { o.classList.add("sel"); o.setAttribute("aria-current", "true"); });
       if (chips[name]) chips[name].classList.add("pin");
@@ -1568,6 +1599,8 @@
         detFold.hidden = true;
         updateEmpty();
         selected = null;
+        selAnchor = "";
+        writeHash("", false);
         root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
         unhighlight();
         if (relBox) { relBox.hidden = true; relBox.removeAttribute("data-owner"); }
@@ -1829,7 +1862,10 @@
       ev.preventDefault();
       ev.stopPropagation();
       var rel = h.getAttribute("data-rel");
-      location.hash = rel === currentRelease() ? "" : "release=" + rel;
+      // Release umschalten, Auswahl (Ziel, ai=) behalten
+      var hp = hashParts(), rest = hp.params.filter(function (x) { return x.split("=")[0] !== "release"; });
+      if (rel !== currentRelease()) rest.unshift("release=" + rel);
+      location.hash = (hp.target ? [hp.target] : []).concat(rest).join("&");
     }, true);
     root.addEventListener("keydown", function (ev) {
       if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches(".nsx-hb")) { ev.preventDefault(); ev.target.click(); }
@@ -1837,18 +1873,16 @@
 
     // Sprünge von außerhalb (Record-Anker, Eintragsanker)
     function fromHash() {
-      var h = (location.hash || "").slice(1);
-      try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
-      h = h.split("&").filter(function (x) { return x.indexOf("release=") !== 0; })[0] || "";
-      if (!h) return;
+      var parts = hashParts(), h = parts.target, ai = hasParam(parts, "ai");
+      if (!h || h === selAnchor) return;
       var rvt = reviewTarget("#" + h);
       if (h.indexOf("nsx-e-") === 0) {
         var row = document.getElementById(h);
-        if (row && row.classList.contains("nsx-row")) select(row.getAttribute("data-n"), { origin: "nav" });
+        if (row && row.classList.contains("nsx-row")) select(row.getAttribute("data-n"), { origin: "nav", ai: ai });
       } else if (rvt) {
-        select(rvt.name, { anchor: rvt.anchor });
+        select(rvt.name, { anchor: rvt.anchor, ai: ai });
       } else if (recOwner[h]) {
-        select(recOwner[h], { anchor: h });
+        select(recOwner[h], { anchor: h, ai: ai });
       }
     }
     window.addEventListener("hashchange", fromHash);

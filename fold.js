@@ -17,6 +17,99 @@
   // Lokaler Dienst: relativ auf localhost, sonst über die geprüfte localhost-Adresse (ai-access.js).
   function localApi(path) { var a = typeof window !== "undefined" && window.AiAccess; return a && a.localUrl ? a.localUrl(path) : path; }
 
+  // ---- Feste Oberflächentexte der Kuration (lib_ui_i18n.py): Die Seite bettet den Katalog ihrer Sprache
+  // ein (<script id="autodocs-ui-i18n">, Gruppe „curation“ aus _src/i18n/ui.json). Schlüssel ist der deutsche
+  // Text, {name} sind Platzhalter. Deutsche Seiten haben keinen Katalog: T() liefert den Schlüssel.
+  var UI_KATALOG = null, UI_EXAKT = null, UI_VORLAGEN = null;
+  function uiKatalog() {
+    if (UI_KATALOG) return UI_KATALOG;
+    var el = typeof document !== "undefined" && document.getElementById("autodocs-ui-i18n"), k = {};
+    if (el) { try { k = JSON.parse(el.textContent || "{}") || {}; } catch (e) { k = {}; } }
+    else if (typeof document !== "undefined" && document.readyState === "loading") return k;
+    UI_KATALOG = k;
+    UI_EXAKT = {};
+    UI_VORLAGEN = [];
+    Object.keys(k).forEach(function (key) {
+      var norm = key.replace(/\s+/g, " ").trim();
+      if (!/\{\w+\}/.test(norm)) { UI_EXAKT[norm] = k[key]; return; }
+      var names = [], lits = norm.split(/\{\w+\}/);
+      var rx = norm.replace(/[.*+?^$()|[\]\\]/g, "\\$&").replace(/\{(\w+)\}/g, function (m, n) { names.push(n); return "(.+?)"; });
+      // längstes festes Stück als Vorfilter: Vorlagen laufen nur über Texte, die es enthalten
+      var lit = lits.reduce(function (a, b) { return b.trim().length > a.length ? b.trim() : a; }, "");
+      UI_VORLAGEN.push({ rx: new RegExp("^" + rx + "$"), names: names, val: k[key], len: norm.length, lit: lit });
+    });
+    UI_VORLAGEN.sort(function (a, b) { return b.len - a.len; });
+    return k;
+  }
+  function T(de, vars) {
+    var k = uiKatalog();
+    var s = Object.prototype.hasOwnProperty.call(k, de) ? k[de] : de;
+    if (vars) s = String(s).replace(/\{(\w+)\}/g, function (m, n) { return Object.prototype.hasOwnProperty.call(vars, n) ? String(vars[n]) : m; });
+    return s;
+  }
+  // Text eines Knotens oder Attributs (normalisierter Leerraum) über Katalog und Vorlagen übersetzen
+  function uiText(plain) {
+    uiKatalog();
+    var norm = String(plain).replace(/\s+/g, " ").trim();
+    if (!norm || !UI_EXAKT) return null;
+    if (Object.prototype.hasOwnProperty.call(UI_EXAKT, norm)) return UI_EXAKT[norm];
+    for (var i = 0; i < UI_VORLAGEN.length; i++) {
+      var v = UI_VORLAGEN[i];
+      if (v.lit && norm.indexOf(v.lit) < 0) continue;
+      var m = v.rx.exec(norm);
+      if (m) return String(v.val).replace(/\{(\w+)\}/g, function (mm, n) { var j = v.names.indexOf(n); return j >= 0 ? m[j + 1] : mm; });
+    }
+    return null;
+  }
+  var UI_SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, PRE: 1, CODE: 1 };
+  var UI_ATTRS = ["title", "aria-label", "placeholder", "data-tip"];
+  // Dynamisch erzeugte Texte im Dossier (Karten, Badges, Reiter, Vergleich) wie serverseitig übersetzen
+  function localizeUi(root) {
+    if (!root || !Object.keys(uiKatalog()).length) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, null), n = root;
+    while (n) {
+      if (n.nodeType === 1) {
+        if (UI_SKIP[n.tagName] || (n.classList && n.classList.contains("desc"))) { n = walker.nextSibling() || nextOutside(walker); continue; }
+        for (var a = 0; a < UI_ATTRS.length; a++) {
+          var v = n.getAttribute(UI_ATTRS[a]);
+          if (v) { var t = uiText(v); if (t !== null && t !== v) n.setAttribute(UI_ATTRS[a], t); }
+        }
+      } else if (n.nodeType === 3 && /\S/.test(n.nodeValue)) {
+        var raw = n.nodeValue, tt = uiText(raw);
+        if (tt !== null) {
+          var neu = raw.match(/^\s*/)[0] + tt + raw.match(/\s*$/)[0];
+          if (neu !== raw) n.nodeValue = neu;
+        }
+      }
+      n = walker.nextNode();
+    }
+  }
+  function nextOutside(walker) {
+    while (walker.parentNode()) { var s2 = walker.nextSibling(); if (s2) return s2; }
+    return null;
+  }
+  function watchUi(root) {
+    if (!root || root.getAttribute("data-ui-i18n") || !Object.keys(uiKatalog()).length || typeof MutationObserver === "undefined") return;
+    root.setAttribute("data-ui-i18n", "1");
+    localizeUi(root);
+    var obs = new MutationObserver(function (records) {
+      obs.disconnect();
+      records.forEach(function (r) {
+        if (r.type === "attributes") localizeUi(r.target.nodeType === 1 ? r.target : null);
+        else if (r.type === "characterData") localizeUi(r.target.parentNode);
+        else r.addedNodes.forEach(function (x) { localizeUi(x.nodeType === 1 ? x : x.parentNode); });
+      });
+      obs.takeRecords();
+      obs.observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: UI_ATTRS });
+    });
+    obs.observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: UI_ATTRS });
+  }
+  function watchAllUi() { document.querySelectorAll("dialog.dossier-modal").forEach(watchUi); }
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watchAllUi); else watchAllUi();
+  }
+  if (typeof window !== "undefined") { window.autodocsT = T; window.autodocsLocalizeUi = localizeUi; }
+
   function oeffnePfad(el) {
     var geoeffnet = false;
     for (var d = el; d; d = d.parentElement) {
@@ -43,16 +136,38 @@
     if (h.charAt(0) === "#") h = h.slice(1);
     if (!h) return "";
     try { h = decodeURIComponent(h); } catch (e) {}
+    // Ziel ist der erste Teil ohne „=“; release=, at=, ai= u. ä. sind Zustand, kein Anker
     var parts = h.split("&").filter(function (part) {
-      return part.indexOf("release=") !== 0;
+      return part && part.indexOf("=") < 0;
     });
     return parts.length > 0 ? parts[0] : "";
   }
 
-  function zumAnker() {
+  function hashParam(hash, key) {
+    var h = (hash || "").replace(/^#/, "");
+    try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
+    var hit = h.split("&").filter(function (part) { return part.indexOf(key + "=") === 0; })[0];
+    return hit ? hit.slice(key.length + 1) : "";
+  }
+
+  // Leseposition aus dem Sprachumschalter (#at=<id>): nur ohne eigentliches Ziel, nach dem Aufbau der Seite
+  function zurLeseposition() {
+    if (getAnchorTargetFromHash(location.hash)) return;
+    var at = hashParam(location.hash, "at");
+    var el = at && document.getElementById(at);
+    if (!el) return;
+    oeffnePfad(el);
+    el.scrollIntoView({ block: "start" });
+  }
+
+  var letztesAnkerZiel = null;
+  function zumAnker(ev) {
     if (!location.hash) return;
     var anchorId = getAnchorTargetFromHash(location.hash);
-    if (!anchorId) return;
+    // Wechselt nur der Zustand (z. B. release=), bleibt die Leseposition stehen
+    if (ev && ev.type === "hashchange" && anchorId === letztesAnkerZiel) return;
+    letztesAnkerZiel = anchorId;
+    if (!anchorId) { zurLeseposition(); return; }
     var ziel = null;
     try {
       ziel = document.getElementById(decodeURIComponent(anchorId));
@@ -69,6 +184,73 @@
   } else {
     zumAnker();
   }
+  // Späte Layoutverschiebungen (Bilder, Übersichten, wiederhergestellte Abschnitte) nach dem Laden ausgleichen
+  window.addEventListener("load", function () { if (hashParam(location.hash, "at")) zurLeseposition(); });
+
+  // ---- Sprachumschalter (.langs): Alle Sprachbäume sind gleich aufgebaut. Der Wechsel behält die Abfrage
+  // (?release=…, Filter des Explorers), den Anker samt Zustand (#Ziel&release=…&ai=1, die Auswahl der
+  // Übersicht schreibt ns-index.js dorthin) und ohne Ziel die Leseposition (#at=<id>). Dichte, Farbschema
+  // und geöffnete Abschnitte liegen im Browser-Speicher derselben Herkunft und gelten ohnehin weiter.
+  var LESE_KANDIDATEN = "h1,h2,h3,h4,h5,h6,section,article,details,div,li,tr,p,dt,dd,figure,table";
+  function stickyUnterkante() {
+    var lim = 0;
+    ["header.shell", ".crumbbar", "main > h1.nsx-pin"].forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (!el) return;
+      var pos = getComputedStyle(el).position;
+      if (pos === "sticky" || pos === "fixed") lim = Math.max(lim, el.getBoundingClientRect().bottom);
+    });
+    return lim;
+  }
+  function lesepositionsAnker() {
+    var main = document.querySelector("main");
+    if (!main || (window.scrollY || window.pageYOffset || 0) < 80) return "";
+    var lim = stickyUnterkante() + 4, best = null;
+    var els = main.querySelectorAll("[id]");
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (!el.matches(LESE_KANDIDATEN) || el.closest("svg, dialog, template, [hidden]")) continue;
+      var r = el.getBoundingClientRect();
+      if (!r.height && !r.width) continue;               // unsichtbar (eingeklappt, display:none)
+      if (r.top <= lim) best = el;
+      else if (best) break;
+    }
+    return best ? best.id : "";
+  }
+  // Zum Sprachumschalter muss man nach oben scrollen (die Leiste steht nicht fest): Die zuletzt gelesene
+  // Stelle bleibt deshalb eine Minute lang Ziel, solange der Anker kein eigenes Ziel nennt.
+  var letzteLeseposition = { id: "", t: 0 }, leseTimer = null;
+  window.addEventListener("scroll", function () {
+    clearTimeout(leseTimer);
+    leseTimer = setTimeout(function () {
+      if ((window.scrollY || window.pageYOffset || 0) < 80) return;
+      var id = lesepositionsAnker();
+      if (id) letzteLeseposition = { id: id, t: Date.now() };
+    }, 200);
+  }, { passive: true });
+  function sprachZiel(a) {
+    var base = a.getAttribute("data-lang-base");
+    if (base === null) { base = (a.getAttribute("href") || "").split("#")[0].split("?")[0]; a.setAttribute("data-lang-base", base); }
+    var h = (location.hash || "").replace(/^#/, "");
+    try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
+    var parts = h.split("&").filter(function (p) { return p && p.indexOf("at=") !== 0; });
+    var hasTarget = parts.some(function (p) { return p.indexOf("=") < 0; });
+    if (!hasTarget) {
+      var at = lesepositionsAnker();
+      if (!at && letzteLeseposition.id && Date.now() - letzteLeseposition.t < 60000) at = letzteLeseposition.id;
+      if (at) parts.push("at=" + at);
+    }
+    var hash = parts.length ? "#" + parts.map(function (p) { return encodeURI(p).replace(/#/g, "%23"); }).join("&") : "";
+    return base + (location.search || "") + hash;
+  }
+  function aktualisiereSprachLink(e) {
+    var a = e.target && e.target.closest && e.target.closest(".langs a[hreflang]");
+    if (a) a.setAttribute("href", sprachZiel(a));
+  }
+  ["pointerdown", "mouseover", "focusin", "contextmenu", "click"].forEach(function (type) {
+    document.addEventListener(type, aktualisiereSprachLink, true);
+  });
+  window.autodocsLanguageTarget = sprachZiel;
 
   var RELEASE_HOVER_MS = 150;
   var RELEASE_OPENED_ATTR = "data-release-opened";
@@ -140,6 +322,91 @@
     if (pa.type === "r_date" && pb.type === "classic_num") return 1;
     return pa.raw.localeCompare(pb.raw);
   }
+
+  // ---- KI-Hinweis und gewähltes Release (lib_docmodel._anchor_status_html)
+  // Jeder KI-Hinweis eines Elements nennt sein Anker-Release (data-anchor). Weicht das gewählte Release ab,
+  // sagt .ai-anchor-status, ob der Wortlaut dort inhaltsgleich, abweichend oder nicht erfasst ist (Vergleich wie
+  // Release-Dropdown und Versions-Explorer: spec_text_key über dem bereinigten Wortlaut), und bietet den Sprung
+  // zum Anker-Release; von dort führt „Zurück zu …“ wieder zum vorher gewählten Release.
+  var anchorReturn = "";
+  // Texte über den Kurations-Katalog (T(), Gruppe „curation“ in _src/i18n/ui.json; Schlüssel ist der deutsche Text)
+  function anchorText(kind, page, v) {
+    if (page) {
+      if (kind === "same") return T("KI-Leitfaden erzeugt für {anchor}; Spezifikation dieser Seite in {rel} inhaltsgleich.", v);
+      if (kind === "differs") return T("KI-Leitfaden erzeugt für {anchor}; Spezifikation dieser Seite in {rel} geändert – der Leitfaden beschreibt den Stand {anchor}.", v);
+      return T("KI-Leitfaden erzeugt für {anchor}; Wortlaut dieser Seite in {rel} nicht (vollständig) erfasst – Gleichheit nicht geprüft.", v);
+    }
+    if (kind === "same") return T("KI-Hinweis erzeugt für {anchor}; Wortlaut in {rel} inhaltsgleich.", v);
+    if (kind === "differs") return T("KI-Hinweis erzeugt für {anchor}; Wortlaut in {rel} abweichend – der Hinweis beschreibt den Stand {anchor}.", v);
+    return T("KI-Hinweis erzeugt für {anchor}; Wortlaut in {rel} nicht erfasst – Gleichheit nicht geprüft.", v);
+  }
+  function anchorEsc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+  }
+
+  function anchorWords(el, attr) { return (el.getAttribute(attr) || "").split(/\s+/).filter(Boolean); }
+  function isShown(el) {
+    for (var d = el; d && d !== document.body; d = d.parentElement) {
+      if (d.style && d.style.display === "none") return false;
+    }
+    return true;
+  }
+  function updateAnchorStatus(rel) {
+    document.querySelectorAll(".ai-anchor-status").forEach(function (st) {
+      var anchor = st.getAttribute("data-anchor") || "";
+      var cur = rel || st.getAttribute("data-default") || "";
+      st.classList.remove("is-same", "is-differs", "is-uncaptured", "is-anchor");
+      st.removeAttribute("data-state");
+      if (!anchor || !cur || (cur === anchor && (!anchorReturn || anchorReturn === anchor))) {
+        st.hidden = true;
+        st.innerHTML = "";
+        return;
+      }
+      var kind, text, btn;
+      if (cur === anchor) {
+        kind = "anchor";
+        text = T("KI-Hinweis erzeugt für {anchor}.", { anchor: anchor });
+        btn = '<button type="button" class="ai-anchor-go" data-release="' + anchorEsc(anchorReturn) + '">' +
+          anchorEsc(T("Zurück zu {rel}", { rel: anchorReturn })) + "</button>";
+      } else {
+        kind = anchorWords(st, "data-same").indexOf(cur) >= 0 ? "same"
+          : anchorWords(st, "data-differs").indexOf(cur) >= 0 ? "differs" : "uncaptured";
+        // data-scope="page": KI-Leitfaden einer Seite, verglichen über alle Records der Seite
+        text = anchorText(kind, st.getAttribute("data-scope") === "page", { anchor: anchor, rel: cur });
+        btn = '<button type="button" class="ai-anchor-go" data-release="' + anchorEsc(anchor) + '" data-from="' +
+          anchorEsc(cur) + '">' + anchorEsc(T("Zu {anchor} wechseln", { anchor: anchor })) + "</button>";
+      }
+      st.classList.add("is-" + kind);
+      st.setAttribute("data-state", kind);
+      st.innerHTML = '<span class="ai-anchor-text">' + anchorEsc(text) + "</span> " + btn;
+      st.hidden = false;
+    });
+    // Umschalter zwischen KI-Hinweisen verschiedener Anker-Releases: sichtbaren Hinweis markieren
+    document.querySelectorAll(".ai-anchor-switch").forEach(function (sw) {
+      var box = sw.parentElement, shown = "";
+      if (box) {
+        Array.prototype.forEach.call(box.children, function (v) {
+          if (v.classList && v.classList.contains("ai-guide-release-variant") && isShown(v)) shown = shown || v.getAttribute("data-asof-release") || "";
+        });
+      }
+      sw.querySelectorAll(".ai-anchor-pick").forEach(function (b) {
+        var on = b.getAttribute("data-release") === shown;
+        b.classList.toggle("cur", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    });
+  }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target && ev.target.closest && ev.target.closest(".ai-anchor-go, .ai-anchor-pick");
+    if (!b) return;
+    var target = b.getAttribute("data-release") || "";
+    if (!target) return;
+    ev.preventDefault();
+    var from = b.getAttribute("data-from") || parseReleaseFromHash(location.hash) || "";
+    anchorReturn = b.classList.contains("ai-anchor-go") && b.getAttribute("data-from") ? from : (from !== target ? from : "");
+    if (parseReleaseFromHash(location.hash) === target) { applyReleaseContext(target); return; }
+    location.hash = "release=" + encodeURIComponent(target);
+  });
 
   function applyReleaseContext(rel) {
     closeReleaseAutoOpened();
@@ -263,6 +530,7 @@
       var fallback = container.querySelector(".ai-release-fallback-box");
       if (fallback) fallback.remove();
     });
+    updateAnchorStatus(rel);
 
     applyStandardsLinkRewrites(document, rel);
     checkAndApplySupersessions(rel);
@@ -565,6 +833,16 @@
     }
   };
 
+  // Katalog der Seite (T) vor den eingebauten Tabellen: so erhalten auch fr, ru, ar, hi, ko, zh, nl ihre Texte
+  function foldTexts(lang) {
+    var base = FOLD_I18N[lang] || FOLD_I18N.en, out = {};
+    Object.keys(FOLD_I18N.de).forEach(function (key) {
+      var de = FOLD_I18N.de[key], t = T(de);
+      out[key] = lang !== "de" && t !== de ? t : base[key];
+    });
+    return out;
+  }
+
   function getFoldLang() {
     var lang = (document.documentElement && document.documentElement.lang) || "";
     if (FOLD_I18N[lang]) return lang;
@@ -580,9 +858,12 @@
     banner.setAttribute("data-viewed-release", rel);
     
     var cmp = compareAutosarReleases(anchorRel, rel);
+    // „Unverändert seit …“ nur, wenn der Spezifikationsinhalt der Seite im gewählten Release nachweislich
+    // gleich ist (annotate_guide_banners, page_release_equivalence.json); sonst Referenzstand mit Projektion.
+    if (cmp < 0 && anchorWords(banner, "data-page-same").indexOf(rel) < 0) cmp = 1;
     var statusEl = banner.querySelector(".ai-provenance-status");
     var fLang = getFoldLang();
-    var ft = FOLD_I18N[fLang] || FOLD_I18N["en"];
+    var ft = foldTexts(fLang);
     if (statusEl) {
       if (cmp < 0) {
         // anchor is older than viewed release: valid since anchorRel
@@ -611,29 +892,9 @@
           note.setAttribute("data-orig-text", note.textContent);
         }
         if (cmp < 0) {
-          if (fLang === "de") {
-            note.textContent = "Dieser Leitfaden basiert auf dem Referenzstand AUTOSAR " + anchorRel + " und ist für Release " + rel + " unverändert gültig. Alle Aussagen basieren vollständig auf den maßgeblichen Spezifikationsdokumenten.";
-          } else if (fLang === "es") {
-            note.textContent = "Esta guía técnica se basa en la versión de referencia AUTOSAR " + anchorRel + " y es válida sin cambios para la versión " + rel + ".";
-          } else if (fLang === "pt") {
-            note.textContent = "Este guia técnico baseia-se na versão de referência AUTOSAR " + anchorRel + " e é válido sem alterações para a versão " + rel + ".";
-          } else if (fLang === "hi") {
-            note.textContent = "यह तकनीकी गाइड संदर्भ रिलीज AUTOSAR " + anchorRel + " पर आधारित है और रिलीज " + rel + " के लिए अपरिवर्तित मान्य है।";
-          } else {
-            note.textContent = "This technical guide is based on the reference release AUTOSAR " + anchorRel + " and remains valid unchanged for release " + rel + ".";
-          }
+          note.textContent = T("Dieser Leitfaden basiert auf dem Referenzstand AUTOSAR {anchor} und ist für Release {rel} unverändert gültig. Alle Aussagen basieren vollständig auf den maßgeblichen Spezifikationsdokumenten.", { anchor: anchorRel, rel: rel });
         } else if (cmp > 0) {
-          if (fLang === "de") {
-            note.textContent = "Dieser Leitfaden basiert auf dem Referenzstand AUTOSAR " + anchorRel + " (Projektion auf Release " + rel + "). Alle Aussagen basieren auf den maßgeblichen Spezifikationsdokumenten.";
-          } else if (fLang === "es") {
-            note.textContent = "Esta guía técnica se basa en la versión de referencia AUTOSAR " + anchorRel + " (proyección a la versión " + rel + ").";
-          } else if (fLang === "pt") {
-            note.textContent = "Este guia técnico baseia-se na versão de referência AUTOSAR " + anchorRel + " (projeção para a versão " + rel + ").";
-          } else if (fLang === "hi") {
-            note.textContent = "यह तकनीकी गाइड संदर्भ रिलीज AUTOSAR " + anchorRel + " पर आधारित है (रिलीज " + rel + " पर प्रक्षेपण)।";
-          } else {
-            note.textContent = "This technical guide is based on reference release AUTOSAR " + anchorRel + " (projected to release " + rel + ").";
-          }
+          note.textContent = T("Dieser Leitfaden basiert auf dem Referenzstand AUTOSAR {anchor} (Projektion auf Release {rel}). Alle Aussagen basieren auf den maßgeblichen Spezifikationsdokumenten.", { anchor: anchorRel, rel: rel });
         } else {
           note.textContent = note.getAttribute("data-orig-text");
         }
@@ -643,7 +904,7 @@
 
   // Update inline element provenance tags
   var fLangTag = getFoldLang();
-  var ftTag = FOLD_I18N[fLangTag] || FOLD_I18N["en"];
+  var ftTag = foldTexts(fLangTag);
   scope.querySelectorAll(".ai-provenance-tag").forEach(function (tag) {
     var anchorRel = tag.getAttribute("data-anchor-release");
     if (!anchorRel) return;
@@ -819,6 +1080,7 @@
       delta.style.display = "none";
     });
     applyStandardsLinkRewrites(document, "");
+    updateAnchorStatus("");
   }
 
   // Geöffnetes Release-Menü im Fenster halten: Ragt es rechts hinaus (schmale Bildschirme),
@@ -871,7 +1133,13 @@
         var rel = releaseFromLink(a);
         if (!rel) return;
         e.preventDefault();
-        var next = "release=" + rel;
+        // Ziel und übriger Zustand im Anker bleiben (Auswahl der Übersicht, KI-Panel); nur release= wechselt
+        var h = (location.hash || "").replace(/^#/, "");
+        try { h = decodeURIComponent(h); } catch (err) { /* unkodiert */ }
+        var keep = h.split("&").filter(function (part) { return part && part.indexOf("release=") !== 0 && part.indexOf("at=") !== 0; });
+        var target = keep.filter(function (part) { return part.indexOf("=") < 0; }).slice(0, 1);
+        var rest = keep.filter(function (part) { return part.indexOf("=") >= 0; });
+        var next = target.concat(["release=" + rel], rest).join("&");
         if ((location.hash || "") === "#" + next) {
           applyReleaseContext(rel);
           return;
@@ -994,6 +1262,7 @@
         searchInput.focus();
       });
     }
+    bindSiteSearch(searchInput);
 
     document.addEventListener("click", function (e) {
       document.querySelectorAll("details.universe-dropdown[open], details.release-dropdown[open], details.shell-dropdown[open], details.shell-prefs[open], details[data-ai-model-widget][open]").forEach(function (d) {
@@ -1037,6 +1306,25 @@
     bindDossierControls();
     bindSnippetCurationControls();
     bindGuideTabs();
+  }
+
+  // Volltextsuche der Kopfzeile: static/site-search.js (Index search/, _src/tools/export_search.py) wird
+  // erst beim ersten Fokus, bei einer Eingabe oder bei ?q=… in der Adresse geladen.
+  function bindSiteSearch(input) {
+    if (!input || bindSiteSearch.done) return;
+    bindSiteSearch.done = true;
+    var started = false;
+    function start() {
+      if (started) return;
+      started = true;
+      var s = document.createElement("script");
+      s.src = getRootBasePrefix() + "static/site-search.js";
+      document.head.appendChild(s);
+    }
+    ["focus", "input", "pointerdown"].forEach(function (type) { input.addEventListener(type, start); });
+    var form = input.closest("form");
+    if (form) form.addEventListener("submit", function (e) { e.preventDefault(); start(); });
+    if (/[?&]q=/.test(location.search)) start();
   }
 
   // Reiter „User Guide“ / „Implementer's Guide“ an Elementen (ARIA tablist, Klick + Pfeiltasten)
@@ -1302,7 +1590,7 @@
         if (!tab.closest("dialog.dossier-modal")) return;
         if (tab.getAttribute("draggable") === "true") return;
         tab.setAttribute("draggable", "true");
-        tab.setAttribute("title", (tab.getAttribute("title") || "Vergleichsreiter") + " — zum Verknüpfen auf anderen Reiter ziehen");
+        tab.setAttribute("title", (tab.getAttribute("title") || T("Vergleichsreiter")) + T(" — zum Verknüpfen auf anderen Reiter ziehen"));
       });
     }
 
@@ -1534,6 +1822,7 @@
         }).join(""));
       }
       setTimeout(updateSnippetBadges, 0);
+      watchUi(modal);
     }
 
     // Seit der Generierung zugeordnete Belege (lib_current_context.py) liegen als JSON im Dossier
@@ -1557,15 +1846,15 @@
         var kind = it.is_figure ? "Schaubild" : "Snippet";
         // Belegseite spec/{figures,snippets}/<Stamm>.html; "file" nur bei Schreibvarianten (case_safe_names.py)
         var href = root + "spec/" + (it.is_figure ? "figures/" : "snippets/") + encodeURIComponent(it.file || it.id) + ".html";
-        var conf = typeof it.confidence === "number" ? " · Konfidenz " + it.confidence.toFixed(2) : "";
+        var conf = typeof it.confidence === "number" ? " · " + T("Konfidenz {c}", { c: it.confidence.toFixed(2) }) : "";
         var targets = (it.targets || []).map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ");
         return dossierCardHtml({
           id: it.id, title: it.excerpt ? it.excerpt.slice(0, 70) : it.id, sws: it.id, name: it.id, kind: "inbound", chip: kind,
           doc: it.doc || "", page: page, docChip: (it.doc || "") + (page ? " (S. " + page + ")" : ""),
           isNew: true, extraClass: "is-current-new",
           bodyHtml: '<blockquote class="current-excerpt"><div class="desc"><p>' + esc(it.excerpt || "") + '</p></div></blockquote>' +
-            '<div class="current-meta"><span>' + esc(it.relation || "") + conf + (targets ? " · für " + targets : "") + '</span>' +
-            '<a href="' + esc(href) + '" target="_blank" rel="noopener">🔍 ' + kind + ' öffnen</a></div>'
+            '<div class="current-meta"><span>' + esc(it.relation || "") + conf + (targets ? " · " + esc(T("für")) + " " + targets : "") + '</span>' +
+            '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(T(it.is_figure ? "🔍 Schaubild öffnen" : "🔍 Snippet öffnen")) + '</a></div>'
         });
       }).join("");
       box.insertAdjacentHTML("beforeend", html);
@@ -1767,7 +2056,7 @@
       if (itemId) {
         if (!attachedDiscussionItems.has(itemId)) {
           attachedDiscussionItems.add(itemId);
-          appendDiscussionSystemNote("Element <code>" + itemId + "</code> zur Diskussion hinzugefügt.");
+          appendDiscussionSystemNote(T("Element <code>{id}</code> zur Diskussion hinzugefügt.", { id: itemId }));
         }
         var targetCard = cardFor(itemId);
         if (targetCard) {
@@ -1791,7 +2080,7 @@
           if (modal) modal.classList.add("has-chat-open");
         } else {
           attachedDiscussionItems.delete(itemId);
-          appendDiscussionSystemNote("Element <code>" + itemId + "</code> aus Diskussion entfernt.");
+          appendDiscussionSystemNote(T("Element <code>{id}</code> aus Diskussion entfernt.", { id: itemId }));
         }
       } else {
         attachedDiscussionItems.add(itemId);
@@ -1799,7 +2088,7 @@
           chatPane.hidden = false;
           if (modal) modal.classList.add("has-chat-open");
         }
-        appendDiscussionSystemNote("Element <code>" + itemId + "</code> zur Diskussion hinzugefügt.");
+        appendDiscussionSystemNote(T("Element <code>{id}</code> zur Diskussion hinzugefügt.", { id: itemId }));
         var targetCard = cardFor(itemId);
         if (targetCard) {
           targetCard.classList.remove("is-collapsed");
@@ -2078,7 +2367,7 @@
         var dur = meta.duration_ms ? (meta.duration_ms / 1000).toFixed(1) + "s" : "";
         var prov = meta.provider || "Gemini";
         var m = meta.model || "gemini-3.8-flash-medium";
-        metaEl.innerHTML = " · Provider: <strong>" + escapeHtmlDiff(prov) + "</strong> · Modell: <code>" + escapeHtmlDiff(m) + "</code> · Dauer: <strong>" + dur + "</strong>";
+        metaEl.innerHTML = T(" · Provider: <strong>{prov}</strong> · Modell: <code>{model}</code> · Dauer: <strong>{dur}</strong>", { prov: escapeHtmlDiff(prov), model: escapeHtmlDiff(m), dur: dur });
       }
 
       if (previewEl) {
@@ -2419,26 +2708,26 @@
 
     function getRawTabShortTitle(tabId) {
       if (tabId === "prompt") return "Prompt";
-      if (tabId === "current") return "Aktueller Output";
+      if (tabId === "current") return T("Aktueller Output");
       if (tabId && tabId.startsWith("preview-")) {
         var prev = rawWorkbenchState.previews[tabId];
         if (prev && prev.modelNameDisplay) {
-          return "Vorschau " + prev.seq;
+          return T("Vorschau {n}", { n: prev.seq });
         }
-        return "Vorschau " + tabId.replace("preview-", "");
+        return T("Vorschau {n}", { n: tabId.replace("preview-", "") });
       }
       return tabId || "";
     }
 
     function getRawTabFullTitle(tabId) {
       if (tabId === "prompt") return "Plaintext Prompt";
-      if (tabId === "current") return "Aktueller Stand (Ist-Zustand)";
+      if (tabId === "current") return T("Aktueller Stand (Ist-Zustand)");
       if (tabId && tabId.startsWith("preview-")) {
         var prev = rawWorkbenchState.previews[tabId];
         if (prev && prev.modelNameDisplay) {
-          return "Vorschau (" + prev.modelNameDisplay + ")";
+          return T("Vorschau ({name})", { name: prev.modelNameDisplay });
         }
-        return "Vorschau " + tabId.replace("preview-", "");
+        return T("Vorschau {n}", { n: tabId.replace("preview-", "") });
       }
       return tabId || "";
     }
@@ -2461,7 +2750,7 @@
     function selectRawSubTab(tabId) {
       if (rawWorkbenchState.compareSourceId) {
         if (tabId === "prompt") {
-          alert("Der Plaintext Prompt kann nur exklusiv angezeigt und nicht mit generiertem Output verglichen werden.");
+          alert(T("Der Plaintext Prompt kann nur exklusiv angezeigt und nicht mit generiertem Output verglichen werden."));
           return;
         }
         if (tabId === rawWorkbenchState.compareSourceId) {
@@ -2471,7 +2760,7 @@
         if (tabId.startsWith("preview-")) {
           var p = rawWorkbenchState.previews[tabId];
           if (!p || p.state !== "done") {
-            alert("Diese Vorschau ist noch nicht fertig generiert.");
+            alert(T("Diese Vorschau ist noch nicht fertig generiert."));
             return;
           }
         }
@@ -2517,7 +2806,7 @@
 
     function initiateCompare(sourceId) {
       if (sourceId === "prompt") {
-        alert("Der Plaintext Prompt kann nur exklusiv angezeigt und nicht verglichen werden.");
+        alert(T("Der Plaintext Prompt kann nur exklusiv angezeigt und nicht verglichen werden."));
         return;
       }
       if (rawWorkbenchState.compareSourceId === sourceId) {
@@ -2542,7 +2831,7 @@
       if (hintBar) {
         hintBar.style.display = "flex";
         if (hintText) {
-          hintText.textContent = "💡 Basis gewählt: „" + getRawTabFullTitle(sourceId) + "“. Klicke nun auf einen zweiten Reiter (z.B. Aktueller Output oder eine andere Vorschau), um den Side-by-Side-Vergleich zu öffnen.";
+          hintText.textContent = T("💡 Basis gewählt: „{name}“. Klicke nun auf einen zweiten Reiter (z.B. Aktueller Output oder eine andere Vorschau), um den Side-by-Side-Vergleich zu öffnen.", { name: getRawTabFullTitle(sourceId) });
         }
       }
     }
@@ -2573,10 +2862,10 @@
       var linkLabel = dEl("raw-tab-link-label");
       if (linkBadge) {
         linkBadge.style.display = "inline-flex";
-        linkBadge.title = "Vergleich aktiv: " + getRawTabShortTitle(sourceId) + " ⇄ " + getRawTabShortTitle(targetId) + " (Klick kehrt zur Einzelansicht zurück)";
+        linkBadge.title = T("Vergleich aktiv: {a} ⇄ {b} (Klick kehrt zur Einzelansicht zurück)", { a: getRawTabShortTitle(sourceId), b: getRawTabShortTitle(targetId) });
       }
       if (linkLabel) {
-        linkLabel.textContent = "Verknüpft: " + getRawTabShortTitle(sourceId) + " ⇄ " + getRawTabShortTitle(targetId);
+        linkLabel.textContent = T("Verknüpft: {a} ⇄ {b}", { a: getRawTabShortTitle(sourceId), b: getRawTabShortTitle(targetId) });
       }
 
       var panePrompt = dEl("raw-pane-prompt");
@@ -2592,8 +2881,8 @@
 
       var tagLeft = dEl("diff-tag-left");
       var tagRight = dEl("diff-tag-right");
-      if (tagLeft) tagLeft.textContent = "Basis: " + getRawTabShortTitle(sourceId);
-      if (tagRight) tagRight.textContent = "Vergleich: " + getRawTabShortTitle(targetId);
+      if (tagLeft) tagLeft.textContent = T("Basis: {name}", { name: getRawTabShortTitle(sourceId) });
+      if (tagRight) tagRight.textContent = T("Vergleich: {name}", { name: getRawTabShortTitle(targetId) });
 
       var leftHtml = getRawTabHtml(sourceId);
       var rightHtml = getRawTabHtml(targetId);
@@ -2910,7 +3199,7 @@
       var ta = dEl("raw-prompt-textarea");
       var promptText = ta ? ta.value.trim() : "";
       if (!promptText) {
-        alert("Prompt-Text darf nicht leer sein.");
+        alert(T("Prompt-Text darf nicht leer sein."));
         return;
       }
       var job = {
@@ -3037,7 +3326,7 @@
       if (!isLocal) {
         // Eigener Schlüssel, eigener Endpunkt oder Projektkontingent: direkt aus dem Browser, gestreamt.
         var phaseB = inPane("pane-phase-" + pId), tokensB = inPane("pane-tokens-" + pId), streamB = inPane("pane-stream-" + pId);
-        if (phaseB) phaseB.textContent = "[Phase: Warte auf das Modell…]";
+        if (phaseB) phaseB.textContent = T("[Phase: Warte auf das Modell…]");
         var runMeta = {};
         run = access.complete({
           source: choice.source, provider: choice.provider, model: choice.model, prompt: job.promptText,
@@ -3118,7 +3407,7 @@
                         "reasoning": "[Phase: Analysiere Spezifikation…]",
                         "generating": "[Phase: Generiere Fragment…]"
                       };
-                      phaseBadge.textContent = pLabels[ev.phase] || ("[Phase: " + ev.phase + "…]");
+                      phaseBadge.textContent = T(pLabels[ev.phase] || "[Phase: {name}…]", { name: ev.phase });
                     }
                     if (ev.tokens !== undefined && tokensBadge) {
                       tokensBadge.textContent = ev.tokens;
@@ -3134,12 +3423,12 @@
                     if (ev.event === "complete") {
                       finalData = ev;
                     } else if (ev.event === "error") {
-                      throw new Error(ev.error || "Der KI-Agent hat einen Fehler gemeldet (ohne Detailtext).");
+                      throw new Error(ev.error || T("Der KI-Agent hat einen Fehler gemeldet (ohne Detailtext)."));
                     }
                   }
                 }
               }
-              if (!finalData) throw new Error("Verbindung zum Server abgebrochen, bevor das Modell ein Ergebnis geliefert hat.");
+              if (!finalData) throw new Error(T("Verbindung zum Server abgebrochen, bevor das Modell ein Ergebnis geliefert hat."));
               return finalData;
             }
             return previewReadJson(res);
@@ -3155,7 +3444,7 @@
 
           if (!data.ok) {
             prev.state = "error";
-            prev.error = data.error || "Modell lieferte kein gültiges Ergebnis.";
+            prev.error = data.error || T("Modell lieferte kein gültiges Ergebnis.");
             tabEl.setAttribute("data-state", "error");
             if (btnCancel) btnCancel.style.display = "none";
             var btnClose = tabEl.querySelector(".btn-subtab-close");
@@ -3632,7 +3921,7 @@
             if (h) h.setAttribute("aria-expanded", "true");
           }
         });
-        appendDiscussionSystemNote(countAdded + " Element(e) aus Multiselektion zur Diskussion hinzugefügt.");
+        appendDiscussionSystemNote(T("{n} Element(e) aus Multiselektion zur Diskussion hinzugefügt.", { n: countAdded }));
         selectedSnippetIds.clear();
         updateSelectionUI();
         renderAttachedChips();
@@ -3908,7 +4197,7 @@
         var dId = btnDetach.getAttribute("data-item-id");
         if (dId) {
           attachedDiscussionItems.delete(dId);
-          appendDiscussionSystemNote("Element <code>" + dId + "</code> aus Diskussion entfernt.");
+          appendDiscussionSystemNote(T("Element <code>{id}</code> aus Diskussion entfernt.", { id: dId }));
           renderAttachedChips();
           updateSnippetBadges();
         }
@@ -3921,7 +4210,7 @@
         e.preventDefault();
         attachedDiscussionItems.clear();
         searchHits().forEach(function (id) { excludedHits.add(id); });
-        appendDiscussionSystemNote("Alle Elemente aus der Diskussion gelöst.");
+        appendDiscussionSystemNote(T("Alle Elemente aus der Diskussion gelöst."));
         renderAttachedChips();
         updateSnippetBadges();
         return;
@@ -4178,26 +4467,26 @@
 
       if (items.length === 0) {
         return {
-          reply: "Aktuell ist kein Element im Diskussions-Fokus. Wähle im Dossier ein oder mehrere Elemente (Inbound-Snippets oder konstituierende Records) mit „💬 Mit KI diskutieren“ aus.",
+          reply: T("Aktuell ist kein Element im Diskussions-Fokus. Wähle im Dossier ein oder mehrere Elemente (Inbound-Snippets oder konstituierende Records) mit „💬 Mit KI diskutieren“ aus."),
           suggestion: null,
           rationale: ""
         };
       }
 
       var itemsList = items.map(function (it) {
-        return "• " + it.id + " (" + (it.isConstituting ? "Konstituierend · " + it.name : "Inbound aus " + it.doc) + ")";
+        return "• " + it.id + " (" + (it.isConstituting ? T("Konstituierend · {kind}", { kind: it.name }) : T("Inbound aus {doc}", { doc: it.doc })) + ")";
       }).join("\n");
 
       if (lower.indexOf("woher") !== -1 || lower.indexOf("herkunft") !== -1 || lower.indexOf("quelle") !== -1) {
         return {
-          reply: "Herkunftsnachweis (Offline-Modus) für " + items.length + " fokussierte(s) Element(e):\n\n" + itemsList + "\n\nAlle Elemente stammen aus unveränderlichen, im Repository gepinnten Spezifikationen und bilden den Audit-Trail für das Modul.",
+          reply: T("Herkunftsnachweis (Offline-Modus) für {n} fokussierte(s) Element(e):\n\n{items}\n\nAlle Elemente stammen aus unveränderlichen, im Repository gepinnten Spezifikationen und bilden den Audit-Trail für das Modul.", { n: items.length, items: itemsList }),
           suggestion: null,
           rationale: ""
         };
       }
       if (lower.indexOf("sinn") !== -1 || lower.indexOf("zweck") !== -1 || lower.indexOf("warum") !== -1 || lower.indexOf("relevan") !== -1 || lower.indexOf("schnittstelle") !== -1 || lower.indexOf("beziehung") !== -1) {
         return {
-          reply: "Schnittstellenbezug & Kontext:\n\n" + itemsList + "\n\nDie konstituierenden APIs definieren den Kernvertrag des Moduls, während Inbound-Snippets die verbindlichen Aufrufe und Rollenverteilungen durch Nachbarmodule belegen.",
+          reply: T("Schnittstellenbezug & Kontext:\n\n{items}\n\nDie konstituierenden APIs definieren den Kernvertrag des Moduls, während Inbound-Snippets die verbindlichen Aufrufe und Rollenverteilungen durch Nachbarmodule belegen.", { items: itemsList }),
           suggestion: null,
           rationale: ""
         };
@@ -4212,20 +4501,20 @@
         );
         if (!isSubstantiated) {
           return {
-            reply: "Deine Beanstandung zu den ausgewählten Elementen wurde registriert.\n\nUm die Beanstandung fachlich zu prüfen und als „begründet“ zu akzeptieren, ist eine stichhaltige technische Begründung erforderlich (z. B. Schichtentrennung, falsche Modulzuordnung, Redundanz oder Architekturwiderspruch).\n\nBitte erläutere kurz: *Warum genau* ist die Zuordnung oder Eigenschaft falsch?",
+            reply: T("Deine Beanstandung zu den ausgewählten Elementen wurde registriert.\n\nUm die Beanstandung fachlich zu prüfen und als „begründet“ zu akzeptieren, ist eine stichhaltige technische Begründung erforderlich (z. B. Schichtentrennung, falsche Modulzuordnung, Redundanz oder Architekturwiderspruch).\n\nBitte erläutere kurz: *Warum genau* ist die Zuordnung oder Eigenschaft falsch?"),
             suggestion: null,
             rationale: ""
           };
         }
         var targets = items.map(function (it) { return it.id; }).join(", ");
         return {
-          reply: "✓ Fachliche Prüfung bestanden: Deine Begründung („" + message + "“) ist plausibel und stichhaltig.\n\nIch habe einen gemeinsamen Kurationsvorschlag formuliert. Du kannst ihn im Vorschlags-Dialog unten entweder in die Curation-Queue einreihen (Exit 1) oder direkt als „begründet beanstandet“ im Dossier vermerken (Exit 2).",
+          reply: T("✓ Fachliche Prüfung bestanden: Deine Begründung („{msg}“) ist plausibel und stichhaltig.\n\nIch habe einen gemeinsamen Kurationsvorschlag formuliert. Du kannst ihn im Vorschlags-Dialog unten entweder in die Curation-Queue einreihen (Exit 1) oder direkt als „begründet beanstandet“ im Dossier vermerken (Exit 2).", { msg: message }),
           suggestion: "[STATUS: EXCLUDE_OR_REVISE]\nElemente im Fokus: " + targets + "\nBegründung (durch KI geprüft): " + message,
           rationale: "Im Multi-Item-Curation-Dialog begründet beanstandet: " + message
         };
       }
       return {
-        reply: "Fokus auf " + items.length + " Element(e):\n\n" + itemsList + "\n\nStelle Fragen zu Herkunft, Schnittstellenbezug oder formuliere Beanstandungen für die Curation-Queue.",
+        reply: T("Fokus auf {n} Element(e):\n\n{items}\n\nStelle Fragen zu Herkunft, Schnittstellenbezug oder formuliere Beanstandungen für die Curation-Queue.", { n: items.length, items: itemsList }),
         suggestion: null,
         rationale: ""
       };
@@ -4269,7 +4558,7 @@
       var propText = dEl("chat-pane-proposal-text");
       var propBtn = dEl("btn-submit-workbench-proposal");
       if (!propText || !propBtn) return;
-      propText.textContent = data.suggestion + "\n\nBegründung: " + (data.rationale || "");
+      propText.textContent = data.suggestion + "\n\n" + T("Begründung:") + " " + (data.rationale || "");
       propBox.hidden = false;
       propBtn.dataset.suggestion = data.suggestion;
       propBtn.dataset.rationale = data.rationale || "";
@@ -4292,7 +4581,7 @@
 
       var assistantBubble = document.createElement("div");
       assistantBubble.className = "chat-bubble bubble-assistant";
-      assistantBubble.textContent = "Analysiere Fokus-Kontext…";
+      assistantBubble.textContent = T("Analysiere Fokus-Kontext…");
       thread.appendChild(assistantBubble);
       thread.scrollTop = thread.scrollHeight;
 
@@ -4308,7 +4597,7 @@
         return;
       }
       if (aiRoute.kind === "byok") {
-        assistantBubble.textContent = "KI überlegt… (" + access.routeLabel(aiRoute) + ")";
+        assistantBubble.textContent = T("KI überlegt… ({route})", { route: access.routeLabel(aiRoute) });
         try {
           var reply = await access.discuss({
             route: aiRoute,
@@ -4325,7 +4614,7 @@
           appendAnswerMeta(assistantBubble, access.answerLabel(reply, aiRoute));
           showWorkbenchProposal(reply, attachedIds, primaryId);
         } catch (err) {
-          assistantBubble.textContent = "⚠️ Keine KI-Antwort: " + String((err && err.message) || err);
+          assistantBubble.textContent = T("⚠️ Keine KI-Antwort: {err}", { err: String((err && err.message) || err) });
         }
         thread.scrollTop = thread.scrollHeight;
         return;
@@ -4345,7 +4634,7 @@
           })
         });
         var data = await res.json();
-        assistantBubble.textContent = data.reply || data.error || "Keine Antwort erhalten.";
+        assistantBubble.textContent = data.reply || data.error || T("Keine Antwort erhalten.");
         if (data.reply && access) appendAnswerMeta(assistantBubble, access.answerLabel(data, aiRoute));
         showWorkbenchProposal(data, attachedIds, primaryId);
       } catch (err) {
@@ -4430,17 +4719,17 @@
         var conf = document.createElement("div");
         conf.className = "chat-bubble bubble-assistant";
         conf.innerHTML =
-          "✓ <strong>Curation-Event im Browser-Store (<code>" + REVIEW_STORE + "</code>) abgelegt.</strong><br>" +
-          "Für <strong>" + attachedIds.length + "</strong> Element(e) (" + attachedIds.join(", ") + ") wurde eine Kurationsanfrage (<code>kind: curation_request</code>, <code>outcome: reject</code>) im lokalen Review-Paket erfasst.<br>" +
-          "Das Review-Paket enthält jetzt <strong>" + nextPkg.length + "</strong> Entscheidung(en).<br><br>" +
-          "<strong>Offizieller Weg zur Übernahme ins Repository:</strong>" +
+          T("✓ <strong>Curation-Event im Browser-Store (<code>{store}</code>) abgelegt.</strong><br>", { store: REVIEW_STORE }) +
+          T("Für <strong>{n}</strong> Element(e) ({ids}) wurde eine Kurationsanfrage (<code>kind: curation_request</code>, <code>outcome: reject</code>) im lokalen Review-Paket erfasst.<br>", { n: attachedIds.length, ids: attachedIds.join(", ") }) +
+          T("Das Review-Paket enthält jetzt <strong>{n}</strong> Entscheidung(en).<br><br>", { n: nextPkg.length }) +
+          T("<strong>Offizieller Weg zur Übernahme ins Repository:</strong>") +
           "<ul style='margin: 0.35rem 0 0.6rem 1.2rem; padding: 0;'>" +
-            "<li><strong>GitHub-Issue:</strong> Öffne oben rechts „Feedback &amp; Kuration“ → „Review-Paket“ und sende es als Issue an <code>2b-rs/autodocs</code>.</li>" +
-            "<li><strong>JSON-Export:</strong> Exportiere das Paket als JSON-Datei und lies es via <code>python3 _src/tools/curation_ingest.py --apply paket.json</code> im Repository ein.</li>" +
+            T("<li><strong>GitHub-Issue:</strong> Öffne oben rechts „Feedback &amp; Kuration“ → „Review-Paket“ und sende es als Issue an <code>2b-rs/autodocs</code>.</li>") +
+            T("<li><strong>JSON-Export:</strong> Exportiere das Paket als JSON-Datei und lies es via <code>python3 _src/tools/curation_ingest.py --apply paket.json</code> im Repository ein.</li>") +
           "</ul>" +
           "<div style='display:flex; gap:0.5rem; margin-top:0.4rem;'>" +
-            "<button type=\"button\" class=\"curation-btn\" data-action=\"open-review-drawer\" style=\"padding:4px 10px; cursor:pointer;\">📦 Review-Paket öffnen</button>" +
-            "<button type=\"button\" class=\"curation-btn\" data-action=\"export-curation-json\" style=\"padding:4px 10px; cursor:pointer;\">⬇️ JSON exportieren</button>" +
+            "<button type=\"button\" class=\"curation-btn\" data-action=\"open-review-drawer\" style=\"padding:4px 10px; cursor:pointer;\">" + T("📦 Review-Paket öffnen") + "</button>" +
+            "<button type=\"button\" class=\"curation-btn\" data-action=\"export-curation-json\" style=\"padding:4px 10px; cursor:pointer;\">" + T("⬇️ JSON exportieren") + "</button>" +
           "</div>";
         thread.appendChild(conf);
         thread.scrollTop = thread.scrollHeight;
@@ -4486,8 +4775,8 @@
         var conf = document.createElement("div");
         conf.className = "chat-bubble bubble-assistant";
         conf.innerHTML =
-          "✓ <strong>Direkt als „begründet beanstandet“ im Dossier vermerkt.</strong><br>" +
-          "Für <strong>" + attachedIds.length + "</strong> Element(e) (" + attachedIds.join(", ") + ") wurde die Beanstandung mit der KI-Begründung im lokalen Audit-Trail markiert. Das Element wird im Dossier hervorgehoben und kann jederzeit über das <code>✕</code> an der Badge zurückgesetzt werden.";
+          T("✓ <strong>Direkt als „begründet beanstandet“ im Dossier vermerkt.</strong><br>") +
+          T("Für <strong>{n}</strong> Element(e) ({ids}) wurde die Beanstandung mit der KI-Begründung im lokalen Audit-Trail markiert. Das Element wird im Dossier hervorgehoben und kann jederzeit über das <code>✕</code> an der Badge zurückgesetzt werden.", { n: attachedIds.length, ids: attachedIds.join(", ") });
         thread.appendChild(conf);
         thread.scrollTop = thread.scrollHeight;
       }
