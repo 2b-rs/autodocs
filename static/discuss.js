@@ -756,7 +756,9 @@
             record_id: state.context && state.context.record_id,
             message: text,
             context: state.context,
-            provider: aiRoute.cli || undefined
+            provider: aiRoute.cli || undefined,
+            // Ausweich-CLIs aus „Dein KI-Zugang“: nur bei erschöpftem Kontingent oder nicht erreichbarer CLI.
+            fallback: aiRoute.fallback || undefined
           })
         });
 
@@ -796,6 +798,8 @@
                 accumulated += (ev.delta || "");
                 streamTextEl.textContent = accumulated;
                 assistantBubble.classList.remove("pending");
+              } else if (ev.event === "fallback" && !accumulated) {
+                streamTextEl.textContent = access && access.fallbackText ? access.fallbackText(ev) : (ev.to_name || ev.to || "") + " …";
               } else if (ev.event === "thinking" && !accumulated) {
                 streamTextEl.textContent = "Denkvorgang läuft… (" + elapsedSec + " s)";
               } else if ((ev.event === "tick" || ev.event === "start") && !accumulated) {

@@ -2609,8 +2609,8 @@
     }
 
     // --- Modellwahl der Vorschau-Reiter ---
-    // Die Liste kommt aus AiAccess.models(): lokale CLIs von _src/serve.py (nur agy und cursor kann
-    // /api/ai/execute_prompt ausführen), Projektkontingent und alle Modelle eigener Schlüssel und
+    // Die Liste kommt aus AiAccess.models(): lokale CLIs von _src/serve.py (jede gefundene CLI, die
+    // /api/ai/execute_prompt ausführen kann: runnable), Projektkontingent und alle Modelle eigener Schlüssel und
     // Endpunkte, gruppiert nach Quelle. Ohne ai-access.js bleibt der statische Rückfall mit den lokalen
     // CLIs (gleiches Format wie lib_curation_modal.preview_controls_html).
     var PREVIEW_LOCAL_DEFAULTS = [
@@ -2624,7 +2624,8 @@
     }
     // Effort hat nur bei lokalen Gemini-Modellen über agy eine Bedeutung (wird Teil der Modell-ID).
     function previewEffortApplies(source, provider, model) {
-      return source === "local" && (provider === "agy" || /^gemini-/.test(model || ""));
+      // Nur agy kodiert den Effort in der Modell-ID; die Gemini-CLI („gemini“) nimmt die ID unverändert.
+      return source === "local" && (provider === "agy" || (!provider && /^gemini-/.test(model || "")));
     }
     function previewOptionValue(m) { return m.source + "|" + m.provider + "|" + m.model; }
     function previewOptionLabel(m) {
@@ -2635,7 +2636,7 @@
       var a = window.AiAccess;
       if (!a || typeof a.models !== "function") return null;
       return a.models().filter(function (m) {
-        return m.source !== "local" || m.provider === "agy" || m.provider === "cursor";
+        return m.source !== "local" || m.runnable !== false;
       });
     }
     function previewOptionHtml(m, selected) {
@@ -3941,11 +3942,12 @@
       // 7b. Chat bubble review actions
       if (e.target.closest('[data-action="open-review-drawer"]')) {
         e.preventDefault();
+        // Direkt zum Abschnitt „Review-Paket“ im Panel „Feedback & Kuration“.
         var openBtn = document.querySelector("[data-review-open]");
-        if (openBtn) {
+        if (window.araReview && typeof window.araReview.openDrawer === "function") {
+          window.araReview.openDrawer("package");
+        } else if (openBtn) {
           openBtn.click();
-        } else if (window.araReview && typeof window.araReview.openDrawer === "function") {
-          window.araReview.openDrawer();
         }
         return;
       }
@@ -4320,7 +4322,8 @@
             record_id: primaryId,
             attached_ids: attachedIds,
             message: message,
-            provider: aiRoute.cli || undefined
+            provider: aiRoute.cli || undefined,
+            fallback: aiRoute.fallback || undefined
           })
         });
         var data = await res.json();
@@ -4414,7 +4417,7 @@
           "Das Review-Paket enthält jetzt <strong>" + nextPkg.length + "</strong> Entscheidung(en).<br><br>" +
           "<strong>Offizieller Weg zur Übernahme ins Repository:</strong>" +
           "<ul style='margin: 0.35rem 0 0.6rem 1.2rem; padding: 0;'>" +
-            "<li><strong>GitHub-Issue:</strong> Öffne das Review-Paket oben rechts und sende es als authentifiziertes Issue an <code>2b-rs/autodocs</code>.</li>" +
+            "<li><strong>GitHub-Issue:</strong> Öffne oben rechts „Feedback &amp; Kuration“ → „Review-Paket“ und sende es als Issue an <code>2b-rs/autodocs</code>.</li>" +
             "<li><strong>JSON-Export:</strong> Exportiere das Paket als JSON-Datei und lies es via <code>python3 _src/tools/curation_ingest.py --apply paket.json</code> im Repository ein.</li>" +
           "</ul>" +
           "<div style='display:flex; gap:0.5rem; margin-top:0.4rem;'>" +

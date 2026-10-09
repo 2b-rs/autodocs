@@ -98,7 +98,21 @@
     zh: { drawerTitle: "反馈与策展", fbBtn: "反馈 / 报告缺陷", ghAs: "已登录为 %s", ghOn: "已保存令牌", ghNone: "未连接 – 通过预填的 issue 提交", ghConnect: "连接", ghManage: "管理" },
     nl: { drawerTitle: "Feedback & curatie", fbBtn: "Feedback / defect melden", ghAs: "aangemeld als %s", ghOn: "token opgeslagen", ghNone: "niet verbonden – indienen via een vooraf ingevuld issue", ghConnect: "Verbinden", ghManage: "Beheren" }
   };
-  var t = Object.assign({}, L.en, L2.en, L[lang] || {}, L2[lang] || {});
+  // Panel: Abschnitte „Feedback“ (Melden, Meine Meldungen, für Verwalter: Eingegangenes Feedback) und „Review-Paket“.
+  var L3 = {
+    de: {"roles": "Melden kann jede Person, auch ohne Anmeldung. Das Review-Paket sammelt deine Kurationsentscheidungen; sichten und freigeben können die Verwalter.", "fbSec": "Feedback", "fbBtn": "Feedback melden", "mine": "Meine Meldungen", "mineEmpty": "Noch keine Meldungen.", "mineEmptyAnon": "Noch keine Meldungen aus diesem Browser.", "mineSignIn": "Mit Anmeldung siehst du deine Meldungen auf allen Geräten.", "signIn": "Anmelden", "withdraw": "Zurückziehen", "answer": "Antwort", "loading": "Wird geladen …", "mineLocal": "Lokal abgelegte Meldungen liegen in _src/spec/feedback-queue/user/.", "mineIssue": "Meldungen über GitHub findest du dort unter deinen Issues.", "mineErr": "Deine Meldungen sind gerade nicht abrufbar.", "adminIn": "Eingegangenes Feedback", "adminNew": "%n neu", "adminOpen": "Sichten", "pkgSec": "Review-Paket", "pkgLead": "Kurationsentscheidungen aus dem Kurations-Editor und den Anforderungs-Reviews. Sie bleiben in diesem Browser, bis du das Paket absendest.", "pkgEmpty": "Noch leer. Stimmen und Vorschläge aus dem Kurations-Editor landen hier.", "ghNone2": "Absenden öffnet ein vorausgefülltes GitHub-Issue – dafür brauchst du ein GitHub-Konto.", "ghConnect2": "Token hinterlegen", "submit2": "Als GitHub-Issue senden"},
+    en: {"roles": "Anyone can report, also without signing in. The review package collects your curation decisions; administrators review and approve.", "fbSec": "Feedback", "fbBtn": "Report feedback", "mine": "My reports", "mineEmpty": "No reports yet.", "mineEmptyAnon": "No reports from this browser yet.", "mineSignIn": "Signed in, you see your reports on every device.", "signIn": "Sign in", "withdraw": "Withdraw", "answer": "Reply", "loading": "Loading …", "mineLocal": "Locally saved reports are in _src/spec/feedback-queue/user/.", "mineIssue": "Reports sent via GitHub are listed there under your issues.", "mineErr": "Your reports cannot be loaded right now.", "adminIn": "Incoming feedback", "adminNew": "%n new", "adminOpen": "Review", "pkgSec": "Review package", "pkgLead": "Curation decisions from the curation editor and the requirement reviews. They stay in this browser until you submit the package.", "pkgEmpty": "Still empty. Votes and proposals from the curation editor end up here.", "ghNone2": "Submitting opens a prefilled GitHub issue – you need a GitHub account for it.", "ghConnect2": "Store a token", "submit2": "Submit as GitHub issue"},
+    es: {"roles": "Cualquiera puede informar, también sin iniciar sesión. El paquete de revisión reúne tus decisiones de curación; los administradores revisan y aprueban.", "fbSec": "Comentarios", "fbBtn": "Enviar comentarios", "mine": "Mis avisos", "mineEmpty": "Todavía no hay avisos.", "mineEmptyAnon": "Todavía no hay avisos desde este navegador.", "mineSignIn": "Con sesión iniciada ves tus avisos en todos tus dispositivos.", "signIn": "Iniciar sesión", "withdraw": "Retirar", "answer": "Respuesta", "loading": "Cargando…", "mineLocal": "Los avisos guardados localmente están en _src/spec/feedback-queue/user/.", "mineIssue": "Los avisos enviados por GitHub están allí, entre tus incidencias.", "mineErr": "Ahora no se pueden cargar tus avisos.", "adminIn": "Comentarios recibidos", "adminNew": "%n nuevos", "adminOpen": "Revisar", "pkgSec": "Paquete de revisión", "pkgLead": "Decisiones de curación del editor de curación y de las revisiones de requisitos. Se quedan en este navegador hasta que envíes el paquete.", "pkgEmpty": "Aún vacío. Aquí llegan los votos y propuestas del editor de curación.", "ghNone2": "Enviar abre una incidencia de GitHub rellenada; necesitas una cuenta de GitHub.", "ghConnect2": "Guardar un token", "submit2": "Enviar como incidencia de GitHub"},
+    pt: {"roles": "Qualquer pessoa pode relatar, também sem login. O pacote de revisão reúne suas decisões de curadoria; os administradores revisam e aprovam.", "fbSec": "Feedback", "fbBtn": "Enviar feedback", "mine": "Meus relatos", "mineEmpty": "Ainda não há relatos.", "mineEmptyAnon": "Ainda não há relatos deste navegador.", "mineSignIn": "Com login, você vê seus relatos em todos os dispositivos.", "signIn": "Entrar", "withdraw": "Retirar", "answer": "Resposta", "loading": "Carregando…", "mineLocal": "Relatos salvos localmente ficam em _src/spec/feedback-queue/user/.", "mineIssue": "Relatos enviados pelo GitHub estão lá, entre suas issues.", "mineErr": "Seus relatos não podem ser carregados agora.", "adminIn": "Feedback recebido", "adminNew": "%n novos", "adminOpen": "Revisar", "pkgSec": "Pacote de revisão", "pkgLead": "Decisões de curadoria do editor de curadoria e das revisões de requisitos. Ficam neste navegador até você enviar o pacote.", "pkgEmpty": "Ainda vazio. Votos e propostas do editor de curadoria chegam aqui.", "ghNone2": "Enviar abre uma issue do GitHub pré-preenchida – é preciso ter uma conta GitHub.", "ghConnect2": "Guardar um token", "submit2": "Enviar como issue do GitHub"},
+    fr: {"roles": "Tout le monde peut signaler, même sans connexion. Le lot de revue rassemble vos décisions de curation ; les administrateurs examinent et valident.", "fbSec": "Avis", "fbBtn": "Signaler un retour", "mine": "Mes signalements", "mineEmpty": "Aucun signalement pour l'instant.", "mineEmptyAnon": "Aucun signalement depuis ce navigateur pour l'instant.", "mineSignIn": "Connecté, vous voyez vos signalements sur tous vos appareils.", "signIn": "Se connecter", "withdraw": "Retirer", "answer": "Réponse", "loading": "Chargement …", "mineLocal": "Les signalements enregistrés localement sont dans _src/spec/feedback-queue/user/.", "mineIssue": "Les signalements envoyés via GitHub y figurent parmi vos tickets.", "mineErr": "Vos signalements ne peuvent pas être chargés pour le moment.", "adminIn": "Retours reçus", "adminNew": "%n nouveaux", "adminOpen": "Examiner", "pkgSec": "Lot de revue", "pkgLead": "Décisions de curation issues de l'éditeur de modération et des revues d'exigences. Elles restent dans ce navigateur jusqu'à l'envoi du lot.", "pkgEmpty": "Encore vide. Les votes et propositions de l'éditeur de modération arrivent ici.", "ghNone2": "L'envoi ouvre un ticket GitHub prérempli – il faut un compte GitHub.", "ghConnect2": "Enregistrer un jeton", "submit2": "Envoyer comme ticket GitHub"},
+    ru: {"roles": "Сообщить может любой, даже без входа. Пакет проверок собирает ваши решения по курации; разбирают и утверждают администраторы.", "fbSec": "Отзывы", "fbBtn": "Оставить отзыв", "mine": "Мои сообщения", "mineEmpty": "Сообщений пока нет.", "mineEmptyAnon": "Из этого браузера сообщений пока нет.", "mineSignIn": "После входа ваши сообщения видны на всех устройствах.", "signIn": "Войти", "withdraw": "Отозвать", "answer": "Ответ", "loading": "Загрузка…", "mineLocal": "Локально сохранённые сообщения лежат в _src/spec/feedback-queue/user/.", "mineIssue": "Сообщения через GitHub находятся там среди ваших issue.", "mineErr": "Сейчас ваши сообщения недоступны.", "adminIn": "Поступившие отзывы", "adminNew": "новых: %n", "adminOpen": "Разобрать", "pkgSec": "Пакет проверок", "pkgLead": "Решения по курации из редактора курации и проверок требований. Хранятся в этом браузере, пока вы не отправите пакет.", "pkgEmpty": "Пока пусто. Сюда попадают голоса и предложения из редактора курации.", "ghNone2": "Отправка открывает заполненный issue на GitHub — нужен аккаунт GitHub.", "ghConnect2": "Сохранить токен", "submit2": "Отправить как issue на GitHub"},
+    ar: {"roles": "يمكن لأي شخص الإبلاغ، حتى دون تسجيل الدخول. تجمع حزمة المراجعة قرارات التقييم الخاصة بك؛ ويراجع المسؤولون ويعتمدون.", "fbSec": "الملاحظات", "fbBtn": "إرسال ملاحظات", "mine": "بلاغاتي", "mineEmpty": "لا توجد بلاغات بعد.", "mineEmptyAnon": "لا توجد بلاغات من هذا المتصفح بعد.", "mineSignIn": "عند تسجيل الدخول ترى بلاغاتك على جميع أجهزتك.", "signIn": "تسجيل الدخول", "withdraw": "سحب", "answer": "الرد", "loading": "جارٍ التحميل…", "mineLocal": "البلاغات المحفوظة محليًا موجودة في _src/spec/feedback-queue/user/.", "mineIssue": "البلاغات المرسلة عبر GitHub تجدها هناك ضمن مسائلك.", "mineErr": "لا يمكن تحميل بلاغاتك الآن.", "adminIn": "الملاحظات الواردة", "adminNew": "%n جديدة", "adminOpen": "مراجعة", "pkgSec": "حزمة المراجعة", "pkgLead": "قرارات التقييم من محرر التقييم ومراجعات المتطلبات. تبقى في هذا المتصفح حتى ترسل الحزمة.", "pkgEmpty": "فارغة حتى الآن. تصل إلى هنا الأصوات والمقترحات من محرر التقييم.", "ghNone2": "الإرسال يفتح مسألة GitHub معبأة مسبقًا – تحتاج إلى حساب GitHub.", "ghConnect2": "حفظ رمز", "submit2": "إرسال كمسألة GitHub"},
+    hi: {"roles": "कोई भी रिपोर्ट कर सकता है, बिना साइन इन के भी। समीक्षा पैकेज आपके क्यूरेशन निर्णय इकट्ठा करता है; प्रशासक समीक्षा और स्वीकृति करते हैं।", "fbSec": "फीडबैक", "fbBtn": "फीडबैक दें", "mine": "मेरी रिपोर्टें", "mineEmpty": "अभी कोई रिपोर्ट नहीं।", "mineEmptyAnon": "इस ब्राउज़र से अभी कोई रिपोर्ट नहीं।", "mineSignIn": "साइन इन करने पर आपकी रिपोर्टें हर डिवाइस पर दिखती हैं।", "signIn": "साइन इन करें", "withdraw": "वापस लें", "answer": "उत्तर", "loading": "लोड हो रहा है…", "mineLocal": "स्थानीय रूप से सहेजी गई रिपोर्टें _src/spec/feedback-queue/user/ में हैं।", "mineIssue": "GitHub से भेजी गई रिपोर्टें वहाँ आपके issues में हैं।", "mineErr": "आपकी रिपोर्टें अभी लोड नहीं हो सकतीं।", "adminIn": "प्राप्त फ़ीडबैक", "adminNew": "%n नए", "adminOpen": "देखें", "pkgSec": "समीक्षा पैकेज", "pkgLead": "क्यूरेशन संपादक और आवश्यकता समीक्षाओं से क्यूरेशन निर्णय। पैकेज भेजने तक ये इसी ब्राउज़र में रहते हैं।", "pkgEmpty": "अभी खाली है। क्यूरेशन संपादक के वोट और प्रस्ताव यहाँ आते हैं।", "ghNone2": "भेजने पर पहले से भरा GitHub issue खुलता है – इसके लिए GitHub खाता चाहिए।", "ghConnect2": "टोकन सहेजें", "submit2": "GitHub issue के रूप में भेजें"},
+    ko: {"roles": "누구나 로그인 없이도 신고할 수 있습니다. 검토 패키지는 내 큐레이션 결정을 모으며, 검토와 승인은 관리자가 합니다.", "fbSec": "피드백", "fbBtn": "피드백 보내기", "mine": "내 신고", "mineEmpty": "아직 신고가 없습니다.", "mineEmptyAnon": "이 브라우저에서 보낸 신고가 아직 없습니다.", "mineSignIn": "로그인하면 모든 기기에서 내 신고를 볼 수 있습니다.", "signIn": "로그인", "withdraw": "철회", "answer": "답변", "loading": "불러오는 중…", "mineLocal": "로컬에 저장된 신고는 _src/spec/feedback-queue/user/에 있습니다.", "mineIssue": "GitHub로 보낸 신고는 그곳의 내 이슈에 있습니다.", "mineErr": "지금은 내 신고를 불러올 수 없습니다.", "adminIn": "받은 피드백", "adminNew": "새 항목 %n개", "adminOpen": "검토", "pkgSec": "검토 패키지", "pkgLead": "큐레이션 편집기와 요구사항 검토에서 나온 큐레이션 결정입니다. 패키지를 보낼 때까지 이 브라우저에 남습니다.", "pkgEmpty": "아직 비어 있습니다. 큐레이션 편집기의 투표와 제안이 여기에 모입니다.", "ghNone2": "보내면 미리 채워진 GitHub 이슈가 열립니다. GitHub 계정이 필요합니다.", "ghConnect2": "토큰 저장", "submit2": "GitHub 이슈로 보내기"},
+    zh: {"roles": "任何人都可以报告，无需登录。评审包收集你的策展决定；由管理员审阅和批准。", "fbSec": "反馈", "fbBtn": "提供反馈", "mine": "我的报告", "mineEmpty": "还没有报告。", "mineEmptyAnon": "此浏览器还没有报告。", "mineSignIn": "登录后，你可以在所有设备上看到自己的报告。", "signIn": "登录", "withdraw": "撤回", "answer": "回复", "loading": "正在加载…", "mineLocal": "本地保存的报告位于 _src/spec/feedback-queue/user/。", "mineIssue": "通过 GitHub 提交的报告可在那里你的 issue 中找到。", "mineErr": "暂时无法加载你的报告。", "adminIn": "收到的反馈", "adminNew": "%n 条新反馈", "adminOpen": "查看", "pkgSec": "评审包", "pkgLead": "来自策展编辑器和需求评审的策展决定。在你提交评审包之前，它们只保存在此浏览器中。", "pkgEmpty": "还是空的。策展编辑器中的投票和建议会出现在这里。", "ghNone2": "提交会打开一个预填的 GitHub issue——需要 GitHub 账号。", "ghConnect2": "保存令牌", "submit2": "作为 GitHub issue 提交"},
+    nl: {"roles": "Iedereen kan melden, ook zonder aan te melden. Het reviewpakket verzamelt je curatiebeslissingen; beheerders beoordelen en keuren goed.", "fbSec": "Feedback", "fbBtn": "Feedback melden", "mine": "Mijn meldingen", "mineEmpty": "Nog geen meldingen.", "mineEmptyAnon": "Nog geen meldingen vanuit deze browser.", "mineSignIn": "Aangemeld zie je je meldingen op al je apparaten.", "signIn": "Aanmelden", "withdraw": "Intrekken", "answer": "Antwoord", "loading": "Laden …", "mineLocal": "Lokaal opgeslagen meldingen staan in _src/spec/feedback-queue/user/.", "mineIssue": "Meldingen via GitHub vind je daar onder je issues.", "mineErr": "Je meldingen kunnen nu niet worden geladen.", "adminIn": "Ontvangen feedback", "adminNew": "%n nieuw", "adminOpen": "Bekijken", "pkgSec": "Reviewpakket", "pkgLead": "Curatiebeslissingen uit de curatie-editor en de requirement-reviews. Ze blijven in deze browser tot je het pakket verstuurt.", "pkgEmpty": "Nog leeg. Stemmen en voorstellen uit de curatie-editor komen hier terecht.", "ghNone2": "Versturen opent een vooraf ingevuld GitHub-issue – daarvoor heb je een GitHub-account nodig.", "ghConnect2": "Token opslaan", "submit2": "Als GitHub-issue versturen"}
+  };
+  var t = Object.assign({}, L.en, L2.en, L3.en, L[lang] || {}, L2[lang] || {}, L3[lang] || {});
 
   // %n -> open count, %s -> plural suffix ("e" for German, "s" for most
   // Latin-script languages, dropped entirely for languages without plural
@@ -190,21 +204,31 @@
       '<aside class="rv-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="rv-drawer-title">' +
         '<header class="rv-drawer-head">' +
           '<div><h2 id="rv-drawer-title">' + esc(t.drawerTitle) + '</h2>' +
-          '<p class="rv-drawer-sub">' + esc(t.pkgSub) + '</p>' +
-          '<p class="rv-modal-note">' + processDocLink("curator-decision-protocol", t.processDoc) + '</p></div>' +
+          '<p class="rv-drawer-sub">' + esc(t.roles) + '</p></div>' +
           '<button type="button" class="rv-icon-btn" data-close aria-label="' + esc(t.close) + '">' + ICON.x + '</button>' +
         '</header>' +
-        '<div class="rv-drawer-tools">' +
-          '<button type="button" class="rv-btn" data-feedback-open aria-haspopup="dialog" aria-controls="feedback-dialog">' + esc(t.fbBtn) + '</button>' +
-          '<div class="rv-gh-row" data-gh-row></div>' +
+        '<div class="rv-drawer-body">' +
+          '<section class="rv-sec rv-sec-fb" data-sec="feedback" aria-labelledby="rv-sec-fb">' +
+            '<div class="rv-sec-head"><h3 id="rv-sec-fb">' + esc(t.fbSec) + '</h3>' +
+            '<button type="button" class="rv-btn rv-btn-primary" data-feedback-open aria-haspopup="dialog" aria-controls="feedback-dialog">' + esc(t.fbBtn) + '</button></div>' +
+            '<div class="rv-fb-admin" data-fb-admin hidden></div>' +
+            '<h4 class="rv-sub-h" id="rv-fb-mine" tabindex="-1">' + esc(t.mine) + '</h4>' +
+            '<div class="rv-fb-mine" data-fb-mine aria-live="polite"></div>' +
+          '</section>' +
+          '<section class="rv-sec rv-sec-pkg" data-sec="package" aria-labelledby="rv-sec-pkg">' +
+            '<div class="rv-sec-head"><h3 id="rv-sec-pkg">' + esc(t.pkgSec) + ' <span class="rv-count" data-pkg-count>0</span></h3></div>' +
+            '<p class="rv-sec-lead">' + esc(t.pkgLead) + '</p>' +
+            '<div data-pkg-list></div>' +
+            '<div class="rv-pkg-actions">' +
+              '<button type="button" class="rv-btn rv-btn-quiet" data-clear>' + esc(t.clear) + '</button>' +
+              '<div class="rv-spacer"></div>' +
+              '<button type="button" class="rv-btn" data-export data-auth="fallback" title="' + esc(t.warn) + '">' + ICON.down + '<span>' + esc(t.fallback) + '</span></button>' +
+              '<button type="button" class="rv-btn rv-btn-primary" data-submit data-auth="authenticated">' + ICON.gh + '<span>' + esc(t.submit2) + '</span></button>' +
+            '</div>' +
+            '<div class="rv-gh-row" data-gh-row></div>' +
+            '<p class="rv-modal-note">' + processDocLink("curator-decision-protocol", t.processDoc) + '</p>' +
+          '</section>' +
         '</div>' +
-        '<div class="rv-drawer-body"></div>' +
-        '<footer class="rv-drawer-foot">' +
-          '<button type="button" class="rv-btn rv-btn-quiet" data-clear>' + esc(t.clear) + '</button>' +
-          '<div class="rv-spacer"></div>' +
-          '<button type="button" class="rv-btn" data-export data-auth="fallback" title="' + esc(t.warn) + '">' + ICON.noauth + '<span>' + esc(t.fallback) + '</span></button>' +
-          '<button type="button" class="rv-btn rv-btn-primary" data-submit data-auth="authenticated" title="GitHub-authenticated">' + ICON.auth + '<span>' + esc(t.submit) + '</span></button>' +
-        '</footer>' +
       '</aside>';
     document.body.appendChild(drawer);
 
@@ -220,6 +244,14 @@
       if (e.target.closest("[data-export]")) exportPackage();
       if (e.target.closest("[data-submit]")) submitPackage();
       if (e.target.closest("[data-gh-manage]")) openGithub(false);
+      var wd = e.target.closest("[data-fb-withdraw]");
+      if (wd && feedbackApi()) {
+        wd.disabled = true;
+        feedbackApi().withdraw(wd.getAttribute("data-fb-withdraw"), wd.getAttribute("data-fb-who"))
+          .then(renderFeedback, function () { wd.disabled = false; toast(t.mineErr, "error"); });
+      }
+      if (e.target.closest("[data-fb-signin]") && feedbackApi()) { closeDrawer(); feedbackApi().signIn(); }
+      if (e.target.closest("[data-fb-admin-open]") && feedbackApi()) { closeDrawer(); feedbackApi().openAdmin(); }
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !drawer.hidden) closeDrawer();
@@ -230,10 +262,10 @@
     var row = drawer.querySelector("[data-gh-row]");
     if (!row) return;
     var on = !!activeToken();
-    var state = on ? (ghLogin ? t.ghAs.replace("%s", "@" + ghLogin) : t.ghOn) : t.ghNone;
+    var state = on ? (ghLogin ? t.ghAs.replace("%s", "@" + ghLogin) : t.ghOn) : t.ghNone2;
     row.innerHTML = '<span class="rv-gh-ico' + (on ? " is-on" : "") + '">' + ICON.gh + '</span>' +
-      '<span class="rv-gh-text"><strong>' + esc(t.ghRow || "GitHub") + '</strong> ' + esc(state) + '</span>' +
-      '<button type="button" class="rv-btn rv-btn-quiet" data-gh-manage>' + esc(on ? t.ghManage : t.ghConnect) + '</button>';
+      '<span class="rv-gh-text">' + (on ? '<strong>' + esc(t.ghRow || "GitHub") + '</strong> ' : "") + esc(state) + '</span>' +
+      '<button type="button" class="rv-btn rv-btn-quiet" data-gh-manage>' + esc(on ? t.ghManage : t.ghConnect2) + '</button>';
     if (on && !ghLogin && !renderGhRow.pending) {
       renderGhRow.pending = true;
       verify(activeToken()).then(function (u) { ghLogin = u.login; }).catch(function () {})
@@ -242,11 +274,12 @@
   }
   function renderDrawer() {
     renderGhRow();
-    var body = drawer.querySelector(".rv-drawer-body"), items = load();
+    var body = drawer.querySelector("[data-pkg-list]"), items = load();
+    drawer.querySelector("[data-pkg-count]").textContent = items.length;
+    renderFeedback();
     if (!items.length) {
-      body.innerHTML = '<div class="rv-empty">' + ICON.pkg +
-        '<p class="rv-empty-title">' + esc(t.empty) + '</p>' +
-        '<p class="rv-empty-hint">' + esc(t.emptyHint) + '</p></div>';
+      body.innerHTML = '<div class="rv-empty rv-empty-sm">' + ICON.pkg +
+        '<p class="rv-empty-hint">' + esc(t.pkgEmpty) + '</p></div>';
     } else {
       body.innerHTML = '<ul class="rv-list">' + items.map(function (d) {
         if (d.item_kind === "review-request" || d.kind === "review-request") {
@@ -294,12 +327,76 @@
     drawer.querySelector("[data-submit]").disabled = !items.length;
   }
 
-  function openDrawer() {
+  function openDrawer(section) {
     renderDrawer();
     drawer.hidden = false;
     requestAnimationFrame(function () { drawer.classList.add("is-open"); });
     document.querySelectorAll("[data-review-open]").forEach(function (b) { b.setAttribute("aria-expanded", "true"); });
-    var c = drawer.querySelector(".rv-icon-btn"); if (c) c.focus();
+    var target = section === "feedback" ? drawer.querySelector("#rv-fb-mine") : section === "package" ? drawer.querySelector("#rv-sec-pkg") : null;
+    if (target) { target.setAttribute("tabindex", "-1"); target.focus(); if (target.scrollIntoView) target.scrollIntoView({ block: "start" }); }
+    else { var c = drawer.querySelector(".rv-icon-btn"); if (c) c.focus(); }
+  }
+
+  // ------------------------------------------------- Meine Meldungen (ai-access.js)
+  function feedbackApi() { return window.AiAccess && window.AiAccess.feedback ? window.AiAccess.feedback : null; }
+  function aiText(key, arg) { var a = window.AiAccess; return a && a.text ? a.text(key, arg) : key; }
+  var fbSeq = 0;
+  function fbItem(x) {
+    var st = x.status || "neu";
+    var when = "";
+    try { when = new Date(x.created).toLocaleString(lang, { dateStyle: "short", timeStyle: "short" }); } catch (e) { when = x.created || ""; }
+    var c = x.ctx || {};
+    var where = [c.title, c.fold].filter(Boolean).join(" · ");
+    return '<li class="rv-item rv-fb-item is-' + esc(st) + '">' +
+      '<div class="rv-item-head"><span class="rv-chip rv-fb-art is-' + esc(x.art || "hinweis") + '">' + esc(aiText("fbArt_" + (x.art || "hinweis"))) + '</span>' +
+      '<span class="rv-chip rv-fb-st is-' + esc(st) + '">' + esc(aiText("fbSt_" + st)) + '</span>' +
+      '<span class="rv-item-meta rv-fb-when">' + esc(when) + '</span>' +
+      '<button type="button" class="rv-btn rv-btn-quiet rv-btn-sm" data-fb-withdraw="' + esc(x._id) + '" data-fb-who="' + esc(x._who || x.auth || "") + '">' + esc(t.withdraw) + '</button></div>' +
+      '<p class="rv-item-why">' + esc(x.text) + '</p>' +
+      (where ? '<p class="rv-item-meta">' + esc(where) + '</p>' : '') +
+      (x.note ? '<p class="rv-fb-note"><strong>' + esc(t.answer) + ':</strong> ' + esc(x.note) + '</p>' : '') +
+    '</li>';
+  }
+  function renderFeedback() {
+    if (!drawer) return;
+    var box = drawer.querySelector("[data-fb-mine]"), adm = drawer.querySelector("[data-fb-admin]");
+    var api = feedbackApi();
+    if (!box) return;
+    if (adm) {
+      var isAdm = !!(api && api.isAdmin && api.isAdmin());
+      adm.hidden = !isAdm;
+      if (isAdm) {
+        var n = api.newCount();
+        adm.innerHTML = '<span><strong>' + esc(t.adminIn) + '</strong>' + (n ? ' <span class="rv-count is-new">' + esc(t.adminNew.replace("%n", n)) + '</span>' : '') + '</span>' +
+          '<button type="button" class="rv-btn" data-fb-admin-open>' + esc(t.adminOpen) + '</button>';
+      }
+    }
+    if (!api) { box.innerHTML = '<p class="rv-empty-hint">' + esc(t.mineIssue) + '</p>'; return; }
+    var seq = ++fbSeq;
+    if (!box.childElementCount) box.innerHTML = '<p class="rv-empty-hint">' + esc(t.loading) + '</p>';
+    api.mine().then(function (res) {
+      if (seq !== fbSeq) return;
+      if (res.kind === "local") { box.innerHTML = '<p class="rv-empty-hint">' + esc(t.mineLocal) + '</p>'; return; }
+      if (res.kind !== "firestore") { box.innerHTML = '<p class="rv-empty-hint">' + esc(t.mineIssue) + '</p>'; return; }
+      // Hinweis auf die Anmeldung nur mit wirksamer Aktion (Anmeldung eingerichtet).
+      var hint = res.signedIn || !res.canSignIn ? "" : '<p class="rv-empty-hint">' + esc(t.mineSignIn) + ' <button type="button" class="rv-link" data-fb-signin>' + esc(t.signIn) + '</button></p>';
+      box.innerHTML = res.items.length ? '<ul class="rv-list">' + res.items.map(fbItem).join("") + '</ul>' + hint
+        : '<p class="rv-empty-hint">' + esc(res.signedIn ? t.mineEmpty : t.mineEmptyAnon) + '</p>' + hint;
+    }, function () {
+      if (seq === fbSeq) box.innerHTML = '<p class="rv-empty-hint">' + esc(t.mineErr) + '</p>';
+    });
+  }
+  // Verwalter: neue Meldungen als zweiter Zähler am Knopf „Feedback & Kuration“.
+  function renderAdminCount() {
+    var api = feedbackApi();
+    var n = api && api.isAdmin && api.isAdmin() ? api.newCount() : 0;
+    document.querySelectorAll("[data-review-open].reviewbar-package").forEach(function (b) {
+      var el = b.querySelector("[data-feedback-new]");
+      if (!n) { if (el) el.remove(); return; }
+      if (!el) { el = document.createElement("span"); el.className = "review-count is-feedback"; el.setAttribute("data-feedback-new", ""); b.appendChild(el); }
+      el.textContent = n;
+      el.title = t.adminIn + ": " + t.adminNew.replace("%n", n);
+    });
   }
   function closeDrawer() {
     drawer.classList.remove("is-open");
@@ -682,7 +779,7 @@
     buildGithub();
     document.querySelectorAll(".review-panel").forEach(initPanel);
     document.querySelectorAll("[data-review-open]").forEach(function (b) {
-      b.addEventListener("click", function () { drawer.hidden ? openDrawer() : closeDrawer(); });
+      b.addEventListener("click", function () { drawer.hidden ? openDrawer(b.getAttribute("data-review-section") || "") : closeDrawer(); });
     });
     document.querySelectorAll("[data-review-token]").forEach(function (b) {
       b.addEventListener("click", function () { openGithub(false); });
@@ -695,6 +792,10 @@
     });
     document.querySelectorAll("[data-review-warning]").forEach(function (e) { e.textContent = t.warn; });
     try { window.addEventListener("ara-package-changed", update); } catch (e) {}
+    try {
+      window.addEventListener("aiaccess-feedback", function () { renderAdminCount(); if (drawer && !drawer.hidden) renderFeedback(); });
+      window.addEventListener("aiaccess-change", function () { renderAdminCount(); });
+    } catch (e) {}
     update();
   }
 

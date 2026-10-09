@@ -11,9 +11,12 @@
  * Kennungen, die sich nur in der Schreibweise unterscheiden, <id>~<Maske>. Welche
  * Stämme abweichen, steht in elements.json ("names") bzw. im "file" des Katalogs.
  *
- * Der reine Kern (Zustand <-> URL, Facettenfilter, Zählungen) ist unter Node
- * als module.exports verfügbar und wird von _src/tests/test_versions_explorer.py
- * geprüft.
+ * Der reine Kern (Zustand <-> URL, Facettenfilter, Zählungen, abbruchsicheres Laden,
+ * Markdown der KI-Beschreibungen) ist unter Node als module.exports verfügbar und wird
+ * von _src/tests/test_versions_explorer.py und test_figure_access.py geprüft.
+ *
+ * Schaubilder sind nicht öffentlich: Bilder lädt static/figure-images.js (geschützt über
+ * den Worker, nur mit Anmeldung und Freigabe); der Explorer setzt nur Platzhalter.
  */
 (function (root, factory) {
   var core = factory();
@@ -479,6 +482,151 @@
       encodeURIComponent(m[0]) + (page ? "#page=" + page : "");
   }
 
+  // ------------------------------------------------------------------ Laden (abbruchsicher)
+
+  // Abbruch (AbortController, überholte Auswahl) ist kein Fehler; Netzfehler sind bei fetch ein TypeError
+  // (Safari: „Load failed“, Chrome: „Failed to fetch“, Firefox: „NetworkError …“).
+  function isAbortError(err) { return !!err && (err.name === "AbortError" || err.code === 20); }
+  function isNetworkError(err) { return !!err && err.name === "TypeError" && !isAbortError(err); }
+  function abortError() {
+    try { return new DOMException("Aborted", "AbortError"); }
+    catch (e) { var x = new Error("Aborted"); x.name = "AbortError"; return x; }
+  }
+  function waitFor(ms, signal) {
+    return new Promise(function (resolve, reject) {
+      if (signal && signal.aborted) { reject(abortError()); return; }
+      var timer = setTimeout(resolve, ms);
+      if (signal) signal.addEventListener("abort", function () { clearTimeout(timer); reject(abortError()); }, { once: true });
+    });
+  }
+  /**
+   * JSON laden: HTTP-Fehler als Error mit .status; ein Netzfehler wird nach opts.waitMs (400 ms) einmal
+   * wiederholt; ein Abbruch über opts.signal endet als AbortError, ohne Wiederholung.
+   */
+  function loadJson(fetchImpl, url, opts) {
+    opts = opts || {};
+    var signal = opts.signal;
+    function once() {
+      return fetchImpl(url, signal ? { signal: signal } : undefined).then(function (r) {
+        if (!r.ok) { var e = new Error(r.status + " " + url); e.status = r.status; throw e; }
+        return r.json();
+      });
+    }
+    return once().catch(function (err) {
+      if (isAbortError(err) || (signal && signal.aborted)) throw (isAbortError(err) ? err : abortError());
+      if (!isNetworkError(err) || opts.retries === 0) throw err;
+      return waitFor(opts.waitMs == null ? 400 : opts.waitMs, signal).then(once);
+    });
+  }
+
+  // ------------------------------------------------------------------ KI-Beschreibung (Markdown, sicher)
+
+  // Einfache LaTeX-Schnipsel der Beschreibungen ($\rightarrow$ …) als Zeichen; Unbekanntes bleibt wörtlich.
+  var MATH = { "\\rightarrow": "→", "\\to": "→", "\\leftarrow": "←", "\\gets": "←", "\\leftrightarrow": "↔",
+    "\\longrightarrow": "⟶", "\\longleftarrow": "⟵", "\\Rightarrow": "⇒", "\\Leftarrow": "⇐", "\\Leftrightarrow": "⇔",
+    "\\dashrightarrow": "⇢", "\\blacklozenge": "◆", "\\lozenge": "◇", "\\diamond": "◇", "\\blacktriangleright": "▶",
+    "\\triangleright": "▷", "\\blacktriangleleft": "◀", "\\mu": "μ", "\\times": "×", "\\leq": "≤", "\\le": "≤",
+    "\\geq": "≥", "\\ge": "≥", "\\neq": "≠", "\\ne": "≠", "\\cdot": "·", "\\ldots": "…", "\\dots": "…", "\\infty": "∞",
+    "\\uparrow": "↑", "\\downarrow": "↓", "\\mapsto": "↦", "\\circ": "∘", "\\bullet": "•", "\\pm": "±", "\\approx": "≈",
+    "\\in": "∈", "\\subset": "⊂", "\\cup": "∪", "\\cap": "∩", "\\forall": "∀", "\\exists": "∃", "\\emptyset": "∅" };
+  function mathText(s) {
+    return s.replace(/\$([^$\n]{1,60})\$/g, function (all, inner) {
+      var out = inner.replace(/\\xrightarrow\{([^{}]*)\}/g, "–$1→")
+        .replace(/\\(?:text|mathrm|mathit|mathbf|texttt)\{([^{}]*)\}/g, "$1")
+        .replace(/\\[A-Za-z]+/g, function (cmd) { return Object.prototype.hasOwnProperty.call(MATH, cmd) ? MATH[cmd] : cmd; })
+        .replace(/\\([_{}#%&$])/g, "$1").replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
+      return /\\[A-Za-z]/.test(out) ? all : out;
+    });
+  }
+  function escHtml(str) {
+    return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  // Inline: Code, fett, kursiv. Alles wird zuerst maskiert; Links zeigen nur ihren Text (keine Adresse aus
+  // der KI-Ausgabe, z. B. file:///…). Rohes HTML erscheint als Text.
+  function mdInline(raw) {
+    var codes = [];
+    var s = String(raw == null ? "" : raw).replace(/[\u0001\u0002]/g, "");
+    s = s.replace(/\[([^\]\n]+)\]\((?:[^()\s]|\([^()\s]*\))+\)/g, "$1");
+    s = s.replace(/`([^`\n]+)`/g, function (all, code) { codes.push(code); return "\u0001" + (codes.length - 1) + "\u0002"; });
+    s = escHtml(mathText(s));
+    s = s.replace(/\*\*(?=\S)([^*\n]*?\S)\*\*/g, "<strong>$1</strong>").replace(/__(?=\S)([^_\n]*?\S)__/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[^*\w])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?![*\w])/g, "$1<em>$2</em>");
+    return s.replace(/\u0001(\d+)\u0002/g, function (all, k) { return "<code>" + escHtml(codes[+k]) + "</code>"; });
+  }
+  function mdCells(line) {
+    var t = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+    return t.split("|").map(function (c) { return c.trim(); });
+  }
+  /**
+   * Markdown der KI-Beschreibungen -> HTML ohne rohes HTML: Überschriften (h4/h5), Absätze, verschachtelte
+   * Listen, Codeblöcke, Tabellen, Zitate, Trennlinien. Jeder Text wird maskiert.
+   */
+  function renderMarkdown(md) {
+    var lines = String(md == null ? "" : md).replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
+    var out = [], para = [], lists = [], fence = null, quote = [];
+    function flushPara() { if (para.length) { out.push("<p>" + mdInline(para.join(" ")) + "</p>"); para = []; } }
+    function flushQuote() { if (quote.length) { out.push("<blockquote><p>" + mdInline(quote.join(" ")) + "</p></blockquote>"); quote = []; } }
+    function closeLists(minIndent) {
+      while (lists.length && lists[lists.length - 1].indent >= minIndent) out.push("</li></" + lists.pop().type + ">");
+    }
+    function closeAll() { flushPara(); flushQuote(); closeLists(0); }
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var fm = /^(\s*)(```|~~~)/.exec(line);
+      if (fence) {
+        if (fm && fm[2] === fence.mark) { out.push("<pre><code>" + escHtml(fence.body.join("\n")) + "</code></pre>"); fence = null; }
+        else fence.body.push(line.slice(Math.min(fence.indent, (/^\s*/.exec(line) || [""])[0].length)));
+        continue;
+      }
+      if (fm) {
+        flushPara(); flushQuote();
+        closeLists(fm[1].length);   // ein Codeblock gehört zu dem Listenpunkt, unter dem er eingerückt ist
+        fence = { mark: fm[2], indent: fm[1].length, body: [] };
+        continue;
+      }
+      if (!line.trim()) { flushPara(); flushQuote(); continue; }
+      var h = /^\s*(#{1,6})\s+(.*?)\s*#*\s*$/.exec(line);
+      if (h) { closeAll(); out.push(h[1].length <= 3 ? "<h4>" + mdInline(h[2]) + "</h4>" : "<h5>" + mdInline(h[2]) + "</h5>"); continue; }
+      if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) { closeAll(); out.push("<hr>"); continue; }
+      if (/^\s*\|.*\|\s*$/.test(line)) {
+        closeAll();
+        var rows = [];
+        while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) rows.push(lines[i++]);
+        i--;
+        var head = rows.length > 1 && /^\s*\|?\s*:?-{2,}/.test(rows[1]) ? mdCells(rows[0]) : null;
+        var body = rows.slice(head ? 2 : 0);
+        out.push('<div class="ve-md-tw"><table>' +
+          (head ? "<thead><tr>" + head.map(function (c) { return "<th>" + mdInline(c) + "</th>"; }).join("") + "</tr></thead>" : "") +
+          "<tbody>" + body.map(function (r) {
+            return "<tr>" + mdCells(r).map(function (c) { return "<td>" + mdInline(c) + "</td>"; }).join("") + "</tr>";
+          }).join("") + "</tbody></table></div>");
+        continue;
+      }
+      var q = /^\s*>\s?(.*)$/.exec(line);
+      if (q) { flushPara(); closeLists(0); quote.push(q[1]); continue; }
+      var li = /^(\s*)([-*+]|\d{1,3}[.)])\s+(.*)$/.exec(line);
+      if (li) {
+        flushPara(); flushQuote();
+        var indent = li[1].length, type = /^\d/.test(li[2]) ? "ol" : "ul";
+        closeLists(indent + 1);
+        var top = lists[lists.length - 1];
+        if (top && top.indent === indent && top.type !== type) { closeLists(indent); top = lists[lists.length - 1]; }
+        if (top && top.indent === indent) out.push("</li><li>" + mdInline(li[3]));
+        else { out.push("<" + type + "><li>" + mdInline(li[3])); lists.push({ type: type, indent: indent }); }
+        continue;
+      }
+      var ind = (/^\s*/.exec(line) || [""])[0].length;
+      if (lists.length && ind > 0 && !para.length) { out.push(" " + mdInline(line.trim())); continue; }
+      if (lists.length && ind === 0) closeLists(0);
+      flushQuote();
+      para.push(line.trim());
+    }
+    if (fence) out.push("<pre><code>" + escHtml(fence.body.join("\n")) + "</code></pre>");
+    closeAll();
+    return out.join("");
+  }
+
   return {
     STATUS: STATUS, HAS: HAS, PARAMS: PARAMS, emptyState: emptyState, parseState: parseState,
     serializeState: serializeState, activeCount: activeCount, decodeElements: decodeElements,
@@ -487,7 +635,9 @@
     figureHref: figureHref, itemFile: itemFile, recordFile: recordFile, caseMask: caseMask, safeStem: safeStem,
     markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
     catalogPdfUrl: catalogPdfUrl, textMatcher: textMatcher, normContent: normContent, releaseKey: releaseKey,
-    sortVersions: sortVersions, buildTimeline: buildTimeline, versionHash: versionHash
+    sortVersions: sortVersions, buildTimeline: buildTimeline, versionHash: versionHash,
+    isAbortError: isAbortError, isNetworkError: isNetworkError, loadJson: loadJson, renderMarkdown: renderMarkdown,
+    mdInline: mdInline
   };
 });
 
@@ -893,11 +1043,42 @@
   var loading = {};
   // Abweichende Dateistämme aus dem geladenen Index (rec: versions/data, item: items/ und Belegseiten)
   function stems(kind) { return (data.el && data.el.stems && data.el.stems[kind]) || null; }
-  function fetchJson(url) {
-    return fetch(url).then(function (r) {
-      if (!r.ok) throw new Error(r.status + " " + url);
-      return r.json();
+  // Abbruchsicher: überholte Ladevorgänge enden als AbortError (kein Fehlerhinweis), ein Netzfehler wird
+  // einmal wiederholt (C.loadJson). Je Bereich gibt es höchstens einen laufenden Detail-Ladevorgang.
+  function fetchJson(url, signal) {
+    return C.loadJson(function (u, o) { return fetch(u, o); }, url, { signal: signal });
+  }
+  var ctrl = { el: null, fig: null, snip: null };
+  function newSignal(tab) {
+    if (ctrl[tab]) { try { ctrl[tab].abort(); } catch (e) { /* ignore */ } }
+    ctrl[tab] = typeof AbortController === "function" ? new AbortController() : null;
+    return ctrl[tab] ? ctrl[tab].signal : undefined;
+  }
+  // Beim Verlassen der Seite (Safari bricht laufende Abrufe mit „Load failed“ ab) keinen Fehler zeigen;
+  // kommt die Seite aus dem Back-Forward-Cache zurück, unvollständige Details neu laden.
+  var pageHidden = false;
+  window.addEventListener("pagehide", function () { pageHidden = true; });
+  window.addEventListener("pageshow", function (e) {
+    pageHidden = false;
+    if (!e.persisted) return;
+    ["el", "fig", "snip"].forEach(function (tab) {
+      var key = selectedKey(tab);
+      if (!key || (tab !== "el" && !data[tab])) return;
+      var done = tab === "el" ? shown.el === key + "|" + state.view : shown[tab] === key;
+      if (!done) syncViewer(tab, false);
     });
+  });
+  function errorHtml(err) {
+    var msg = C.isNetworkError(err) ? t("err_net") : t("load_error", { msg: (err && err.message) || "" });
+    return '<div class="ve-error" role="alert"><p>' + esc(msg) + '</p><button type="button" class="ve-btn" data-act="retry">' +
+      esc(t("retry")) + "</button></div>";
+  }
+  var figConfigured = false;
+  function figObserve(container) {
+    var F = window.FigureImages;
+    if (!F || !container) return;
+    if (!figConfigured) { F.configure({ text: function (k) { return t("fi_" + k); } }); figConfigured = true; }
+    F.observe(container);
   }
 
   function ensureLoaded(tab) {
@@ -916,7 +1097,8 @@
         })
         .then(function () { updateTabCounts(); })
         .catch(function (err) {
-          ui.el.count.textContent = t("load_error", { msg: err.message });
+          loading.el = null;   // späterer Bereichswechsel versucht es erneut
+          if (!pageHidden) ui.el.count.textContent = C.isNetworkError(err) ? t("err_net") : t("load_error", { msg: err.message });
         });
       return loading.el;
     }
@@ -1192,6 +1374,9 @@
     var r = ui[tab];
     setDetailMode(tab, !!key && narrowMQ.matches);
     if (!key) {
+      // Keine Auswahl mehr (z. B. Zurück zur Liste): laufendes Laden abbrechen und verwerfen
+      token[tab]++;
+      if (ctrl[tab]) { try { ctrl[tab].abort(); } catch (e) { /* ignore */ } ctrl[tab] = null; }
       shown[tab] = null;
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("pick_" + tab)) + "</div>";
       return;
@@ -1212,12 +1397,18 @@
   function loadElement(id, userAction) {
     var r = ui.el;
     var my = ++token.el;
+    var signal = newSignal("el");
+    shown.el = null;   // bis zum Erfolg zeigt der Viewer nicht mehr das vorige Element
     if (!EL.rec || EL.rec.id !== id) {
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     }
     var p = (EL.rec && EL.rec.id === id) ? Promise.resolve(EL.rec) :
-      fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))))
-        .catch(function () { return fetchJson("/api/versions?id=" + encodeURIComponent(id)); });
+      fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
+        .catch(function (err) {
+          // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
+          if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
+          return fetchJson("/api/versions?id=" + encodeURIComponent(id), signal);
+        });
     p.then(function (rec) {
       if (my !== token.el) return;
       if (!rec || (!rec.ok && !rec.versions)) throw new Error(t("not_found", { id: id }));
@@ -1236,9 +1427,9 @@
       r.vbody.parentNode.scrollTop = 0;
       if (userAction && !narrowMQ.matches) r.list.focus({ preventScroll: true });
     }).catch(function (err) {
-      if (my !== token.el) return;
+      if (my !== token.el || C.isAbortError(err) || pageHidden) return;
       shown.el = null;
-      r.vbody.innerHTML = '<div class="ve-error">' + esc(t("load_error", { msg: err.message })) + "</div>";
+      r.vbody.innerHTML = errorHtml(err);
     });
   }
 
@@ -1328,6 +1519,7 @@
     }
     fillPdfLinks(box);
     fillCanonLinks(box);
+    figObserve(box);
   }
 
   function relText(rels) { return (rels || []).join(", "); }
@@ -1346,7 +1538,10 @@
       return fetch(ROOT + "spec/" + dir + "/index.html", { method: "HEAD" })
         .then(function (r) { return r.ok; }).catch(function () { return false; });
     };
-    canonProbe = Promise.all([probe("figures"), probe("snippets")]).then(function (r) { return { fig: r[0], snip: r[1] }; });
+    canonProbe = Promise.all([probe("figures"), probe("snippets")]).then(function (r) {
+      if (!r[0] && !r[1]) canonProbe = null;   // z. B. abgebrochen: beim nächsten Mal erneut prüfen
+      return { fig: r[0], snip: r[1] };
+    });
     return canonProbe;
   }
   function fillCanonLinks(container) {
@@ -1409,12 +1604,29 @@
     return html;
   }
 
-  function thumbHtml(sha, alt) {
-    var url = C.thumbUrl(ROOT, sha);
-    if (!url) return '<div class="ve-thumb is-missing"><span class="ve-thumb-ph">' + esc(t("thumb_none")) + "</span></div>";
-    var ph = '<span class="ve-thumb-ph">' + esc(t("thumb_missing")) + "</span>";
-    return '<div class="ve-thumb"><img loading="lazy" decoding="async" alt="' + esc(alt || "") + '" src="' + esc(url) +
-      '" onerror="this.parentNode.classList.add(\'is-missing\');this.remove()">' + ph + "</div>";
+  // Platzhalter für static/figure-images.js: lädt das Bild erst, wenn es sichtbar wird, und nur mit Zugang
+  function thumbHtml(sha, alt, size) {
+    if (!sha || !/^[0-9a-f]{64}$/.test(sha)) {
+      return '<div class="ve-thumb is-missing"><span class="ve-thumb-ph">' + esc(t("thumb_none")) + "</span></div>";
+    }
+    return '<div class="ve-thumb" data-fig-sha="' + esc(sha) + '" data-fig-alt="' + esc(alt || "") + '" data-fig-size="' +
+      esc(size || "thumb") + '"></div>';
+  }
+
+  // Nach dem Einklappen den Anfang des Abschnitts zeigen (im scrollenden Viewer bzw. auf der Seite)
+  function revealTop(el) {
+    if (!el) return;
+    var sc = el.parentNode;
+    while (sc && sc.nodeType === 1 && sc !== document.body) {
+      var oy = window.getComputedStyle(sc).overflowY;
+      if ((oy === "auto" || oy === "scroll") && sc.scrollHeight > sc.clientHeight) break;
+      sc = sc.parentNode;
+    }
+    var top = el.getBoundingClientRect().top;
+    if (sc && sc.nodeType === 1 && sc !== document.body) {
+      var d = top - sc.getBoundingClientRect().top;
+      if (d < 0) sc.scrollTop += d - 8;
+    } else if (top < 0) window.scrollBy(0, top - 8);
   }
 
   function onViewerClick(tab, e) {
@@ -1455,6 +1667,20 @@
       var k = b.getAttribute("data-showmore");
       if (k === "fig") EL.figShown += PAGE.fig; else EL.snipShown += PAGE.snip;
       if (tab === "el") renderSubpanel();
+      return;
+    }
+    if (b.getAttribute("data-act") === "retry") {
+      if (tab === "el") shown.el = null; else shown[tab] = null;
+      syncViewer(tab, false);
+      return;
+    }
+    if (b.getAttribute("data-act") === "ai-toggle") {
+      var body = ui[tab].vbody.querySelector(".ve-ai-body");
+      if (!body) return;
+      var open = body.classList.toggle("is-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.textContent = t(open ? "ai_less" : "ai_more");
+      if (!open) revealTop(body.closest(".ve-ai"));
       return;
     }
     if (b.getAttribute("data-act") === "copy") {
@@ -2012,20 +2238,56 @@
   function loadItem(tab, id, userAction) {
     var r = ui[tab];
     var my = ++token[tab];
+    var signal = newSignal(tab);
+    shown[tab] = null;   // der Viewer zeigt jetzt „Lade …“, nicht mehr das vorige Element
     r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
-    fetchJson(ROOT + "versions/explorer/items/" + encodeURIComponent(C.itemFile(id, stems("item")))).then(function (info) {
+    fetchJson(ROOT + "versions/explorer/items/" + encodeURIComponent(C.itemFile(id, stems("item"))), signal).then(function (info) {
       if (my !== token[tab]) return;
       shown[tab] = id;
       r.vbody.innerHTML = itemHtml(tab, info);
       r.vbody.parentNode.scrollTop = 0;
       fillPdfLinks(r.vbody);
       fillCanonLinks(r.vbody);
+      figObserve(r.vbody);
       if (userAction && !narrowMQ.matches) r.list.focus({ preventScroll: true });
     }).catch(function (err) {
-      if (my !== token[tab]) return;
+      // Überholt (neue Auswahl, Zurück im Verlauf) oder Seite verlassen: kein Fehlerhinweis
+      if (my !== token[tab] || C.isAbortError(err) || pageHidden) return;
       shown[tab] = null;
-      r.vbody.innerHTML = '<div class="ve-error">' + esc(t("load_error", { msg: err.message })) + "</div>";
+      r.vbody.innerHTML = errorHtml(err);
     });
+  }
+
+  // KI-Beschreibung des Schaubilds (Item-Feld "ai", export_explorer.ai_info): oben im Viewer, Markdown sicher
+  // gerendert, mit Herkunft (Modell, Rezept, Datum, beschriebene Fassung); lange Texte eingeklappt.
+  function fmtDate(iso) {
+    var d = new Date(iso + (String(iso).length === 10 ? "T00:00:00Z" : ""));
+    if (isNaN(d.getTime())) return String(iso);
+    try { return d.toLocaleDateString(LANG, { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "UTC" }); }
+    catch (e) { return String(iso).slice(0, 10); }
+  }
+  function aiHtml(info) {
+    var ai = info.ai;
+    if (!ai || !ai.md) {
+      return '<section class="ve-sect ve-ai ve-ai-none"><h3>' + esc(t("ai_head")) + '</h3><p class="ve-muted">' + esc(t("ai_none")) + "</p></section>";
+    }
+    var prov = [];
+    if (ai.model) prov.push(esc(ai.model));
+    if (ai.recipe) prov.push(esc(t("ai_recipe", { r: ai.recipe })));
+    if (ai.at) prov.push(esc(t("ai_at", { d: fmtDate(ai.at) })));
+    var rel = (ai.rel || []).join(", ");
+    var of = ai.of && ai.of !== info.id
+      ? t("ai_of_other", { rel: rel || "–", id: ai.of })
+      : t("ai_of_self", { rel: rel || "–" });
+    var long = String(ai.md).length > 900;
+    return '<section class="ve-sect ve-ai" aria-labelledby="ve-ai-h-' + esc(info.id) + '">' +
+      '<h3 id="ve-ai-h-' + esc(info.id) + '"><span class="ve-ai-mark" aria-hidden="true">✦</span> ' + esc(t("ai_head")) + "</h3>" +
+      '<p class="ve-ai-prov">' + prov.join('<span aria-hidden="true"> · </span>') + "</p>" +
+      '<p class="ve-ai-of">' + esc(of) + (ai.full === false ? ' <span class="ve-ai-short">' + esc(t("ai_short")) + "</span>" : "") + "</p>" +
+      '<div class="ve-ai-body' + (long ? "" : " is-open") + '" id="ve-ai-b-' + esc(info.id) + '">' + C.renderMarkdown(ai.md) + "</div>" +
+      (long ? '<button type="button" class="ve-btn ve-ai-toggle" data-act="ai-toggle" aria-expanded="false" aria-controls="ve-ai-b-' +
+        esc(info.id) + '">' + esc(t("ai_more")) + "</button>" : "") +
+      '<p class="ve-ai-note">' + esc(t("ai_note")) + "</p></section>";
   }
 
   function itemHtml(tab, info) {
@@ -2042,7 +2304,9 @@
       '<div class="ve-links">' + canonLink(info.id, "ve-linkbtn-primary") +
       (info.doc ? pdfAnchor(info.doc, rels.filter(function (r) { return /^R\d\d-\d\d$/.test(r); }), info.page, platform) : "") + "</div></div>";
     if (isFig) {
-      if (info.sha) h += '<div class="ve-figbig">' + thumbHtml(info.sha, info.caption) + "</div>";
+      if (info.sha) h += '<div class="ve-figbig">' + thumbHtml(info.sha, info.caption, "big") + "</div>";
+      h += aiHtml(info);
+      var described = info.ai && info.ai.of;
       var series = info.series || [];
       if (series.length) {
         h += '<section class="ve-sect"><h3>' + esc(t("series_head", { n: series.length })) + '</h3><ol class="ve-series">';
@@ -2050,8 +2314,9 @@
           var cur = s.id === info.id;
           var label = (s.releases || []).join(", ") || "–";
           h += '<li class="ve-series-item' + (cur ? " is-current" : "") + '">' +
-            (s.sha ? '<span class="ve-series-thumb">' + thumbHtml(s.sha, label) + "</span>" : "") +
+            (s.sha ? '<span class="ve-series-thumb">' + thumbHtml(s.sha, label, "tiny") + "</span>" : "") +
             '<span class="ve-series-txt"><strong>' + esc(label) + "</strong>" +
+            (described && s.id === described ? ' <span class="ve-ai-badge" title="' + esc(t("ai_head")) + '">✦ ' + esc(t("ai_badge")) + "</span>" : "") +
             (s.page ? " · " + esc(t("page_n", { p: s.page })) : "") +
             (/^FIG-/.test(s.id) ? ' · <code>' + esc(s.id) + "</code> " + canonLink(s.id, "ve-linkbtn-small") : "") +
             (s.caption ? '<span class="ve-series-cap">' + esc(s.caption) + "</span>" : "") + "</span></li>";

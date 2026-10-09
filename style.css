@@ -5675,7 +5675,18 @@ html:not([data-density="compact"]) section.nsx-mod, html:not([data-density="comp
 .rv-gh-text { flex: 1; min-width: 0; }
 .rv-gh-ico { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface2); color: var(--faint); }
 .rv-gh-ico.is-on { background: #1f883d; color: #fff; }
-@media (min-width: 1280px) { .shell-search input { width: 12rem; } }
+@media (min-width: 1280px) { .shell-controls .shell-search input { width: 12rem; } }
+/* Suchfeld mittig zwischen Bereichswahl („Explore“) und KI-Knopf (UX-Aufnahme 07.10.2026): eigenes Element der
+   Kopfzeile, so breit wie möglich ohne die Nachbarn zu berühren. Ruhend bis 40rem, beim Tippen oder mit Text bis
+   zur ganzen freien Breite; nie breiter als der Platz (min-width: 0), deshalb kein Überlauf. Gleich große
+   automatische Ränder zentrieren es in der Lücke. Seiten mit der Suche in .shell-controls bleiben wie bisher. */
+header.shell .shell-domains { flex: 0 1 auto; }
+header.shell > .shell-search { flex: 1 1 0; min-width: 6rem; max-width: 40rem; margin-inline: auto; transition: max-width .18s ease; }
+header.shell > .shell-search:focus-within,
+header.shell > .shell-search:has(input:not(:placeholder-shown)) { max-width: 100%; }
+header.shell > .shell-search input { width: 100%; max-width: none; min-width: 0; }
+header.shell > .shell-search ~ .shell-controls { flex: 0 0 auto; margin-inline-start: 0; }
+@media (prefers-reduced-motion: reduce) { header.shell > .shell-search { transition: none; } }
 /* Schmal: Titel und Bereich in Zeile 1, Suche (volle Breite), KI und Paket in Zeile 2 */
 @media (max-width: 767px) {
   header.shell { flex-wrap: wrap; row-gap: 6px; }
@@ -5685,23 +5696,63 @@ html:not([data-density="compact"]) section.nsx-mod, html:not([data-density="comp
   header.shell .shell-search { flex: 1 1 auto; min-width: 0; }
   header.shell .shell-search input { width: 100%; }
   header.shell .reviewbar { width: auto; margin: 0; }
+  /* Suche als eigenes Element: Zeile 1 Titel + Bereich, Zeile 2 Suche + KI/Paket (sehr schmal: drei Zeilen). */
+  header.shell:has(> .shell-search) { display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "title domains" "search controls"; column-gap: 8px; align-items: center; }
+  header.shell:has(> .shell-search) .titleblock { grid-area: title; }
+  header.shell:has(> .shell-search) .shell-domains { grid-area: domains; justify-self: end; }
+  header.shell > .shell-search { grid-area: search; max-width: none; margin: 0; }
+  header.shell > .shell-search ~ .shell-controls { grid-area: controls; justify-content: flex-end; }
+}
+@media (max-width: 479px) {
+  header.shell:has(> .shell-search) { grid-template-areas: "title domains" "search search" "controls controls"; }
 }
 
-/* KI-Dialog: Abschnitte nach Priorität, verschiebbar */
+/* KI-Dialog: Abschnitte nach Priorität, am Griff verschiebbar (Zeiger oder Pfeiltasten, ai-access.js bindReorder).
+   Kein HTML5-Drag-Abbild: der Abschnitt hebt sich deckend ab und folgt dem Zeiger, eine schmale Linie zeigt das Ziel. */
 .aia-prio-hint { margin: -4px 0 0; }
 .aia-sechead { display: flex; align-items: center; gap: 8px; }
 .aia-sechead h3 { flex: 1; margin: 0; }
 .aia-rank { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: #fff; font: 700 11px/1 inherit; }
 .aia-rank::before { content: attr(data-aia-prio-n); }
-.aia-move { display: inline-flex; gap: 2px; }
-.aia-mv { width: 24px; height: 22px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface2); color: var(--muted); font-size: 10px; cursor: pointer; padding: 0; }
-.aia-mv:hover:not(:disabled) { color: var(--primary); border-color: var(--primary); }
-.aia-mv:disabled { opacity: .35; cursor: default; }
-.aia-prio { cursor: grab; border-radius: 8px; transition: background .12s, box-shadow .12s; }
-.aia-prio.is-dragging { opacity: .5; }
-.aia-prio.is-drop { box-shadow: inset 0 3px 0 var(--primary); background: var(--surface2); }
-.aia-prio input, .aia-prio select, .aia-prio button, .aia-prio a { cursor: auto; }
-.aia-prio button, .aia-prio a { cursor: pointer; }
+/* Geriffelter Griff wie .nsx-grip (Punktraster), als Knopf fokussierbar */
+.aia-grip { flex: none; align-self: center; width: 12px; height: 20px; margin: 0 -2px 0 -4px; padding: 0; border: 0; border-radius: 3px;
+  cursor: grab; opacity: .55; touch-action: none; -webkit-user-select: none; user-select: none;
+  background: radial-gradient(circle, var(--muted) 1.2px, transparent 1.6px) 0 0 / 6px 6px; }
+.aia-grip:hover, .aia-grip:focus-visible { opacity: 1; background-color: var(--surface2); }
+.aia-grip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.aia-prio.is-source { border-radius: 10px; background: var(--surface2); box-shadow: 0 0 0 6px var(--surface2); }
+.aia-drag-chip { position: fixed; z-index: 10; display: flex; align-items: center; gap: 8px; max-width: min(380px, 80vw);
+  padding: 6px 14px 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .18), 0 1px 3px rgba(15, 23, 42, .12); pointer-events: none;
+  font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.aia-drag-chip .aia-grip { margin: 0; opacity: 1; }
+.aia-drag-title { overflow: hidden; text-overflow: ellipsis; }
+[data-theme="dark"] .aia-drag-chip { box-shadow: 0 10px 28px rgba(0, 0, 0, .55); }
+.aia-sorting, .aia-sorting * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+.aia-drop-line { position: absolute; left: 22px; right: 22px; height: 2px; margin-top: -1px; border-radius: 2px; background: var(--primary); pointer-events: none; z-index: 4; }
+.aia-now { flex: none; padding: 1px 8px; border-radius: 999px; font: 600 11px/1.6 inherit; color: #1a7f37; background: rgba(31, 136, 61, .12); }
+[data-theme="dark"] .aia-now { color: #7ee2a0; background: rgba(46, 160, 67, .2); }
+.aia-modelrow { display: grid; gap: 4px; }
+.aia-modelrow .aia-label { margin: 0; }
+/* Lokale CLIs: eine aktiv (Auswahlknopf), Zustand rechts; Ausweich-CLIs darunter in Reihenfolge */
+.aia-clis li.aia-cli { padding: 0 10px 0 0; }
+.aia-cli-pick { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 6px 0 6px 10px; cursor: pointer; }
+.aia-cli-pick input { margin: 0; accent-color: var(--primary); }
+.aia-cli-text { min-width: 0; overflow-wrap: anywhere; }
+.aia-cli.is-active { box-shadow: inset 0 0 0 1px var(--primary); }
+.aia-cli-st { flex: none; font-size: 11px; color: var(--muted); }
+.aia-cli-st.is-bad { color: #cf222e; }
+.aia-cli-st.is-warn { color: #9a6700; }
+[data-theme="dark"] .aia-cli-st.is-bad { color: #ff8182; }
+[data-theme="dark"] .aia-cli-st.is-warn { color: #e3b341; }
+.aia-fb { display: grid; gap: 4px; }
+.aia-fb .aia-label { margin: 0; font-size: 12px; }
+.aia-fb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.aia-fb-sel { flex: 1 1 8rem; min-width: 0; width: auto; }
+.aia-fb-arrow { color: var(--faint); }
+.aia-checkrow { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.aia-sec .aia-signed { padding-top: 2px; }
 /* Verwaltung: eigener Knopf neben dem KI-Knopf */
 .aia-admin-btn { min-height: 34px; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; background: rgba(255,255,255,.08); color: #fff; padding: 5px 12px 5px 10px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 inherit; cursor: pointer; white-space: nowrap; }
 .aia-admin-btn:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.4); }
@@ -5768,3 +5819,108 @@ details.impl-fold > summary h2.sect { color: var(--impl-accent); }
 [data-theme="dark"] .is-current-new .current-excerpt { background: #1f2430; }
 .dossier-meta-grid .dossier-stale-banner { grid-column: 1 / -1; margin: 0; }
 .dossier-meta-sub { color: #666; }
+
+/* ---------------------------------------------------------------- Feedback melden (review_request.js)
+   Kompakter Dialog: Art als Auswahl, ein Textfeld, Bezug als entfernbare Chips, Kontakt nur auf Wunsch. */
+.fb-card{width:min(520px,100%)}
+.fb-body{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:14px 18px 16px}
+.fb-body>*{min-width:0}
+.fb-card .rv-modal-head .rv-icon-btn{color:inherit;font-size:22px;line-height:1}
+.fb-card .rv-modal-head .rv-icon-btn:hover{background:rgba(255,255,255,.14);color:inherit}
+.fb-lead{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.fb-notice{margin:0;padding:8px 10px;border:1px solid color-mix(in srgb,var(--status-candidate) 45%,var(--border));border-radius:6px;background:color-mix(in srgb,var(--status-candidate) 9%,var(--surface));color:var(--text);font-size:13px}
+.fb-seg{display:inline-flex;justify-self:start;border:1px solid var(--border);border-radius:999px;padding:2px;background:var(--surface2);gap:2px}
+.fb-seg button{min-height:30px;padding:4px 12px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;line-height:1;cursor:pointer}
+.fb-seg button[aria-checked="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(25,23,19,.14)}
+.fb-seg button:focus-visible,.fb-chip-x:focus-visible,.fb-link:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.fb-label{color:var(--text);font-size:13px;font-weight:650}
+.fb-text,.fb-input{width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);padding:9px 11px;font-family:inherit;font-size:14px;font-weight:400;line-height:1.45}
+.fb-text{min-height:96px;resize:vertical}
+.fb-text:focus,.fb-input:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
+.fb-err{margin:0;color:var(--status-rejected);font-size:13px}
+.fb-ctx{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.fb-ctx[hidden]{display:none}
+.fb-ctx-label{color:var(--muted);font-size:12px;font-weight:650}
+.fb-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.fb-chip{display:inline-flex;align-items:center;gap:4px;max-width:100%;min-width:0;box-sizing:border-box;min-height:28px;padding:2px 2px 2px 9px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:12px;color:var(--text)}
+.fb-chip-k{color:var(--muted);font-weight:650;white-space:nowrap}
+.fb-chip-v{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fb-chip-x{flex:0 0 auto;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:15px;line-height:1;cursor:pointer}
+.fb-chip-x:hover{background:var(--surface2);color:var(--text)}
+.fb-link{border:0;padding:0;background:none;color:var(--primary);font-family:inherit;font-size:13px;font-weight:600;line-height:1.4;cursor:pointer;text-decoration:underline;text-underline-offset:2px;justify-self:start}
+.fb-who{margin:0;color:var(--text);font-size:13px;line-height:1.5}
+.fb-fine{color:var(--muted);font-size:12px}
+.fb-check{display:inline-flex;align-items:center;gap:8px;color:var(--text);font-size:13px;cursor:pointer}
+.fb-check input{accent-color:var(--primary);width:16px;height:16px}
+.fb-reply{display:grid;gap:6px}
+.fb-reply[hidden]{display:none}
+.fb-privacy{border-top:1px solid var(--border);padding-top:8px;font-size:12px;color:var(--muted)}
+.fb-privacy summary{cursor:pointer;font-weight:650;color:var(--muted)}
+.fb-privacy ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+.fb-done{justify-items:center;text-align:center;padding:26px 20px}
+.fb-done:focus{outline:0}
+.fb-done-mark{margin:0;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--status-approved) 14%,var(--surface));color:var(--status-approved);font-size:22px;font-weight:700;line-height:1}
+.fb-done-title{margin:0;font-size:17px}
+.fb-done p{margin:0;max-width:44ch;color:var(--muted);font-size:14px}
+.fb-foot{flex-wrap:wrap;position:sticky;bottom:0;z-index:1}
+@media(max-width:520px){
+  .fb-body{padding:12px 14px}
+  .fb-foot .rv-spacer{flex-basis:100%;height:0;order:1}
+  .fb-foot .rv-btn{flex:1 1 auto;order:2}
+  .fb-foot .rv-btn-quiet{order:3;flex-basis:100%}
+}
+
+/* ---------------------------------------------------------------- Panel „Feedback & Kuration“ (review.js) */
+.rv-drawer-body{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:18px}
+/* Kopf des Panels ist ein <header> und damit petrolfarben (header-Regel oben): Untertitel und Schließen hell. */
+.rv-drawer-head .rv-drawer-sub{color:rgba(255,255,255,.86)}
+.rv-drawer-head .rv-icon-btn{color:rgba(255,255,255,.9)}
+.rv-drawer-head .rv-icon-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.rv-fb-mine .rv-empty-hint{max-width:none;margin:0 0 6px;text-align:left}
+.rv-sec{display:grid;gap:10px}
+.rv-sec+.rv-sec{border-top:1px solid var(--border);padding-top:16px}
+.rv-sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.rv-sec-head h3{margin:0;font-size:16px;display:inline-flex;align-items:center;gap:8px}
+.rv-sec-lead{margin:0;color:var(--muted);font-size:13px}
+.rv-sub-h{margin:4px 0 0;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.01em}
+.rv-sub-h:focus{outline:0}
+.rv-count{min-width:22px;height:22px;padding:0 7px;border-radius:11px;display:inline-grid;place-items:center;background:var(--surface2);color:var(--text);font-size:12px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.rv-count.is-new{background:#e5484d;color:#fff}
+.rv-fb-admin{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px dashed color-mix(in srgb,var(--primary) 45%,var(--border));border-radius:7px;background:color-mix(in srgb,var(--primary) 5%,var(--surface));font-size:13px}
+.rv-fb-admin[hidden]{display:none}
+.rv-fb-item .rv-item-head{flex-wrap:wrap}
+.rv-fb-when{margin:0 auto 0 0}
+.rv-fb-st.is-neu{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.rv-fb-st.is-in_pruefung{background:color-mix(in srgb,var(--status-trace) 14%,var(--surface));color:var(--status-trace)}
+.rv-fb-st.is-erledigt{background:#e4f1e8;color:#29623b}
+.rv-fb-st.is-verworfen{background:#f8e8ea;color:#842d39}
+.rv-fb-art{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.rv-fb-note{margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--primary);background:var(--surface);font-size:13px}
+.rv-btn-sm{min-height:28px;padding:4px 8px;font-size:12px}
+.rv-link{border:0;padding:0;background:none;color:var(--primary);font-family:inherit;font-size:13px;font-weight:600;line-height:1.4;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.rv-empty-sm{min-height:0;padding:14px 8px;border:1px dashed var(--border);border-radius:7px}
+.rv-empty-sm>svg{width:24px;height:24px;margin-bottom:6px}
+.rv-pkg-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.reviewbar-package .review-count.is-feedback{background:#e5484d;color:#fff}
+[data-theme="dark"] .rv-fb-st.is-erledigt{background:rgba(34,197,94,.15);color:#86efac}
+[data-theme="dark"] .rv-fb-st.is-verworfen{background:rgba(239,68,68,.15);color:#fca5a5}
+@media(max-width:520px){
+  .rv-pkg-actions .rv-spacer{display:none}
+  .rv-pkg-actions .rv-btn{flex:1 1 auto}
+  .rv-fb-admin{flex-wrap:wrap}
+}
+
+/* ---------------------------------------------------------------- Verwaltung: Feedback sichten (ai-access.js) */
+.aia-fb-entry{margin:0 0 6px}
+.aia-fbs li.aia-fb{display:grid;gap:6px;align-items:stretch;padding:12px;border-radius:12px}
+.aia-fb-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.aia-fb-art,.aia-fb-st{border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;background:var(--surface);border:1px solid var(--border)}
+.aia-fb-art.is-fehler{border-color:color-mix(in srgb,var(--status-rejected) 50%,var(--border));color:var(--status-rejected)}
+.aia-fb-art.is-wunsch{border-color:color-mix(in srgb,var(--status-trace) 50%,var(--border));color:var(--status-trace)}
+.aia-fb.is-erledigt,.aia-fb.is-verworfen{opacity:.75}
+.aia-fb-text{margin:0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.aia-fb-ctx{margin:0;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.aia-fb-sel{font-style:italic}
+.aia-fb-form .aia-row{flex-wrap:wrap}
+.aia-fb-note{flex:1 1 220px}
+.aia-fb-filter{margin-bottom:8px}

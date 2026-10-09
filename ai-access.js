@@ -8,6 +8,8 @@
 // * Lokal (serve.py) werden zusätzlich die vom Backend erkannten KI-CLIs angeboten.
 // * Vorschläge gehen auf der öffentlichen Seite als vorausgefülltes GitHub-Issue an den
 //   Kurationseingang (curation-gate.yml, Titel mit „Kuration“).
+// * Leser-Feedback (AiAccess.feedback): Firestore feedback/{id}, ohne Anmeldung über ein anonymes Konto in
+//   der eigenen App-Instanz „autodocs-feedback“; Sichtung in der Verwaltung (CONCEPT-0062).
 (function (root, factory) {
   var api = factory(root);
   if (typeof module === "object" && module.exports) module.exports = api;
@@ -586,6 +588,82 @@
     nl: { aboLabel: "Projectquotum · Gemini-abonnement" }
   };
   Object.keys(L5).forEach(function (k) { if (L[k]) Object.assign(L[k], L5[k]); });
+  // Reihenfolge per Griff (Maus, Finger, Pfeiltasten), Modellwahl je Abschnitt, lokale CLIs mit Ausweichliste,
+  // Symbole im Kopf setzen ihre Quelle an Rang 1. Fehlende Sprachen nehmen Englisch.
+  var L6 = {
+    de: { prioHint: "Reihenfolge = Priorität: Es antwortet der oberste nutzbare Zugang. Am Griff ziehen oder mit den Pfeiltasten verschieben.",
+          gripLabel: "%s verschieben, Rang %n",
+          prioMoved: "%s jetzt an Rang %n von %t.", answersNow: "antwortet", secModel: "Modell",
+          srcLocal: "Lokale KI-CLIs", srcProject: "Projektkontingent", srcByok: "Eigene Schlüssel",
+          prioTop: "%s steht jetzt an Rang 1 und antwortet.", prioTopWait: "%s steht jetzt an Rang 1.",
+          prioAlready: "%s steht schon an Rang 1.",
+          prioUnhealthy: "%s ist gerade nicht nutzbar (%r). Die Reihenfolge bleibt; hier lässt es sich prüfen oder einrichten.",
+          icoPromote: "Klick: an Rang 1 setzen",
+          cliActive: "Aktive CLI", cliFallback: "Ausweichen, wenn das Kontingent erschöpft oder die CLI nicht erreichbar ist",
+          cliFallbackNone: "– kein Ausweichen –", cliFallbackN: "Ausweich-CLI %s", cliFbShort: "Ausweich %s", cliDefaultModel: "Standardmodell",
+          cliChecking: "Prüfe alle CLIs …", cliFoundN: "%n CLIs gefunden.", cliFound1: "1 CLI gefunden.",
+          st_healthy: "bereit", st_unauthenticated: "nicht angemeldet", st_error: "Fehler", st_quota: "Kontingent erschöpft",
+          st_unreachable: "nicht installiert", st_untested: "ungeprüft",
+          kind_quota: "Kontingent erschöpft", kind_auth: "nicht angemeldet", kind_unavailable: "nicht erreichbar",
+          kind_timeout: "Zeitüberschreitung", kind_error: "Fehler",
+          answeredInstead: "statt %s: %r", fallbackNow: "%s: %r – %t antwortet …" },
+    en: { prioHint: "Order = priority: the topmost usable access answers. Drag by the handle or move with the arrow keys.",
+          gripLabel: "Move %s, rank %n",
+          prioMoved: "%s is now rank %n of %t.", answersNow: "answers", secModel: "Model",
+          srcLocal: "Local AI CLIs", srcProject: "Project quota", srcByok: "Own keys",
+          prioTop: "%s is now rank 1 and answers.", prioTopWait: "%s is now rank 1.",
+          prioAlready: "%s is already rank 1.",
+          prioUnhealthy: "%s is not usable right now (%r). The order stays; you can check or set it up here.",
+          icoPromote: "Click: make rank 1",
+          cliActive: "Active CLI", cliFallback: "Fall back when the quota is used up or the CLI cannot be reached",
+          cliFallbackNone: "– no fallback –", cliFallbackN: "Fallback CLI %s", cliFbShort: "fallback %s", cliDefaultModel: "default model",
+          cliChecking: "Checking all CLIs …", cliFoundN: "%n CLIs found.", cliFound1: "1 CLI found.",
+          st_healthy: "ready", st_unauthenticated: "not signed in", st_error: "error", st_quota: "quota used up",
+          st_unreachable: "not installed", st_untested: "not checked",
+          kind_quota: "quota used up", kind_auth: "not signed in", kind_unavailable: "not reachable",
+          kind_timeout: "timed out", kind_error: "error",
+          answeredInstead: "instead of %s: %r", fallbackNow: "%s: %r – %t answers …" },
+    es: { prioHint: "Orden = prioridad: responde el primer acceso utilizable. Arrastra por el asa o muévelo con las flechas.",
+          answersNow: "responde", secModel: "Modelo", cliActive: "CLI activa", icoPromote: "Clic: poner en el puesto 1" },
+    pt: { prioHint: "Ordem = prioridade: responde o primeiro acesso utilizável. Arraste pela alça ou mova com as setas.",
+          answersNow: "responde", secModel: "Modelo", cliActive: "CLI ativa", icoPromote: "Clique: colocar em 1º" },
+    fr: { prioHint: "Ordre = priorité : le premier accès utilisable répond. Glisser par la poignée ou déplacer avec les flèches.",
+          answersNow: "répond", secModel: "Modèle", cliActive: "CLI active", icoPromote: "Clic : mettre au rang 1" },
+    ru: { prioHint: "Порядок = приоритет: отвечает первый доступный вариант. Перетащите за ручку или используйте стрелки.",
+          answersNow: "отвечает", secModel: "Модель", cliActive: "Активный CLI", icoPromote: "Щелчок: на первое место" },
+    ar: { prioHint: "الترتيب = الأولوية: يجيب أول وصول قابل للاستخدام. اسحب من المقبض أو حرّك بمفاتيح الأسهم.",
+          answersNow: "يجيب", secModel: "النموذج", cliActive: "واجهة CLI النشطة", icoPromote: "انقر: إلى المرتبة 1" },
+    hi: { prioHint: "क्रम = प्राथमिकता: सबसे ऊपर का उपयोगी एक्सेस जवाब देता है। हैंडल से खींचें या तीर कुंजियों से खिसकाएँ।",
+          answersNow: "जवाब देता है", secModel: "मॉडल", cliActive: "सक्रिय CLI", icoPromote: "क्लिक: पहले स्थान पर" },
+    ko: { prioHint: "순서 = 우선순위: 사용 가능한 맨 위 항목이 답합니다. 손잡이를 끌거나 화살표 키로 옮기세요.",
+          answersNow: "응답", secModel: "모델", cliActive: "활성 CLI", icoPromote: "클릭: 1순위로" },
+    zh: { prioHint: "顺序即优先级：由最上方可用的访问方式回答。拖动手柄或用方向键移动。",
+          answersNow: "回答", secModel: "模型", cliActive: "当前 CLI", icoPromote: "点击：设为第 1 位" },
+    nl: { prioHint: "Volgorde = prioriteit: de bovenste bruikbare toegang antwoordt. Sleep aan de greep of verplaats met de pijltjestoetsen.",
+          answersNow: "antwoordt", secModel: "Model", cliActive: "Actieve CLI", icoPromote: "Klik: naar plek 1" }
+  };
+  Object.keys(L6).forEach(function (k) { if (L[k]) Object.assign(L[k], L6[k]); });
+  // Mehrere Platzhalter: %s, %n, %t, %r der Reihe nach aus vals.
+  function trf(key, vals) {
+    var s = tr(key);
+    Object.keys(vals || {}).forEach(function (k) { s = s.split("%" + k).join(String(vals[k])); });
+    return s;
+  }
+  // Leser-Feedback: Sichtung in der Verwaltung und Stand der eigenen Meldungen (review.js liest sie über AiAccess.text).
+  var L7 = {
+    de: { fbAdmTitle: "Eingegangenes Feedback", fbAdmLead: "Meldungen von Leserinnen und Lesern. Fehler und Hinweise prüft zusätzlich der Prüf-Agent als Befund; hier setzt du den Stand und kannst der meldenden Person antworten.", fbAdmNone: "Nichts Offenes.", fbAdmBtn: "Feedback sichten", fbAdmNew: "%s neu", fbAdmStatus: "Stand", fbAdmNote: "Antwort (sieht die meldende Person unter „Meine Meldungen“)", fbAdmDel: "Löschen", fbAdmShowOpen: "Offen", fbAdmShowAll: "Alle", fbAdmSwitch: "Melden über die Website", fbAdmOpen: "Melden erlaubt", fbAdmAnon: "auch ohne Anmeldung", fbAdmSwitchHint: "Gilt sofort für alle Besucher (Firestore-Regeln). Abschalten, wenn Spam eingeht.", fbAdmContact: "Antwort erwünscht an", fbAdmFinding: "Befund", fbAdmSaved: "Gespeichert.", fbKonto: "Konto", fbAnon: "ohne Anmeldung", fbSt_neu: "Neu", fbSt_in_pruefung: "In Prüfung", fbSt_erledigt: "Erledigt", fbSt_verworfen: "Verworfen", fbArt_hinweis: "Hinweis", fbArt_fehler: "Fehler", fbArt_wunsch: "Wunsch" },
+    en: { fbAdmTitle: "Incoming feedback", fbAdmLead: "Reports from readers. The review agent also checks errors and notes as findings; here you set the state and can reply to the reporter.", fbAdmNone: "Nothing open.", fbAdmBtn: "Review feedback", fbAdmNew: "%s new", fbAdmStatus: "State", fbAdmNote: "Reply (the reporter sees it under “My reports”)", fbAdmDel: "Delete", fbAdmShowOpen: "Open", fbAdmShowAll: "All", fbAdmSwitch: "Reporting through the website", fbAdmOpen: "Reporting allowed", fbAdmAnon: "also without signing in", fbAdmSwitchHint: "Applies immediately to all visitors (Firestore rules). Switch off if spam arrives.", fbAdmContact: "Reply requested to", fbAdmFinding: "Finding", fbAdmSaved: "Saved.", fbKonto: "Account", fbAnon: "not signed in", fbSt_neu: "New", fbSt_in_pruefung: "Under review", fbSt_erledigt: "Done", fbSt_verworfen: "Dismissed", fbArt_hinweis: "Note", fbArt_fehler: "Error", fbArt_wunsch: "Suggestion" },
+    es: { fbAdmTitle: "Comentarios recibidos", fbAdmLead: "Avisos de lectores. El agente revisor también comprueba errores y observaciones como hallazgos; aquí fijas el estado y puedes responder a quien informó.", fbAdmNone: "Nada pendiente.", fbAdmBtn: "Revisar comentarios", fbAdmNew: "%s nuevos", fbAdmStatus: "Estado", fbAdmNote: "Respuesta (la persona la ve en «Mis avisos»)", fbAdmDel: "Eliminar", fbAdmShowOpen: "Abiertos", fbAdmShowAll: "Todos", fbAdmSwitch: "Avisos a través del sitio web", fbAdmOpen: "Avisos permitidos", fbAdmAnon: "también sin iniciar sesión", fbAdmSwitchHint: "Se aplica de inmediato a todos los visitantes (reglas de Firestore). Desactívalo si llega spam.", fbAdmContact: "Respuesta solicitada a", fbAdmFinding: "Hallazgo", fbAdmSaved: "Guardado.", fbKonto: "Cuenta", fbAnon: "sin iniciar sesión", fbSt_neu: "Nuevo", fbSt_in_pruefung: "En revisión", fbSt_erledigt: "Resuelto", fbSt_verworfen: "Descartado", fbArt_hinweis: "Observación", fbArt_fehler: "Error", fbArt_wunsch: "Sugerencia" },
+    pt: { fbAdmTitle: "Feedback recebido", fbAdmLead: "Relatos de leitores. O agente revisor também verifica erros e observações como achados; aqui você define o estado e pode responder a quem relatou.", fbAdmNone: "Nada em aberto.", fbAdmBtn: "Revisar feedback", fbAdmNew: "%s novos", fbAdmStatus: "Estado", fbAdmNote: "Resposta (a pessoa vê em “Meus relatos”)", fbAdmDel: "Excluir", fbAdmShowOpen: "Abertos", fbAdmShowAll: "Todos", fbAdmSwitch: "Relatos pelo site", fbAdmOpen: "Relatos permitidos", fbAdmAnon: "também sem login", fbAdmSwitchHint: "Vale imediatamente para todos os visitantes (regras do Firestore). Desative se chegar spam.", fbAdmContact: "Resposta desejada para", fbAdmFinding: "Achado", fbAdmSaved: "Salvo.", fbKonto: "Conta", fbAnon: "sem login", fbSt_neu: "Novo", fbSt_in_pruefung: "Em análise", fbSt_erledigt: "Concluído", fbSt_verworfen: "Descartado", fbArt_hinweis: "Observação", fbArt_fehler: "Erro", fbArt_wunsch: "Sugestão" },
+    fr: { fbAdmTitle: "Retours reçus", fbAdmLead: "Signalements des lecteurs. L'agent de contrôle vérifie aussi les erreurs et remarques comme constats ; ici vous fixez l'état et pouvez répondre à la personne.", fbAdmNone: "Rien en attente.", fbAdmBtn: "Examiner les retours", fbAdmNew: "%s nouveaux", fbAdmStatus: "État", fbAdmNote: "Réponse (visible par la personne sous « Mes signalements »)", fbAdmDel: "Supprimer", fbAdmShowOpen: "Ouverts", fbAdmShowAll: "Tous", fbAdmSwitch: "Signalement via le site", fbAdmOpen: "Signalement autorisé", fbAdmAnon: "aussi sans connexion", fbAdmSwitchHint: "S'applique immédiatement à tous les visiteurs (règles Firestore). À désactiver en cas de spam.", fbAdmContact: "Réponse souhaitée à", fbAdmFinding: "Constat", fbAdmSaved: "Enregistré.", fbKonto: "Compte", fbAnon: "sans connexion", fbSt_neu: "Nouveau", fbSt_in_pruefung: "En examen", fbSt_erledigt: "Traité", fbSt_verworfen: "Écarté", fbArt_hinweis: "Remarque", fbArt_fehler: "Erreur", fbArt_wunsch: "Souhait" },
+    ru: { fbAdmTitle: "Поступившие отзывы", fbAdmLead: "Сообщения читателей. Агент проверки также проверяет ошибки и замечания как находки; здесь вы задаёте статус и можете ответить автору.", fbAdmNone: "Открытых нет.", fbAdmBtn: "Разобрать отзывы", fbAdmNew: "новых: %s", fbAdmStatus: "Статус", fbAdmNote: "Ответ (автор увидит его в «Мои сообщения»)", fbAdmDel: "Удалить", fbAdmShowOpen: "Открытые", fbAdmShowAll: "Все", fbAdmSwitch: "Сообщения через сайт", fbAdmOpen: "Сообщения разрешены", fbAdmAnon: "в том числе без входа", fbAdmSwitchHint: "Действует сразу для всех посетителей (правила Firestore). Отключите при спаме.", fbAdmContact: "Ответ нужен по адресу", fbAdmFinding: "Находка", fbAdmSaved: "Сохранено.", fbKonto: "Аккаунт", fbAnon: "без входа", fbSt_neu: "Новое", fbSt_in_pruefung: "На проверке", fbSt_erledigt: "Решено", fbSt_verworfen: "Отклонено", fbArt_hinweis: "Замечание", fbArt_fehler: "Ошибка", fbArt_wunsch: "Пожелание" },
+    ar: { fbAdmTitle: "الملاحظات الواردة", fbAdmLead: "بلاغات من القرّاء. يفحص وكيل المراجعة أيضًا الأخطاء والملاحظات كنتائج؛ هنا تحدد الحالة ويمكنك الرد على المُبلِّغ.", fbAdmNone: "لا شيء مفتوح.", fbAdmBtn: "مراجعة الملاحظات", fbAdmNew: "%s جديدة", fbAdmStatus: "الحالة", fbAdmNote: "الرد (يراه المُبلِّغ في «بلاغاتي»)", fbAdmDel: "حذف", fbAdmShowOpen: "مفتوحة", fbAdmShowAll: "الكل", fbAdmSwitch: "الإبلاغ عبر الموقع", fbAdmOpen: "الإبلاغ مسموح", fbAdmAnon: "حتى بدون تسجيل الدخول", fbAdmSwitchHint: "يسري فورًا على جميع الزوار (قواعد Firestore). أوقفه عند وصول رسائل مزعجة.", fbAdmContact: "الرد مطلوب إلى", fbAdmFinding: "نتيجة", fbAdmSaved: "تم الحفظ.", fbKonto: "حساب", fbAnon: "بدون تسجيل دخول", fbSt_neu: "جديد", fbSt_in_pruefung: "قيد المراجعة", fbSt_erledigt: "مُنجَز", fbSt_verworfen: "مرفوض", fbArt_hinweis: "ملاحظة", fbArt_fehler: "خطأ", fbArt_wunsch: "اقتراح" },
+    hi: { fbAdmTitle: "प्राप्त फ़ीडबैक", fbAdmLead: "पाठकों की रिपोर्टें। समीक्षा एजेंट गलतियों और टिप्पणियों को निष्कर्ष के रूप में भी जाँचता है; यहाँ आप स्थिति तय करते हैं और रिपोर्ट करने वाले को उत्तर दे सकते हैं।", fbAdmNone: "कुछ भी लंबित नहीं।", fbAdmBtn: "फ़ीडबैक देखें", fbAdmNew: "%s नए", fbAdmStatus: "स्थिति", fbAdmNote: "उत्तर (रिपोर्ट करने वाला इसे “मेरी रिपोर्टें” में देखता है)", fbAdmDel: "हटाएँ", fbAdmShowOpen: "खुले", fbAdmShowAll: "सभी", fbAdmSwitch: "वेबसाइट से रिपोर्ट करना", fbAdmOpen: "रिपोर्ट करने की अनुमति", fbAdmAnon: "बिना साइन इन के भी", fbAdmSwitchHint: "सभी आगंतुकों पर तुरंत लागू (Firestore नियम)। स्पैम आने पर बंद करें।", fbAdmContact: "उत्तर यहाँ चाहिए", fbAdmFinding: "निष्कर्ष", fbAdmSaved: "सहेजा गया।", fbKonto: "खाता", fbAnon: "बिना साइन इन", fbSt_neu: "नया", fbSt_in_pruefung: "समीक्षा में", fbSt_erledigt: "पूर्ण", fbSt_verworfen: "अस्वीकृत", fbArt_hinweis: "टिप्पणी", fbArt_fehler: "त्रुटि", fbArt_wunsch: "सुझाव" },
+    ko: { fbAdmTitle: "받은 피드백", fbAdmLead: "독자의 신고입니다. 검토 에이전트도 오류와 의견을 발견 사항으로 확인합니다. 여기서 상태를 정하고 신고자에게 답할 수 있습니다.", fbAdmNone: "열린 항목이 없습니다.", fbAdmBtn: "피드백 검토", fbAdmNew: "새 항목 %s개", fbAdmStatus: "상태", fbAdmNote: "답변(신고자가 ‘내 신고’에서 봅니다)", fbAdmDel: "삭제", fbAdmShowOpen: "열림", fbAdmShowAll: "전체", fbAdmSwitch: "웹사이트를 통한 신고", fbAdmOpen: "신고 허용", fbAdmAnon: "로그인 없이도", fbAdmSwitchHint: "모든 방문자에게 즉시 적용됩니다(Firestore 규칙). 스팸이 오면 끄세요.", fbAdmContact: "답변 받을 곳", fbAdmFinding: "발견 사항", fbAdmSaved: "저장했습니다.", fbKonto: "계정", fbAnon: "로그인 안 함", fbSt_neu: "새 항목", fbSt_in_pruefung: "검토 중", fbSt_erledigt: "완료", fbSt_verworfen: "기각", fbArt_hinweis: "의견", fbArt_fehler: "오류", fbArt_wunsch: "제안" },
+    zh: { fbAdmTitle: "收到的反馈", fbAdmLead: "读者的报告。审查代理也会把错误和意见作为发现进行核查；你在这里设置状态，并可以回复报告者。", fbAdmNone: "没有待处理项。", fbAdmBtn: "查看反馈", fbAdmNew: "%s 条新反馈", fbAdmStatus: "状态", fbAdmNote: "回复（报告者可在“我的报告”中看到）", fbAdmDel: "删除", fbAdmShowOpen: "未处理", fbAdmShowAll: "全部", fbAdmSwitch: "通过网站报告", fbAdmOpen: "允许报告", fbAdmAnon: "未登录也可以", fbAdmSwitchHint: "立即对所有访客生效（Firestore 规则）。收到垃圾信息时请关闭。", fbAdmContact: "希望回复至", fbAdmFinding: "发现", fbAdmSaved: "已保存。", fbKonto: "账号", fbAnon: "未登录", fbSt_neu: "新", fbSt_in_pruefung: "审查中", fbSt_erledigt: "已完成", fbSt_verworfen: "已驳回", fbArt_hinweis: "意见", fbArt_fehler: "错误", fbArt_wunsch: "建议" },
+    nl: { fbAdmTitle: "Ontvangen feedback", fbAdmLead: "Meldingen van lezers. De controle-agent controleert fouten en opmerkingen ook als bevinding; hier stel je de status in en kun je de melder antwoorden.", fbAdmNone: "Niets open.", fbAdmBtn: "Feedback bekijken", fbAdmNew: "%s nieuw", fbAdmStatus: "Status", fbAdmNote: "Antwoord (de melder ziet het onder ‘Mijn meldingen’)", fbAdmDel: "Verwijderen", fbAdmShowOpen: "Open", fbAdmShowAll: "Alle", fbAdmSwitch: "Melden via de website", fbAdmOpen: "Melden toegestaan", fbAdmAnon: "ook zonder aanmelden", fbAdmSwitchHint: "Geldt meteen voor alle bezoekers (Firestore-regels). Uitzetten bij spam.", fbAdmContact: "Antwoord gewenst aan", fbAdmFinding: "Bevinding", fbAdmSaved: "Opgeslagen.", fbKonto: "Account", fbAnon: "niet aangemeld", fbSt_neu: "Nieuw", fbSt_in_pruefung: "In behandeling", fbSt_erledigt: "Afgehandeld", fbSt_verworfen: "Verworpen", fbArt_hinweis: "Opmerking", fbArt_fehler: "Fout", fbArt_wunsch: "Wens" }
+  };
+  Object.keys(L7).forEach(function (k) { if (L[k]) Object.assign(L[k], L7[k]); });
   function tr(key, arg) {
     var d = L[lang()] || L.en;
     var s = d[key] != null ? d[key] : (L.en[key] != null ? L.en[key] : key);
@@ -981,7 +1059,7 @@
   }
   function vault() {
     var a = readVault("local"), b = readVault("session");
-    var out = { providers: Object.assign({}, a.providers || {}), choice: b.choice || a.choice || null };
+    var out = { providers: Object.assign({}, a.providers || {}), choice: b.choice || a.choice || null, picks: a.picks || null };
     Object.keys(b.providers || {}).forEach(function (k) { out.providers[k] = Object.assign({ session: true }, b.providers[k]); });
     return out;
   }
@@ -1003,19 +1081,48 @@
       var v = readVault(kind);
       if (v.providers) delete v.providers[id];
       if (v.choice && v.choice.provider === id) v.choice = null;
+      if (v.picks && v.picks.byok && v.picks.byok.provider === id) delete v.picks.byok;
       sset(kind, VAULT_PREFIX + sc, JSON.stringify(v));
     });
     emit();
   }
-  function setChoice(choice) {
+  // Modellwahl je Quelle (Abschnitt im Dialog): picks.local = { cli, fallback: [...] }, picks.project = { provider, model },
+  // picks.byok = { provider, model }. Welche Quelle antwortet, entscheidet allein die Reihenfolge (accessOrder);
+  // eine Wahl in einem Abschnitt gilt nur für diese Quelle. Frühere Fassungen hatten eine Wahl über alle Quellen
+  // (choice), die die Reihenfolge überstimmte; sie wird als Wahl ihrer Quelle übernommen.
+  function sourceOf(provider) { return provider === "local" ? "local" : isQuota(provider) ? "project" : "byok"; }
+  function picks(v) {
+    v = v || vault();
+    var out = {};
+    Object.keys(v.picks || {}).forEach(function (k) { if (v.picks[k]) out[k] = v.picks[k]; });
+    var ch = v.choice;
+    if (ch && ch.provider) {
+      var src = sourceOf(ch.provider);
+      if (!out[src]) out[src] = src === "local" ? { cli: ch.model, fallback: [] } : { provider: ch.provider, model: ch.model };
+    }
+    return out;
+  }
+  function setPick(src, val) {
     var sc = scope();
     if (!sc) return;
+    var all = picks();
+    if (val) all[src] = val; else delete all[src];
     var v = readVault("local");
-    v.choice = choice;
+    v.picks = all;
+    v.choice = null;
     sset("local", VAULT_PREFIX + sc, JSON.stringify(v));
     var s = readVault("session");
     if (s.choice) { s.choice = null; sset("session", VAULT_PREFIX + sc, JSON.stringify(s)); }
     emit();
+  }
+  // Ältere Schnittstelle (Tests, Verbinden eines Schlüssels): { provider, model } wird die Wahl der passenden Quelle.
+  function setChoice(choice) {
+    if (!choice || !choice.provider) return;
+    var src = sourceOf(choice.provider);
+    if (src === "local") {
+      var cur = picks().local || {};
+      setPick("local", { cli: choice.model, fallback: (cur.fallback || []).filter(function (x) { return x !== choice.model; }) });
+    } else setPick(src, { provider: choice.provider, model: choice.model });
   }
 
   // ----------------------------------------------------------- Anmeldung
@@ -1167,23 +1274,29 @@
     if (typeof v === "number") return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
     return { stringValue: String(v) };
   }
+  // Firestore-Wert als einfacher Wert; Zeitpunkte bleiben als Text (ISO) erhalten, damit sie unverändert
+  // zurückgeschrieben werden können (Zähler der Feedback-Mengenbegrenzung), Maps werden zu Objekten.
+  function fsPlainValue(f) {
+    return "stringValue" in f ? f.stringValue : "integerValue" in f ? Number(f.integerValue) :
+      "doubleValue" in f ? f.doubleValue : "booleanValue" in f ? f.booleanValue :
+      "timestampValue" in f ? f.timestampValue : "mapValue" in f ? fsPlain(f.mapValue) : null;
+  }
   function fsPlain(doc) {
     var out = {};
-    Object.keys((doc && doc.fields) || {}).forEach(function (k) {
-      var f = doc.fields[k];
-      out[k] = "stringValue" in f ? f.stringValue : "integerValue" in f ? Number(f.integerValue) :
-        "doubleValue" in f ? f.doubleValue : "booleanValue" in f ? f.booleanValue : null;
-    });
+    Object.keys((doc && doc.fields) || {}).forEach(function (k) { out[k] = fsPlainValue(doc.fields[k]); });
     if (doc && doc.name) out._id = doc.name.split("/").pop();
     return out;
   }
   async function fsFetch(path, opts) {
-    var fb = state.fb;
-    var u = fb && fb.auth && fb.auth.currentUser;
-    if (!u) throw new Error("not-signed-in");
-    var tok = await u.getIdToken();
     opts = opts || {};
-    var headers = { Authorization: "Bearer " + tok };
+    var headers = {};
+    if (opts.token) headers.Authorization = "Bearer " + opts.token;
+    else if (!opts.public) {
+      var fb = state.fb;
+      var u = fb && fb.auth && fb.auth.currentUser;
+      if (!u) throw new Error("not-signed-in");
+      headers.Authorization = "Bearer " + await u.getIdToken();
+    }
     if (opts.body) headers["Content-Type"] = "application/json";
     var res = await fetch(fsBase() + path, { method: opts.method || "GET", headers: headers, body: opts.body });
     if (res.status === 404 && (opts.method || "GET") === "GET") return null;
@@ -1210,7 +1323,16 @@
   var quota = { request: null, grant: null, admin: false, open: [], grants: [], loaded: false };
   // Beim Anmelden: Freigabe übernehmen bzw. entzogene entfernen, Anfrage und Verwalterrolle lesen.
   async function syncQuota() {
-    if (!state.user || !state.fb || !projectOffered()) { quota = { request: null, grant: null, admin: false, open: [], grants: [], loaded: false, models: null }; emit(); return; }
+    if (!state.user || !state.fb || !projectOffered()) {
+      quota = { request: null, grant: null, admin: false, open: [], grants: [], loaded: false, models: null };
+      fbAdm.items = []; fbAdm.loaded = false;
+      // Feedback sichten geht auch ohne Projektkontingent; dafür nur die Verwalterrolle lesen.
+      if (state.user && state.fb && fbConfigured()) {
+        try { quota.admin = !!(await fsGet("admins/" + state.user.uid, true)); if (quota.admin) await loadFeedbackAdmin(); }
+        catch (e) { if (root.console) root.console.warn("ai-access: Verwalterrolle nicht lesbar", e); }
+      }
+      emit(); emitFeedback(); return;
+    }
     var uid = state.user.uid;
     try {
       var res = await Promise.all([fsGet("grants/" + uid, true), fsGet("requests/" + uid, true), fsGet("admins/" + uid, true)]);
@@ -1234,6 +1356,7 @@
         setChoice(null);
       }
       if (quota.admin) await loadAdmin();
+      if (quota.admin) await loadFeedbackAdmin().catch(function (e) { if (root.console) root.console.warn("ai-access: Feedback nicht lesbar", e); });
     } catch (e) {
       // Hintergrundabgleich: kein Fehlerhinweis im Dialog, die Statusseite zeigt den bekannten Stand.
       if (root.console) root.console.warn("ai-access: Abgleich des Projektkontingents fehlgeschlagen", e);
@@ -1321,6 +1444,266 @@
     emit();
   }
 
+  // ------------------------------------------------------------ Leser-Feedback
+  // Konzept: docs/concepts/fachkonzept-feedback-und-rollen.md. Melden kann jede Person:
+  //   * lokal (serve.py erreichbar): POST /api/user-feedback → _src/spec/feedback-queue/user/
+  //   * öffentlich mit Firebase: Firestore feedback/{id}; angemeldet mit dem eigenen Konto, sonst mit einem
+  //     anonymen Firebase-Konto in einer eigenen App-Instanz („autodocs-feedback“), das erst beim ersten Senden
+  //     entsteht (kein stilles Anlegen beim Seitenaufruf). Die Mengenbegrenzung (feedback_quota/{uid}) schreibt
+  //     derselbe Schreibvorgang fort; die Regeln prüfen beides (firestore.rules).
+  //   * sonst: vorausgefülltes, öffentliches GitHub-Issue (der Dialog sagt das vorher).
+  // Danach optional die Spiegelung als Issue im privaten Repository über den Worker (POST /feedback/notify).
+  var FB_SCHEMA = "user-feedback@v2";
+  var FB_ANON = "autodocs-feedback-anon";
+  var FB_ARTS = ["hinweis", "fehler", "wunsch"];
+  var FB_STATUSES = ["neu", "in_pruefung", "erledigt", "verworfen"];
+  var FB_CTX = { page: 300, title: 200, target: 256, fold: 200, selection: 1000, release: 40, lang: 8 };
+  var FB_GAP_MS = 30000, FB_DAY_MS = 86400000, FB_PER_DAY = 20;
+  var fbAnonPromise = null, fbSettingsCache = null;
+  var fbAdm = { items: [], loaded: false, settings: { offen: true, anonym: true }, filter: "open" };
+  function fbConfigured() {
+    var c = state.config || {}, f = c.firebase || {};
+    return !!(f.apiKey && f.projectId) && c.feedback !== "issue" && c.feedback !== "aus";
+  }
+  function fbDocName(path) {
+    return "projects/" + ((state.config && state.config.firebase) || {}).projectId + "/databases/(default)/documents/" + path;
+  }
+  function fbErr(code, extra) { var e = new Error(code); e.code = code; if (extra) Object.assign(e, extra); return e; }
+  // Eingaben wie die Regeln normalisieren: Text 3–4000 Zeichen, Bezug nur bekannte Felder, Kontakt höchstens 120.
+  function fbNormalize(input) {
+    input = input || {};
+    var text = String(input.text == null ? "" : input.text).replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim();
+    // Längen in Unicode-Zeichen wie size() der Regeln und len() in Python.
+    if (Array.from(text).length < 3) throw fbErr("text_short");
+    if (Array.from(text).length > 4000) throw fbErr("text_long");
+    var art = FB_ARTS.indexOf(input.art) === -1 ? "hinweis" : input.art;
+    var ctx = {};
+    Object.keys(input.ctx || {}).forEach(function (k) {
+      var v = input.ctx[k];
+      if (!FB_CTX[k] || v == null) return;
+      v = String(v).replace(/\s+/g, " ").trim();
+      if (v) ctx[k] = Array.from(v).slice(0, FB_CTX[k]).join("");
+    });
+    var out = { schema: FB_SCHEMA, art: art, text: text };
+    if (Object.keys(ctx).length) out.ctx = ctx;
+    var contact = Array.from(String(input.contact == null ? "" : input.contact).replace(/\s+/g, " ").trim()).slice(0, 120).join("");
+    if (contact) out.contact = contact;
+    return out;
+  }
+  function fbNewId() {
+    var abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", b = new Uint8Array(20), s = "fb";
+    (root.crypto || {}).getRandomValues ? root.crypto.getRandomValues(b) : b.forEach(function (_, i) { b[i] = Math.floor(Math.random() * 256); });
+    for (var i = 0; i < 18; i++) s += abc[b[i] % abc.length];
+    return s;
+  }
+  // Wert für das REST-Format; Maps für den Bezug, Zeitpunkte als timestampValue.
+  function fbVal(v) {
+    if (v && typeof v === "object" && v.timestampValue) return { timestampValue: v.timestampValue };
+    if (v && typeof v === "object") {
+      var f = {};
+      Object.keys(v).forEach(function (k) { f[k] = fbVal(v[k]); });
+      return { mapValue: { fields: f } };
+    }
+    return fsVal(v);
+  }
+  function fbFields(obj) { var f = {}; Object.keys(obj).forEach(function (k) { f[k] = fbVal(obj[k]); }); return f; }
+  // Anonymes Konto in eigener App-Instanz: lässt die eigentliche Anmeldung unberührt (Kopfleiste, Kontingent).
+  async function fbAnonAuth(create) {
+    await loadConfig();
+    if (!fbConfigured()) return null;
+    if (!create && !sget("local", FB_ANON)) return null;
+    if (!fbAnonPromise) {
+      fbAnonPromise = (async function () {
+        var sdk = state.config.sdk || DEFAULT_SDK;
+        var appMod = await import(/* webpackIgnore: true */ sdk + "/firebase-app.js");
+        var authMod = await import(/* webpackIgnore: true */ sdk + "/firebase-auth.js");
+        var app = appMod.initializeApp(state.config.firebase, "autodocs-feedback");
+        var auth = authMod.getAuth(app);
+        await new Promise(function (resolve) {
+          var done = false;
+          authMod.onAuthStateChanged(auth, function () { if (!done) { done = true; resolve(); } });
+        });
+        return { mod: authMod, auth: auth };
+      })().catch(function (e) { fbAnonPromise = null; throw e; });
+    }
+    var fa = await fbAnonPromise;
+    if (!fa.auth.currentUser && create) {
+      await fa.mod.signInAnonymously(fa.auth);
+      sset("local", FB_ANON, "1");
+    }
+    return fa.auth.currentUser ? fa : null;
+  }
+  // Wer meldet: das angemeldete Konto, sonst (create) das anonyme Konto dieses Browsers.
+  async function fbIdentity(create) {
+    await loadConfig();
+    if (state.auth !== "unconfigured" && sget("local", SESSION_FLAG)) await ensureFirebase();
+    var u = state.fb && state.fb.auth && state.fb.auth.currentUser;
+    if (state.user && u) {
+      var tok, claims = {};
+      if (typeof u.getIdTokenResult === "function") { var r = await u.getIdTokenResult(); tok = r.token; claims = r.claims || {}; }
+      else tok = await u.getIdToken();
+      return { kind: "konto", uid: u.uid, token: tok, name: claims.name ? String(claims.name) : "" };
+    }
+    var a = await fbAnonAuth(create);
+    if (!a) return null;
+    return { kind: "anonym", uid: a.auth.currentUser.uid, token: await a.auth.currentUser.getIdToken() };
+  }
+  // Not-Aus des Verwalters (settings/feedback, öffentlich lesbar); fehlt das Dokument, ist das Melden offen.
+  async function fbSettings(fresh) {
+    if (!fresh && fbSettingsCache && Date.now() - fbSettingsCache.at < 60000) return fbSettingsCache.value;
+    var d = null;
+    try { d = await fsFetch("/settings/feedback", { public: true, quiet: true }); } catch (e) { d = null; }
+    var p = d ? fsPlain(d) : {};
+    var value = { offen: p.offen !== false, anonym: p.anonym !== false };
+    fbSettingsCache = { at: Date.now(), value: value };
+    return value;
+  }
+  // Wohin eine Meldung geht und wer gerade meldet (für den Dialog).
+  async function fbChannel() {
+    await loadConfig();
+    if (isLocalHost() && root.location.protocol !== "file:" && await backendStatus()) return { kind: "local" };
+    if (!fbConfigured()) return { kind: "issue", repo: repo() };
+    if (state.auth !== "unconfigured" && sget("local", SESSION_FLAG)) await ensureFirebase();
+    var st = await fbSettings();
+    return { kind: "firestore", open: st.offen, anonym: st.anonym, signedIn: !!state.user,
+             name: state.user ? (state.user.name || state.user.email || "") : "", email: state.user ? state.user.email || "" : "",
+             canSignIn: signInOffered() };
+  }
+  async function fbSend(input) {
+    var rec = fbNormalize(input);
+    var ch = await fbChannel();
+    if (ch.kind === "local") {
+      var res = await fetch("/api/user-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      var j = null;
+      try { j = await res.json(); } catch (e) { j = null; }
+      if (!res.ok || !j || !j.ok) throw fbErr("local", { detail: (j && j.error) || ("HTTP " + res.status) });
+      return { kind: "local", id: j.feedback_id, path: j.path || "" };
+    }
+    if (ch.kind !== "firestore") throw fbErr("channel");
+    if (!ch.open) throw fbErr("paused");
+    if (!ch.signedIn && !ch.anonym) throw fbErr("anon_off");
+    var who;
+    try { who = await fbIdentity(true); }
+    catch (e) {
+      // Anonyme Anmeldung in Firebase (noch) nicht aktiviert: wie „ohne Anmeldung abgeschaltet“ behandeln.
+      if (e && /operation-not-allowed|admin-restricted-operation/.test(String(e.code || e.message))) throw fbErr("anon_off");
+      throw fbErr("net", { detail: (e && e.message) || String(e) });
+    }
+    if (!who) throw fbErr("channel");
+    var q = await fsGetWith("feedback_quota/" + who.uid, who.token);
+    var now = Date.now();
+    if (q && q.last && Date.parse(q.last) + FB_GAP_MS > now) throw fbErr("wait", { wait: Math.ceil((Date.parse(q.last) + FB_GAP_MS - now) / 1000) });
+    var sameDay = !!(q && q.day && Date.parse(q.day) + FB_DAY_MS > now);
+    if (sameDay && (q.n || 0) >= FB_PER_DAY) throw fbErr("day");
+    var id = fbNewId();
+    var doc = Object.assign({ uid: who.uid, auth: who.kind, status: "neu" }, rec);
+    if (who.kind === "konto" && who.name) doc.name = Array.from(who.name).slice(0, 80).join("");
+    var quotaDoc = sameDay ? { day: { timestampValue: q.day }, n: (q.n || 0) + 1, ref: id } : { n: 1, ref: id };
+    var writes = [
+      { update: { name: fbDocName("feedback/" + id), fields: fbFields(doc) }, currentDocument: { exists: false },
+        updateTransforms: [{ fieldPath: "created", setToServerValue: "REQUEST_TIME" }] },
+      { update: { name: fbDocName("feedback_quota/" + who.uid), fields: fbFields(quotaDoc) },
+        updateTransforms: [{ fieldPath: "last", setToServerValue: "REQUEST_TIME" }]
+          .concat(sameDay ? [] : [{ fieldPath: "day", setToServerValue: "REQUEST_TIME" }]) }
+    ];
+    try {
+      await fsFetch(":commit", { method: "POST", token: who.token, body: JSON.stringify({ writes: writes }) });
+    } catch (e) {
+      if (e && e.status === 403) { fbSettingsCache = null; throw fbErr("rules"); }
+      throw fbErr("net", { detail: (e && e.message) || String(e) });
+    }
+    // Spiegelung als Issue im privaten Repository (optional, der Dienst entscheidet); Fehler halten nichts auf.
+    if (projectBase()) {
+      try {
+        fetch(projectBase() + "/feedback/notify", { method: "POST", headers: { Authorization: "Bearer " + who.token, "Content-Type": "application/json" },
+          body: JSON.stringify({ id: id }) }).catch(function () {});
+      } catch (e) { /* Meldung liegt trotzdem in Firestore */ }
+    }
+    emitFeedback();
+    return { kind: "firestore", id: id, auth: who.kind };
+  }
+  async function fsGetWith(path, token) {
+    var d = await fsFetch("/" + path, { token: token, quiet: true });
+    return d ? fsPlain(d) : null;
+  }
+  async function fbOwn(who) {
+    var rows = await fsFetch(":runQuery", { method: "POST", token: who.token, body: JSON.stringify({ structuredQuery: {
+      from: [{ collectionId: "feedback" }], limit: 50,
+      where: { fieldFilter: { field: { fieldPath: "uid" }, op: "EQUAL", value: { stringValue: who.uid } } } } }) });
+    return (rows || []).filter(function (r) { return r.document; }).map(function (r) { var x = fsPlain(r.document); x._who = who.kind; return x; });
+  }
+  function byCreatedDesc(a, b) { return String(b.created || "").localeCompare(String(a.created || "")); }
+  // Eigene Meldungen: die des angemeldeten Kontos und die des anonymen Kontos dieses Browsers.
+  async function fbMine() {
+    var ch = await fbChannel();
+    if (ch.kind !== "firestore") return { kind: ch.kind, items: [] };
+    var out = [], seen = {};
+    var konto = state.user ? await fbIdentity(false) : null;
+    if (konto && konto.kind === "konto") (await fbOwn(konto)).forEach(function (x) { seen[x._id] = 1; out.push(x); });
+    var a = await fbAnonAuth(false);
+    if (a) {
+      var anon = { kind: "anonym", uid: a.auth.currentUser.uid, token: await a.auth.currentUser.getIdToken() };
+      (await fbOwn(anon)).forEach(function (x) { if (!seen[x._id]) out.push(x); });
+    }
+    out.sort(byCreatedDesc);
+    return { kind: "firestore", items: out, signedIn: !!state.user, anonKnown: !!a, canSignIn: signInOffered() };
+  }
+  async function fbWithdraw(id, whoKind) {
+    var who = whoKind === "anonym" ? null : state.user ? await fbIdentity(false) : null;
+    if (!who || who.kind !== whoKind) {
+      var a = await fbAnonAuth(false);
+      if (a) who = { kind: "anonym", uid: a.auth.currentUser.uid, token: await a.auth.currentUser.getIdToken() };
+    }
+    if (!who) throw fbErr("channel");
+    await fsFetch("/feedback/" + encodeURIComponent(id), { method: "DELETE", token: who.token });
+    emitFeedback();
+  }
+  function emitFeedback() {
+    try { root.dispatchEvent(new CustomEvent("aiaccess-feedback")); } catch (e) { /* alt */ }
+  }
+  // ---- Verwaltung: Sichtung (Status, Antwort), Löschen, Not-Aus
+  async function loadFeedbackAdmin() {
+    if (!quota.admin || !fbConfigured()) return;
+    var rows = await fsFetch(":runQuery", { method: "POST", body: JSON.stringify({ structuredQuery: {
+      from: [{ collectionId: "feedback" }], orderBy: [{ field: { fieldPath: "created" }, direction: "DESCENDING" }], limit: 200 } }) });
+    fbAdm.items = (rows || []).filter(function (r) { return r.document; }).map(function (r) { return fsPlain(r.document); });
+    fbAdm.settings = await fbSettings(true);
+    fbAdm.loaded = true;
+    emitFeedback();
+  }
+  function fbNewCount() { return quota.admin ? fbAdm.items.filter(function (x) { return x.status === "neu"; }).length : 0; }
+  async function fbTriage(id, form) {
+    var status = FB_STATUSES.indexOf(form.status.value) === -1 ? "neu" : form.status.value;
+    var fields = { status: status, note: String(form.note.value || "").trim().slice(0, 1000), triaged_by: state.user.uid };
+    // Zeit der Sichtung als Serverzeit über einen Commit mit Transformation.
+    await fsFetch(":commit", { method: "POST", body: JSON.stringify({ writes: [{
+      update: { name: fbDocName("feedback/" + id), fields: fbFields(fields) }, updateMask: { fieldPaths: ["status", "note", "triaged_by"] },
+      currentDocument: { exists: true }, updateTransforms: [{ fieldPath: "triaged", setToServerValue: "REQUEST_TIME" }] }] }) });
+    toast(tr("fbAdmSaved"));
+    await loadFeedbackAdmin();
+    emit();
+  }
+  async function fbAdminDelete(id) {
+    await fsFetch("/feedback/" + encodeURIComponent(id), { method: "DELETE" });
+    await loadFeedbackAdmin();
+    emit();
+  }
+  async function fbSaveSwitch(form) {
+    await fsSet("settings/feedback", { offen: !!form.offen.checked, anonym: !!form.anonym.checked,
+      updated: new Date().toISOString(), updated_by: state.user.uid });
+    toast(tr("fbAdmSaved"));
+    await loadFeedbackAdmin();
+    emit();
+  }
+  function openFeedbackAdmin() {
+    ensureDialogs();
+    state.error = "";
+    if (dlg.open) dlg.close();
+    state.view = "fbadmin";
+    renderDialog();
+    loadFeedbackAdmin().then(emit).catch(fail);
+  }
+
   // -------------------------------------------------------- Lokales Backend
   var backendPromise = null;
   function backendStatus() {
@@ -1333,24 +1716,40 @@
       .catch(function () { return null; })
       .then(function (j) {
         if (timer) clearTimeout(timer);
-        var list = [];
-        var provs = (j && j.providers) || {};
-        Object.keys(provs).forEach(function (k) {
-          var p = provs[k] || {};
-          if (!p.available) return;
-          list.push({ id: k, model: p.model || "", label: p.display_name || k, healthy: p.status === "healthy" });
-        });
-        state.backend = j ? { ok: true, clis: list, active: j.active_provider || "" } : null;
+        state.backend = j ? localState(j, "") : null;
         emit();
         return state.backend;
       });
     return backendPromise;
+  }
+  // Gefundene CLIs aus /api/ai/status bzw. /api/ai/check: jede installierte CLI mit Zustand, in der Reihenfolge des Dienstes.
+  // { id, cli (Name der CLI), model, label (Modell bzw. CLI · Modell), version, status, healthy, error, runnable }
+  function cliList(j) {
+    var provs = (j && j.providers) || {}, keys = Object.keys(provs);
+    var order = (j && Array.isArray(j.order) ? j.order : []).filter(function (k) { return provs[k]; });
+    keys.forEach(function (k) { if (order.indexOf(k) === -1) order.push(k); });
+    var list = [];
+    order.forEach(function (k) {
+      var p = provs[k] || {};
+      if (!p.available) return;
+      list.push({ id: k, cli: p.cli_name || p.name || k, model: p.model || "", label: p.display_name || p.cli_name || k,
+                  version: p.cli_version || "", status: p.status || "untested", healthy: p.status === "healthy",
+                  error: p.error || "", runnable: p.runnable !== false });
+    });
+    return list;
+  }
+  function localState(j, base) {
+    var st = { ok: true, clis: cliList(j), active: j.active_provider || "", max: Number(j.max_chain) || MAX_LOCAL };
+    if (base) st.base = base;
+    return st;
   }
 
   // Von einer öffentlichen Seite aus prüfen, ob unter localhost ein _src/serve.py mit KI-CLIs läuft.
   // Nur auf Knopfdruck: Browser fragen dabei ggf. nach Zugriff auf das lokale Netzwerk.
   function localBase() { return String((state.config && state.config.lokaler_dienst) || "http://localhost:8100").replace(/\/$/, ""); }
   var LOCAL_OK = "autodocs-ai-local";
+  // Höchstens so viele lokale CLIs je Anfrage: die aktive und bis zu zwei Ausweich-CLIs (wie MAX_CHAIN in ai_agent_bridge.py).
+  var MAX_LOCAL = 3;
   // Adresse für Aufrufe an den lokalen Dienst: relativ auf localhost, sonst die geprüfte localhost-Adresse.
   function localUrl(path) { return ((state.backend && state.backend.base) || "") + path; }
   async function probeLocal(quiet) {
@@ -1362,13 +1761,8 @@
     try {
       var r = await fetch(base + "/api/ai/status", { cache: "no-store", signal: ctl && ctl.signal });
       var j = r.ok ? await r.json() : null;
-      var clis = [];
-      Object.keys((j && j.providers) || {}).forEach(function (k) {
-        var p = j.providers[k] || {};
-        if (p.available) clis.push({ id: k, model: p.model || "", label: p.display_name || k, healthy: p.status === "healthy" });
-      });
-      state.away = { base: base, found: !!j, clis: clis };
-      state.backend = j ? { ok: true, clis: clis, active: j.active_provider || "", base: base } : null;
+      state.backend = j ? localState(j, base) : null;
+      state.away = { base: base, found: !!j, clis: state.backend ? state.backend.clis : [] };
       sset("local", LOCAL_OK, j ? "1" : null);
     } catch (e) {
       state.away = { base: base, found: false, clis: [] };
@@ -1388,8 +1782,17 @@
   function requiresSignIn() { return !isLocalHost() && signInMode() === "pflicht"; }
   function snapshot() {
     var v = vault();
-    return { auth: state.auth, user: state.user, providers: Object.keys(v.providers), choice: v.choice,
-             backend: state.backend, local: isLocalHost() };
+    return { auth: state.auth, user: state.user, providers: Object.keys(v.providers), choice: v.choice, picks: picks(v),
+             order: accessOrder(), backend: state.backend, local: isLocalHost() };
+  }
+  // Firebase-ID-Token der angemeldeten Person für eigene Dienste (z. B. geschützte Schaubilder,
+  // proxy/figure-access.mjs); null ohne Anmeldung. Stellt eine gemerkte Sitzung wieder her, zeigt aber nichts an.
+  async function idToken(force) {
+    await loadConfig();
+    if (state.auth === "unconfigured") return null;
+    if (!state.fb && sget("local", SESSION_FLAG)) await ensureFirebase();
+    var u = state.fb && state.fb.auth && state.fb.auth.currentUser;
+    return u ? u.getIdToken(!!force) : null;
   }
   async function route() {
     await loadConfig();
@@ -1413,17 +1816,18 @@
     var ids = keyIds(v);
     if (ids.length) {
       var bad = ids.filter(function (id) { return v.providers[id].failed; }).length;
-      out.push({ ico: ICO.key, cls: bad === ids.length ? "is-bad" : bad ? "is-warn" : "is-ok",
+      out.push({ src: "byok", ico: ICO.key, cls: bad === ids.length ? "is-bad" : bad ? "is-warn" : "is-ok",
                  tip: tr(bad === ids.length ? "icoKeyBad" : bad ? "icoKeyPart" : "icoKeyOk") });
     }
     if (projectOffered() && (quota.grant || quota.request)) {
-      if (grantActive()) out.push({ ico: ICO.giftOpen, cls: "is-ok", tip: tr("icoGiftOpen") });
-      else if (quota.request && quota.request.status === "offen") out.push({ ico: ICO.giftClosed, cls: "is-warn", tip: tr("icoGiftPending") });
-      else out.push({ ico: ICO.giftClosed, cls: "is-bad", tip: tr("icoGiftBad") });
+      // Angefragt, aber noch nicht bewilligt: nicht nutzbar (gelb), deshalb beim Klick ein Hinweis statt Rang 1.
+      if (grantActive()) out.push({ src: "project", ico: ICO.giftOpen, cls: "is-ok", tip: tr("icoGiftOpen") });
+      else if (quota.request && quota.request.status === "offen") out.push({ src: "project", ico: ICO.giftClosed, cls: "is-warn", usable: false, tip: tr("icoGiftPending") });
+      else out.push({ src: "project", ico: ICO.giftClosed, cls: "is-bad", tip: tr("icoGiftBad") });
     }
     if (isLocalHost() || (state.backend && state.backend.base)) {
       var ok = ((state.backend && state.backend.clis) || []).some(function (c) { return c.healthy; });
-      out.push({ ico: ICO.terminal, cls: ok ? "is-ok" : "is-bad", tip: tr(ok ? "icoLocalOk" : "icoLocalBad") });
+      out.push({ src: "local", ico: ICO.terminal, cls: ok ? "is-ok" : "is-bad", tip: tr(ok ? "icoLocalOk" : "icoLocalBad") });
     }
     return out;
   }
@@ -1456,41 +1860,72 @@
     saveProvider(id, rec, !rec.session);
     emit();
   }
+  // Lokale CLIs der Route: die gewählte (sonst die aktive des Dienstes, die erste gesunde, die erste) und die
+  // Ausweichliste in ihrer Reihenfolge, nur gefundene CLIs, zusammen höchstens MAX_LOCAL.
+  function localChain(pk) {
+    var b = state.backend, clis = (b && b.clis) || [];
+    var ids = clis.map(function (c) { return c.id; });
+    var want = pk && pk.local && pk.local.cli;
+    var healthy = clis.filter(function (c) { return c.healthy; });
+    var cli = ids.indexOf(want) !== -1 ? want
+      : (b && b.active && healthy.some(function (c) { return c.id === b.active; })) ? b.active
+      : (healthy[0] || clis[0] || {}).id;
+    var max = Math.max(1, Math.min(MAX_LOCAL, (b && b.max) || MAX_LOCAL));
+    var fb = ((pk && pk.local && pk.local.fallback) || []).filter(function (id, i, a) {
+      return id !== cli && ids.indexOf(id) !== -1 && a.indexOf(id) === i;
+    }).slice(0, max - 1);
+    return { cli: cli, fallback: fb };
+  }
+  function localRoute(c) {
+    var r = { kind: "local" };
+    if (c.cli) r.cli = c.cli;
+    if (c.fallback.length) r.fallback = c.fallback.slice();
+    return r;
+  }
+  // Route je Quelle mit der Modellwahl ihres Abschnitts; null, wenn die Quelle gerade nicht nutzbar ist.
+  function sourceRoute(src, v, pk) {
+    var backend = state.backend;
+    if (src === "local") {
+      if (!backend) return null;
+      var clis = backend.clis;
+      if (!clis) return { kind: "local" };
+      var c = localChain(pk), chain = [c.cli].concat(c.fallback);
+      return clis.some(function (x) { return x.healthy && chain.indexOf(x.id) !== -1; }) ? localRoute(c) : null;
+    }
+    if (src === "project") {
+      if (!quotaUsable()) return null;
+      var gp = grantProvider(), gm = grantModels(), pp = pk.project;
+      var model = pp && pp.provider === gp && gm.indexOf(pp.model) !== -1 ? pp.model : quota.grant.model || PROVIDERS[gp].pick(gm);
+      return { kind: "byok", provider: gp, model: model };
+    }
+    var ids = keyIds(v);
+    if (!ids.length) return null;
+    var pb = pk.byok;
+    if (pb && v.providers[pb.provider] && provOf(pb.provider, v)) {
+      return { kind: "byok", provider: pb.provider, model: pb.model || v.providers[pb.provider].model };
+    }
+    return { kind: "byok", provider: ids[0], model: v.providers[ids[0]].model };
+  }
+  function routeSource(r) { return !r || r.kind === "none" ? "" : r.kind === "local" ? "local" : isQuota(r.provider) ? "project" : "byok"; }
   // Aktuelle Route aus dem bekannten Zustand (ohne Netz) – für Kopfleiste und Übersicht.
+  // Es antwortet die oberste nutzbare Quelle der Reihenfolge (Standard: lokal, Kontingent, Schlüssel); die Wahl
+  // in einem Abschnitt legt nur fest, mit welchem Modell bzw. welcher CLI diese Quelle antwortet.
   function routeSync() {
     var backend = state.backend;
     if (requiresSignIn() && !state.user) return { kind: "none", reason: state.auth === "unconfigured" ? "setup" : "signin" };
-    var v = vault();
-    var ch = v.choice;
-    if (ch && ch.provider === "local" && backend) return { kind: "local", cli: ch.model };
-    if (ch && isQuota(ch.provider) && quotaUsable(ch.provider) && grantModels().indexOf(ch.model) !== -1) {
-      return { kind: "byok", provider: ch.provider, model: ch.model };
-    }
-    if (ch && v.providers[ch.provider] && provOf(ch.provider, v)) {
-      return { kind: "byok", provider: ch.provider, model: ch.model || v.providers[ch.provider].model };
-    }
-    // Ohne ausdrückliche Wahl entscheidet die Reihenfolge auf der Statusseite (Standard: lokal, Kontingent, Schlüssel).
-    var clis = backend && backend.clis;
-    var first = keyIds(v)[0];
-    var pick = {
-      local: function () { return backend && (!clis || clis.some(function (c) { return c.healthy; })) ? { kind: "local" } : null; },
-      project: function () {
-        if (!quotaUsable()) return null;
-        var gp = grantProvider();
-        return { kind: "byok", provider: gp, model: quota.grant.model || PROVIDERS[gp].pick(grantModels()) };
-      },
-      byok: function () { return first ? { kind: "byok", provider: first, model: v.providers[first].model } : null; }
-    };
+    var v = vault(), pk = picks(v);
     var order = accessOrder();
-    for (var i = 0; i < order.length; i++) { var r = pick[order[i]](); if (r) return r; }
-    if (backend) return { kind: "local" };
+    for (var i = 0; i < order.length; i++) { var r = sourceRoute(order[i], v, pk); if (r) return r; }
+    if (backend) return backend.clis ? localRoute(localChain(pk)) : { kind: "local" };
     return { kind: "none", reason: "key" };
   }
+  function cliInfo(id) { return ((state.backend && state.backend.clis) || []).filter(function (c) { return c.id === id; })[0] || null; }
+  function cliName(id) { var c = cliInfo(id); return c ? c.cli : String(id || ""); }
   function routeLabel(r) {
     if (!r) return "";
     if (r.kind === "byok") return isQuota(r.provider) ? quotaLabel(r.provider) + " · " + (r.model || "?")
       : providerLabel(r.provider) + " · " + (r.model || "?") + " · " + tr("viaKey");
-    if (r.kind === "local") return (r.cli || (state.backend && state.backend.active) || "CLI") + " · " + tr("viaLocal");
+    if (r.kind === "local") return (r.cli ? cliName(r.cli) : (state.backend && state.backend.active) || "CLI") + " · " + tr("viaLocal");
     return tr(r.reason === "setup" ? "chipSetup" : r.reason === "key" ? "chipConnect" : "chipSignIn");
   }
   // Herkunft einer Antwort für die Anzeige in der Diskussion („Antwort von …“).
@@ -1501,8 +1936,30 @@
       return tr("answeredBy") + ": " + quotaLabel("abo") + " · " + (m || "?") + (answer && answer.profile ? " (" + answer.profile + ")" : "");
     }
     if (r && r.kind === "byok") return tr("answeredBy") + ": " + routeLabel(r);
-    if (answer && answer.provider) return tr("answeredBy") + ": " + tr("stLocalTitle") + " · " + answer.provider + (answer.model ? " · " + answer.model : "");
+    if (answer && answer.provider) {
+      // Lokal: die CLI, die wirklich geantwortet hat, und welche davor übersprungen wurden (Ausweichliste).
+      var skipped = (answer.fallback_from || []).map(function (f) {
+        return trf("answeredInstead", { s: f.cli_name || cliName(f.provider), r: tr("kind_" + (f.kind || "error")) });
+      });
+      if (skipped.length) refreshLocalSoon();
+      return tr("answeredBy") + ": " + tr("stLocalTitle") + " · " + (answer.cli_name || cliName(answer.provider)) +
+        (answer.model ? " · " + answer.model : "") + (skipped.length ? " (" + skipped.join("; ") + ")" : "");
+    }
     return "";
+  }
+  // Zwischenstand, wenn die gewählte CLI am Kontingent/an der Erreichbarkeit scheitert und die nächste übernimmt.
+  function fallbackText(ev) {
+    ev = ev || {};
+    return trf("fallbackNow", { s: ev.from_name || cliName(ev.from), r: tr("kind_" + (ev.kind || "error")), t: ev.to_name || cliName(ev.to) });
+  }
+  // Nach einem Ausweichen den Zustand der CLIs neu holen (die übersprungene steht dann z. B. auf „Kontingent erschöpft“).
+  var refreshTimer = null;
+  function refreshLocalSoon() {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(function () {
+      if (state.backend && state.backend.base) probeLocal(true);
+      else { backendPromise = null; backendStatus(); }
+    }, 300);
   }
   // Fehler mit Art statt Text: "local" = lokalen Dienst nehmen, "none" = kein Zugang (reason für gate()).
   function routeError(code, r) {
@@ -1637,7 +2094,8 @@
     if (requiresSignIn() && !state.user) return [];
     var v = vault(), r = routeSync(), b = state.backend, by = { local: [], project: [], byok: [] };
     ((b && b.clis) || []).forEach(function (c) {
-      by.local.push({ source: "local", provider: c.id, model: c.model, label: c.label || c.id, group: tr("local"), healthy: !!c.healthy });
+      by.local.push({ source: "local", provider: c.id, model: c.model, label: c.label || c.id, group: tr("local"), healthy: !!c.healthy,
+                      cli: c.cli || c.id, status: c.status || "", runnable: c.runnable !== false });
     });
     if (quotaUsable()) {
       var gp = grantProvider();
@@ -1656,6 +2114,7 @@
     accessOrder().forEach(function (k) { out = out.concat(by[k] || []); });
     var firstLocal = by.local.filter(function (x) { return x.healthy; })[0] || by.local[0];
     out.forEach(function (x) {
+      // current = genau das Modell, das jetzt antworten würde (Reihenfolge + Wahl im Abschnitt).
       x.current = r.kind === "local" ? x.source === "local" && (r.cli ? x.provider === r.cli : x === firstLocal)
         : r.kind === "byok" && x.source !== "local" && x.provider === r.provider && x.model === r.model;
     });
@@ -1783,7 +2242,7 @@
     return '<span class="aia-avatar aia-avatar-i" style="width:' + size + "px;height:" + size + 'px">' + esc(initials(u)) + "</span>";
   }
   function shortSource(r) {
-    if (r.kind === "local") return r.cli || (state.backend && state.backend.active) || tr("stLocal");
+    if (r.kind === "local") return r.cli ? cliName(r.cli) : (state.backend && state.backend.active) || tr("stLocal");
     if (r.provider === "project") return tr("viaProject");
     if (r.provider === "abo") return "Gemini-Abo";
     return { gemini: "Gemini", anthropic: "Claude", openai: "OpenAI", nexos: "Nexos" }[r.provider] || providerLabel(r.provider);
@@ -1796,8 +2255,11 @@
     var label = ok ? tr("hdrKi") + ": " + shortSource(r) : tr("headerConnect");
     var icons = accessIcons();
     var label2 = icons.length ? tr("hdrKi") : tr("headerConnect");
+    // Ein Klick auf ein Symbol setzt dessen Quelle an Rang 1 (promoteSource); sonst öffnet der Knopf den Dialog.
     headerBtn.innerHTML = SPARK + '<span class="aia-hname">' + esc(label2) + "</span>" +
-      icons.map(function (i) { return '<span class="aia-ico ' + i.cls + '" title="' + esc(i.tip) + '">' + i.ico + "</span>"; }).join("") + badge;
+      icons.map(function (i) {
+        return '<span class="aia-ico ' + i.cls + '" data-aia-src="' + i.src + '" title="' + esc(i.tip + " · " + tr("icoPromote")) + '">' + i.ico + "</span>";
+      }).join("") + badge;
     var htxt = icons.map(function (i) { return i.tip; }).join(", ") || tr("hdrNone");
     headerBtn.setAttribute("aria-label", label2 + " – " + htxt);
     headerBtn.title = htxt;
@@ -1805,9 +2267,10 @@
     headerBtn.classList.toggle("is-in", !!state.user);
     if (adminBtn) {
       adminBtn.hidden = !quota.admin;
+      var fbNew = fbNewCount(), pending = quota.open.length + fbNew;
       adminBtn.innerHTML = ICO_ADMIN + "<span>" + esc(tr("admBtn")) + "</span>" +
-        (quota.open.length ? '<span class="aia-badge">' + quota.open.length + "</span>" : "");
-      adminBtn.title = tr("admTitle") + (quota.open.length ? ": " + quota.open.length : "");
+        (pending ? '<span class="aia-badge">' + pending + "</span>" : "");
+      adminBtn.title = tr("admTitle") + ": " + quota.open.length + " · " + tr("fbAdmTitle") + ": " + tr("fbAdmNew", String(fbNew));
     }
     document.querySelectorAll("[data-aia-chip]").forEach(updateChip);
   }
@@ -1844,6 +2307,33 @@
     });
     area.addEventListener("mouseleave", reset);
   }
+  function srcName(src) { return tr(src === "local" ? "srcLocal" : src === "project" ? "srcProject" : "srcByok"); }
+  // Quellen, die im Dialog als Abschnitt stehen, in ihrer Reihenfolge (Rang 1 = erster Eintrag).
+  function shownSources() {
+    return accessOrder().filter(function (k) { return k !== "project" || projectOffered(); });
+  }
+  // Kopfleiste: Symbol angeklickt → diese Quelle an Rang 1. Eine gerade nicht nutzbare Quelle (rot, oder Kontingent
+  // nur angefragt) wird nicht still nach oben gesetzt: Hinweis und Dialog an ihrem Abschnitt, dort lässt sie sich
+  // prüfen, einrichten oder trotzdem verschieben.
+  function promoteSource(src) {
+    var info = accessIcons().filter(function (i) { return i.src === src; })[0];
+    var name = srcName(src);
+    if (!info) { openDialog(); return; }
+    if (info.cls === "is-bad" || info.usable === false) {
+      openDialog();
+      toast(trf("prioUnhealthy", { s: name, r: info.tip }));
+      focusGrip(src);
+      // openDialog setzt den Fokus kurz darauf auf das erste Bedienelement; danach wieder auf den Griff.
+      setTimeout(function () { focusGrip(src); }, 80);
+      return;
+    }
+    var shown = shownSources();
+    if (shown[0] === src) { toast(trf("prioAlready", { s: name })); return; }
+    moveSource(src, 0);
+    var answers = routeSource(routeSync()) === src;
+    toast(trf(answers ? "prioTop" : "prioTopWait", { s: name }));
+    announce(trf("prioMoved", { s: name, n: 1, t: shownSources().length }));
+  }
   var adminBtn = null;
   var ICO_ADMIN = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>';
   function mountHeader() {
@@ -1857,7 +2347,11 @@
     headerBtn.hidden = true;
     var before = host.querySelector(".feedback-open, .reviewbar");
     host.insertBefore(headerBtn, before || null);
-    headerBtn.addEventListener("click", function () { openDialog(); });
+    headerBtn.addEventListener("click", function (e) {
+      var ico = e.target && e.target.closest ? e.target.closest("[data-aia-src]") : null;
+      if (ico && headerBtn.contains(ico)) { promoteSource(ico.getAttribute("data-aia-src")); return; }
+      openDialog();
+    });
     adminBtn = document.createElement("button");
     adminBtn.type = "button";
     adminBtn.className = "aia-admin-btn";
@@ -1986,11 +2480,11 @@
   function localSection() {
     var b = state.backend;
     if (!b || !b.clis.length) return "";
-    var ch = vault().choice;
+    var active = localChain(picks()).cli;
     return '<section class="aia-sec"><h3>' + esc(tr("local")) + '</h3><p class="aia-fine">' + esc(tr("localFound")) + "</p><ul class=\"aia-list\">" +
       b.clis.map(function (c) {
-        var on = ch && ch.provider === "local" && ch.model === c.id;
-        return "<li><span><strong>" + esc(c.label) + "</strong> " + esc(c.model) + "</span>" +
+        var on = active === c.id;
+        return "<li><span><strong>" + esc(c.cli || c.label) + "</strong> " + esc(c.model) + "</span>" +
           (on ? '<span class="aia-ok">✓</span>' : '<button type="button" class="aia-btn aia-btn-quiet" data-aia-local="' + esc(c.id) + '">' + esc(tr("useThis")) + "</button>") + "</li>";
       }).join("") + "</ul></section>";
   }
@@ -2024,52 +2518,232 @@
       '<label class="aia-check"><input type="checkbox" name="openai"' + (st.openai === "ja" ? " checked" : "") + "> " + esc(tr("admOpenai")) + "</label>" +
       '<button type="submit" class="aia-btn">' + esc(tr("admSave")) + '</button><p class="aia-fine">' + esc(tr("admBillHint")) + "</p></form></section>";
   }
-  // Kopf eines verschiebbaren Abschnitts: Rangnummer, Titel, Pfeile; der Abschnitt selbst ist ziehbar.
-  function secHead(id, title) {
-    return '<section class="aia-sec aia-prio" draggable="true" data-aia-sec="' + id + '"><div class="aia-sechead">' +
+  // Kopf eines verschiebbaren Abschnitts: Griff (ziehen mit Maus/Finger, Pfeiltasten), Rangnummer, Titel und
+  // „antwortet“ am Abschnitt, der gerade antworten würde. Rang und Beschriftung setzt statusPanel.
+  function secHead(id, title, answering) {
+    return '<section class="aia-sec aia-prio" data-aia-sec="' + id + '"><div class="aia-sechead">' +
+      '<button type="button" class="aia-grip" data-aia-grip="' + id + '" aria-describedby="aia-prio-help" aria-keyshortcuts="ArrowUp ArrowDown"></button>' +
       '<span class="aia-rank" data-aia-prio-n aria-hidden="true"></span><h3>' + esc(title) + "</h3>" +
-      '<span class="aia-move"><button type="button" class="aia-mv" data-aia-up="' + id + '" title="' + esc(tr("prioUp")) + '" aria-label="' + esc(tr("prioUp")) + '">▲</button>' +
-      '<button type="button" class="aia-mv" data-aia-down="' + id + '" title="' + esc(tr("prioDown")) + '" aria-label="' + esc(tr("prioDown")) + '">▼</button></span></div>';
+      (answering ? '<span class="aia-now">' + esc(tr("answersNow")) + "</span>" : "") + "</div>";
   }
+  // Ansage für Screenreader (Verschieben per Tastatur oder Symbol); bleibt beim Neuzeichnen erhalten.
+  var liveEl = null;
+  function announce(msg) {
+    if (!root.document || !msg) return;
+    if (!liveEl) {
+      liveEl = document.createElement("div");
+      liveEl.className = "visually-hidden";
+      liveEl.setAttribute("aria-live", "polite");
+      liveEl.setAttribute("data-aia-live", "");
+    }
+    var host = dlg && dlg.open ? dlg : document.body;
+    if (liveEl.parentNode !== host) host.appendChild(liveEl);
+    liveEl.textContent = "";
+    setTimeout(function () { liveEl.textContent = msg; }, 30);
+  }
+  function focusGrip(src) {
+    var g = dlg && dlg.querySelector('[data-aia-grip="' + src + '"]');
+    if (!g) return;
+    try { g.focus(); } catch (e) { /* ignore */ }
+    if (g.scrollIntoView) try { g.scrollIntoView({ block: "nearest" }); } catch (e) { /* ignore */ }
+  }
+  // Abschnitt src vor den Abschnitt before setzen (null = ans Ende der angezeigten), in der vollen Reihenfolge.
+  function placeSource(src, before) {
+    var shown = shownSources(), o = accessOrder().filter(function (x) { return x !== src; });
+    var at;
+    if (before) at = o.indexOf(before);
+    else {
+      var last = shown.filter(function (x) { return x !== src; }).pop();
+      at = last ? o.indexOf(last) + 1 : o.length;
+    }
+    o.splice(Math.max(0, at), 0, src);
+    if (o.join() === accessOrder().join()) return false;
+    sset("local", ORDER_KEY, JSON.stringify(o));
+    emit();
+    var n = shownSources().indexOf(src) + 1;
+    announce(trf("prioMoved", { s: srcName(src), n: n, t: shownSources().length }));
+    return true;
+  }
+  // Sortieren mit Zeigerereignissen statt HTML5-Drag&Drop (kein durchscheinendes Abbild mit blauem Schatten):
+  // ein kleines deckendes Schild mit Griff, Rang und Titel folgt dem Zeiger senkrecht, der Abschnitt bleibt als
+  // ruhige Fläche stehen, eine schmale Linie zeigt, wo er landet. Die anderen Abschnitte bleiben sichtbar.
+  // Tastatur: Griff fokussieren, Pfeil hoch/runter (Pos1/Ende: ganz nach oben/unten). Esc bricht das Ziehen ab.
   function bindReorder(d) {
-    var dragged = null;
-    d.addEventListener("click", function (e) {
-      var up = e.target.closest && e.target.closest("[data-aia-up],[data-aia-down]");
-      if (!up || up.disabled) return;
-      var id = up.getAttribute("data-aia-up") || up.getAttribute("data-aia-down");
-      var shown = Array.prototype.map.call(d.querySelectorAll("[data-aia-sec]"), function (x) { return x.getAttribute("data-aia-sec"); });
-      var i = shown.indexOf(id), j = up.hasAttribute("data-aia-up") ? i - 1 : i + 1;
-      if (j < 0 || j >= shown.length) return;
-      moveSource(id, accessOrder().indexOf(shown[j]));
-    });
-    d.addEventListener("dragstart", function (e) {
-      var sec = e.target.closest && e.target.closest("[data-aia-sec]");
-      if (!sec || /^(INPUT|SELECT|TEXTAREA|BUTTON|A)$/.test(e.target.tagName)) return;
-      dragged = sec.getAttribute("data-aia-sec");
-      sec.classList.add("is-dragging");
-      try { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragged); } catch (x) {}
-    });
-    d.addEventListener("dragover", function (e) {
-      var sec = dragged && e.target.closest && e.target.closest("[data-aia-sec]");
+    var drag = null;
+    function sections() { return Array.prototype.slice.call(d.querySelectorAll("[data-aia-sec]")); }
+    function cleanup() {
+      if (!drag) return;
+      drag.sec.classList.remove("is-source");
+      if (drag.chip && drag.chip.parentNode) drag.chip.parentNode.removeChild(drag.chip);
+      if (drag.line && drag.line.parentNode) drag.line.parentNode.removeChild(drag.line);
+      d.classList.remove("aia-sorting");
+      try { drag.grip.releasePointerCapture(drag.pointerId); } catch (x) { /* schon frei */ }
+      drag = null;
+    }
+    function start() {
+      var body = drag.sec.parentNode, secs = sections();
+      drag.others = secs.filter(function (x) { return x !== drag.sec; });
+      var head = drag.sec.querySelector(".aia-sechead"), hr = head.getBoundingClientRect();
+      var top = secs[0].getBoundingClientRect().top, bottom = secs[secs.length - 1].getBoundingClientRect().bottom;
+      drag.body = body;
+      drag.line = document.createElement("div");
+      drag.line.className = "aia-drop-line";
+      drag.line.setAttribute("aria-hidden", "true");
+      body.appendChild(drag.line);
+      // Schild: Griff, Rang, Titel; deckend, liegt in der obersten Ebene des Dialogs.
+      drag.chip = document.createElement("div");
+      drag.chip.className = "aia-drag-chip";
+      drag.chip.setAttribute("aria-hidden", "true");
+      var rank = head.querySelector("[data-aia-prio-n]"), h3 = head.querySelector("h3");
+      drag.chip.innerHTML = '<span class="aia-grip" aria-hidden="true"></span><span class="aia-rank" data-aia-prio-n="' +
+        esc(rank ? rank.getAttribute("data-aia-prio-n") : "") + '"></span><span class="aia-drag-title">' + esc(h3 ? h3.textContent : "") + "</span>";
+      d.appendChild(drag.chip);
+      drag.chip.style.left = Math.round(hr.left - 6) + "px";
+      drag.chipY0 = hr.top - 5;
+      drag.minY = top - 5;
+      drag.maxY = bottom - drag.chip.offsetHeight;
+      drag.chip.style.top = Math.round(drag.chipY0) + "px";
+      drag.sec.classList.add("is-source");
+      d.classList.add("aia-sorting");
+      drag.started = true;
+    }
+    function target(y) {
+      var i = 0;
+      drag.others.forEach(function (x) { var b = x.getBoundingClientRect(); if (y > b.top + b.height / 2) i++; });
+      return i;
+    }
+    function showLine(i) {
+      var br = drag.body.getBoundingClientRect(), o = drag.others, y;
+      if (!o.length) return;
+      if (i < o.length) y = o[i].getBoundingClientRect().top - 7;
+      else y = o[o.length - 1].getBoundingClientRect().bottom + 5;
+      drag.line.style.top = Math.round(y - br.top) + "px";
+    }
+    d.addEventListener("pointerdown", function (e) {
+      var grip = e.target.closest && e.target.closest("[data-aia-grip]");
+      if (!grip || e.button !== 0 || !d.contains(grip)) return;
+      var sec = grip.closest("[data-aia-sec]");
       if (!sec) return;
       e.preventDefault();
-      d.querySelectorAll(".is-drop").forEach(function (x) { x.classList.remove("is-drop"); });
-      if (sec.getAttribute("data-aia-sec") !== dragged) sec.classList.add("is-drop");
+      try { grip.setPointerCapture(e.pointerId); } catch (x) { /* ältere Browser */ }
+      drag = { id: sec.getAttribute("data-aia-sec"), sec: sec, grip: grip, y0: e.clientY, pointerId: e.pointerId, started: false, index: null };
     });
-    d.addEventListener("drop", function (e) {
-      var sec = dragged && e.target.closest && e.target.closest("[data-aia-sec]");
-      if (!sec) return;
+    d.addEventListener("pointermove", function (e) {
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      var dy = e.clientY - drag.y0;
+      if (!drag.started) { if (Math.abs(dy) < 4) return; start(); }
       e.preventDefault();
-      var target = sec.getAttribute("data-aia-sec");
-      if (target !== dragged) moveSource(dragged, accessOrder().indexOf(target));
+      drag.chip.style.top = Math.round(Math.max(drag.minY, Math.min(drag.maxY, drag.chipY0 + dy))) + "px";
+      drag.index = target(e.clientY);
+      showLine(drag.index);
     });
-    d.addEventListener("dragend", function () {
-      dragged = null;
-      d.querySelectorAll(".is-dragging,.is-drop").forEach(function (x) { x.classList.remove("is-dragging", "is-drop"); });
+    function finish(e) {
+      if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+      var id = drag.id, idx = drag.index, others = (drag.others || []).map(function (x) { return x.getAttribute("data-aia-sec"); });
+      var moved = drag.started && idx !== null;
+      var grip = drag.grip;
+      cleanup();
+      if (!moved) return;
+      if (placeSource(id, idx < others.length ? others[idx] : null)) focusGrip(id);
+      else try { grip.focus(); } catch (x) { /* ignore */ }
+    }
+    d.addEventListener("pointerup", finish);
+    d.addEventListener("pointercancel", function () { cleanup(); });
+    d.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && drag) { e.preventDefault(); e.stopPropagation(); cleanup(); return; }
+      var grip = e.target.closest && e.target.closest("[data-aia-grip]");
+      if (!grip || e.altKey || e.ctrlKey || e.metaKey) return;
+      var id = grip.getAttribute("data-aia-grip");
+      var shown = sections().map(function (x) { return x.getAttribute("data-aia-sec"); });
+      var i = shown.indexOf(id), j = { ArrowUp: i - 1, ArrowDown: i + 1, Home: 0, End: shown.length - 1 }[e.key];
+      if (j === undefined) return;
+      e.preventDefault();
+      if (j < 0 || j >= shown.length || j === i) { announce(trf("prioMoved", { s: srcName(id), n: i + 1, t: shown.length })); return; }
+      var rest = shown.filter(function (x) { return x !== id; });
+      placeSource(id, j < rest.length ? rest[j] : null);
+      focusGrip(id);
     });
+  }
+  // Abschnitt „Lokale KI-CLIs“: jede gefundene CLI mit Zustand, genau eine aktiv (Auswahlknopf), dazu optional bis
+  // zu MAX_LOCAL - 1 Ausweich-CLIs in fester Reihenfolge. Die nächste antwortet nur, wenn die vorige am Kontingent
+  // oder an der Erreichbarkeit scheitert (ai_agent_bridge.stream_with_fallback).
+  // „codex-cli 0.162.0“, „2.1.287 (Claude Code)“, „grok 1.0.41 (4220f3b) [stable]“ → nur die Versionsnummer.
+  function shortVersion(v) {
+    var m = String(v || "").match(/\d+(?:\.\d+)+(?:-[0-9a-z]+)?/i);
+    return m ? m[0] : String(v || "").slice(0, 24);
+  }
+  function cliMeta(c) {
+    var model = !c.model ? tr("cliDefaultModel") : c.label && c.label !== c.cli && c.label.indexOf(c.cli + " · ") !== 0 ? c.label : c.model;
+    return [c.version ? shortVersion(c.version) : "", model].filter(Boolean).join(" · ");
+  }
+  function localClis(pk) {
+    var b = state.backend, clis = (b && b.clis) || [];
+    if (!clis.length) return "";
+    var c = localChain(pk), max = Math.max(1, Math.min(MAX_LOCAL, b.max || MAX_LOCAL));
+    var rows = clis.map(function (x) {
+      var on = x.id === c.cli, fbn = c.fallback.indexOf(x.id);
+      var st = x.healthy ? "is-ok" : x.status === "untested" ? "is-off" : x.status === "quota" ? "is-warn" : "is-bad";
+      return '<li class="aia-cli' + (on ? " is-active" : "") + '"><label class="aia-cli-pick">' +
+        '<input type="radio" name="aia-cli" value="' + esc(x.id) + '" data-aia-cli' + (on ? " checked" : "") + ">" +
+        '<span class="aia-dot ' + st + '"></span><span class="aia-cli-text"><strong>' + esc(x.cli) + "</strong>" +
+        (cliMeta(x) ? " <small>" + esc(cliMeta(x)) + "</small>" : "") + "</span></label>" +
+        '<span class="aia-cli-st ' + st + '"' + (x.error && !x.healthy ? ' title="' + esc(x.error) + '"' : "") + ">" +
+        esc((fbn !== -1 ? trf("cliFbShort", { s: fbn + 1 }) + " · " : "") + (tr("st_" + x.status) !== "st_" + x.status ? tr("st_" + x.status) : x.status)) + "</span></li>";
+    }).join("");
+    var fb = "";
+    if (clis.length > 1 && max > 1) {
+      var sel = [];
+      for (var i = 0; i < max - 1; i++) {
+        if (i > 0 && !c.fallback[i - 1]) break;
+        var taken = [c.cli].concat(c.fallback.slice(0, i));
+        sel.push('<select class="aia-input aia-fb-sel" data-aia-fb="' + i + '" aria-label="' + esc(trf("cliFallbackN", { s: i + 1 })) + '">' +
+          '<option value="">' + esc(tr("cliFallbackNone")) + "</option>" +
+          clis.filter(function (x) { return taken.indexOf(x.id) === -1; }).map(function (x) {
+            return '<option value="' + esc(x.id) + '"' + (c.fallback[i] === x.id ? " selected" : "") + ">" + esc(x.cli) + "</option>";
+          }).join("") + "</select>");
+      }
+      fb = '<div class="aia-fb"><p class="aia-label" id="aia-fb-label">' + esc(tr("cliFallback")) + "</p>" +
+        '<div class="aia-fb-row" role="group" aria-labelledby="aia-fb-label">' + sel.join('<span class="aia-fb-arrow" aria-hidden="true">→</span>') + "</div></div>";
+    }
+    return '<ul class="aia-list aia-clis" role="radiogroup" aria-label="' + esc(tr("cliActive")) + '">' + rows + "</ul>" + fb;
+  }
+  // Modellwahl im Abschnitt Projektkontingent: alle Modelle der eigenen Freigabe.
+  function projectModelField(pk) {
+    if (!quotaUsable()) return "";
+    var gp = grantProvider(), gm = grantModels();
+    if (!gm.length) return "";
+    var cur = sourceRoute("project", vault(), pk);
+    return '<div class="aia-modelrow"><label class="aia-label" for="aia-model-project">' + esc(tr("secModel")) + "</label>" +
+      '<select id="aia-model-project" class="aia-input" data-aia-model="project"><optgroup label="' + esc(quotaLabel(gp)) + '" data-aia-group="' + gp + '">' +
+      gm.map(function (m) {
+        return '<option value="' + esc(gp + "|" + m) + '"' + (cur && cur.model === m ? " selected" : "") + ">" + esc(m) + "</option>";
+      }).join("") + "</optgroup></select></div>";
+  }
+  // Modellwahl im Abschnitt Eigene Schlüssel: Modelle aller verbundenen Schlüssel, gruppiert nach Anbieter.
+  function byokModelField(v, pk) {
+    var ids = keyIds(v);
+    if (!ids.length) return "";
+    var cur = sourceRoute("byok", v, pk) || {};
+    var groups = ids.map(function (id) {
+      var rec = v.providers[id];
+      var models = (rec.models && rec.models.length ? rec.models : [rec.model]).filter(Boolean);
+      if (cur.provider === id && cur.model && models.indexOf(cur.model) === -1) models = [cur.model].concat(models);
+      if (!models.length) models = [""];
+      return '<optgroup label="' + esc(keyGroupLabel(id, v)) + '" data-aia-group="key">' + models.map(function (m) {
+        return '<option value="' + esc(id + "|" + m) + '"' + (cur.provider === id && (cur.model || "") === m ? " selected" : "") + ">" + esc(m || tr("modelId")) + "</option>";
+      }).join("") + "</optgroup>";
+    });
+    var manual = "", rec = cur.provider && v.providers[cur.provider];
+    if (rec && !(rec.models && rec.models.length)) {
+      manual = '<label class="aia-label" for="aia-mid">' + esc(tr("modelId")) + '</label><input id="aia-mid" class="aia-input" data-aia-manual="' +
+        esc(cur.provider) + '" value="' + esc(cur.model || rec.model || "") + '">';
+    }
+    return '<div class="aia-modelrow"><label class="aia-label" for="aia-model-byok">' + esc(tr("secModel")) + "</label>" +
+      '<select id="aia-model-byok" class="aia-input" data-aia-model="byok">' + groups.join("") + "</select>" + manual + "</div>";
   }
   function statusPanel() {
-    var v = vault(), h = accessHealth();
+    var v = vault(), pk = picks(v), titles = {};
+    var answering = routeSource(routeSync());
     var keys = keyIds(v).map(function (id) {
       var rec = v.providers[id];
       return '<li><span><span class="aia-dot ' + (rec.failed ? "is-bad" : "is-ok") + '"></span><strong>' + esc(providerLabel(id, v)) + "</strong> ••••" +
@@ -2078,8 +2752,9 @@
         "<br><small>" + esc(tr(rec.session ? "storeSession" : "storeLocal")) + "</small>" +
         '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-remove="' + esc(id) + '">' + esc(tr("remove")) + "</button></li>";
     }).join("");
-    var byok = secHead("byok", tr("secByok")) +
-      (keys ? '<ul class="aia-list">' + keys + "</ul>" : '<p class="aia-fine aia-left">' + esc(tr("stNoKeys")) + "</p>") +
+    titles.byok = tr("secByok");
+    var byok = secHead("byok", titles.byok, answering === "byok") +
+      (keys ? '<ul class="aia-list">' + keys + "</ul>" + byokModelField(v, pk) : '<p class="aia-fine aia-left">' + esc(tr("stNoKeys")) + "</p>") +
       '<p><button type="button" class="aia-btn' + (keys ? "" : " aia-btn-primary") + '" data-aia="connect">+ ' + esc(tr("tabAdd")) + "</button></p></section>";
     var project = "";
     if (projectOffered()) {
@@ -2088,30 +2763,35 @@
         : quota.request && quota.request.status === "offen" ? ["is-warn", tr("stProjPending")]
         : ["is-off", tr("stProjNone")];
       // Ohne Freigabe der allgemeine Titel; mit Freigabe das Backend („Projektkontingent · Gemini-Abo“ bzw. „· Nexos“).
-      project = secHead("project", quota.grant ? quotaLabel(grantProvider()) : tr("viaProject").replace(/^./, function (c) { return c.toUpperCase(); })) +
+      // Anmeldung und Modell gehören zum Kontingent und wandern mit dem Abschnitt.
+      titles.project = quota.grant ? quotaLabel(grantProvider()) : tr("viaProject").replace(/^./, function (c) { return c.toUpperCase(); });
+      project = secHead("project", titles.project, answering === "project") +
         '<p class="aia-left"><span class="aia-dot ' + pr[0] + '"></span>' + esc(pr[1]) + "</p>" +
+        projectModelField(pk) +
         (grantActive() ? "" : '<p><button type="button" class="aia-btn" data-aia="request">' + esc(tr(
           quota.request && quota.request.status === "offen" ? "reqView" : (quota.grant || (quota.request && quota.request.status === "abgelehnt")) ? "reqAgain" : "tabQuota")) +
-          "</button></p>") + "</section>";
+          "</button></p>") + signedLine() + "</section>";
     }
     var clis = (state.backend && state.backend.clis) || [];
     var remote = state.backend && state.backend.base;
-    var local = secHead("local", tr("secLocal")) +
-      (clis.length ? '<ul class="aia-list">' + clis.map(function (c) {
-          return '<li><span><span class="aia-dot ' + (c.healthy ? "is-ok" : "is-bad") + '"></span>' + esc(c.label) + "</span></li>";
-        }).join("") + "</ul>" + (remote ? '<p class="aia-fine aia-left">' + esc(tr("viaLocalhost", remote.replace(/^https?:\/\//, ""))) + "</p>" : "") +
-        '<p><button type="button" class="aia-btn aia-btn-quiet" data-aia="recheck">↻ ' + esc(tr("recheck")) + "</button></p>"
+    var checking = state.checking ? " disabled" : "";
+    titles.local = tr("secLocal");
+    var local = secHead("local", titles.local, answering === "local") +
+      (clis.length ? localClis(pk) + (remote ? '<p class="aia-fine aia-left">' + esc(tr("viaLocalhost", remote.replace(/^https?:\/\//, ""))) + "</p>" : "") +
+        '<p class="aia-checkrow"><button type="button" class="aia-btn aia-btn-quiet" data-aia="recheck"' + checking + ">↻ " +
+        esc(tr(state.checking ? "cliChecking" : "recheck")) + "</button>" +
+        (state.checkedN != null && !state.checking ? ' <span class="aia-fine" role="status">' +
+          esc(state.checkedN === 1 ? tr("cliFound1") : trf("cliFoundN", { n: state.checkedN })) + "</span>" : "") + "</p>"
         : isLocalHost() ? '<p class="aia-fine aia-left">' + esc(tr("localNoServer")) + "</p>" : awayHtml()) + "</section>";
-    var usable = h.sources.some(function (x) { return x.ok; });
     var parts = { byok: byok, project: project, local: local };
     var shown = accessOrder().filter(function (k) { return parts[k]; });
-    return '<p class="aia-fine aia-left aia-prio-hint">' + esc(tr("prioHint")) + "</p>" +
+    return '<p class="aia-fine aia-left aia-prio-hint" id="aia-prio-help">' + esc(tr("prioHint")) + "</p>" +
       shown.map(function (k, i) {
+        var title = titles[k];
         return parts[k].replace("data-aia-prio-n", 'data-aia-prio-n="' + (i + 1) + '"').replace("<section class=\"aia-sec", "<section class=\"aia-sec" + (i ? "" : " aia-sec-first"))
-          .replace('data-aia-up="' + k + '"', 'data-aia-up="' + k + '"' + (i ? "" : " disabled"))
-          .replace('data-aia-down="' + k + '"', 'data-aia-down="' + k + '"' + (i === shown.length - 1 ? " disabled" : ""));
+          .replace('data-aia-grip="' + k + '"', 'data-aia-grip="' + k + '" aria-label="' + esc(trf("gripLabel", { s: title, n: (i + 1) + "/" + shown.length })) +
+            '" title="' + esc(trf("gripLabel", { s: title, n: (i + 1) + "/" + shown.length })) + '"');
       }).join("") +
-      (usable ? '<section class="aia-sec">' + modelSelect() + "</section>" : "") +
       (!state.user && requiresSignIn() ? signInBlock() : "");
   }
   // Man ist immer nur auf eine Weise angemeldet; zum Wechseln abmelden.
@@ -2152,49 +2832,6 @@
       '<div class="aia-row"><input id="aia-endpoint" type="url" name="endpoint" inputmode="url" autocomplete="off" spellcheck="false" enterkeyhint="go"' +
       ' placeholder="https://openrouter.ai/api/v1" aria-describedby="aia-ep-hint"></div>' +
       '<p class="aia-fine aia-left" id="aia-ep-hint">' + esc(tr("epHint")) + "</p></div>";
-  }
-  function modelSelect() {
-    var v = vault();
-    var ch = v.choice || {};
-    // Ohne ausdrückliche Wahl ist ausgewählt, was routeSync nach der Standardreihenfolge nimmt.
-    var r = ch.provider ? null : routeSync();
-    function isSel(provider, m) {
-      if (ch.provider) return ch.provider === provider && ch.model === m;
-      if (!r || r.kind === "none") return false;
-      if (provider === "local") return r.kind === "local" && (r.cli ? r.cli === m : m === firstLocal());
-      return r.kind === "byok" && r.provider === provider && r.model === m;
-    }
-    function firstLocal() {
-      var c = ((state.backend && state.backend.clis) || []).filter(function (x) { return x.healthy; })[0] || ((state.backend && state.backend.clis) || [])[0];
-      return c && c.id;
-    }
-    var groups = [];
-    if (state.backend && state.backend.clis && state.backend.clis.length) {
-      groups.push('<optgroup label="' + esc(tr("local")) + '">' + state.backend.clis.map(function (c) {
-        return '<option value="' + esc("local|" + c.id) + '"' + (isSel("local", c.id) ? " selected" : "") + ">" + esc(c.label + " · " + c.model) + "</option>";
-      }).join("") + "</optgroup>");
-    }
-    if (quotaUsable()) {
-      var gp = grantProvider();
-      groups.push('<optgroup label="' + esc(quotaLabel(gp)) + '" data-aia-group="' + gp + '">' + grantModels().map(function (m) {
-        return '<option value="' + esc(gp + "|" + m) + '"' + (isSel(gp, m) ? " selected" : "") + ">" + esc(m) + "</option>";
-      }).join("") + "</optgroup>");
-    }
-    keyIds(v).forEach(function (id) {
-      var rec = v.providers[id];
-      var models = (rec.models && rec.models.length ? rec.models : [rec.model]).filter(Boolean);
-      groups.push('<optgroup label="' + esc(keyGroupLabel(id, v)) + '" data-aia-group="key">' + models.map(function (m) {
-        return '<option value="' + esc(id + "|" + m) + '"' + (isSel(id, m) ? " selected" : "") + ">" + esc(m) + "</option>";
-      }).join("") + "</optgroup>");
-    });
-    var manual = "";
-    var cur = ch.provider && v.providers[ch.provider];
-    if (cur && !(cur.models && cur.models.length)) {
-      manual = '<label class="aia-label" for="aia-mid">' + esc(tr("modelId")) + '</label><input id="aia-mid" class="aia-input" data-aia-manual="' +
-        esc(ch.provider) + '" value="' + esc(ch.model || cur.model || "") + '">';
-    }
-    return '<label class="aia-label" for="aia-model">' + esc(tr("activeModel")) + '</label><select id="aia-model" class="aia-input" data-aia-model>' +
-      groups.join("") + "</select>" + manual;
   }
   function fmtDate(iso) {
     try { return new Date(iso).toLocaleDateString(root.document.documentElement.lang || "de"); } catch (e) { return iso || ""; }
@@ -2279,13 +2916,74 @@
         (by ? " · " + esc(by) : "") + "</small>" +
         '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-revoke="' + esc(g._id) + '">' + esc(tr("admRevoke")) + "</button></li>";
     }).join("");
-    return actingHtml() + '<h3 class="aia-h3">' + esc(tr("admTitle")) + "</h3>" +
+    var fbRow = fbConfigured() ? '<p class="aia-fb-entry"><button type="button" class="aia-btn" data-aia="fbadmin">' + esc(tr("fbAdmBtn")) +
+      (fbNewCount() ? ' <span class="aia-badge">' + esc(tr("fbAdmNew", String(fbNewCount()))) + "</span>" : "") + "</button></p>" : "";
+    return actingHtml() + fbRow + '<h3 class="aia-h3">' + esc(tr("admTitle")) + "</h3>" +
       (open ? '<ul class="aia-list aia-reqs">' + open + "</ul>" : '<p class="aia-lead">' + esc(tr("admNone")) + "</p>") +
       (grants ? '<section class="aia-sec"><h3>' + esc(tr("admGrants")) + '</h3><ul class="aia-list">' + grants + "</ul>" +
         '<p class="aia-fine">' + esc(tr("admRevokeHint")) + "</p></section>" : "") + billingForm() + errLine();
   }
+  function fbDate(iso) {
+    try { return new Date(iso).toLocaleString(root.document.documentElement.lang || "de", { dateStyle: "short", timeStyle: "short" }); } catch (e) { return iso || ""; }
+  }
+  function fbCtxHtml(c) {
+    c = c || {};
+    var bits = [];
+    if (c.title || c.page) bits.push(c.page ? '<a href="' + esc(c.page) + '" target="_blank" rel="noopener">' + esc(c.title || c.page) + "</a>" : esc(c.title));
+    if (c.fold) bits.push(esc(c.fold));
+    if (c.target) bits.push("<code>" + esc(c.target) + "</code>");
+    if (c.release) bits.push(esc(c.release));
+    if (c.lang) bits.push(esc(String(c.lang).toUpperCase()));
+    var sel = c.selection ? '<br><span class="aia-fb-sel">„' + esc(c.selection) + "“</span>" : "";
+    return bits.length || sel ? '<p class="aia-fb-ctx">' + bits.join(" · ") + sel + "</p>" : "";
+  }
+  function viewFeedbackAdmin() {
+    var all = fbAdm.filter === "all";
+    var items = fbAdm.items.filter(function (x) { return all || x.status === "neu" || x.status === "in_pruefung"; });
+    var list = items.map(function (x) {
+      var who = x.auth === "konto" ? tr("fbKonto") + (x.name ? " " + x.name : "") : tr("fbAnon");
+      var opts = FB_STATUSES.map(function (s) {
+        return '<option value="' + s + '"' + (s === x.status ? " selected" : "") + ">" + esc(tr("fbSt_" + s)) + "</option>";
+      }).join("");
+      return '<li class="aia-fb is-' + esc(x.status || "neu") + '" data-aia-fb="' + esc(x._id) + '">' +
+        '<div class="aia-fb-head"><span class="aia-fb-art is-' + esc(x.art) + '">' + esc(tr("fbArt_" + (x.art || "hinweis"))) + "</span>" +
+        '<span class="aia-fb-st">' + esc(tr("fbSt_" + (x.status || "neu"))) + "</span>" +
+        '<span class="aia-fine">' + esc(fbDate(x.created)) + " · " + esc(who) + ' · <span title="UID ' + esc(x.uid) + '">UID ' + esc(shortUid(x.uid)) + "</span></span></div>" +
+        '<p class="aia-fb-text">' + esc(x.text) + "</p>" + fbCtxHtml(x.ctx) +
+        (x.contact ? '<p class="aia-fine aia-left">' + esc(tr("fbAdmContact")) + ": <strong>" + esc(x.contact) + "</strong></p>" : "") +
+        (x.finding ? '<p class="aia-fine aia-left">' + esc(tr("fbAdmFinding")) + ": <code>" + esc(x.finding) + "</code></p>" : "") +
+        '<form class="aia-key aia-fb-form" data-aia-form="fbtriage" data-id="' + esc(x._id) + '"><div class="aia-row">' +
+        '<label class="aia-field"><span class="aia-label">' + esc(tr("fbAdmStatus")) + '</span><select class="aia-input" name="status">' + opts + "</select></label>" +
+        '<label class="aia-field aia-fb-note"><span class="aia-label">' + esc(tr("fbAdmNote")) + '</span><input class="aia-input" name="note" maxlength="1000" value="' + esc(x.note || "") + '"></label></div>' +
+        '<div class="aia-row"><button type="submit" class="aia-btn aia-btn-primary">' + esc(tr("admSave")) + "</button>" +
+        '<button type="button" class="aia-btn aia-btn-quiet" data-aia-fbdel="' + esc(x._id) + '">' + esc(tr("fbAdmDel")) + "</button></div></form></li>";
+    }).join("");
+    var sw = fbAdm.settings || { offen: true, anonym: true };
+    var openCount = fbAdm.items.filter(function (x) { return x.status === "neu" || x.status === "in_pruefung"; }).length;
+    return actingHtml() + '<p class="aia-lead">' + esc(tr("fbAdmLead")) + "</p>" +
+      '<div class="aia-tabs aia-fb-filter" role="group"><button type="button" class="aia-tab' + (all ? "" : " is-on") + '" data-aia-fbfilter="open" aria-pressed="' + !all + '">' +
+      esc(tr("fbAdmShowOpen")) + " (" + openCount + ')</button><button type="button" class="aia-tab' + (all ? " is-on" : "") + '" data-aia-fbfilter="all" aria-pressed="' + all + '">' +
+      esc(tr("fbAdmShowAll")) + " (" + fbAdm.items.length + ")</button></div>" +
+      (!fbAdm.loaded ? '<p class="aia-fine aia-left">' + esc(tr("checking")) + "</p>" :
+        list ? '<ul class="aia-list aia-fbs">' + list + "</ul>" : '<p class="aia-lead">' + esc(tr("fbAdmNone")) + "</p>") +
+      '<section class="aia-sec"><form class="aia-key" data-aia-form="fbswitch"><h3>' + esc(tr("fbAdmSwitch")) + "</h3>" +
+      '<label class="aia-check"><input type="checkbox" name="offen"' + (sw.offen ? " checked" : "") + "><span>" + esc(tr("fbAdmOpen")) + "</span></label>" +
+      '<label class="aia-check"><input type="checkbox" name="anonym"' + (sw.anonym ? " checked" : "") + "><span>" + esc(tr("fbAdmAnon")) + "</span></label>" +
+      '<div class="aia-row"><button type="submit" class="aia-btn">' + esc(tr("admSave")) + "</button></div>" +
+      '<p class="aia-fine aia-left">' + esc(tr("fbAdmSwitchHint")) + "</p></form></section>" + errLine();
+  }
+  // Fokus über das Neuzeichnen retten: Eingaben über id/name, Griffe, Ausweichfelder und CLI-Auswahl über ihre Daten.
+  function focusKey(x) {
+    if (!x || !x.getAttribute) return null;
+    var g = x.getAttribute("data-aia-grip"), fb = x.getAttribute("data-aia-fb"), n = x.getAttribute("name");
+    if (g) return '[data-aia-grip="' + g + '"]';
+    if (fb != null) return '[data-aia-fb="' + fb + '"]';
+    if (x.hasAttribute("data-aia-cli")) return 'input[data-aia-cli][value="' + String(x.value).replace(/["\\]/g, "") + '"]';
+    if (x.id && /^[\w-]+$/.test(x.id)) return "#" + x.id;
+    return n ? '[name="' + n + '"]' : null;
+  }
   function paint(el, html, cls) {
-    var active = document.activeElement && el.contains(document.activeElement) ? document.activeElement.getAttribute("name") : null;
+    var activeKey = document.activeElement && el.contains(document.activeElement) ? focusKey(document.activeElement) : null;
     var kept = {};
     el.querySelectorAll("input[name]").forEach(function (x) { if (x.type !== "checkbox" && x.value) kept[x.name] = x.value; });
     var keptCheck = el.querySelector('input[name="remember"]');
@@ -2294,23 +2992,26 @@
     Object.keys(kept).forEach(function (n) { var x = el.querySelector('input[name="' + n + '"]'); if (x && !x.value) x.value = kept[n]; });
     var rc = el.querySelector('input[name="remember"]');
     if (rc && keptCheck !== null) rc.checked = keptCheck;
-    if (active) { var f = el.querySelector('[name="' + active + '"]'); if (f) f.focus(); }
+    if (activeKey) { var f = el.querySelector(activeKey); if (f) try { f.focus({ preventScroll: true }); } catch (e) { f.focus(); } }
   }
   function renderDialog() {
     if (!dlg) return;
     var v = state.view;
-    if (["sent", "confirm", "account", "connect", "request", "admin", "signin"].indexOf(v) === -1) v = state.view = "account";
+    if (["sent", "confirm", "account", "connect", "request", "admin", "signin", "fbadmin"].indexOf(v) === -1) v = state.view = "account";
     if (v === "signin" && state.user) v = state.view = "account";
-    if (v === "admin" && !quota.admin) v = state.view = "account";
+    if ((v === "admin" || v === "fbadmin") && !quota.admin) v = state.view = "account";
     if (v === "request" && !projectOffered()) v = state.view = "account";
+    // Die Anmeldung steht im Abschnitt Projektkontingent (nur dafür wird sie gebraucht); ohne diesen Abschnitt
+    // (z. B. Verwalter ohne Projektdienst) unten wie bisher.
     paint(dlg, closeBtn() + '<h2 id="aia-title" class="aia-dtitle"><span class="aia-mark">' + SPARK + "</span>" + esc(tr("dlgTitle")) + "</h2>" +
-      statusPanel() + errLine() + signedLine(), "is-main");
+      statusPanel() + errLine() + (projectOffered() ? "" : signedLine()), "is-main");
+    if (liveEl && dlg.open) dlg.appendChild(liveEl);
     if (v === "account") {
       if (sub && sub.open) sub.close();
     } else {
-      var title = { connect: tr("tabAdd"), request: tr("tabQuota"), admin: tr("admBtn"), signin: tr("signIn") }[v];
+      var title = { connect: tr("tabAdd"), request: tr("tabQuota"), admin: tr("admBtn"), signin: tr("signIn"), fbadmin: tr("fbAdmTitle") }[v];
       var body = v === "sent" ? viewSent() : v === "confirm" ? viewConfirm() : v === "connect" ? byokForm() :
-        v === "request" ? viewRequest() : v === "signin" ? signInBlock(true) : viewAdmin();
+        v === "request" ? viewRequest() : v === "signin" ? signInBlock(true) : v === "fbadmin" ? viewFeedbackAdmin() : viewAdmin();
       paint(sub, (title ? (dlg.open ? '<button type="button" class="aia-back" data-aia="account">← ' + esc(tr("back")) + "</button>" : "") + closeBtn() +
         '<h2 id="aia-subtitle" class="aia-dtitle">' + esc(title) + "</h2>" + body + (body.indexOf('class="aia-error"') === -1 ? errLine() : "") : body), "is-sub");
       if (!sub.open) { try { sub.showModal(); } catch (e) { sub.setAttribute("open", ""); } }
@@ -2407,6 +3108,10 @@
     if (e.target.closest("a, .aia-info, .aia-tip")) return;
     var rv = e.target.closest("[data-aia-revoke]");
     if (rv) { revoke(rv.getAttribute("data-aia-revoke")).catch(fail); return; }
+    var fd = e.target.closest("[data-aia-fbdel]");
+    if (fd) { fbAdminDelete(fd.getAttribute("data-aia-fbdel")).catch(fail); return; }
+    var ff = e.target.closest("[data-aia-fbfilter]");
+    if (ff) { fbAdm.filter = ff.getAttribute("data-aia-fbfilter"); renderDialog(); return; }
     var t = e.target.closest("[data-aia],[data-aia-prov],[data-aia-remove],[data-aia-local],[data-aia-card]");
     if (!t) return;
     if (t.hasAttribute("data-aia-card")) t = t.querySelector("[data-aia-prov]");
@@ -2414,18 +3119,14 @@
     if (a === "close") { if (e.currentTarget === sub) { state.view = "account"; renderDialog(); } else dlg.close(); }
     else if (a === "google") signInGoogle();
     else if (a === "probe") probeLocal();
-    else if (a === "recheck") {
-      fetch(localUrl("/api/ai/check"), { method: "POST" }).catch(function () {}).then(function () {
-        if (state.backend && state.backend.base) return probeLocal(true);
-        backendPromise = null; return backendStatus();
-      }).then(emit);
-    }
+    else if (a === "recheck") recheckLocal();
     else if (a === "github") signInWith("GithubAuthProvider");
     else if (a === "apple") signInWith("OAuthProvider", "apple.com");
     else if (a === "request") { state.view = "request"; renderDialog(); ensureFirebase(); }
     else if (a === "withdraw") withdrawRequest().catch(fail);
     else if (a === "signin") { state.afterSignIn = "account"; state.view = "signin"; renderDialog(); ensureFirebase(); }
     else if (a === "admin") { state.view = "admin"; renderDialog(); loadAdmin().then(emit).catch(fail); }
+    else if (a === "fbadmin") { state.view = "fbadmin"; renderDialog(); loadFeedbackAdmin().then(emit).catch(fail); }
     else if (a === "skip") { state.view = Object.keys(vault().providers).length ? "account" : "connect"; renderDialog(); }
     else if (a === "resend") sendLink(state.pendingEmail).then(function (ok) { if (ok) toast(tr("resent")); });
     else if (a === "restart") { state.view = "connect"; renderDialog(); ensureFirebase(); }
@@ -2444,6 +3145,29 @@
     } else if (t.hasAttribute("data-aia-remove")) removeProvider(t.getAttribute("data-aia-remove"));
     else if (t.hasAttribute("data-aia-local")) setChoice({ provider: "local", model: t.getAttribute("data-aia-local") });
   }
+  // „Prüfen“: der Dienst sucht und prüft alle bekannten CLIs (PATH, --version, Anmeldung; kein Modellaufruf) und
+  // antwortet mit dem neuen Stand. Kommt keine Antwort (z. B. CORS von der öffentlichen Seite), Status neu laden.
+  function recheckLocal() {
+    if (state.checking) return;
+    state.checking = true;
+    state.checkedN = null;
+    emit();
+    var remote = state.backend && state.backend.base;
+    fetch(localUrl("/api/ai/check"), { method: "POST", cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (j) {
+        if (j && j.providers) { state.backend = localState(j, remote || ""); backendPromise = Promise.resolve(state.backend); return null; }
+        if (remote) return probeLocal(true);
+        backendPromise = null;
+        return backendStatus();
+      })
+      .then(function () {
+        state.checking = false;
+        state.checkedN = ((state.backend && state.backend.clis) || []).length;
+        emit();
+      });
+  }
   function onDialogSubmit(e) {
     var f = e.target.closest ? e.target.closest("[data-aia-form]") : null;
     if (!f) return;
@@ -2456,6 +3180,8 @@
     else if (k === "request") sendRequest(f.reason.value.trim()).catch(fail);
     else if (k === "reqedit") updateRequest(f.reason.value.trim()).catch(fail);
     else if (k === "settings") saveSettings(f).catch(fail);
+    else if (k === "fbtriage") fbTriage(f.getAttribute("data-id"), f).catch(fail);
+    else if (k === "fbswitch") fbSaveSwitch(f).catch(fail);
     else if (k === "decide") {
       var which = e.submitter && e.submitter.getAttribute("data-decide");
       decide(f.getAttribute("data-uid"), which !== "reject", f).catch(fail);
@@ -2518,6 +3244,15 @@
     if (e.target.matches("[data-aia-model]")) {
       var parts = e.target.value.split("|");
       setChoice({ provider: parts[0], model: parts.slice(1).join("|") });
+    } else if (e.target.matches("[data-aia-cli]")) {
+      setChoice({ provider: "local", model: e.target.value });
+    } else if (e.target.matches("[data-aia-fb]")) {
+      // Ausweichliste: Feld i setzt den i-ten Eintrag; leer kürzt die Liste ab hier.
+      var i = Number(e.target.getAttribute("data-aia-fb")), cur = localChain(picks());
+      var fb = cur.fallback.slice(0, i);
+      if (e.target.value) fb.push(e.target.value);
+      fb = fb.concat(cur.fallback.slice(i + 1).filter(function (x) { return e.target.value && fb.indexOf(x) === -1; }));
+      setPick("local", { cli: cur.cli, fallback: fb });
     } else if (e.target.matches("[data-aia-manual]")) {
       var id = e.target.getAttribute("data-aia-manual");
       var v = vault();
@@ -2606,12 +3341,19 @@
 
   return {
     init: init, route: route, localUrl: localUrl, answerLabel: answerLabel, routeLabel: routeLabel, discuss: discuss, open: openDialog, chip: chip, gate: gate,
-    models: models, complete: complete, text: tr,
-    proposalIssue: proposalIssue, openIssue: openIssue, toast: toast, snapshot: snapshot,
+    models: models, complete: complete, text: tr, fallbackText: fallbackText,
+    // Leser-Feedback (review_request.js: Dialog, review.js: „Meine Meldungen“, Verwaltung: Sichtung)
+    feedback: { channel: fbChannel, send: fbSend, mine: fbMine, withdraw: fbWithdraw, openAdmin: openFeedbackAdmin,
+                isAdmin: function () { return !!quota.admin && fbConfigured(); }, newCount: fbNewCount, normalize: fbNormalize,
+                signIn: function () { state.afterSignIn = "account"; openDialog("signin"); } },
+    proposalIssue: proposalIssue, openIssue: openIssue, toast: toast, snapshot: snapshot, idToken: idToken,
     // für Tests
     _buildDiscussPrompt: buildDiscussPrompt, _extractFinding: extractFinding, _redact: redact,
     _providers: PROVIDERS, _pickDefault: pickDefault, _state: state, _accessOrder: accessOrder, _routeSync: routeSync,
     _normalizeEndpoint: normalizeEndpoint, _provOf: provOf, _keyIds: keyIds, _viewAdmin: viewAdmin, _quota: function () { return quota; },
-    _statusPanel: statusPanel, _modelSelect: modelSelect, _decide: decide, _aboModels: aboModels, _setChoice: setChoice
+    _statusPanel: statusPanel, _decide: decide, _aboModels: aboModels, _setChoice: setChoice,
+    _picks: picks, _setPick: setPick, _localChain: localChain, _localState: localState, _promoteSource: promoteSource,
+    _accessIcons: accessIcons,
+    _viewFeedbackAdmin: viewFeedbackAdmin, _fbAdm: function () { return fbAdm; }
   };
 });
