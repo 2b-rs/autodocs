@@ -1,68 +1,125 @@
 {
  "annahmen": [
-  "1) Zugrundeliegende Transportmechanismen dürften je nach Plattform-Implementierung auf Sockets oder Shared Memory aufsetzen – Begründung: Der Payload definiert nur die API-Schnittstellen (RawDataStreamClient/Server), spezifiziert aber kein konkretes Transportprotokoll.",
-  "2) Instanziierung via InstanceSpecifier spiegelt vermutlich AUTOSAR-Port-Modellierungen wider – Begründung: SWS_RDS_10482 verweist auf \"modeled port\", benennt aber keine Manifest-Details.",
-  "3) Template-Parameter T der IEEE-1722-Klassen entspricht vermutlich den spezialisierten Datagrammtypen – Begründung: IEEE1722RawDataStreamConsumer/Producer sind Templates, deren Payload-Schnittstellen eng mit Datagrammstrukturen wie IEEE1722DatagramAAF/RVF verknüpft sind."
+  "1) Die Varianten ohne timeout warten vermutlich unbegrenzt – Begründung: Es gibt parallele timeout-Überladungen, das Warteverhalten selbst beschreibt der Payload nicht.",
+  "2) T dürfte eine der IEEE1722Datagram-Klassen sein – Begründung: ReadData/WriteData beschreiben vector<T> als Datagramme, eine Einschränkung von T fehlt im Payload.",
+  "3) maxLength dürfte die Obergrenze bzw. Länge des Puffers in Bytes bezeichnen – Begründung: Es gibt nur den Parameternamen, keine Beschreibung. Diagramm diag-lebenszyklus:",
+  "1) Zustände und die Regel „Transfer erst nach dem Verbindungsaufbau“ sind aus der Reihenfolge der Szenarien abgeleitet – Begründung: Der Payload enthält keine Zustandsmaschine. Diagramm diag-konfiguration:",
+  "1) EthernetMacRawDataStreamMapping spezialisiert RawDataStreamMapping – Begründung: Das Schaubild liegt nur gekürzt vor, RawDataStreamMapping ist als abstrakt beschrieben."
  ],
  "diagrams": [
   {
-   "art": "seq",
-   "id": "diag-client-server-session",
-   "quelle": "anchor_r25_11.diag-client-server-session.seq.json"
+   "art": "dot",
+   "id": "diag-kontext",
+   "quelle": "anchor_r25_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-client-lifecycle",
-   "quelle": "anchor_r25_11.diag-client-lifecycle.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-server-lifecycle",
-   "quelle": "anchor_r25_11.diag-server-lifecycle.dot"
+   "id": "diag-konfiguration",
+   "quelle": "anchor_r25_11.diag-konfiguration.dot"
   },
   {
    "art": "seq",
-   "id": "diag-ieee1722-flow",
-   "quelle": "anchor_r25_11.diag-ieee1722-flow.seq.json"
+   "id": "diag-ip-austausch",
+   "quelle": "anchor_r25_11.diag-ip-austausch.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-ieee1722",
+   "quelle": "anchor_r25_11.diag-ieee1722.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-error-handling",
-   "quelle": "anchor_r25_11.diag-error-handling.dot"
+   "id": "diag-lebenszyklus",
+   "quelle": "anchor_r25_11.diag-lebenszyklus.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-fehlerbehandlung",
+   "quelle": "anchor_r25_11.diag-fehlerbehandlung.dot"
   }
  ],
  "fragment": "content/ai/modules/rds/anchor_r25_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {},
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_rds_SWS_RDS_11294",
+    "SNIP_rds_SWS_RDS_11295",
+    "SNIP_rds_SWS_RDS_11302",
+    "SNIP_rds_SWS_RDS_11326",
+    "SNIP_rds_SWS_RDS_11327",
+    "SNIP_rds_SWS_RDS_90228",
+    "SNIP_rds_SWS_RDS_90232",
+    "SNIP_rds_SWS_RDS_90239",
+    "SNIP_rds_SWS_RDS_90241",
+    "SNIP_rds_SWS_RDS_90244",
+    "SNIP_rds_SWS_RDS_90247",
+    "SNIP_rds_SWS_RDS_90248",
+    "SNIP_rds_SWS_RDS_90249",
+    "SNIP_rds_SWS_RDS_90250",
+    "SNIP_rds_SWS_RDS_90251",
+    "SNIP_rds_SWS_RDS_90252",
+    "SNIP_rds_SWS_RDS_90253",
+    "SNIP_rds_SWS_RDS_90254",
+    "SNIP_rds_SWS_RDS_90255",
+    "SNIP_rds_SWS_RDS_90256",
+    "SNIP_rds_SWS_RDS_90262",
+    "SNIP_rds_SWS_RDS_90263",
+    "SNIP_rds_SWS_RDS_90264",
+    "SNIP_rds_SWS_RDS_90265",
+    "SNIP_rds_SWS_RDS_90268",
+    "SNIP_rds_SWS_RDS_90279",
+    "SNIP_rds_SWS_RDS_90280",
+    "SNIP_rds_SWS_RDS_90281",
+    "SNIP_rds_SWS_RDS_90282",
+    "SNIP_rds_SWS_RDS_90283",
+    "SNIP_rds_SWS_RDS_90284",
+    "SNIP_rds_SWS_RDS_90296",
+    "SNIP_rds_SWS_RDS_90301"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 125,
+  "im_prompt_schaubilder": 25,
+  "kandidaten": 158,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "88825e8a1bbc95f1e47c11a6f2c58b688ff21970d3d1cfb1a448d40138968298",
- "output_store": "ai/store/outputs/88/88825e8a1bbc95f1e47c11a6f2c58b688ff21970d3d1cfb1a448d40138968298.html",
+ "output_sha256": "5224fe65d86c3a52f2b74822af1980673c22da2ece820bb239885abfbc794f6d",
+ "output_store": "ai/store/outputs/52/5224fe65d86c3a52f2b74822af1980673c22da2ece820bb239885abfbc794f6d.html",
  "params": {
   "module": "rds",
   "platform": "adaptive",
   "release": "R25-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "7b9b81c0f4e0ee3de04a6e6630ffe0b6ff5d7281b1a6e402dc79d4e62d0f5129",
- "prompt_store": "ai/store/prompts/7b/7b9b81c0f4e0ee3de04a6e6630ffe0b6ff5d7281b1a6e402dc79d4e62d0f5129.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "e4a3b6e9e6cc67471f81d8e762b6d4993dedca4ba42503f28bb757d51ee3ebf7",
+ "prompt_store": "ai/store/prompts/e4/e4a3b6e9e6cc67471f81d8e762b6d4993dedca4ba42503f28bb757d51ee3ebf7.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R25-11"
  ],
@@ -74,18 +131,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T12:21:46Z",
-   "duration_seconds": 79.675153,
-   "route": "agy-cli-print",
-   "run_id": "95cfc1a2-0d67-400a-9fa4-f52d4e4053de",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/95cfc1a2-0d67-400a-9fa4-f52d4e4053de.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.1236,
+   "cost_usd_reported": 1.1236,
+   "created_at": "2026-10-09T07:51:00Z",
+   "duration_api_seconds": 335.564,
+   "duration_seconds": 335.773,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.1236,
+     "inputTokens": 71855,
+     "maxOutputTokens": 128000,
+     "outputTokens": 41809,
+     "provider": "firstParty",
+     "thinkingTokens": 21488,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "9e266c6e-0804-44f3-8582-77648ddb0a47",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/9e266c6e-0804-44f3-8582-77648ddb0a47.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 30239,
-    "output_tokens": 24952,
-    "thinking_tokens": 11944,
-    "total_tokens": 55191
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 71855,
+    "output_tokens": 41809,
+    "output_tokens_details": {
+     "thinking_tokens": 21488
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 71855,
+    "output": 41809,
+    "thinking": 21488
+   },
+   "wall_seconds": 338.536
   }
  ],
  "schema": "ai-trace@2",

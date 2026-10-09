@@ -1,78 +1,109 @@
 {
  "annahmen": [
-  "1) DutyCycle im Wertebereich 0x0000 bis 0x8000 repräsentiert eine Skalierung von 0 % bis 100 %, wobei 0x8000 (32768) den Maximalwert darstellt. – Begründung: Der Wertebereich ist in SWS_Pwm_91000 explizit als Min=0x0000 bis Max=0x8000 vorgegeben; in AUTOSAR entspricht 0x8000 typischerweise 100 %.",
-  "2) Die Callback-Funktion IoHwAb_Pwm_NotifyReadyForPowerState richtet sich an die I/O-Hardware-Abstraktion oder den BSW-Mode-Manager. – Begründung: Aus dem Namensraum-Präfix IoHwAb und der Header-Zuordnung IoHwAb_Pwm.h in SWS_Pwm_00198 abgeleitet.",
-  "3) Kanäle des Typs PWM_FIXED_PERIOD_SHIFTED basieren auf hardwareseitiger Phasenverschiebung. – Begründung: In SWS_Pwm_00110 ist vermerkt, dass diese Betriebsart nur bei entsprechender Hardware-Unterstützung verfügbar und zur Laufzeit unveränderbar ist."
+  "1) Ein erneutes Pwm_Init nach Pwm_DeInit ist zulässig (Text und diag-lebenszyklus) – Begründung: Pwm_DeInit de-initialisiert das Modul, und PWM_E_ALREADY_INITIALIZED betrifft nur den bereits initialisierten Treiber.",
+  "2) In diag-power-seq ist die Reihenfolge Bereitmeldung → IoHwAb_PollForResults → Pwm_SetPowerState vereinfacht – Begründung: Die Bildtexte der IoHwAb-Schaubilder liegen nur ungeordnet vor; belegt ist lediglich, dass Prepare vor Set erfolgen muss."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-pwm-context",
-   "quelle": "anchor_r20_11.diag-pwm-context.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-init-deinit",
-   "quelle": "anchor_r20_11.diag-init-deinit.seq.json"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-channel-classes",
-   "quelle": "anchor_r20_11.diag-channel-classes.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-duty-period-control",
-   "quelle": "anchor_r20_11.diag-duty-period-control.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-notification-handling",
-   "quelle": "anchor_r20_11.diag-notification-handling.seq.json"
+   "id": "diag-lebenszyklus",
+   "quelle": "anchor_r20_11.diag-lebenszyklus.dot"
   },
   {
    "art": "dot",
-   "id": "diag-power-states",
-   "quelle": "anchor_r20_11.diag-power-states.dot"
+   "id": "diag-dutycycle",
+   "quelle": "anchor_r20_11.diag-dutycycle.dot"
   },
   {
    "art": "seq",
-   "id": "diag-power-sequence",
-   "quelle": "anchor_r20_11.diag-power-sequence.seq.json"
+   "id": "diag-idle",
+   "quelle": "anchor_r20_11.diag-idle.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-notification",
+   "quelle": "anchor_r20_11.diag-notification.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-power-zustand",
+   "quelle": "anchor_r20_11.diag-power-zustand.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-power-seq",
+   "quelle": "anchor_r20_11.diag-power-seq.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/pwm/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_PWM_SECTION_8_6_2_Optional_interfaces": "SNIP_CLASSIC_DET_SECTION_8_6_2_Optional_interfaces_PWMDRIVER"
+   },
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_PWM_FIGURE_Figure_1_1",
+    "SNIP_CLASSIC_PWM_FIGURE_Figure_9_1",
+    "SNIP_CLASSIC_PWM_FIGURE_Figure_9_2",
+    "SNIP_CLASSIC_PWM_FIGURE_Figure_9_5",
+    "SNIP_CLASSIC_PWM_FIGURE_Figure_9_6",
+    "SNIP_CLASSIC_PWM_FIGURE_Figure_9_7",
+    "SNIP_CLASSIC_PWM_SECTION_2_Acronyms_and_Abbreviations",
+    "SNIP_CLASSIC_PWM_SECTION_7_5_Version_check",
+    "SNIP_CLASSIC_PWM_SECTION_7_Functional_specification",
+    "SNIP_CLASSIC_PWM_SECTION_8_2_Type_definitions",
+    "SNIP_CLASSIC_PWM_SECTION_8_3_Function_definitions",
+    "SNIP_CLASSIC_PWM_SECTION_8_API_specification",
+    "SNIP_CLASSIC_PWM_SECTION_9_Sequence_diagrams"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 78,
+  "im_prompt_schaubilder": 32,
+  "kandidaten": 92,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "840af8b49eb269077e408c753372e2312987e4422fb7f1550874d5bb1504649c",
- "output_store": "ai/store/outputs/84/840af8b49eb269077e408c753372e2312987e4422fb7f1550874d5bb1504649c.html",
+ "output_sha256": "0a85019f1f20dd0aee6bc491cdb1cd1bb731d9bf7228ad8dfe9884c5ec6ec5f9",
+ "output_store": "ai/store/outputs/0a/0a85019f1f20dd0aee6bc491cdb1cd1bb731d9bf7228ad8dfe9884c5ec6ec5f9.html",
  "params": {
   "module": "pwm",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "6fb0d5d9e7333b4ca971fc1d735adf69a479050e88ef6d1ae10860ab2c65c2fa",
- "prompt_store": "ai/store/prompts/6f/6fb0d5d9e7333b4ca971fc1d735adf69a479050e88ef6d1ae10860ab2c65c2fa.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "b2ff27f03e799951d252760fca577081abcf9738fb9609250df81ca97b4458e3",
+ "prompt_store": "ai/store/prompts/b2/b2ff27f03e799951d252760fca577081abcf9738fb9609250df81ca97b4458e3.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -84,18 +115,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:46:10Z",
-   "duration_seconds": 61.375299,
-   "route": "agy-cli-print",
-   "run_id": "556cb5b7-b391-497d-80c2-588428a66665",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/556cb5b7-b391-497d-80c2-588428a66665.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.18152,
+   "cost_usd_reported": 1.18152,
+   "created_at": "2026-10-09T07:25:48Z",
+   "duration_api_seconds": 332.007,
+   "duration_seconds": 332.21,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.18152,
+     "inputTokens": 76200,
+     "maxOutputTokens": 128000,
+     "outputTokens": 43836,
+     "provider": "firstParty",
+     "thinkingTokens": 23228,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "35dcffd6-432c-4487-9408-f424ba363b6b",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/35dcffd6-432c-4487-9408-f424ba363b6b.json",
    "usage": {
-    "cache_read_tokens": 8156,
-    "input_tokens": 11921,
-    "output_tokens": 18174,
-    "thinking_tokens": 5777,
-    "total_tokens": 30095
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 76200,
+    "output_tokens": 43836,
+    "output_tokens_details": {
+     "thinking_tokens": 23228
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 76200,
+    "output": 43836,
+    "thinking": 23228
+   },
+   "wall_seconds": 334.794
   }
  ],
  "schema": "ai-trace@2",

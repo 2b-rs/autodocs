@@ -83,6 +83,7 @@
 .rec-status-pill.active { background: #dcfce7; color: #15803d; }
 .rec-status-pill.dropped { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
 .rec-status-pill.active-dropped { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+.rec-status-pill.unchecked { background: #fefce8; color: #854d0e; border: 1px dashed #eab308; }
 
 /* Upstream Section */
 .spec-upstream-section {
@@ -106,6 +107,9 @@
   color: var(--primary, #01696f);
   font-weight: 600;
   text-decoration: none;
+  flex-wrap: wrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .spec-upstream-link:hover {
   text-decoration: underline;
@@ -117,6 +121,29 @@
 .spec-upstream-reqs ul {
   margin: 0.3rem 0 0 1.2rem;
   padding: 0;
+}
+.spec-upstream-rel {
+  margin-left: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--color-ink-muted, #64748b);
+}
+#spec-upstream-list li {
+  margin: 0.25rem 0;
+  overflow-wrap: anywhere;
+}
+.spec-upstream-doc {
+  font-size: 0.8rem;
+  color: var(--color-ink-muted, #64748b);
+}
+.spec-upstream-none {
+  color: var(--color-ink-muted, #64748b);
+}
+.spec-upstream-note {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted, #64748b);
+  overflow-wrap: anywhere;
 }
 
 /* Content cards */
@@ -314,8 +341,9 @@
         </a>
       </p>
       <div id="spec-upstream-reqs-wrap" style="display:none; margin-top: 8px;">
-        <strong>Zugeordnete Upstream-Requirements (RS):</strong>
+        <strong>Zugeordnete Upstream-Requirements (RS):</strong><span id="spec-upstream-rel" class="spec-upstream-rel"></span>
         <ul id="spec-upstream-list" style="margin: 4px 0 0 20px;"></ul>
+        <p id="spec-upstream-note" class="spec-upstream-note" style="display:none;"></p>
       </div>
     </section>
 
@@ -424,6 +452,25 @@
       upstream_doc: "Spezifikations-Dokument:",
       upstream_reqs: "Zugeordnete Upstream-Requirements (RS):",
       open_upstream_pdf: "Original-PDF auf autosar.org öffnen",
+      presence_chip: "{rel} · nur PDF",
+      presence_row: "Im PDF vorhanden, Wortlaut nicht erfasst – kein Vergleich",
+      presence_text_from: "im PDF vorhanden, Wortlaut nicht erfasst – angezeigt: Wortlaut aus {rel}",
+      presence_no_text: "im PDF vorhanden, Wortlaut nicht erfasst",
+      presence_until: "(im PDF bis {rel} vorhanden)",
+      presence_notice: "In {rel} ist das Element im Spezifikations-PDF definiert; sein Wortlaut wurde für dieses Release nicht erfasst.",
+      presence_shown: "Angezeigt wird der zuletzt erfasste Wortlaut aus {rel}.",
+      unchecked_pill: "{rel}: nicht geprüft",
+      unchecked_short: "nicht geprüft",
+      unchecked_row: "Nicht geprüft – Spezifikation dieses Releases für das Element nicht ausgewertet",
+      unchecked_notice: "Für {rel} wurde die Spezifikation dieses Elements nicht ausgewertet; weder Vorhandensein noch Wegfall ist belegt.",
+      upstream_srs: "Upstream-Anforderungen (SRS):",
+      upstream_srs_as_of: "Stand {rel}",
+      upstream_srs_none_explicit: "Keine – im PDF ausdrücklich leer: ⌋()",
+      upstream_srs_none_given: "Keine – das PDF nennt keine Upstream-Anforderung.",
+      upstream_srs_none_short: "keine",
+      upstream_srs_differs: "Abweichend in anderen Releases:",
+      upstream_srs_open: "{doc} auf autosar.org öffnen",
+      upstream_srs_no_doc: "Dokument nicht ermittelt",
       syntax: "Syntax / Signatur",
       desc: "Spezifikations-Text",
       props: "Attribute & Parameter",
@@ -464,6 +511,25 @@
       upstream_doc: "Specification Document:",
       upstream_reqs: "Associated Upstream Requirements (RS):",
       open_upstream_pdf: "Open official PDF on autosar.org",
+      presence_chip: "{rel} · PDF only",
+      presence_row: "Present in the PDF, wording not captured – no comparison",
+      presence_text_from: "present in the PDF, wording not captured – showing the wording of {rel}",
+      presence_no_text: "present in the PDF, wording not captured",
+      presence_until: "(present in the PDF up to {rel})",
+      presence_notice: "In {rel} the element is defined in the specification PDF; its wording was not captured for this release.",
+      presence_shown: "Showing the most recently captured wording from {rel}.",
+      unchecked_pill: "{rel}: not checked",
+      unchecked_short: "not checked",
+      unchecked_row: "Not checked – this release's specification was not evaluated for the element",
+      unchecked_notice: "The specification of {rel} was not evaluated for this element; neither presence nor removal is established.",
+      upstream_srs: "Upstream requirements (SRS):",
+      upstream_srs_as_of: "as of {rel}",
+      upstream_srs_none_explicit: "None – explicitly empty in the PDF: ⌋()",
+      upstream_srs_none_given: "None – the PDF names no upstream requirement.",
+      upstream_srs_none_short: "none",
+      upstream_srs_differs: "Differs in other releases:",
+      upstream_srs_open: "Open {doc} on autosar.org",
+      upstream_srs_no_doc: "document not identified",
       syntax: "Syntax / Signature",
       desc: "Specification Text",
       props: "Attributes & Parameters",
@@ -504,6 +570,25 @@
       upstream_doc: "Documento de especificação:",
       upstream_reqs: "Requisitos Upstream associados (RS):",
       open_upstream_pdf: "Abrir PDF oficial no autosar.org",
+      presence_chip: "{rel} · só PDF",
+      presence_row: "Presente no PDF, texto não capturado – sem comparação",
+      presence_text_from: "presente no PDF, texto não capturado – exibindo o texto de {rel}",
+      presence_no_text: "presente no PDF, texto não capturado",
+      presence_until: "(presente no PDF até {rel})",
+      presence_notice: "Em {rel} o elemento está definido no PDF da especificação; o texto não foi capturado para esta release.",
+      presence_shown: "Exibindo o texto capturado mais recente, de {rel}.",
+      unchecked_pill: "{rel}: não verificado",
+      unchecked_short: "não verificado",
+      unchecked_row: "Não verificado – a especificação desta release não foi avaliada para o elemento",
+      unchecked_notice: "A especificação de {rel} não foi avaliada para este elemento; nem presença nem remoção estão comprovadas.",
+      upstream_srs: "Requisitos Upstream (SRS):",
+      upstream_srs_as_of: "release {rel}",
+      upstream_srs_none_explicit: "Nenhum – explicitamente vazio no PDF: ⌋()",
+      upstream_srs_none_given: "Nenhum – o PDF não indica requisito Upstream.",
+      upstream_srs_none_short: "nenhum",
+      upstream_srs_differs: "Diferente em outras releases:",
+      upstream_srs_open: "Abrir {doc} no autosar.org",
+      upstream_srs_no_doc: "documento não identificado",
       syntax: "Sintaxe / Assinatura",
       desc: "Texto da especificação",
       props: "Atributos e parâmetros",
@@ -544,6 +629,25 @@
       upstream_doc: "Documento de especificación:",
       upstream_reqs: "Requisitos de origen asociados (RS):",
       open_upstream_pdf: "Abrir PDF oficial en autosar.org",
+      presence_chip: "{rel} · solo PDF",
+      presence_row: "Presente en el PDF, texto no capturado – sin comparación",
+      presence_text_from: "presente en el PDF, texto no capturado – se muestra el texto de {rel}",
+      presence_no_text: "presente en el PDF, texto no capturado",
+      presence_until: "(presente en el PDF hasta {rel})",
+      presence_notice: "En {rel} el elemento está definido en el PDF de la especificación; su texto no se capturó para este release.",
+      presence_shown: "Se muestra el texto capturado más reciente, de {rel}.",
+      unchecked_pill: "{rel}: no comprobado",
+      unchecked_short: "no comprobado",
+      unchecked_row: "No comprobado – la especificación de este release no se evaluó para el elemento",
+      unchecked_notice: "La especificación de {rel} no se evaluó para este elemento; no consta ni su presencia ni su supresión.",
+      upstream_srs: "Requisitos de origen (SRS):",
+      upstream_srs_as_of: "release {rel}",
+      upstream_srs_none_explicit: "Ninguno – explícitamente vacío en el PDF: ⌋()",
+      upstream_srs_none_given: "Ninguno – el PDF no indica ningún requisito de origen.",
+      upstream_srs_none_short: "ninguno",
+      upstream_srs_differs: "Distinto en otros releases:",
+      upstream_srs_open: "Abrir {doc} en autosar.org",
+      upstream_srs_no_doc: "documento no identificado",
       syntax: "Sintaxis / Firma",
       desc: "Texto de la especificación",
       props: "Atributos y parámetros",
@@ -590,6 +694,8 @@
   const pdfAnchor = document.getElementById('spec-pdf-anchor');
   const upstreamWrap = document.getElementById('spec-upstream-reqs-wrap');
   const upstreamList = document.getElementById('spec-upstream-list');
+  const upstreamRel = document.getElementById('spec-upstream-rel');
+  const upstreamNote = document.getElementById('spec-upstream-note');
 
   const syntaxWrap = document.getElementById('rec-syntax-wrap');
   const syntaxCode = document.getElementById('rec-syntax-code');
@@ -666,17 +772,42 @@
     return;
   }
 
+  /* case-safe-names:begin */
+  // Dateien je Kennung (versions/data, versions/snippets) heißen <id>.json; Kennungen, die sich nur
+  // in der Schreibweise unterscheiden (SWS_CanIf_00068 / SWS_CANIF_00068), liegen unter
+  // <id>~<Maske>.json (_src/tools/case_safe_names.py). Erst der schlichte Name; fehlt er oder gehört
+  // die Datei einer anderen Schreibweise (Dateisystem ohne Groß-/Kleinschreibung), der markierte.
+  function caseMask(id) {
+    let out = '', v = 0, k = 0;
+    for (const ch of String(id)) {
+      if (!/[A-Za-z]/.test(ch)) continue;
+      v = v * 2 + (/[A-Z]/.test(ch) ? 1 : 0);
+      if (++k === 4) { out += v.toString(16); v = 0; k = 0; }
+    }
+    if (k) out += (v << (4 - k)).toString(16);
+    return out || '0';
+  }
+  function caseSafeJson(dir, id, ownId) {
+    const key = String(id);
+    const stem = key.replace(/[^A-Za-z0-9_.\-]/g, '_');
+    const get = name => fetch(rootPrefix + dir + encodeURIComponent(name) + '.json').then(res => {
+      if (!res.ok) throw new Error('Not found');
+      return res.json();
+    });
+    return get(stem).then(data => {
+      const own = String(ownId(data) || '');
+      if (own !== key && own.toLowerCase() === key.toLowerCase()) throw new Error('case variant');
+      return data;
+    }).catch(() => get(stem + '~' + caseMask(key)));
+  }
+  /* case-safe-names:end */
+
   if (reqDoc && reqPage) {
     // Snippet-Seitenansicht für bestimmtes Dokument und Seite
     const pageTitle = reqDoc + ' (p. ' + reqPage + ')';
     if (navRecordId) navRecordId.textContent = pageTitle;
     document.title = pageTitle + ' — ' + t.title;
-    const jsonUrl = rootPrefix + 'versions/snippets/' + encodeURIComponent(reqDoc) + '_p' + encodeURIComponent(reqPage) + '.json';
-    fetch(jsonUrl)
-      .then(res => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
+    caseSafeJson('versions/snippets/', reqDoc + '_p' + reqPage, d => d && d.doc + '_p' + d.page)
       .then(data => {
         renderSnippetPage(data);
       })
@@ -692,12 +823,7 @@
     const snipId = reqSnippet || rawId;
     if (navRecordId) navRecordId.textContent = snipId;
     document.title = snipId + ' — ' + t.title;
-    const jsonUrl = rootPrefix + 'versions/snippets/' + encodeURIComponent(snipId) + '.json';
-    fetch(jsonUrl)
-      .then(res => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
+    caseSafeJson('versions/snippets/', snipId, d => d && d.id)
       .then(data => {
         renderSnippetPage(data);
       })
@@ -713,12 +839,7 @@
     if (navRecordId) navRecordId.textContent = reqId;
     document.title = reqId + ' — ' + t.title;
 
-    const jsonUrl = rootPrefix + 'versions/data/' + encodeURIComponent(reqId) + '.json';
-    fetch(jsonUrl)
-      .then(res => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
+    caseSafeJson('versions/data/', reqId, d => d && String(d.canonical_id || '').split('/').pop())
       .then(data => {
         renderRecord(data, selectedRelease);
       })
@@ -730,6 +851,100 @@
         errorDesc.textContent = t.not_found_desc.replace('{id}', reqId);
         errorBtn.href = '../versions.html?q=' + encodeURIComponent(reqId);
       });
+  }
+
+  /* classic-upstream:begin */
+  // Upstream-Trace einer Classic-SWS-Anforderung (versions/data/<ID>.json: upstream_trace,
+  // erzeugt von _src/tools/classic_upstream.py). Zeigt die Upstream-IDs des gewählten
+  // Releases (sonst des jüngsten älteren, sonst des ältesten) und notiert Releases mit
+  // abweichendem Trace. "⌋()" und eine fehlende Angabe gelten beim Vergleich als gleich.
+  function classicUpstreamView(trace, curRel, L) {
+    if (!trace || !trace.releases) return null;
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+    function relKey(r) {
+      const m = /^R(\d{2})-(\d{2})$/.exec(String(r || ''));
+      return m ? parseInt(m[1], 10) * 100 + parseInt(m[2], 10) : -1;
+    }
+    const rels = Object.keys(trace.releases).filter(r => relKey(r) >= 0).sort((a, b) => relKey(a) - relKey(b));
+    if (!rels.length) return null;
+    let shown = rels[rels.length - 1];
+    if (curRel && rels.indexOf(curRel) >= 0) {
+      shown = curRel;
+    } else if (curRel) {
+      const k = relKey(curRel);
+      const older = k >= 0 ? rels.filter(r => relKey(r) <= k) : [];
+      shown = older.length ? older[older.length - 1] : rels[0];
+    }
+    function sig(v) {
+      return (v && v.length) ? v.map(x => x.id).slice().sort().join(',') : '';
+    }
+    function itemHtml(it) {
+      const code = '<code>' + esc(it.id) + '</code>';
+      if (it.record) {
+        return '<li><a class="rec-quick-chip internal-spec-ref" href="record.html?id=' + encodeURIComponent(it.id) +
+          '&release=' + encodeURIComponent(shown) + '">' + code + '</a></li>';
+      }
+      if (it.url) {
+        const other = (it.doc_release && it.doc_release !== shown) ? (' (' + esc(it.doc_release) + ')') : '';
+        return '<li><a class="rec-quick-chip spec-upstream-srs" href="' + esc(it.url) +
+          '" target="_blank" rel="noopener noreferrer" title="' + esc(String(L.open_srs || '').replace('{doc}', it.doc || '')) + '">' +
+          code + '</a> <span class="spec-upstream-doc">' + esc(it.doc).replace(/_/g, '_<wbr>') + other + '</span></li>';
+      }
+      return '<li>' + code + ' <span class="spec-upstream-doc">' + esc(L.no_doc) + '</span></li>';
+    }
+    const cur = trace.releases[shown];
+    const listHtml = (cur && cur.length)
+      ? cur.map(itemHtml).join('')
+      : '<li class="spec-upstream-none">' + esc(Array.isArray(cur) ? L.none_explicit : L.none_given) + '</li>';
+    const groups = [];
+    rels.forEach(r => {
+      const s = sig(trace.releases[r]);
+      const last = groups[groups.length - 1];
+      if (last && last.sig === s && relKey(r) - relKey(last.to) === 100) {
+        last.to = r;
+      } else {
+        groups.push({ from: r, to: r, sig: s, val: trace.releases[r] });
+      }
+    });
+    const shownSig = sig(cur);
+    const others = groups.filter(g => g.sig !== shownSig);
+    let noteHtml = '';
+    if (others.length) {
+      noteHtml = esc(L.differs) + ' ' + others.map(g => {
+        const span = g.from === g.to ? g.from : (g.from + '–' + g.to);
+        const ids = (g.val && g.val.length) ? g.val.map(x => '<code>' + esc(x.id) + '</code>').join(', ') : esc(L.none_short);
+        return '<span class="spec-upstream-note-item"><strong>' + esc(span) + ':</strong> ' + ids + '</span>';
+      }).join(' · ');
+    }
+    return {
+      heading: L.heading,
+      releaseLabel: String(L.as_of || '{rel}').replace('{rel}', shown),
+      listHtml: listHtml,
+      noteHtml: noteHtml,
+      shownRelease: shown
+    };
+  }
+  /* classic-upstream:end */
+
+  function upstreamLabels() {
+    const pick = k => (t[k] !== undefined ? t[k] : I18N.de[k]);
+    return {
+      heading: pick('upstream_srs'), as_of: pick('upstream_srs_as_of'),
+      none_explicit: pick('upstream_srs_none_explicit'), none_given: pick('upstream_srs_none_given'),
+      none_short: pick('upstream_srs_none_short'), differs: pick('upstream_srs_differs'),
+      open_srs: pick('upstream_srs_open'), no_doc: pick('upstream_srs_no_doc')
+    };
+  }
+
+  function resetUpstreamExtras() {
+    if (upstreamRel) upstreamRel.textContent = '';
+    if (upstreamNote) {
+      upstreamNote.innerHTML = '';
+      upstreamNote.style.display = 'none';
+    }
   }
 
   function escapeHtml(str) {
@@ -1074,6 +1289,7 @@
       });
     }
     const swsList = Array.from(swsSet).sort();
+    resetUpstreamExtras();
     if (swsList.length > 0) {
       upstreamWrap.style.display = 'block';
       const headingEl = upstreamWrap.querySelector('strong');
@@ -1191,8 +1407,16 @@
     const upstreamStrong = upstreamWrap.querySelector('strong');
     if (upstreamStrong) upstreamStrong.textContent = t.upstream_reqs;
 
-    const versions = data.versions || [];
+    // Präsenz-Einträge (im PDF vorhanden, Wortlaut nicht erfasst) zählen als Auftreten,
+    // liefern aber keinen Text: Wortlaut, Hash und Vergleich nur aus erfassten Versionen.
+    const allVersions = data.versions || [];
+    const versions = allVersions.filter(v => v.text_captured !== false);
+    const presenceRels = allVersions.filter(v => v.text_captured === false).map(v => v.release)
+      .sort((a, b) => compareAutosarReleases(a, b));
     const lifecycle = data.lifecycle || {};
+    const uncheckedRels = lifecycle.unchecked || [];
+    const presenceSelected = !!targetRel && presenceRels.includes(targetRel);
+    const uncheckedSelected = !!targetRel && uncheckedRels.includes(targetRel);
     const metaInfo = deriveModuleAndPlatform(reqId, data.canonical_id);
 
     const sortedVersions = versions.slice().sort((a, b) => compareAutosarReleases(a.release, b.release));
@@ -1209,6 +1433,8 @@
         const eligible = sortedVersions.filter(v => compareAutosarReleases(v.release, targetRel) <= 0);
         if (eligible.length > 0) {
           activeVer = eligible[eligible.length - 1];
+        } else if (presenceSelected) {
+          activeVer = {};  // im PDF vorhanden, aber vorher kein Wortlaut erfasst
         } else {
           const pRel = parseAutosarRelease(targetRel);
           if (metaInfo.isClassic && sortedVersions.length > 0 && sortedVersions[0].release === 'R19-11' && pRel && pRel.type === 'classic_num') {
@@ -1251,11 +1477,20 @@
     moduleLabel.textContent = metaInfo.module || '-';
     if (storeOnlyFromR19) {
       activeRelCode.innerHTML = '<code>' + escapeHtml(targetRel) + '</code> <small style="color:var(--color-ink-muted); font-size:0.78rem;">(Textstand basiert auf ' + escapeHtml(activeVer.release) + ' / Upstream-PDF für ' + escapeHtml(targetRel) + ' verlinkt)</small>';
+    } else if (presenceSelected || uncheckedSelected) {
+      const relNote = presenceSelected
+        ? (activeVer.release ? t.presence_text_from.replace('{rel}', activeVer.release) : t.presence_no_text)
+        : t.unchecked_short;
+      activeRelCode.innerHTML = '<code>' + escapeHtml(targetRel) + '</code> <small style="color:var(--color-ink-muted); font-size:0.78rem;">(' + escapeHtml(relNote) + ')</small>';
     } else if (targetRel && activeVer.release && targetRel !== activeVer.release && !notYetIntroduced) {
       const unchTxt = (t.unchanged_since || '(unverändert seit {rel})').replace('{rel}', escapeHtml(activeVer.release));
       activeRelCode.innerHTML = '<code>' + escapeHtml(targetRel) + '</code> <small style="color:var(--color-ink-muted); font-size:0.78rem;">' + unchTxt + '</small>';
     } else {
       activeRelCode.textContent = curRel;
+      const lastSeen = lifecycle.last_active_release;
+      if (!targetRel && lastSeen && presenceRels.includes(lastSeen) && compareAutosarReleases(lastSeen, curRel) > 0) {
+        activeRelCode.innerHTML = '<code>' + escapeHtml(curRel) + '</code> <small style="color:var(--color-ink-muted); font-size:0.78rem;">' + escapeHtml(t.presence_until.replace('{rel}', lastSeen)) + '</small>';
+      }
     }
     versionCount.textContent = versions.length;
 
@@ -1306,6 +1541,27 @@
         : (currentLang === 'en'
           ? '⚠️ <strong>Future-leakage protection:</strong> This element was first introduced in release <code>' + escapeHtml(sortedVersions[0] ? sortedVersions[0].release : '') + '</code> and does not exist in <code>' + escapeHtml(targetRel) + '</code>.'
           : '⚠️ <strong>Future-Leakage-Schutz:</strong> Dieses Element wurde erst in Release <code>' + escapeHtml(sortedVersions[0] ? sortedVersions[0].release : '') + '</code> eingeführt und existiert in Release <code>' + escapeHtml(targetRel) + '</code> noch nicht.')));
+    } else if (uncheckedSelected) {
+      statusPill.className = 'rec-status-pill unchecked';
+      statusPill.textContent = t.unchecked_pill.replace('{rel}', targetRel);
+      noticeEl.style.display = 'block';
+      noticeEl.style.background = '#fefce8';
+      noticeEl.style.border = '1px solid #fde68a';
+      noticeEl.style.color = '#854d0e';
+      noticeEl.textContent = t.unchecked_notice.replace('{rel}', targetRel);
+    } else if (presenceSelected) {
+      statusPill.className = 'rec-status-pill active';
+      statusPill.textContent = t.active + ' (' + targetRel + ')';
+      if (lifecycle.is_dropped && lifecycle.first_dropped_release) {
+        statusPill.className = 'rec-status-pill active-dropped';
+        statusPill.textContent += ' · ' + t.dropped.replace('{rel}', lifecycle.first_dropped_release);
+      }
+      noticeEl.style.display = 'block';
+      noticeEl.style.background = '#ecfeff';
+      noticeEl.style.border = '1px solid #a5f3fc';
+      noticeEl.style.color = '#155e75';
+      noticeEl.textContent = t.presence_notice.replace('{rel}', targetRel) +
+        (activeVer.release ? ' ' + t.presence_shown.replace('{rel}', activeVer.release) : '');
     } else if (lifecycle.is_dropped && lifecycle.first_dropped_release && compareAutosarReleases(curRel, lifecycle.first_dropped_release) >= 0) {
       statusPill.className = 'rec-status-pill dropped';
       statusPill.textContent = t.dropped.replace('{rel}', lifecycle.first_dropped_release || '');
@@ -1341,8 +1597,19 @@
     activeRefreshPdf = applyRecordPdf;
     applyRecordPdf();
 
+    resetUpstreamExtras();
+    const classicView = data.upstream_trace ? classicUpstreamView(data.upstream_trace, curRel, upstreamLabels()) : null;
     const upstreamReqStr = fields['Upstream requirements'] || fields['Upstream requirement'] || '';
-    if (upstreamReqStr) {
+    if (classicView) {
+      upstreamWrap.style.display = 'block';
+      if (upstreamStrong) upstreamStrong.textContent = classicView.heading;
+      if (upstreamRel) upstreamRel.textContent = classicView.releaseLabel;
+      upstreamList.innerHTML = classicView.listHtml;
+      if (upstreamNote && classicView.noteHtml) {
+        upstreamNote.innerHTML = classicView.noteHtml;
+        upstreamNote.style.display = 'block';
+      }
+    } else if (upstreamReqStr) {
       upstreamWrap.style.display = 'block';
       const relParam = curRel ? ('&release=' + encodeURIComponent(curRel)) : '';
       const reqs = upstreamReqStr.split(/[\s,]+/).filter(r => r.startsWith('RS_') || r.startsWith('SRS_'));
@@ -1365,6 +1632,9 @@
 
     const descStr = fields['Description'] || fields['raw'] || fields['preamble'] || activeVer.content || '';
     descBody.innerHTML = '<p>' + escapeHtml(descStr).replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    if (!activeVer.content && presenceSelected) {
+      descBody.innerHTML = '<p style="color:var(--color-ink-muted);"><em>' + escapeHtml(t.presence_no_text) + '</em></p>';
+    }
 
     const propKeys = ['Return value', 'Parameters (in)', 'Parameters (out)', 'Reentrancy', 'Sync/Async', 'Header-Datei', 'Header file', 'Scope', 'Available via', 'Hinweis', 'Note'];
     const foundProps = [];
@@ -1381,18 +1651,19 @@
 
     // Releases stets chronologisch (die Aufzeichnungsreihenfolge im Versions-Store ist zufällig)
     let chipReleases = sortedVersions.map(v => v.release);
+    presenceRels.forEach(r => { if (!chipReleases.includes(r)) chipReleases.push(r); });
     if (targetRel && !chipReleases.includes(targetRel)) {
-      if (compareAutosarReleases(targetRel, chipReleases[0]) < 0) {
-        chipReleases.unshift(targetRel);
-      } else {
-        chipReleases.push(targetRel);
-      }
+      chipReleases.push(targetRel);
     }
+    chipReleases.sort((a, b) => compareAutosarReleases(a, b));
+    chipReleases = chipReleases.filter((r, i) => chipReleases.indexOf(r) === i);
 
     releasesBar.innerHTML = chipReleases.map(relName => {
       const isSel = (relName === curRel);
       const inStore = versions.some(v => v.release === relName);
-      const label = inStore ? relName : ((t.upstream_pdf_chip || '{rel} (Upstream-PDF)').replace('{rel}', relName));
+      const label = inStore ? relName
+        : (presenceRels.includes(relName) ? t.presence_chip.replace('{rel}', relName)
+        : ((t.upstream_pdf_chip || '{rel} (Upstream-PDF)').replace('{rel}', relName)));
       return '<button type="button" class="rec-rel-chip ' + (isSel ? 'is-active' : '') + '" data-rel="' + relName + '">' + label + '</button>';
     }).join('');
 
@@ -1413,19 +1684,42 @@
         '</td>' +
       '</tr>';
     }
-    tbodyRows += sortedVersions.map(v => {
+    // Chronologische Zeilen: erfasste Versionen einzeln, aufeinanderfolgende Releases
+    // „im PDF vorhanden, Wortlaut nicht erfasst“ bzw. „nicht geprüft“ zusammengefasst.
+    const activeBadge = t.th_active || '[aktiv]';
+    const firstSeen = lifecycle.first_active_release;
+    const extraRels = presenceRels.concat(uncheckedRels.filter(r => firstSeen && compareAutosarReleases(r, firstSeen) > 0));
+    const rowOrder = sortedVersions.map(v => ({ rel: v.release, v: v }))
+      .concat(extraRels.map(r => ({ rel: r, kind: presenceRels.includes(r) ? 'presence' : 'unchecked' })))
+      .sort((a, b) => compareAutosarReleases(a.rel, b.rel));
+    const rowGroups = [];
+    rowOrder.forEach(x => {
+      const last = rowGroups[rowGroups.length - 1];
+      if (x.kind && last && last.kind === x.kind) last.rels.push(x.rel);
+      else rowGroups.push(x.kind ? { kind: x.kind, rels: [x.rel] } : x);
+    });
+    const textRow = v => {
       const isCur = (v.release === curRel);
       const vid = v.version_id || '';
       const hash8 = (vid.split('#')[1] || '').substring(0, 8) || '-';
       const date = (v.recorded_at || '').substring(0, 10) || '-';
       const trigger = (v.meta && v.meta.trigger_kind) ? v.meta.trigger_kind : 'baseline_sync';
-      const activeBadge = t.th_active || '[aktiv]';
       return '<tr style="' + (isCur ? 'background:rgba(1,105,111,0.06); font-weight:600;' : '') + '">' +
         '<td><code>' + v.release + '</code> ' + (isCur ? '<span style="font-size:11px; color:var(--primary);">' + activeBadge + '</span>' : '') + '</td>' +
         '<td><code>' + vid + '</code></td>' +
         '<td><code>' + hash8 + '</code></td>' +
         '<td>' + date + '</td>' +
         '<td><small>' + trigger + '</small></td>' +
+      '</tr>';
+    };
+    tbodyRows += rowGroups.map(g => {
+      if (!g.kind) return textRow(g.v);
+      const span = g.rels.length === 1 ? g.rels[0] : g.rels[0] + ' – ' + g.rels[g.rels.length - 1];
+      const isCur = g.rels.includes(curRel);
+      return '<tr class="rec-row-' + g.kind + '" style="' + (isCur ? 'background:rgba(1,105,111,0.06); font-weight:600;' : '') + '">' +
+        '<td><code>' + escapeHtml(span) + '</code> ' + (isCur ? '<span style="font-size:11px; color:var(--primary);">' + activeBadge + '</span>' : '') + '</td>' +
+        '<td colspan="4" style="color:var(--color-ink-muted); font-size:12px; font-style:italic;">' +
+        escapeHtml(g.kind === 'presence' ? t.presence_row : t.unchecked_row) + '</td>' +
       '</tr>';
     }).join('');
     versionsTbody.innerHTML = tbodyRows;

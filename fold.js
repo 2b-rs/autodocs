@@ -1401,10 +1401,129 @@
       updateSelectionUI();
     }
 
+    // Eine Dossier-Karte (Record oder Beleg). Gemeinsamer Renderer für die Karten des Prompt-Kontexts
+    // (hydratePromptContext) und die seit der Generierung zugeordneten Belege (hydrateCurrentContext);
+    // Markup wie früher serverseitig in lib_curation_modal.py, damit Filter, Zähler, Abstimmung,
+    // Auswahl und Diskussion unverändert greifen. c: id, title, sws, name, kind, chip, doc, docChip,
+    // page, constituting, isNew, extraClass, bodyHtml.
+    function dossierCardHtml(c) {
+      var esc = escapeHtmlDiff;
+      var id = esc(c.id);
+      var cls = c.constituting ? "snippet-card constituting-card is-collapsed" : "snippet-card inbound-snippet-card is-collapsed";
+      if (c.extraClass) cls += " " + c.extraClass;
+      var attrs = ' id="' + id + '" data-snippet-id="' + id + '" data-sws="' + esc(c.sws || c.id) + '" data-doc="' + esc(c.doc || "") +
+        (c.constituting ? "" : '" data-page="' + esc(String(c.page == null ? "" : c.page))) +
+        '" data-name="' + esc(c.name || c.id) + '" data-kind="' + esc(c.kind || "inbound") + '"' +
+        (c.constituting ? ' data-is-constituting="true"' : ' data-is-inbound="true"') + (c.isNew ? ' data-current-new="true"' : "");
+      var what = c.constituting ? "Element" : "Snippet";
+      return '<div class="' + cls + '"' + attrs + '>' +
+        '<div class="snippet-card-header" data-card-toggle="' + id + '" tabindex="0" role="button" aria-expanded="false" title="Klicken zum Auf-/Zuklappen der Details">' +
+        '<div class="snippet-card-summary"><span class="card-chevron" aria-hidden="true">▸</span>' +
+        '<input type="checkbox" class="card-select-checkbox" data-select-card="' + id + '" title="Element auswählen" aria-label="Element ' + esc(c.sws || c.id) + ' auswählen">' +
+        '<strong class="snippet-title">' + esc(c.title || c.id) + '</strong>' +
+        (c.constituting ? '<code class="snippet-sws">[' + esc(c.sws || c.id) + ']</code>' : "") +
+        '<span class="chip-kind kind-' + esc(c.kind || "inbound") + '">' + esc(c.chip || c.kind || "inbound") + '</span>' +
+        (c.isNew ? '<span class="chip-new" title="Seit der letzten Generierung zugeordnet">neu</span>' : "") +
+        '<span class="chip-doc">' + esc(c.docChip || c.doc || "") + '</span></div>' +
+        '<div class="snippet-card-header-actions"><div class="curation-status-box"><span class="curation-status-pill status-neutral" data-badge-for="' + id + '">Unbewertet</span></div>' +
+        '<div class="curation-btn-group" data-snippet-id="' + id + '">' +
+        '<button type="button" class="curation-btn btn-confirm" data-action="confirm" data-snippet="' + id + '" title="' + what + ' bestätigen (Daumen hoch)"><span class="vote-icon">👍</span> <span class="vote-label">Bestätigen</span></button>' +
+        '<button type="button" class="curation-btn btn-dismiss" data-action="dismiss" data-snippet="' + id + '" title="' + what + ' beanstanden (Daumen runter)"><span class="vote-icon">👎</span> <span class="vote-label">Beanstanden</span></button>' +
+        '<button type="button" class="curation-btn btn-discuss" data-action="discuss" data-snippet="' + id + '" title="Mit KI diskutieren"><span class="vote-icon">💬</span> <span class="vote-label">Mit KI diskutieren</span></button>' +
+        '</div></div></div>' +
+        '<div class="snippet-card-body">' + (c.bodyHtml || "") + '</div></div>';
+    }
+
+    var QUOTE_STYLE = "margin: 0 0 8px; padding: 8px 12px; background: #faf9f5; border-left: 3px solid #005f73; font-family: Georgia, serif; font-size: 0.95em; line-height: 1.45;";
+    var FOOT_STYLE = "font-size: 0.78em; color: #888; display: flex; justify-content: space-between; margin-top: 6px;";
+
+    // Modul- und Cluster-Leitfäden: Die Karten stehen vollständig im Prompt-Payload (API-Elemente,
+    // Requirements, Dokumentstellen). Ableitung wie lib_curation_modal.cards_from_payload; der
+    // Generator setzt from_prompt nur, wenn beide Ableitungen übereinstimmen. Quelle ist der
+    // ursprüngliche Prompttext (defaultValue), nicht eine Bearbeitung im Textfeld.
+    function cardsFromPayload(modal) {
+      var ta = modal.querySelector("#raw-prompt-textarea");
+      var text = ta ? (ta.defaultValue || ta.value || "") : "";
+      var user = text.split("=== USER PROMPT ===")[1] || "";
+      var at = user.indexOf("{");
+      var payload = {};
+      try { payload = at >= 0 ? JSON.parse(user.slice(at)) : {}; } catch (err) { payload = {}; }
+      var dec = document.createElement("textarea");
+      function unesc(v) { dec.innerHTML = String(v == null ? "" : v); return dec.value; }
+      var modDoc = String(payload.module || "AUTOSAR Specification").toUpperCase();
+      var reqDoc = String(payload.module || payload.cluster || "AUTOSAR Specification").toUpperCase();
+      var seen = new Set(), recs = [], inb = [];
+      (payload.api_elemente || []).forEach(function (e) {
+        var eid = e.id || e.element_id || "", name = e.name || eid;
+        if (eid) seen.add(eid);
+        recs.push({ i: eid || name, n: name, s: eid || name, k: e.kind || "function", d: modDoc, t: unesc(e.signature || name) });
+      });
+      // get(k, Standard) wie dict.get in Python: Standard nur bei fehlendem Schlüssel
+      function get(o, k, dflt) { return Object.prototype.hasOwnProperty.call(o, k) ? o[k] : dflt; }
+      (payload.requirements || []).forEach(function (r) {
+        var rid = get(r, "id", "");
+        if (rid && seen.has(rid)) return;
+        if (rid) seen.add(rid);
+        recs.push({ i: rid, n: rid, s: rid, k: "requirement", d: reqDoc, t: unesc(get(r, "text", "")) });
+      });
+      (payload.dokumentstellen || []).forEach(function (ds) {
+        var page = get(ds, "page", 1);
+        inb.push({ i: get(ds, "id", "DS_01"), n: get(ds, "doc", "Spec") + ", S. " + page, d: get(ds, "doc", "AUTOSAR"), p: page,
+                   t: unesc(get(ds, "text", "")) });
+      });
+      return { records: recs, inbound: inb };
+    }
+
+    // Karten des Prompt-Kontexts (konstituierende Records, Inbound-Belege des Prompts) liegen als
+    // kompaktes JSON im Dossier (lib_curation_modal.py) und werden beim ersten Öffnen gerendert.
+    function hydratePromptContext(modal) {
+      if (!modal || modal.getAttribute("data-prompt-hydrated") === "1") return;
+      var data = modal.querySelector("script.dossier-prompt-context");
+      if (!data) return;
+      modal.setAttribute("data-prompt-hydrated", "1");
+      var ctx = {};
+      try { ctx = JSON.parse(data.textContent || "{}"); } catch (err) { ctx = {}; }
+      if (ctx.from_prompt) ctx = cardsFromPayload(modal);
+      var esc = escapeHtmlDiff;
+      var recBox = modal.querySelector(".records-container");
+      var snipBox = modal.querySelector(".snippets-container");
+      var recs = ctx.records || [], inb = ctx.inbound || [];
+      if (recBox && recs.length) {
+        Array.prototype.forEach.call(recBox.querySelectorAll(":scope > p.dossier-hydrate-hint"), function (p) { p.remove(); });
+        recBox.insertAdjacentHTML("beforeend", recs.map(function (o) {
+          var sws = o.s || o.i, kind = o.k || "requirement", doc = o.d || "";
+          return dossierCardHtml({
+            id: o.i, title: o.n || o.i, sws: sws, name: o.n || o.i, kind: kind, doc: doc, constituting: true,
+            bodyHtml: '<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">' +
+              '<div><strong>' + esc(doc) + '</strong> <span style="font-size: 0.85em; color: #666;">(<code>[' + esc(sws) + ']</code>)</span></div>' +
+              '<div><span style="background: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; font-weight: bold;">Konstituierend · ' + esc(kind) + '</span></div></div>' +
+              '<blockquote style="' + QUOTE_STYLE + '"><div class="desc"><p>' + esc(o.t || "") + '</p></div></blockquote>' +
+              '<div style="' + FOOT_STYLE + '"><span>Eigenschaft: <em>Konstituierende Modul-Spezifikation</em></span><span>Record-ID: <code>' + esc(o.i) + '</code></span></div>'
+          });
+        }).join(""));
+      }
+      if (snipBox && inb.length) {
+        Array.prototype.forEach.call(snipBox.querySelectorAll(":scope > p"), function (p) { p.remove(); });
+        snipBox.insertAdjacentHTML("afterbegin", inb.map(function (o) {
+          var page = o.p == null ? "" : String(o.p), doc = o.d || "";
+          var name = o.n || (doc + ", S. " + page);
+          return dossierCardHtml({
+            id: o.i, title: name, sws: name, name: name, kind: "inbound", chip: "inbound", doc: doc, page: page,
+            docChip: doc + " (S. " + page + ")",
+            bodyHtml: '<blockquote style="' + QUOTE_STYLE + '"><div class="desc"><p>' + esc(o.t || "") + '</p></div></blockquote>' +
+              '<div style="' + FOOT_STYLE + '"><span>Eigenschaft: <em>Inbound-Spezifikationsbeleg</em></span><span>ID: <code>' + esc(o.i) + '</code></span></div>'
+          });
+        }).join(""));
+      }
+      setTimeout(updateSnippetBadges, 0);
+    }
+
     // Seit der Generierung zugeordnete Belege (lib_current_context.py) liegen als JSON im Dossier
     // und werden beim ersten Öffnen als Karten angehängt – so bleibt die Seite klein.
     function hydrateCurrentContext(modal) {
-      if (!modal || modal.getAttribute("data-current-hydrated") === "1") return;
+      if (!modal) return;
+      hydratePromptContext(modal);
+      if (modal.getAttribute("data-current-hydrated") === "1") return;
       var data = modal.querySelector("script.dossier-current-context");
       var box = modal.querySelector(".snippets-container");
       if (!data || !box) return;
@@ -1416,32 +1535,25 @@
       Array.prototype.forEach.call(box.querySelectorAll(":scope > p"), function (p) { p.remove(); });
       var esc = escapeHtmlDiff;
       var html = items.map(function (it) {
-        var id = esc(it.id), doc = esc(it.doc || ""), page = esc(String(it.page || ""));
+        var page = String(it.page || "");
         var kind = it.is_figure ? "Schaubild" : "Snippet";
-        var href = root + "spec/" + (it.is_figure ? "figures/" : "snippets/") + encodeURIComponent(it.id) + ".html";
+        // Belegseite spec/{figures,snippets}/<Stamm>.html; "file" nur bei Schreibvarianten (case_safe_names.py)
+        var href = root + "spec/" + (it.is_figure ? "figures/" : "snippets/") + encodeURIComponent(it.file || it.id) + ".html";
         var conf = typeof it.confidence === "number" ? " · Konfidenz " + it.confidence.toFixed(2) : "";
         var targets = (it.targets || []).map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ");
-        return '<div class="snippet-card inbound-snippet-card is-collapsed is-current-new" id="' + id + '" data-snippet-id="' + id +
-          '" data-sws="' + id + '" data-doc="' + doc + '" data-page="' + page + '" data-name="' + id + '" data-kind="inbound" data-is-inbound="true" data-current-new="true">' +
-          '<div class="snippet-card-header" data-card-toggle="' + id + '" tabindex="0" role="button" aria-expanded="false">' +
-          '<div class="snippet-card-summary"><span class="card-chevron" aria-hidden="true">▸</span>' +
-          '<input type="checkbox" class="card-select-checkbox" data-select-card="' + id + '" aria-label="Element ' + id + ' auswählen">' +
-          '<strong class="snippet-title">' + esc(it.excerpt ? it.excerpt.slice(0, 70) : it.id) + '</strong>' +
-          '<span class="chip-kind kind-inbound">' + kind + '</span><span class="chip-new" title="Seit der letzten Generierung zugeordnet">neu</span>' +
-          '<span class="chip-doc">' + doc + (page ? " (S. " + page + ")" : "") + '</span></div>' +
-          '<div class="snippet-card-header-actions"><div class="curation-status-box"><span class="curation-status-pill status-neutral" data-badge-for="' + id + '">Unbewertet</span></div>' +
-          '<div class="curation-btn-group" data-snippet-id="' + id + '">' +
-          '<button type="button" class="curation-btn btn-confirm" data-action="confirm" data-snippet="' + id + '" title="Zuordnung bestätigen"><span class="vote-icon">👍</span> <span class="vote-label">Bestätigen</span></button>' +
-          '<button type="button" class="curation-btn btn-dismiss" data-action="dismiss" data-snippet="' + id + '" title="Zuordnung beanstanden"><span class="vote-icon">👎</span> <span class="vote-label">Beanstanden</span></button>' +
-          '<button type="button" class="curation-btn btn-discuss" data-action="discuss" data-snippet="' + id + '" title="Mit KI diskutieren"><span class="vote-icon">💬</span> <span class="vote-label">Mit KI diskutieren</span></button>' +
-          '</div></div></div>' +
-          '<div class="snippet-card-body"><blockquote class="current-excerpt"><div class="desc"><p>' + esc(it.excerpt || "") + '</p></div></blockquote>' +
-          '<div class="current-meta"><span>' + esc(it.relation || "") + conf + (targets ? " · für " + targets : "") + '</span>' +
-          '<a href="' + esc(href) + '" target="_blank" rel="noopener">🔍 ' + kind + ' öffnen</a></div></div></div>';
+        return dossierCardHtml({
+          id: it.id, title: it.excerpt ? it.excerpt.slice(0, 70) : it.id, sws: it.id, name: it.id, kind: "inbound", chip: kind,
+          doc: it.doc || "", page: page, docChip: (it.doc || "") + (page ? " (S. " + page + ")" : ""),
+          isNew: true, extraClass: "is-current-new",
+          bodyHtml: '<blockquote class="current-excerpt"><div class="desc"><p>' + esc(it.excerpt || "") + '</p></div></blockquote>' +
+            '<div class="current-meta"><span>' + esc(it.relation || "") + conf + (targets ? " · für " + targets : "") + '</span>' +
+            '<a href="' + esc(href) + '" target="_blank" rel="noopener">🔍 ' + kind + ' öffnen</a></div>'
+        });
       }).join("");
       box.insertAdjacentHTML("beforeend", html);
       setTimeout(updateSnippetBadges, 0);
     }
+    window.autodocsHydrateDossier = hydrateCurrentContext;
     document.addEventListener("click", function (e) {
       var trig = e.target.closest("[data-dossier-target]");
       if (trig) hydrateCurrentContext(document.getElementById(trig.getAttribute("data-dossier-target")));
@@ -4437,6 +4549,7 @@
             tabToClick = modal.querySelector('.dossier-mode-tab[data-view-mode="prompt"]') || modal.querySelector('.dossier-mode-tab[data-view-mode="raw"]');
           }
           if (tabToClick) tabToClick.click();
+          if (typeof window.autodocsHydrateDossier === "function") window.autodocsHydrateDossier(modal);
           try {
             if (!modal.open) {
               modal.showModal();

@@ -1,64 +1,177 @@
 {
- "annahmen": [],
+ "annahmen": [
+  "1) Nach TcpIp_Init steht jeder EthIf-Controller zunächst in TCPIP_STATE_OFFLINE (Text Abschnitt 2 und diag-zustand) – Begründung: Schaubild 7.2 zeigt den Übergang aus dem Initialzustand mit TcpIp_Init(); die R20-11-Requirements nennen den Startzustand nicht ausdrücklich.",
+  "2) Zeitgesteuerte Aufgaben wie TCP-Wiederholungen und Tabellen-Timeouts laufen im Kontext von TcpIp_MainFunction (Text Abschnitt „Verhalten im Fehlerfall“) – Begründung: SWS_TCPIP_00026 beschreibt nur allgemein das Scheduling; SWS_TCPIP_00351 und die Sequenzdiagramme ordnen einzelne Verarbeitungsschritte der MainFunction zu.",
+  "3) diag-tcp-server: Kennzeichnung der Rx/Tx-Frames als SYN, SYN-ACK und ACK – Begründung: Das Schaubild 9.2 zeigt die Aufrufe ohne Segmenttyp; die Zuordnung folgt dem von SWS_TCPIP_00061 geforderten TCP nach RFC 793."
+ ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-architektur",
-   "quelle": "anchor_r20_11.diag-architektur.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-controller-states",
-   "quelle": "anchor_r20_11.diag-controller-states.dot"
+   "id": "diag-zustand",
+   "quelle": "anchor_r20_11.diag-zustand.dot"
   },
   {
    "art": "dot",
-   "id": "diag-ip-assignment",
-   "quelle": "anchor_r20_11.diag-ip-assignment.dot"
+   "id": "diag-zuweisung",
+   "quelle": "anchor_r20_11.diag-zuweisung.dot"
   },
   {
    "art": "seq",
-   "id": "diag-udp-transmit",
-   "quelle": "anchor_r20_11.diag-udp-transmit.seq.json"
+   "id": "diag-tcp-server",
+   "quelle": "anchor_r20_11.diag-tcp-server.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-tcp-connect",
-   "quelle": "anchor_r20_11.diag-tcp-connect.seq.json"
+   "id": "diag-tcp-tx",
+   "quelle": "anchor_r20_11.diag-tcp-tx.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-rx",
+   "quelle": "anchor_r20_11.diag-rx.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-udp-arp",
+   "quelle": "anchor_r20_11.diag-udp-arp.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/tcpip/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [
+    "FIG-061e71535ad97878",
+    "FIG-1e3bba3b426566fd",
+    "FIG-2879c38a14f07ce5",
+    "FIG-3b9f4ddc62b1bd87",
+    "FIG-3d1a4a1020ef9e2d",
+    "FIG-424cb1bcf71f5a95",
+    "FIG-4cf41b28d0e29710",
+    "FIG-4f32ddd8c61b3551",
+    "FIG-4ff8fb1075a7273f",
+    "FIG-6c21d98d76e15049",
+    "FIG-77d2dea4853ff3dd",
+    "FIG-7d63269c534dfa8e",
+    "FIG-8d7d096012113639",
+    "FIG-8fc056f7407a27a0",
+    "FIG-9d20fe2d3dca2299",
+    "FIG-a5dfe11b709accab",
+    "FIG-c8152578cc76631d",
+    "FIG-c8417a9ca16d3d58",
+    "FIG-d0806a6505f752b3",
+    "FIG-d3c828224d2b3b1e",
+    "FIG-d56fc54338c28d0b",
+    "FIG-d81950f295d4c8f8",
+    "FIG-ec72eea173438a13",
+    "FIG-ecb4fc17478d7666",
+    "FIG-fccf0e4596b6d3d6",
+    "SNIP_CLASSIC_CAN_FIGURE_Figure_6_36",
+    "SNIP_CLASSIC_ETHIF_SECTION_7_7_Message_Transmission",
+    "SNIP_CLASSIC_ETH_FIGURE_Figure_7_6",
+    "SNIP_CLASSIC_NVM_SECTION_5_Release_History",
+    "SNIP_CLASSIC_STD_SECTION_8_3_4_5_SoAd_RequestIpAddrAssignment",
+    "SNIP_CLASSIC_STD_SECTION_8_3_4_6_SoAd_ReleaseIpAddrAssignment",
+    "SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_4_2_3_6_Template_Description",
+    "SNIP_CLASSIC_TCPIP_SECTION_6_Requirements_Tracing",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_1_1_Socket_Connection_Open",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_5_4_Transport_Layer_Security_TLS",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_6_5_2_Transition_from_sub_state_ONLINE_to_WAIT_OFFLINE",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_6_5_3_Transition_from_sub_state_ONLINE_to_ONHOLD",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_6_Message_Reception",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_ISO15118CHARGING"
+   ],
+   "dublette": {
+    "SNIP_ADAPTIVE_TCPIP_FIGURE_Figure_5_4": "SNIP_CLASSIC_TCPIP_FIGURE_Figure_5_4",
+    "SNIP_CLASSIC_COMSTACK_SECTION_8_4_Callback_notifications_CHARGINGMANAGER": "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER",
+    "SNIP_CLASSIC_ETH_SECTION_9_3_Reception": "SNIP_CLASSIC_TCPIP_SECTION_9_3_Reception",
+    "SNIP_CLASSIC_ETH_SECTION_9_Sequence_diagrams_TCPIP": "SNIP_CLASSIC_ETHIF_SECTION_9_Sequence_diagrams_TCPIP",
+    "SNIP_CLASSIC_KEYM_SECTION_8_7_3_Configurable_interfaces_TCPIP": "SNIP_CLASSIC_ETHIF_SECTION_8_7_3_Configurable_interfaces",
+    "SNIP_CLASSIC_STD_SECTION_8_4_Callback_notifications_CHARGINGMANAGER": "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER",
+    "SNIP_CLASSIC_STD_SECTION_8_4_Callback_notifications_ISO15118CHARGING": "SNIP_CLASSIC_COMSTACK_SECTION_8_4_Callback_notifications_ISO15118CHARGING",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_2_SoAd_CopyTxData": "SNIP_CLASSIC_COMSTACK_SECTION_8_4_2_SoAd_CopyTxData"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_CLASSIC_TCPIP_SECTION_10_3_Published_Information"
+   ],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_10_1",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_7_2",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_1",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_2",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_4",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_5",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_6",
+    "SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_7",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_5_IP_Based_Protocols",
+    "SNIP_CLASSIC_TCPIP_SECTION_7_8_State_handling",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_1_General",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_2_Core_Communication_Control",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_3_Extended_Communication_Control_and_Information",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_4_Transmission",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_8_Service_Interfaces",
+    "SNIP_CLASSIC_TCPIP_SECTION_8_API_specification",
+    "SNIP_CLASSIC_TCPIP_SECTION_9_Sequence_diagrams_and_Transition_Tables",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P102_394",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P105_396",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P106_397",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P143_399",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P192_400",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P201_401",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P29_381",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P47_383",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P67_384",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P75_386",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P76_387",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P84_389",
+    "SNIP_det_AUTOSAR_SWS_TCPI_P98_391"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 156,
+  "im_prompt_schaubilder": 51,
+  "kandidaten": 235,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "85764c8e51ca4e48e4915dd08da9b5a4d3dd7d0e92e3567ab8db1d7df7a66883",
- "output_store": "ai/store/outputs/85/85764c8e51ca4e48e4915dd08da9b5a4d3dd7d0e92e3567ab8db1d7df7a66883.html",
+ "output_sha256": "c4ce88e987e86b1f359137f68c3243bf5b7df59f718bf8ada0b2de29805920c7",
+ "output_store": "ai/store/outputs/c4/c4ce88e987e86b1f359137f68c3243bf5b7df59f718bf8ada0b2de29805920c7.html",
  "params": {
   "module": "tcpip",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "0cdb1cbfdb5d0bae12adf4cec3f92e985d43b871d16302149bd6f749362f13c1",
- "prompt_store": "ai/store/prompts/0c/0cdb1cbfdb5d0bae12adf4cec3f92e985d43b871d16302149bd6f749362f13c1.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "91f564413d326381983d001270f024415d19b08875879375b139372b13db747c",
+ "prompt_store": "ai/store/prompts/91/91f564413d326381983d001270f024415d19b08875879375b139372b13db747c.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -70,18 +183,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:47:02Z",
-   "duration_seconds": 106.474758,
-   "route": "agy-cli-print",
-   "run_id": "bf034331-1e66-4285-9fef-799a7fd09f8a",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/bf034331-1e66-4285-9fef-799a7fd09f8a.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.960844,
+   "cost_usd_reported": 1.960844,
+   "created_at": "2026-10-09T07:31:23Z",
+   "duration_api_seconds": 464.781,
+   "duration_seconds": 464.882,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.960844,
+     "inputTokens": 184996,
+     "maxOutputTokens": 128000,
+     "outputTokens": 61043,
+     "provider": "firstParty",
+     "thinkingTokens": 33518,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "bcc19536-7469-4b54-9847-10ca5655f030",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/bcc19536-7469-4b54-9847-10ca5655f030.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 48887,
-    "output_tokens": 35548,
-    "thinking_tokens": 18235,
-    "total_tokens": 84435
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 184996,
+    "output_tokens": 61043,
+    "output_tokens_details": {
+     "thinking_tokens": 33518
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 184996,
+    "output": 61043,
+    "thinking": 33518
+   },
+   "wall_seconds": 466.296
   }
  ],
  "schema": "ai-trace@2",

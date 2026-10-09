@@ -1,64 +1,167 @@
 {
- "annahmen": [],
+ "annahmen": [
+  "1) CanTrcv_MainFunction dürfte die interruptgetriebene Prüfung über CanTrcv_CheckWakeup für Fälle ohne Wakeup-Interrupt ergänzen – Begründung: SWS_CanTrcv_00112 beschreibt zyklisches Abtasten, SWS_CanTrcv_00143 den Interruptpfad; das Verhältnis beider Wege ist in den Quellen nicht ausgeführt.",
+  "2) Bei CANTRCV_E_NO_TRCV_CONTROL belegt das E_OK von CanTrcv_GetBusWuReason vermutlich keine gültige Ursache – Begründung: SWS_CanTrcv_00116 fordert E_OK trotz Kommunikationsfehler, SWS_CanTrcv_00165 sieht CANTRCV_WU_ERROR für nicht erkannte Gründe vor; eine ausdrückliche Verknüpfung fehlt."
+ ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-cantrcv-kontext",
-   "quelle": "anchor_r20_11.diag-cantrcv-kontext.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-cantrcv-modi",
-   "quelle": "anchor_r20_11.diag-cantrcv-modi.dot"
+   "id": "diag-zustaende",
+   "quelle": "anchor_r20_11.diag-zustaende.dot"
   },
   {
    "art": "seq",
-   "id": "diag-cantrcv-setopmode",
-   "quelle": "anchor_r20_11.diag-cantrcv-setopmode.seq.json"
+   "id": "diag-moduswechsel",
+   "quelle": "anchor_r20_11.diag-moduswechsel.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-wakeup-modus",
+   "quelle": "anchor_r20_11.diag-wakeup-modus.dot"
   },
   {
    "art": "seq",
-   "id": "diag-cantrcv-wakeup",
-   "quelle": "anchor_r20_11.diag-cantrcv-wakeup.seq.json"
+   "id": "diag-wakeup-erkennung",
+   "quelle": "anchor_r20_11.diag-wakeup-erkennung.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-cantrcv-pn-clearwuf",
-   "quelle": "anchor_r20_11.diag-cantrcv-pn-clearwuf.seq.json"
+   "id": "diag-pn-deinit",
+   "quelle": "anchor_r20_11.diag-pn-deinit.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-fehlerpruefung",
+   "quelle": "anchor_r20_11.diag-fehlerpruefung.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-busdiagnose",
+   "quelle": "anchor_r20_11.diag-busdiagnose.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/cantrcv/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_CANIF_SECTION_8_3_15_CanIf_GetTrcvMode": "SNIP_CLASSIC_CANTRCV_SECTION_8_3_15_CanIf_GetTrcvMode",
+    "SNIP_CLASSIC_CANIF_SECTION_8_3_17_CanIf_SetTrcvWakeupMode": "SNIP_CLASSIC_CANTRCV_SECTION_8_3_17_CanIf_SetTrcvWakeupMode",
+    "SNIP_CLASSIC_CANTRCV_SECTION_8_3_14_CanIf_SetTrcvMode": "SNIP_CLASSIC_CANIF_SECTION_8_3_14_CanIf_SetTrcvMode",
+    "SNIP_CLASSIC_CANTRCV_SECTION_8_3_16_CanIf_GetTrcvWakeupReason": "SNIP_CLASSIC_CANIF_SECTION_8_3_16_CanIf_GetTrcvWakeupReason",
+    "SNIP_CLASSIC_CANTRCV_SECTION_8_3_22_CanIf_CheckTrcvWakeFlag": "SNIP_CLASSIC_CANIF_SECTION_8_3_22_CanIf_CheckTrcvWakeFlag",
+    "SNIP_CLASSIC_CANTRCV_SECTION_9_2_3_CAN_Wakeup_Sequences": "SNIP_CLASSIC_CANIF_SECTION_9_2_3_CAN_Wakeup_Sequences",
+    "SNIP_CLASSIC_ECUM_SECTION_10_2_4_CanTrcvChannel": "SNIP_CLASSIC_DEM_SECTION_10_2_4_CanTrcvChannel",
+    "SNIP_CLASSIC_ECUM_SECTION_9_2_3_CAN_Wakeup_Sequences": "SNIP_CLASSIC_CANIF_SECTION_9_2_3_CAN_Wakeup_Sequences",
+    "SNIP_CLASSIC_STD_SECTION_9_2_3_CAN_Wakeup_Sequences": "SNIP_CLASSIC_CANIF_SECTION_9_2_3_CAN_Wakeup_Sequences"
+   },
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_10_5",
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_10_6",
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_9_1",
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_9_2",
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_9_3",
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_9_4",
+    "SNIP_CLASSIC_CANTRCV_FIGURE_Figure_9_5",
+    "SNIP_CLASSIC_CANTRCV_SECTION_3_Std_ReturnType_CanTrcv_SetOpMode_uint8_Transceiver_CanIf_TrcvModeType",
+    "SNIP_CLASSIC_CANTRCV_SECTION_7_Functional_specification_CANTRANSCEIVERDRIVER",
+    "SNIP_CLASSIC_CANTRCV_SECTION_8_3_Function_definitions_CANTRANSCEIVERDRIVER",
+    "SNIP_CLASSIC_CANTRCV_SECTION_8_3_Function_definitions_CANXLTRANSCEIVERDRIVER",
+    "SNIP_CLASSIC_CANTRCV_SECTION_8_API_specification",
+    "SNIP_Can_AUTOSAR_SWS_CAND_P76_250",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P13_1009",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P22_1010",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P23_1011",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P23_1012",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P25_1014",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P28_1017",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P31_1019",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P35_1025",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P36_1030",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P38_1032",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P40_1037",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P43_1045",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P44_1046",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P44_1047",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P44_1048",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P45_1049",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P47_1051",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P48_1052",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P48_1053",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P48_1054",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P49_1055",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P50_1056",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P50_1057",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P50_1059",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P62_1074",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P64_1076",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P66_1077",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P70_1080",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P71_1081",
+    "SNIP_Can_AUTOSAR_SWS_CANT_P72_1082",
+    "SNIP_det_AUTOSAR_SWS_CANT_P23_177",
+    "SNIP_det_AUTOSAR_SWS_CANT_P24_178",
+    "SNIP_det_AUTOSAR_SWS_CANT_P24_179",
+    "SNIP_det_AUTOSAR_SWS_CANT_P25_180",
+    "SNIP_det_AUTOSAR_SWS_CANT_P32_185",
+    "SNIP_det_AUTOSAR_SWS_CANT_P32_186",
+    "SNIP_det_AUTOSAR_SWS_CANT_P37_189",
+    "SNIP_det_AUTOSAR_SWS_CANT_P41_193",
+    "SNIP_det_AUTOSAR_SWS_CANT_P41_194",
+    "SNIP_det_AUTOSAR_SWS_CANT_P44_195",
+    "SNIP_det_AUTOSAR_SWS_CANT_P46_196",
+    "SNIP_det_AUTOSAR_SWS_CANT_P47_198",
+    "SNIP_det_AUTOSAR_SWS_CANT_P50_199",
+    "SNIP_det_AUTOSAR_SWS_CANT_P79_202",
+    "SNIP_det_AUTOSAR_SWS_CANT_P82_204"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 124,
+  "im_prompt_schaubilder": 46,
+  "kandidaten": 191,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "d773452487cb71446a583f4891246d665a02d45929c38a4327d014a18a15820c",
- "output_store": "ai/store/outputs/d7/d773452487cb71446a583f4891246d665a02d45929c38a4327d014a18a15820c.html",
+ "output_sha256": "3849a4b0a44992cb4f5ebb9cc9703943f8e60862486617f84dcf3c5aec9564f7",
+ "output_store": "ai/store/outputs/38/3849a4b0a44992cb4f5ebb9cc9703943f8e60862486617f84dcf3c5aec9564f7.html",
  "params": {
   "module": "cantrcv",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "33727ce635e1b046c7967087d2f5bab00f8a2adbf8fe401c5cb9ea6edfc8c7b1",
- "prompt_store": "ai/store/prompts/33/33727ce635e1b046c7967087d2f5bab00f8a2adbf8fe401c5cb9ea6edfc8c7b1.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "649270682770954d2a47f386e95fc94de89ac22df82f7f815e7402b7dd9d40f3",
+ "prompt_store": "ai/store/prompts/64/649270682770954d2a47f386e95fc94de89ac22df82f7f815e7402b7dd9d40f3.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -70,18 +173,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:40:39Z",
-   "duration_seconds": 90.567987,
-   "route": "agy-cli-print",
-   "run_id": "521c8bcd-9299-4ea6-9a16-8c09f9d432d1",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/521c8bcd-9299-4ea6-9a16-8c09f9d432d1.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.429208,
+   "cost_usd_reported": 1.429208,
+   "created_at": "2026-10-09T06:40:47Z",
+   "duration_api_seconds": 346.083,
+   "duration_seconds": 346.183,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.429208,
+     "inputTokens": 124507,
+     "maxOutputTokens": 128000,
+     "outputTokens": 46559,
+     "provider": "firstParty",
+     "thinkingTokens": 22036,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "07100d03-0e18-454f-b9ec-368ca18a1a18",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/07100d03-0e18-454f-b9ec-368ca18a1a18.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 28301,
-    "output_tokens": 28166,
-    "thinking_tokens": 14467,
-    "total_tokens": 56467
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 124507,
+    "output_tokens": 46559,
+    "output_tokens_details": {
+     "thinking_tokens": 22036
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 124507,
+    "output": 46559,
+    "thinking": 22036
+   },
+   "wall_seconds": 347.817
   }
  ],
  "schema": "ai-trace@2",

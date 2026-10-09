@@ -1,71 +1,116 @@
 {
  "annahmen": [
-  "1) FrIf als primärer Aufrufer – Begründung: Der Treiber stellt hardwarenahe MCAL-Dienste bereit, deren Steuerung im BSW-Schichtenmodell typischerweise durch FrIf erfolgt."
+  "Text:",
+  "1) Der Erfolg von Fr_StartCommunication wird über wiederholtes Fr_GetPOCStatus beobachtet – Begründung: Laut SWS ist der Zielzustand nach dem Aufruf nicht garantiert; Fr_GetPOCStatus ist der einzige belegte Weg, den Zustand zu lesen.",
+  "2) Ein Aufruf vor der Initialisierung meldet FR_E_INIT_FAILED – Begründung: Der zugehörige Requirement-Text ist abgeschnitten; SWS_Fr_91003 beschreibt FR_E_INIT_FAILED als „Fr module was not initialized“.",
+  "3) Der FrSM steuert Wakeup und Start über das FrIf – Begründung: Die FrSM-Zustände sind auf POC-Zustände abgebildet und der FrSM wertet vPOC!WakeupStatus aus; ein direkter Beleg im Fr-SWS fehlt. Diagramm diag-start:",
+  "1) Polling-Schleife mit Fr_GetPOCStatus (siehe Text-Annahme 1). Diagramm diag-timer:",
+  "1) Der Timer-Interrupt führt über eine ISR zur Behandlung im FrIf, das danach Status abfragt und quittiert – Begründung: Das FrIf verlangt die Timer-Dienste als Pflichtschnittstelle, und laut FrIf-Abbildungen startet eine ISR die Jobliste; die genaue Verdrahtung ist nicht belegt."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-fr-arch",
-   "quelle": "anchor_r20_11.diag-fr-arch.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-fr-poc",
-   "quelle": "anchor_r20_11.diag-fr-poc.dot"
+   "id": "diag-poc",
+   "quelle": "anchor_r20_11.diag-poc.dot"
   },
   {
    "art": "seq",
-   "id": "diag-fr-startup-seq",
-   "quelle": "anchor_r20_11.diag-fr-startup-seq.seq.json"
+   "id": "diag-start",
+   "quelle": "anchor_r20_11.diag-start.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-fr-pdu-comm",
-   "quelle": "anchor_r20_11.diag-fr-pdu-comm.seq.json"
+   "id": "diag-tx",
+   "quelle": "anchor_r20_11.diag-tx.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-fr-timer",
-   "quelle": "anchor_r20_11.diag-fr-timer.seq.json"
+   "id": "diag-rx",
+   "quelle": "anchor_r20_11.diag-rx.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-timer",
+   "quelle": "anchor_r20_11.diag-timer.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-fr-error-handling",
-   "quelle": "anchor_r20_11.diag-fr-error-handling.dot"
+   "id": "diag-index",
+   "quelle": "anchor_r20_11.diag-index.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-fehler",
+   "quelle": "anchor_r20_11.diag-fehler.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/fr/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_BSWM_SECTION_7_3_8_Wakeup_Pattern_Transmission": "SNIP_CLASSIC_FRSM_SECTION_7_3_8_Wakeup_Pattern_Transmission",
+    "SNIP_CLASSIC_FR_SECTION_8_4_6_FrIf_GetWakeupRxStatus": "SNIP_CLASSIC_FRIF_SECTION_8_4_6_FrIf_GetWakeupRxStatus",
+    "SNIP_CLASSIC_PLATFORM_SECTION_8_4_32_Fr_ReadCCConfig": "SNIP_CLASSIC_FR_SECTION_8_4_32_Fr_ReadCCConfig",
+    "SNIP_CLASSIC_STD_SECTION_8_3_11_Fr_SlotAssignmentType": "SNIP_CLASSIC_FR_SECTION_8_3_11_Fr_SlotAssignmentType"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_CLASSIC_FR_SECTION_7_3_Indexing_Scheme"
+   ],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_FR_SECTION_0_FR_CHANNEL_A",
+    "SNIP_CLASSIC_FR_SECTION_4_2_3_8_Interface_and_API",
+    "SNIP_CLASSIC_FR_SECTION_7_7_3_Production_Errors",
+    "SNIP_CLASSIC_FR_SECTION_7_Functional_specification",
+    "SNIP_CLASSIC_FR_SECTION_9_2_Data_Reception",
+    "SNIP_det_AUTOSAR_SWS_Flex_P37_215"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 105,
+  "im_prompt_schaubilder": 13,
+  "kandidaten": 116,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "f151463d6ded6ddac5e5c491f9db94e626ddd3441cb56458141bd605db3e76a0",
- "output_store": "ai/store/outputs/f1/f151463d6ded6ddac5e5c491f9db94e626ddd3441cb56458141bd605db3e76a0.html",
+ "output_sha256": "a08fd1e6f3c56a9965c65ab1a67f89638430c8054fd3d7ae69e07c8601b8906d",
+ "output_store": "ai/store/outputs/a0/a08fd1e6f3c56a9965c65ab1a67f89638430c8054fd3d7ae69e07c8601b8906d.html",
  "params": {
   "module": "fr",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "85f9a90c10f3e83239965a9c774ccb9a94d41124a01e5887c422100e26bae69f",
- "prompt_store": "ai/store/prompts/85/85f9a90c10f3e83239965a9c774ccb9a94d41124a01e5887c422100e26bae69f.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "f2cfe937c92a341efcb00b78e9b86889866f068e49d4fa43168204671ebbc69f",
+ "prompt_store": "ai/store/prompts/f2/f2cfe937c92a341efcb00b78e9b86889866f068e49d4fa43168204671ebbc69f.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -77,18 +122,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:43:17Z",
-   "duration_seconds": 55.32724,
-   "route": "agy-cli-print",
-   "run_id": "b4b06033-c1c3-4d37-9ea9-470e8b9307cb",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/b4b06033-c1c3-4d37-9ea9-470e8b9307cb.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.345296,
+   "cost_usd_reported": 1.3452959999999998,
+   "created_at": "2026-10-09T07:02:38Z",
+   "duration_api_seconds": 344.28,
+   "duration_seconds": 344.462,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.3452959999999998,
+     "inputTokens": 109204,
+     "maxOutputTokens": 128000,
+     "outputTokens": 45424,
+     "provider": "firstParty",
+     "thinkingTokens": 20657,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "9b729a22-332d-434c-bec4-2ebeffaa9057",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/9b729a22-332d-434c-bec4-2ebeffaa9057.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 25723,
-    "output_tokens": 21945,
-    "thinking_tokens": 11198,
-    "total_tokens": 47668
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 109204,
+    "output_tokens": 45424,
+    "output_tokens_details": {
+     "thinking_tokens": 20657
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 109204,
+    "output": 45424,
+    "thinking": 20657
+   },
+   "wall_seconds": 346.082
   }
  ],
  "schema": "ai-trace@2",

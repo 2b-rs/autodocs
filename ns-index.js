@@ -11,6 +11,11 @@
    - Classic-Modulseiten (section.nsx-mod): gleiches Verhalten ohne Klassenseiten; die
      Elemente des Modul-Records erscheinen in der Detailansicht, im Komfortmodus bleibt
      die Seite unverändert.
+   - Clusterseiten (section.nsx-clu): Einträge sind die Elemente aller Teile (Classic-
+     Module bzw. Adaptive-Namespaces und Service-Interfaces). Ihre Records liegen auf den
+     Seiten der Teile (data-page) und werden von dort in die Detailansicht geholt; Klassen-
+     und Dienstseiten wie bei Namespaces als Ganzes. Im Komfortmodus bleibt die Seite
+     unverändert.
    - Release-Kontext (#release=… bzw. ?release=…): entfallene Elemente werden
      markiert; ohne Elementdaten für das Release erscheint ein Hinweis.
    Ohne Skript bleibt die Seite als Liste mit Dokumentation vollständig lesbar. */
@@ -21,6 +26,7 @@
   var ICON_DOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7M5 6.5l3 3 3-3M2.5 13h11"/></svg>';
   var ICON_CLOSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
 
+  function dict() { return Object.create(null); }
   function words(el, a) { return (el && el.getAttribute(a) || "").split(" ").filter(Boolean); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function svgEl(tag, attrs) {
@@ -40,7 +46,8 @@
   var behavior = reduceMotion ? "auto" : "smooth";
 
   function init(root) {
-    var rows = {}, chips = {}, oitems = {}, recOwner = {};
+    // Namensschlüssel ohne Prototyp: Mitglieder heißen auch toString oder constructor
+    var rows = dict(), chips = dict(), oitems = dict(), recOwner = dict();
     root.querySelectorAll(".nsx-row").forEach(function (r) {
       var n = r.getAttribute("data-n");
       rows[n] = r;
@@ -77,8 +84,9 @@
     // Classic-Modulseiten: Die Übersicht ist aus dem Modul-Record abgeleitet; im
     // Komfortmodus entfällt sie, der Record darüber ist die bisherige Seite.
     var isMod = root.classList.contains("nsx-mod");
+    var isClu = root.classList.contains("nsx-clu");
     if (document.documentElement.getAttribute("data-density") !== "compact") {
-      if (isMod) root.remove();
+      if (isMod || isClu) root.remove();
       else flattenClassIndex(document.querySelector("main") || document.body);
       return;
     }
@@ -104,13 +112,16 @@
     var ext = {};
     try { ext = JSON.parse((root.querySelector("script.nsx-ext") || {}).textContent || "{}"); } catch (e) { ext = {}; }
     // Seitenpfad → Eintrag, damit Verweise aus Klassenseiten und Signaturen auf die Auswahl führen
-    var byPath = {};
+    var byPath = {}, partPaths = {};
     Object.keys(rows).forEach(function (n) {
-      var h = rows[n].getAttribute("data-href");
-      if (h && h.charAt(0) !== "#") byPath[new URL(h, location.href).pathname] = n;
+      var h = rows[n].getAttribute("data-href"), pg = rows[n].getAttribute("data-page");
+      if (h && h.charAt(0) !== "#" && !rows[n].getAttribute("data-recs")) byPath[new URL(h, location.href).pathname] = n;
+      if (pg) partPaths[new URL(pg, location.href).pathname] = pg;
     });
+    // Clusterseiten: Name des Clusters, Plattform und Beschriftung der Teile
+    var cluName = root.getAttribute("data-cluster") || "", cluClassic = root.getAttribute("data-platform") !== "adaptive";
     // Signaturen der Nicht-Member-Funktionen nach Name (für „Kommt vor in“)
-    var fnIndex = {};
+    var fnIndex = dict();
     root.querySelectorAll(".nsx-row .nsx-sig").forEach(function (sg) {
       var code = sg.querySelector("code"), go = sg.querySelector("a.nsx-go");
       var m = code && go && /(operator\s*[^\s(]+|[A-Za-z_~][\w:]*)\s*\(/.exec(code.textContent);
@@ -155,6 +166,31 @@
         folds.insertBefore(p, folds.firstChild);
       }
     }
+
+    // ---- Weitere Abschnitte vor der Übersicht (z.B. Synopsis, Ablauf- oder Lebenszyklus-
+    // diagramm einer Klassenseite): je Überschrift ein Fold der Mitte hinter den Guides
+    (function () {
+      var kids = [], cur = null, n = 0;
+      var at = Array.prototype.filter.call(folds.children, function (x) { return !/^(guide|impl)$/.test(x.getAttribute("data-fold") || ""); })[0] || null;
+      for (var q = root.previousElementSibling; q; q = q.previousElementSibling) kids.unshift(q);
+      kids.forEach(function (k) {
+        if (k.matches("h2.sect")) {
+          cur = document.createElement("details");
+          cur.className = "fold nsx-fold nsx-secfold";
+          cur.open = true;
+          cur.setAttribute("data-fold", "sec" + (++n));
+          var sm = document.createElement("summary"), gr = document.createElement("span");
+          gr.className = "nsx-grip";
+          gr.setAttribute("role", "button");
+          gr.setAttribute("tabindex", "0");
+          sm.appendChild(gr);
+          sm.appendChild(k);
+          cur.appendChild(sm);
+          folds.insertBefore(cur, at);
+        } else if (cur && !k.matches("details, dialog, script, article.rec")) cur.appendChild(k);
+        else cur = null;
+      });
+    })();
 
     // ---- Auf- und Zuklappen lässt die Fold-Zeile an ihrer Bildschirmposition
     folds.addEventListener("click", function (ev) {
@@ -248,6 +284,11 @@
     document.addEventListener("pointerup", function () { foldList().forEach(function (f) { if (f !== dragging) f.draggable = false; }); });
 
     function isClassRow(r) { return r.getAttribute("data-kind") === "class"; }
+    // Einträge mit eigener Seite (Klassen, Service-Interfaces): Detailansicht lädt die ganze Seite
+    function isPageRow(r) {
+      var h = r.getAttribute("data-href") || "";
+      return !!h && h.charAt(0) !== "#" && !r.getAttribute("data-recs");
+    }
     // Kennzahlen eines KI-Texts: Prüfstatus, Release, Abschnitte, Lesezeit, SWS-Verweise, Diagramme
     function statsHtml(scope) {
       var rel = currentRelease(), all = scope.querySelectorAll(".ai-guide-release-variant");
@@ -614,7 +655,7 @@
     // Baum untereinander gezeichnet, sofern die Nachbarebene zur Auswahl hin nur
     // einen Knoten hat; sonst nebeneinander mit waagrechtem Scrollen.
     function inheritanceSvg(name, avail) {
-      var up = [], seen = {}, level = bases(name);
+      var up = [], seen = dict(), level = bases(name);
       seen[name] = 1;
       for (var d = 0; d < 5 && level.length; d++) {
         level = level.filter(function (x) { return !seen[x]; });
@@ -629,7 +670,7 @@
       if (!up.length && !down.length) return null;
       var layers = up.concat([[name]]).concat(down.length ? [down] : []);
       var selfIdx = up.length;
-      var CH = 6.6, H = 20, HG = 8, VG = 26, SG = 6, IND = 18, PAD = 4, pos = {};
+      var CH = 6.6, H = 20, HG = 8, VG = 26, SG = 6, IND = 18, PAD = 4, pos = dict();
       function bw(n) { return n.length * CH + 12; }
       function lw(layer) { return layer.reduce(function (s, n) { return s + bw(n); }, 0) + HG * (layer.length - 1); }
       var stacked = layers.map(function (layer, li) {
@@ -669,7 +710,7 @@
         if (arrow) a["marker-end"] = "url(#" + tri.id + ")";
         svg.appendChild(svgEl("path", a));
       }
-      var drawn = {};
+      var drawn = dict();
       layers.forEach(function (layer, li) {
         if (!stacked[li]) return;
         var anchor = layers[li < selfIdx ? li + 1 : li - 1][0], A = pos[anchor];
@@ -721,11 +762,18 @@
           if (recOwner[id]) { a.setAttribute("href", "#" + id); a.setAttribute("data-n", recOwner[id]); }
           return;
         }
+        // Clusterseiten: Verweise auf Elemente anderer Teile dieses Clusters wählen hier aus
+        var pid = u.hash && decodeURIComponent(u.hash.slice(1));
+        if (isClu && pid && recOwner[pid] && partPaths[u.pathname]) {
+          a.setAttribute("href", "#" + pid);
+          a.setAttribute("data-n", recOwner[pid]);
+          return;
+        }
         var n = byPath[u.pathname];
         if (n) { a.setAttribute("data-jump", n); a.setAttribute("href", "#" + rows[n].id); return; }
         var m = /\/(cl_[A-Za-z0-9_]+)\.html$/.exec(u.pathname);
         if (m && ext[m[1]]) { a.classList.add("nsx-ext"); a.title = ext[m[1]]; }
-        var mf = isMod && /\/([^\/]+\.html)$/.exec(u.pathname);
+        var mf = (isMod || isClu && cluClassic) && /\/([^\/]+\.html)$/.exec(u.pathname);
         if (mf && ext[mf[1]]) { a.classList.add("nsx-ext"); a.title = ext[mf[1]]; }
       });
     }
@@ -778,7 +826,19 @@
         wrap.appendChild(svg);
         section(labels.inh).appendChild(wrap);
       }
-      var recs = words(r, "data-recs").map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      var recs = words(r, "data-recs").map(function (id) { return isClu ? remote[id] : document.getElementById(id); }).filter(Boolean);
+      // Clusterseiten, solange die Seite des Teils noch nicht geladen ist: Signatur aus der Übersicht
+      if (isClu && !recs.length && !isClass) {
+        var rs = r.querySelector(".nsx-ds > .nsx-sig code");
+        if (rs) {
+          var stub = document.createElement("article"), spre = document.createElement("pre");
+          stub.className = "rec";
+          spre.className = "syntax";
+          spre.innerHTML = rs.innerHTML;
+          stub.appendChild(spre);
+          recs = [stub];
+        }
+      }
       // Beschreibung
       var desc = main ? main.querySelector(":scope > .desc") : (recs[0] && recs[0].querySelector(".desc"));
       if (!desc) desc = r.querySelector(".nsx-desc");
@@ -826,7 +886,7 @@
         section(labels.fns, own.length).appendChild(fl);
       }
       // Bezüge: Verwendet (auch Klassen anderer Pakete), Verwendet von, Kommt vor in
-      var out = relItems(words(r, "data-out"), name), seen = {};
+      var out = relItems(words(r, "data-out"), name), seen = dict();
       words(r, "data-out").forEach(function (n) { seen[n] = 1; });
       if (main) main.querySelectorAll("a[href]").forEach(function (a) {
         var m = /\/(cl_[A-Za-z0-9_]+)\.html(?:#|$)/.exec(a.getAttribute("href"));
@@ -835,13 +895,17 @@
         seen[n] = 1;
         out.push('<li><a href="' + esc(a.getAttribute("href").split("#")[0]) + '" class="nsx-ext">' + esc(n) + '</a> <span class="nsx-pkg">' + esc(ext[m[1]]) + "</span></li>");
       });
-      // Modulseiten: Typen anderer Module (Plattform-, ComStack-, Std-Typen) aus der Signatur
-      if (isMod) recs.forEach(function (rec) {
+      // Modulseiten: Typen anderer Module (Plattform-, ComStack-, Std-Typen) aus der Signatur;
+      // Classic-Cluster: Typen außerhalb des Clusters (innerhalb sind es Bezüge)
+      if (isMod || isClu && cluClassic) recs.forEach(function (rec) {
         rec.querySelectorAll(":scope > pre.syntax a[href]").forEach(function (a) {
           var href = a.getAttribute("href"), f = href.split("#")[0], n = a.textContent.trim();
           if (!f || !n || seen[n]) return;
+          var hid = href.split("#")[1];
+          if (isClu && hid && recOwner[decodeURIComponent(hid)]) return;
+          var fb = (/([^\/]+\.html)$/.exec(f) || [])[1] || f;
           seen[n] = 1;
-          out.push('<li><a href="' + esc(href) + '" class="nsx-ext">' + esc(n) + '</a> <span class="nsx-pkg">' + esc(ext[f] || f) + "</span></li>");
+          out.push('<li><a href="' + esc(href) + '" class="nsx-ext">' + esc(n) + '</a> <span class="nsx-pkg">' + esc(ext[fb] || ext[f] || fb) + "</span></li>");
         });
       });
       [["out", out], ["in", relItems(words(r, "data-in"), name)], ["uses", isClass ? [] : relItems(words(r, "data-uses"), name)]].forEach(function (x) {
@@ -853,7 +917,7 @@
     function showRelations(name) {
       var r = rows[name];
       if (!r || !relBox) return;
-      var href = r.getAttribute("data-kind") === "class" && r.getAttribute("data-href");
+      var href = isPageRow(r) && r.getAttribute("data-href");
       renderInspector(name, href && pageCache[href] || null);
       clearTimeout(insTimer);
       if (href && !pageCache[href]) {
@@ -861,6 +925,12 @@
           classPage(href).then(function (main) {
             pageCache[href] = main;
             if (relBox.getAttribute("data-owner") === name && !relBox.hidden) renderInspector(name, main);
+          }, function () { /* Inspektor bleibt bei den Angaben der Übersicht */ });
+        }, name === selected ? 0 : 250);
+      } else if (!href && missingRemote(r).length) {
+        insTimer = setTimeout(function () {
+          remotePage(r.getAttribute("data-page")).then(function () {
+            if (relBox.getAttribute("data-owner") === name && !relBox.hidden) renderInspector(name, null);
           }, function () { /* Inspektor bleibt bei den Angaben der Übersicht */ });
         }, name === selected ? 0 : 250);
       }
@@ -872,7 +942,55 @@
       moved.forEach(function (m) { m.ph.parentNode.insertBefore(m.el, m.ph); m.ph.parentNode.removeChild(m.ph); });
       moved = [];
     }
+    // Clusterseiten: Records der Teile (Modul- bzw. Namespace-Seiten) nach Anker; einmal je
+    // Seite geladen, Verweise auf diese Seite umgerechnet, Elemente des Clusters wählen aus.
+    var remote = {}, remotePages = {};
+    function missingRemote(r) {
+      if (!isClu || !r.getAttribute("data-page")) return [];
+      return words(r, "data-recs").concat(words(r, "data-fns")).filter(function (id) { return !remote[id]; });
+    }
+    function rebase(el, url) {
+      el.querySelectorAll("script").forEach(function (x) { x.remove(); });
+      [el].concat(Array.prototype.slice.call(el.querySelectorAll("[href]"))).forEach(function (a) {
+        var v = a.getAttribute && a.getAttribute("href");
+        if (v === null || v === undefined) return;
+        var u;
+        try { u = new URL(v, url); } catch (e) { return; }
+        var hid = u.hash ? decodeURIComponent(u.hash.slice(1)) : "";
+        if (hid && recOwner[hid] && (u.pathname === url.pathname || partPaths[u.pathname])) a.setAttribute("href", "#" + hid);
+        else a.setAttribute("href", u.href);
+      });
+      el.querySelectorAll("[src]").forEach(function (e) { e.setAttribute("src", new URL(e.getAttribute("src"), url).href); });
+      return el;
+    }
+    function remotePage(href) {
+      var url = new URL(href, location.href), key = url.pathname;
+      if (remotePages[key]) return remotePages[key];
+      var p = (location.protocol === "file:" || !window.fetch ? Promise.reject(new Error("file")) :
+        fetch(url.href).then(function (res) { if (!res.ok) throw new Error(res.status); return res.text(); })).then(function (t) {
+        var doc = new DOMParser().parseFromString(t, "text/html");
+        Object.keys(recOwner).forEach(function (id) {
+          if (remote[id]) return;
+          var pg = rows[recOwner[id]].getAttribute("data-page");
+          if (!pg || new URL(pg, location.href).pathname !== key) return;
+          var el = doc.getElementById(id);
+          if (el) remote[id] = rebase(document.importNode(el, true), url);
+        });
+        return true;
+      });
+      remotePages[key] = p;
+      p.catch(function () { delete remotePages[key]; });
+      return p;
+    }
+    // Clusterseiten entleihen nie aus dem eigenen Dokument: dort können gleiche IDs in
+    // Kurationsdialogen stehen; die Records kommen aus den Seiten der Teile
     function borrow(id, into) {
+      if (isClu) {
+        if (!remote[id] || detBody.querySelector('[id="' + CSS.escape(id) + '"]')) return null;
+        var c = remote[id].cloneNode(true);
+        into.appendChild(c);
+        return c;
+      }
       var el = document.getElementById(id);
       if (!el || detBody.contains(el)) return null;
       var ph = document.createComment("nsx");
@@ -888,36 +1006,45 @@
       var sec = main.querySelector("section.nsx");
       if (!sec) return;
       var doc = main.ownerDocument, frag = doc.createDocumentFragment();
-      var rowsBy = {};
+      var rowsBy = dict();
       sec.querySelectorAll(".nsx-row").forEach(function (r) { rowsBy[r.getAttribute("data-n")] = r; });
       var ol = sec.querySelector('.nsx-ol[data-by="kind"]');
       var title = null, ul = null;
+      function group(text) {
+        title = doc.createElement("h3");
+        title.textContent = text;
+        ul = doc.createElement("ul");
+        ul.className = "mlist";
+        frag.appendChild(title);
+        frag.appendChild(ul);
+      }
       if (ol) Array.prototype.forEach.call(ol.children, function (x) {
-        if (x.matches(".nsx-og")) {
-          title = doc.createElement("h3");
-          title.textContent = x.textContent.trim();
-          ul = doc.createElement("ul");
-          ul.className = "mlist";
-          frag.appendChild(title);
-          frag.appendChild(ul);
-        } else if (ul && x.matches("a.nsx-oi")) {
-          var r = rowsBy[x.getAttribute("data-n")];
-          if (!r) return;
-          var d = r.querySelector(".nsx-desc");
-          var sigs = r.getAttribute("data-kind") === "class" ? [] : r.querySelectorAll(".nsx-sig code");
-          var li = doc.createElement("li");
-          if (sigs.length) sigs.forEach(function (c, i) {
-            var code = doc.createElement("code");
-            code.className = "sig";
-            code.innerHTML = c.innerHTML;
-            if (i) li.appendChild(doc.createElement("br"));
-            li.appendChild(code);
-          });
-          else li.innerHTML = '<a href="' + esc(r.getAttribute("data-href") || "") + '"><code>' + esc(r.getAttribute("data-n")) + "</code></a>";
-          if (d) li.insertAdjacentHTML("beforeend", ' <span class="dim">' + d.innerHTML + "</span>");
-          ul.appendChild(li);
-        }
+        if (x.matches(".nsx-og")) group(x.textContent.trim());
+        else if (ul && x.matches("a.nsx-oi")) item(rowsBy[x.getAttribute("data-n")]);
       });
+      // Klassenseiten mit wenigen Mitgliedern (schlichte Liste ohne Gliederung): Übersicht
+      // aus den Gruppen der Liste
+      else if (sec.classList.contains("nsx-cls")) sec.querySelectorAll(".nsx-list > .nsx-sec").forEach(function (gs) {
+        var gt = gs.querySelector(":scope > .nsx-gt");
+        group(gt ? gt.textContent.trim() : "");
+        gs.querySelectorAll(":scope > .nsx-row").forEach(item);
+      });
+      function item(r) {
+        if (!r) return;
+        var d = r.querySelector(".nsx-desc");
+        var sigs = r.getAttribute("data-kind") === "class" ? [] : r.querySelectorAll(".nsx-sig code");
+        var li = doc.createElement("li");
+        if (sigs.length) sigs.forEach(function (c, i) {
+          var code = doc.createElement("code");
+          code.className = "sig";
+          code.innerHTML = c.innerHTML;
+          if (i) li.appendChild(doc.createElement("br"));
+          li.appendChild(code);
+        });
+        else li.innerHTML = '<a href="' + esc(r.getAttribute("data-href") || "") + '"><code>' + esc(r.getAttribute("data-n")) + "</code></a>";
+        if (d) li.insertAdjacentHTML("beforeend", ' <span class="dim">' + d.innerHTML + "</span>");
+        ul.appendChild(li);
+      }
       var uml = sec.querySelector('.nsx-fold[data-fold="uml"]');
       if (uml) {
         var h = doc.createElement("h2");
@@ -997,6 +1124,8 @@
       detFold.open = true;
       if (Math.abs(detFold.getBoundingClientRect().top - pinH()) > 2) detFold.scrollIntoView({ block: "start", behavior: behavior });
     }
+    // Element der Detailansicht nach ID (vor gleichen IDs anderswo im Dokument)
+    function inDetail(id) { return detBody && detBody.querySelector('[id="' + CSS.escape(id) + '"]') || null; }
     function openTo(el) {
       for (var p = el.parentElement; p && p !== detBody; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;
       el.scrollIntoView({ block: "start", behavior: behavior });
@@ -1013,9 +1142,17 @@
       detTitle.innerHTML = (k ? '<span class="kind">' + esc(k.trim()) + "</span> " : "")
         + (href ? '<a class="nsx-detname" href="' + esc(href) + '">' + esc(qn) + "</a>" : '<span class="nsx-detname">' + esc(qn) + "</span>")
         + (info.sws ? " " + info.sws : "")
-        + (isMod && modName ? ' <span class="nsx-modbadge"><span class="kind">' + esc(labels.mod || "") + "</span> " + esc(modName) + "</span>" : "");
+        + (isMod && modName ? ' <span class="nsx-modbadge"><span class="kind">' + esc(labels.mod || "") + "</span> " + esc(modName) + "</span>" : "")
+        + (isClu ? cluBadges(r) : "");
       var vis = chips[name] && /(?:^|\s)(vis-[a-z]+)/.exec(chips[name].className);
       detFold.setAttribute("data-vis", vis ? vis[1] : "");
+    }
+    // Clusterseiten: Abzeichen „Cluster <Name>“ und „Modul/Namespace <Teil>“ (Verweis auf dessen Seite)
+    function cluBadges(r) {
+      var part = r.getAttribute("data-part") || "", pg = r.getAttribute("data-page") || "", out = "";
+      if (part) out += ' <a class="nsx-modbadge nsx-partbadge" href="' + esc(pg) + '"><span class="kind">' + esc(labels.mod || "") + "</span> " + esc(part) + "</a>";
+      if (cluName) out += ' <span class="nsx-modbadge nsx-clubadge" title="' + esc(cluName) + '"><span class="kind">' + esc(labels.clu || "") + "</span> " + esc(cluName) + "</span>";
+      return out;
     }
     function swsHtml(el) {
       var sw = el && el.querySelector(".sws");
@@ -1063,6 +1200,9 @@
       var rn = rec.querySelector(".recname"), kind = rn && rn.querySelector(".kind");
       var sw = rn && rn.querySelector(".sws a");
       var sc = scopeOf(rec);
+      // Clusterseiten: Namenszusatz „ (Teil)“ gleichnamiger Einträge gehört nicht zum Namen
+      var pt = rows[name] && rows[name].getAttribute("data-part"), sfx = pt ? " (" + pt + ")" : "";
+      if (sfx && name.slice(-sfx.length) === sfx) name = name.slice(0, -sfx.length);
       return { kind: kind ? kind.textContent : "", qname: sc ? sc + "::" + name : name,
                href: sw ? sw.getAttribute("href") : "", sws: swsHtml(rn) };
     }
@@ -1115,10 +1255,10 @@
       restoreMoved();
       clearDetailAi();
       detBody.innerHTML = "";
-      setTitle(name, isClassRow(r) ? { href: r.getAttribute("data-href") } : null);
+      setTitle(name, isPageRow(r) ? { href: r.getAttribute("data-href") } : null);
       detFold.hidden = false;
       updateEmpty();
-      var isClass = isClassRow(r);
+      var isClass = isPageRow(r);
       if (detLink) detLink.hidden = true;
       detFold.open = true;
       var wrap = document.createElement("div");
@@ -1170,19 +1310,43 @@
       function done() {
         if (my !== token) return;
         if (opts.ai && dPanel) { setDetailAi(true); toDetail(); return; }
-        var target = opts.ai ? detBody.querySelector(".ai") : (opts.anchor && document.getElementById(opts.anchor));
+        var target = opts.ai ? detBody.querySelector(".ai") : (opts.anchor && inDetail(opts.anchor));
         if (target && detBody.contains(target)) openTo(target);
         else if (opts.ai || opts.anchor) toDetail();
       }
+      var need = missingRemote(r);
       if (isClass) {
         wrap.classList.add("nsx-loading");
-        classPage(r.getAttribute("data-href")).then(function (main) {
+        Promise.all([classPage(r.getAttribute("data-href")),
+                     need.length ? remotePage(r.getAttribute("data-page")).catch(function () { return null; }) : null]).then(function (res) {
+          var main = res[0];
           pageCache[r.getAttribute("data-href")] = main;
           if (my !== token) return;
           keepAnchor(function () {
             wrap.classList.remove("nsx-loading");
             var c = main.cloneNode(true);
             while (c.firstChild) wrap.appendChild(c.firstChild);
+            finish();
+          });
+          done();
+        }, function () {
+          if (my !== token) return;
+          keepAnchor(function () {
+            wrap.classList.remove("nsx-loading");
+            fallback(labels.fail);
+            finish();
+          });
+          done();
+        });
+      } else if (need.length) {
+        // Clusterseiten: Records liegen auf der Seite des Teils
+        wrap.classList.add("nsx-loading");
+        remotePage(r.getAttribute("data-page")).then(function () {
+          if (my !== token) return;
+          keepAnchor(function () {
+            wrap.classList.remove("nsx-loading");
+            words(r, "data-recs").forEach(function (id) { borrow(id, wrap); });
+            if (!wrap.children.length) fallback(labels.fail);
             finish();
           });
           done();
@@ -1336,7 +1500,7 @@
       }
       if (recOwner[id]) {
         ev.preventDefault();
-        if (selected === recOwner[id] && detBody.contains(document.getElementById(id))) openTo(document.getElementById(id));
+        if (selected === recOwner[id] && inDetail(id)) openTo(inDetail(id));
         else select(recOwner[id], { anchor: id });
       }
     });

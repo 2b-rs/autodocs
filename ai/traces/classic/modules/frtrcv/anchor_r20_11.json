@@ -1,20 +1,35 @@
 {
- "annahmen": [],
+ "annahmen": [
+  "Text:",
+  "1) FrIf bildet FrIf_SetTransceiverMode/FrIf_GetTransceiverWUReason auf die gleichnamigen FrTrcv-Dienste ab – Begründung: Fig. 9.1 zeigt FrIf als Aufrufer von FrTrcv_SetTransceiverMode, die FrSM-Abläufe nutzen FrIf-Dienste mit gleicher Bedeutung, eine explizite Abbildung fehlt im Payload.",
+  "2) Die Konfigurationsstruktur aus R23-11 ff. (FrTrcvGeneral/FrTrcvChannel/FrTrcvAccess) gilt im Kern auch für R20-11 – Begründung: Für R20-11 liegt keine Konfigurationsdokumentstelle vor.",
+  "3) Die Meldung durch FrTrcv_CheckWakeupByTransceiver betrifft die von FrTrcv_MainFunction gespeicherten Weckereignisse – Begründung: Beide Aussagen stehen getrennt in der Spezifikation, ihr Zusammenhang ist nicht ausdrücklich formuliert. | diag-kontext:",
+  "1) wie Text-Annahme 1. | diag-standby:",
+  "1) Reihenfolge von Wartezeit und ICU-Freigabe innerhalb des STANDBY-Übergangs – Begründung: Das Schaubild zeigt nur Dio-Zugriffe, Wartezeit und ICU-Freigabe stammen aus eigenständigen Requirements. | diag-wakeup:",
+  "1) FrIf als Aufrufer von GetTransceiverWUReason/ClearTransceiverWakeup – Begründung: Die Spezifikation nennt nur „höhere Schicht“.",
+  "2) Die Meldung an EcuM erfolgt nur bei gespeichertem Ereignis – Begründung: wie Text-Annahme 3. | diag-dualwakeup:",
+  "1) wie Text-Annahme 1.",
+  "2) Die Kanalwahl für SetWakeupChannel hängt von den abgefragten Weckgründen ab – Begründung: Die Reihenfolge der FrSM-Schaubilder ist im Payload nur bruchstückhaft lesbar. | diag-fehlerpruefung:",
+  "1) Nach FRTRCV_E_UNINIT bzw. FRTRCV_E_PARAM_POINTER endet der Aufruf mit E_NOT_OK ohne Wirkung – Begründung: Der Rückgabewert ist nur für Indexfehler und Zustandswechselfehler belegt.",
+  "2) Prüfreihenfolge Init → Zeiger → Index → Hardware – Begründung: Die Spezifikation legt keine Reihenfolge fest. | diag-konfiguration:",
+  "1) wie Text-Annahme 2.",
+  "2) FrTrcvIcuChannelRef ist dem Kanal-Container zugeordnet – Begründung: Das Requirement nennt den Parameter, aber nicht seinen Container."
+ ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-context",
-   "quelle": "anchor_r20_11.diag-context.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-statemachine",
-   "quelle": "anchor_r20_11.diag-statemachine.dot"
+   "id": "diag-zustand",
+   "quelle": "anchor_r20_11.diag-zustand.dot"
   },
   {
    "art": "seq",
-   "id": "diag-modeswitch",
-   "quelle": "anchor_r20_11.diag-modeswitch.seq.json"
+   "id": "diag-standby",
+   "quelle": "anchor_r20_11.diag-standby.seq.json"
   },
   {
    "art": "seq",
@@ -22,48 +37,86 @@
    "quelle": "anchor_r20_11.diag-wakeup.seq.json"
   },
   {
-   "art": "dot",
-   "id": "diag-branchctrl",
-   "quelle": "anchor_r20_11.diag-branchctrl.dot"
+   "art": "seq",
+   "id": "diag-dualwakeup",
+   "quelle": "anchor_r20_11.diag-dualwakeup.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-errorhandling",
-   "quelle": "anchor_r20_11.diag-errorhandling.dot"
+   "id": "diag-konfiguration",
+   "quelle": "anchor_r20_11.diag-konfiguration.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-fehlerpruefung",
+   "quelle": "anchor_r20_11.diag-fehlerpruefung.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/frtrcv/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver": "SNIP_CLASSIC_FRTRCV_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver",
+    "SNIP_CLASSIC_FRTRCV_SECTION_8_3_1_FrTrcv_Init": "SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init"
+   },
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_FRTRCV_SECTION_8_4_Callback_notifications",
+    "SNIP_det_AUTOSAR_SWS_Flex_P100_273",
+    "SNIP_det_AUTOSAR_SWS_Flex_P23_307",
+    "SNIP_det_AUTOSAR_SWS_Flex_P26_308",
+    "SNIP_det_AUTOSAR_SWS_Flex_P26_309",
+    "SNIP_det_AUTOSAR_SWS_Flex_P28_311",
+    "SNIP_det_AUTOSAR_SWS_Flex_P33_316",
+    "SNIP_det_AUTOSAR_SWS_Flex_P33_317",
+    "SNIP_det_AUTOSAR_SWS_Flex_P34_318",
+    "SNIP_det_AUTOSAR_SWS_Flex_P36_322",
+    "SNIP_det_AUTOSAR_SWS_Flex_P36_323",
+    "SNIP_det_AUTOSAR_SWS_Flex_P47_333",
+    "SNIP_det_AUTOSAR_SWS_Flex_P52_336"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 36,
+  "im_prompt_schaubilder": 8,
+  "kandidaten": 51,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "a49eac2583db3973246286da132a8309c5fb96a798e08dec4dfeabdbd7419058",
- "output_store": "ai/store/outputs/a4/a49eac2583db3973246286da132a8309c5fb96a798e08dec4dfeabdbd7419058.html",
+ "output_sha256": "cbb74f60b37b26e3e89a4f2e057a4235ab6908b5643109041bc8542549af2c02",
+ "output_store": "ai/store/outputs/cb/cbb74f60b37b26e3e89a4f2e057a4235ab6908b5643109041bc8542549af2c02.html",
  "params": {
   "module": "frtrcv",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "320929c47a497a89643cdba350caab4e83ac01907081a83c56d5e18964998875",
- "prompt_store": "ai/store/prompts/32/320929c47a497a89643cdba350caab4e83ac01907081a83c56d5e18964998875.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "506114d84dd83ca0d7bbc1eb784f8e8b99087799a1adbc8433b801493a0c9aea",
+ "prompt_store": "ai/store/prompts/50/506114d84dd83ca0d7bbc1eb784f8e8b99087799a1adbc8433b801493a0c9aea.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -75,18 +128,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:44:13Z",
-   "duration_seconds": 35.861668,
-   "route": "agy-cli-print",
-   "run_id": "1061ba7c-34e0-4fb0-9d64-7e1fa3fed915",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/1061ba7c-34e0-4fb0-9d64-7e1fa3fed915.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.055772,
+   "cost_usd_reported": 1.055772,
+   "created_at": "2026-10-09T07:08:24Z",
+   "duration_api_seconds": 340.328,
+   "duration_seconds": 340.408,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.055772,
+     "inputTokens": 41823,
+     "maxOutputTokens": 128000,
+     "outputTokens": 44424,
+     "provider": "firstParty",
+     "thinkingTokens": 22282,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "68183357-69f3-4ce5-ba9a-b4ef4942ea44",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/68183357-69f3-4ce5-ba9a-b4ef4942ea44.json",
    "usage": {
-    "cache_read_tokens": 8154,
-    "input_tokens": 11095,
-    "output_tokens": 12542,
-    "thinking_tokens": 2986,
-    "total_tokens": 23637
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 41823,
+    "output_tokens": 44424,
+    "output_tokens_details": {
+     "thinking_tokens": 22282
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 41823,
+    "output": 44424,
+    "thinking": 22282
+   },
+   "wall_seconds": 342.175
   }
  ],
  "schema": "ai-trace@2",

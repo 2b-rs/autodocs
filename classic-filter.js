@@ -128,9 +128,10 @@
   function isClassicPage() {
     if (typeof window === "undefined" || typeof document === "undefined") return false;
     // Namespace-Seiten haben ihr eigenes einheitliches Layout (ns-index.js); auf
-    // Classic-Modulseiten (section.nsx-mod) übernimmt es nur im Kompaktmodus
+    // Classic-Modul- und Clusterseiten (section.nsx-mod, section.nsx-clu) übernimmt es
+    // nur im Kompaktmodus
     var nsx = document.querySelector("section.nsx");
-    if (nsx && (!nsx.classList.contains("nsx-mod") ||
+    if (nsx && (!(nsx.classList.contains("nsx-mod") || nsx.classList.contains("nsx-clu")) ||
         document.documentElement.getAttribute("data-density") === "compact")) return false;
     var pathname = window.location.pathname || "";
     if (pathname.indexOf("/classic/") !== -1 || pathname.endsWith("classic") || pathname.endsWith("classic.html")) {

@@ -1,67 +1,177 @@
 {
  "annahmen": [
-  "1) Der InstanceSpecifier in den Provider-Konstruktoren verknüpft die jeweilige C++-Instanz mit einem im AUTOSAR-Modell deklarierten Port des ausführenden Prozesses. – Begründung: Entspricht dem einheitlichen Instanziierungsmodell von AUTOSAR Adaptive für typisierte Kommunikations-Ports.",
-  "2) Die Methode ModifyContextData dient dazu, dass Sicherheitsmodule vor der Weiterleitung zusätzliche systemspezifische Metadaten in den Puffer einfügen. – Begründung: Die Signatur nimmt einen beschreibbaren Span entgegen und liefert die Anzahl zusätzlich geschriebener Bytes zurück."
+  "1) GetTimestamp() wird vermutlich aufgerufen, wenn ein SEv ohne Zeitstempel gemeldet wird – Begründung: so beschrieben im R20-11-Text der Classic Platform (SWS IdsM S. 34); die R25-11-Requirements regeln nur die Freigabe über Offer/StopOffer.",
+  "2) Der uint16-Anteil von VersionedContextDataType dürfte der version einer SecurityEventContextDataDefinition entsprechen – Begründung: Beispiel in TPS SecXT S. 66; [SWS_AIDSM_10206] nennt nur „versioniert“.",
+  "3) Reporting Mode wird vor der Filterkette ausgewertet, die Filter laufen in der Reihenfolge state, oneEveryN, aggregation, threshold, und die Kette bricht beim ersten Verwerfen ab – Begründung: R20-11-Text der Classic Platform (SWS IdsM S. 25) und Modellreihenfolge in TPS SecXT S. 21; die R25-11-Requirements des Payloads schweigen dazu. Diagramme: diag-anreicherung nutzt Annahme 1; diag-qualifizierung nutzt Annahme 3; diag-firewall D1) Zuordnung der informativen Schritte raiseSecurityEvent() und handlePacketBlocked() zu den Lebenslinien – Begründung: Die Bildtexte von Figure 11.21 nennen die Schritte ohne eindeutige Reihenfolge."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-idsm-arch",
-   "quelle": "anchor_r25_11.diag-idsm-arch.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r25_11.diag-kontext.dot"
   },
   {
    "art": "seq",
-   "id": "diag-report-flow",
-   "quelle": "anchor_r25_11.diag-report-flow.seq.json"
+   "id": "diag-firewall",
+   "quelle": "anchor_r25_11.diag-firewall.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-provider-lifecycle",
-   "quelle": "anchor_r25_11.diag-provider-lifecycle.dot"
+   "id": "diag-provider-lebenszyklus",
+   "quelle": "anchor_r25_11.diag-provider-lebenszyklus.dot"
   },
   {
    "art": "seq",
-   "id": "diag-qualification-flow",
-   "quelle": "anchor_r25_11.diag-qualification-flow.seq.json"
+   "id": "diag-anreicherung",
+   "quelle": "anchor_r25_11.diag-anreicherung.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-reporting-mode",
+   "quelle": "anchor_r25_11.diag-reporting-mode.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-mode-eval",
-   "quelle": "anchor_r25_11.diag-mode-eval.dot"
+   "id": "diag-qualifizierung",
+   "quelle": "anchor_r25_11.diag-qualifizierung.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-qsev-empfang",
+   "quelle": "anchor_r25_11.diag-qsev-empfang.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-manifest",
+   "quelle": "anchor_r25_11.diag-manifest.dot"
   }
  ],
  "fragment": "content/ai/modules/idsm/anchor_r25_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_COM_FIGURE_Figure_9_26": "SNIP_ADAPTIVE_COM_FIGURE_Figure_9_26"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P3_03",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P4_04",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P5_05",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P6_06"
+   ],
+   "ohne_inhalt": [
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P100_108",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P101_109",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P102_110",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P103_111",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P104_112",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P18_23",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P1_01",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P23_28",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P26_31",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P27_32",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P35_40",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P41_48",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P45_52",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P46_53",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P47_54",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P48_55",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P49_56",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P50_57",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P51_58",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P52_59",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P53_60",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P54_61",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P55_62",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P56_63",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P57_64",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P58_65",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P59_66",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P60_67",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P61_68",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P62_69",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P63_70",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P65_72",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P67_74",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P67_75",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P68_76",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P69_77",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P70_78",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P71_79",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P72_80",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P73_81",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P74_82",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P75_83",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P76_84",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P77_85",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P78_86",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P79_87",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P80_88",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P81_89",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P82_90",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P83_91",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P84_92",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P85_93",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P86_94",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P87_95",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P88_96",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P89_97",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P8_09",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P8_10",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P90_98",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P91_99",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P92_100",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P93_101",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P94_102",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P95_103",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P96_104",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P97_105",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P98_106",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P99_107",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P9_11",
+    "SNIP_idsm_AUTOSAR_AP_SWS_I_P9_12"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 86,
+  "im_prompt_schaubilder": 47,
+  "kandidaten": 161,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "bfc73605bd4b9b684d238dbf7d4bec941cb494b5f5207da463e8d1a24dc54a5d",
- "output_store": "ai/store/outputs/bf/bfc73605bd4b9b684d238dbf7d4bec941cb494b5f5207da463e8d1a24dc54a5d.html",
+ "output_sha256": "72603a0a62d350490fe48fbf38374a0e2af927e1190f60f61aef62cae151c495",
+ "output_store": "ai/store/outputs/72/72603a0a62d350490fe48fbf38374a0e2af927e1190f60f61aef62cae151c495.html",
  "params": {
   "module": "idsm",
   "platform": "adaptive",
   "release": "R25-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "3f2ed0c9f76ed51168dce672039b2afd99b8ab8b65bc8b2ea2f07ea308cb42fe",
- "prompt_store": "ai/store/prompts/3f/3f2ed0c9f76ed51168dce672039b2afd99b8ab8b65bc8b2ea2f07ea308cb42fe.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "99dd5a1658c0833a66222e8d1f995580b5935b4baf637b9c41d29deb0ebd6054",
+ "prompt_store": "ai/store/prompts/99/99dd5a1658c0833a66222e8d1f995580b5935b4baf637b9c41d29deb0ebd6054.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R25-11"
  ],
@@ -73,18 +183,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T12:20:54Z",
-   "duration_seconds": 43.291517,
-   "route": "agy-cli-print",
-   "run_id": "9fc341e3-c70c-414f-93ad-6128f84b1385",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/9fc341e3-c70c-414f-93ad-6128f84b1385.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.104228,
+   "cost_usd_reported": 1.104228,
+   "created_at": "2026-10-09T07:44:30Z",
+   "duration_api_seconds": 387.171,
+   "duration_seconds": 387.42,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.104228,
+     "inputTokens": 79927,
+     "maxOutputTokens": 128000,
+     "outputTokens": 39226,
+     "provider": "firstParty",
+     "thinkingTokens": 19369,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "f11d6d57-584a-4ea5-b94d-508bae182682",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/f11d6d57-584a-4ea5-b94d-508bae182682.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 22631,
-    "output_tokens": 15266,
-    "thinking_tokens": 6385,
-    "total_tokens": 37897
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 79927,
+    "output_tokens": 39226,
+    "output_tokens_details": {
+     "thinking_tokens": 19369
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 79927,
+    "output": 39226,
+    "thinking": 19369
+   },
+   "wall_seconds": 390.051
   }
  ],
  "schema": "ai-trace@2",

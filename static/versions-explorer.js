@@ -7,6 +7,10 @@
  * versions/data/<id>.json. Fehlt der Explorer-Index, dient versions/catalog.json
  * als Rückfall (nur Suche und Grundfilter).
  *
+ * Dateinamen je Kennung folgen _src/tools/case_safe_names.py: schlicht <id>, bei
+ * Kennungen, die sich nur in der Schreibweise unterscheiden, <id>~<Maske>. Welche
+ * Stämme abweichen, steht in elements.json ("names") bzw. im "file" des Katalogs.
+ *
  * Der reine Kern (Zustand <-> URL, Facettenfilter, Zählungen) ist unter Node
  * als module.exports verfügbar und wird von _src/tests/test_versions_explorer.py
  * geprüft.
@@ -95,10 +99,11 @@
   function decodeElements(raw) {
     var c = raw.cols;
     var n = c.id.length;
+    var nm = raw.names || {};
     var idx = {
       n: n, ids: c.id, names: c.name, kind: c.kind, mod: c.mod, cl: c.cl, doc: c.doc, plat: c.plat,
       rel: c.rel, chg: c.chg, first: c.first, last: c.last, st: c.st, nv: c.nv, fig: c.fig, snip: c.snip,
-      ai: c.ai, page: c.page, full: true,
+      ai: c.ai, page: c.page, full: true, stems: { rec: nm.records || {}, item: nm.items || {} },
       dict: { kind: raw.kinds, plat: raw.platforms, doc: raw.docs, mod: raw.modules, cl: raw.clusters,
               rel: raw.releases },
       counts: raw.counts || {}, byId: new Map(), hay: new Array(n)
@@ -121,7 +126,10 @@
     var plats = ["AP", "CP"];
     var cols = { id: [], name: [], kind: [], mod: [], cl: [], doc: [], plat: [], rel: [], chg: [], first: [],
                  last: [], st: [], nv: [], fig: [], snip: [], ai: [], page: [] };
+    var recStems = {};
     items.forEach(function (it) {
+      var m = /^versions\/data\/(.+)\.json$/.exec(it.file || "");
+      if (m && m[1] !== it.id) recStems[it.id] = m[1];
       var mask = 0, first = -1, last = -1;
       (it.releases || []).forEach(function (r) {
         var k = ri[r]; mask |= (1 << k);
@@ -135,7 +143,7 @@
       cols.fig.push(0); cols.snip.push(0); cols.ai.push(0); cols.page.push(0);
     });
     var idx = decodeElements({ cols: cols, kinds: [], platforms: plats, docs: [], modules: [], clusters: [],
-                               releases: releases });
+                               releases: releases, names: { records: recStems } });
     idx.full = false;
     return idx;
   }
@@ -336,10 +344,14 @@
 
   /**
    * Segmente der Zeitachse in Release-Reihenfolge:
-   *   absent  – Plattform-Releases vor dem ersten Auftreten (nicht vorhanden bis einschließlich …)
-   *   content – aufeinanderfolgende Releases mit gleichem (normalisiertem) Inhalt
-   *   gap     – Plattform-Releases zwischen zwei Auftreten, in denen das Element fehlt
-   *   dropped – Plattform-Releases nach dem letzten Auftreten (entfallen)
+   *   absent    – Plattform-Releases vor dem ersten Auftreten (nicht vorhanden bis einschließlich …)
+   *   content   – aufeinanderfolgende Releases mit gleichem (normalisiertem) Inhalt
+   *   presence  – Releases, in denen das Spezifikations-PDF das Element definiert, der Wortlaut
+   *               aber nicht erfasst ist (text_captured: false); kein Vergleich möglich
+   *   gap       – Plattform-Releases zwischen zwei Auftreten, in denen das Element fehlt
+   *   dropped   – Plattform-Releases nach dem letzten Auftreten (entfallen)
+   *   unchecked – Releases, deren Spezifikation für das Element nicht ausgewertet wurde
+   *               (lifecycle.unchecked); weder „entfallen“ noch „nicht vorhanden“
    * Ein Segment nennt nur die Releases, die es tatsächlich umfasst.
    */
   function buildTimeline(versions, lifecycle) {
@@ -351,22 +363,43 @@
       else byRel.push(v);
     });
     var recorded = byRel.map(function (v) { return v.release; });
+    var unchecked = sortReleases(lifecycle.unchecked || []);
+    var dropIn = lifecycle.is_dropped ? sortReleases(lifecycle.dropped_in || []) : [];
     var universe = sortReleases([].concat(lifecycle.platform_releases || [], recorded, lifecycle.absent_before || [],
-                                          lifecycle.dropped_in || []));
+                                          lifecycle.dropped_in || [], unchecked));
     var segs = [];
     if (!recorded.length) return segs;
-    var firstKey = releaseKey(recorded[0]);
-    var absent = lifecycle.platform_releases
+    function pushRuns(list, type) {
+      var run = null;
+      list.forEach(function (r) {
+        var ty = unchecked.indexOf(r) >= 0 ? "unchecked" : type;
+        if (run && run.type === ty) run.releases.push(r);
+        else { run = { type: ty, releases: [r] }; segs.push(run); }
+        if (ty === "absent") run.until = r;
+        if (ty === "dropped" && !run.from) run.from = r;
+      });
+      return list.length > 0;
+    }
+    var firstKey = releaseKey(recorded[0]), lastKey = releaseKey(recorded[recorded.length - 1]);
+    var before = lifecycle.platform_releases
       ? universe.filter(function (r) { return releaseKey(r) < firstKey && recorded.indexOf(r) < 0; })
       : sortReleases(lifecycle.absent_before || []);
-    if (absent.length) segs.push({ type: "absent", releases: absent, until: absent[absent.length - 1] });
-    var seen = {}, cur = null, prevRel = null, lastContent = null;
+    pushRuns(before, "absent");
+    var seen = {}, cur = null, pres = null, prevRel = null, lastContent = null;
     byRel.forEach(function (v) {
       if (prevRel && lifecycle.platform_releases) {
         var lo = releaseKey(prevRel), hi = releaseKey(v.release);
         var gap = universe.filter(function (r) { var k = releaseKey(r); return k > lo && k < hi && recorded.indexOf(r) < 0; });
-        if (gap.length) { segs.push({ type: "gap", releases: gap }); cur = null; }
+        if (pushRuns(gap, "gap")) { cur = null; pres = null; }
       }
+      prevRel = v.release;
+      if (v.text_captured === false) {
+        if (pres) pres.releases.push(v.release);
+        else { pres = { type: "presence", releases: [v.release] }; segs.push(pres); }
+        cur = null;
+        return;
+      }
+      pres = null;
       var n = normContent(v.content), h = versionHash(v);
       if (cur && cur.norm === n) {
         cur.releases.push(v.release); cur.versions.push(v); cur.lastRelease = v.release;
@@ -380,22 +413,46 @@
         segs.push(cur);
         lastContent = cur;
       }
-      prevRel = v.release;
     });
-    var dropped = lifecycle.is_dropped ? sortReleases(lifecycle.dropped_in || []) : [];
-    if (dropped.length) segs.push({ type: "dropped", releases: dropped, from: dropped[0] });
+    var after = universe.filter(function (r) {
+      return releaseKey(r) > lastKey && recorded.indexOf(r) < 0 && (unchecked.indexOf(r) >= 0 || dropIn.indexOf(r) >= 0);
+    });
+    pushRuns(after, "dropped");
     return segs;
   }
 
   // ------------------------------------------------------------------ Hilfen
 
-  function figureHref(root, id) {
-    return /^FIG-/.test(id) ? root + "spec/figures/" + encodeURIComponent(id) + ".html"
-                            : root + "spec/snippets/" + encodeURIComponent(id) + ".html";
+  // Dateistämme (case_safe_names.py): Großschreibungsmaske = eine Hex-Ziffer je vier ASCII-Buchstaben,
+  // erster Buchstabe höchstes Bit, 1 = groß (SWS_CanIf_00068 -> "f2", SWS_CANIF_00068 -> "ff").
+  function caseMask(id) {
+    var out = "", v = 0, k = 0, s = String(id);
+    for (var i = 0; i < s.length; i++) {
+      var ch = s.charAt(i);
+      if (!/[A-Za-z]/.test(ch)) continue;
+      v = v * 2 + (/[A-Z]/.test(ch) ? 1 : 0);
+      if (++k === 4) { out += v.toString(16); v = 0; k = 0; }
+    }
+    if (k) out += (v << (4 - k)).toString(16);
+    return out || "0";
+  }
+  function safeStem(id) { return String(id).replace(/[^A-Za-z0-9_.\-]/g, "_"); }
+  function markedStem(id) { return safeStem(id) + "~" + caseMask(id); }
+  // stems: abweichende Stämme aus dem Index (Kennung -> Stamm); sonst der schlichte Stamm
+  function fileStem(id, stems) {
+    return stems && Object.prototype.hasOwnProperty.call(stems, id) ? stems[id] : safeStem(id);
   }
 
-  function itemFile(id) {
-    return String(id).replace(/[^A-Za-z0-9_.\-]/g, "_") + ".json";
+  function figureHref(root, id, stems) {
+    return root + "spec/" + (/^FIG-/.test(id) ? "figures/" : "snippets/") + encodeURIComponent(fileStem(id, stems)) + ".html";
+  }
+
+  function itemFile(id, stems) {
+    return fileStem(id, stems) + ".json";
+  }
+
+  function recordFile(id, stems) {
+    return fileStem(id, stems) + ".json";
   }
 
   function thumbUrl(root, sha) {
@@ -427,7 +484,8 @@
     serializeState: serializeState, activeCount: activeCount, decodeElements: decodeElements,
     decodeCatalog: decodeCatalog, elementGroups: elementGroups, facetFilter: facetFilter,
     filterElements: filterElements, decodeItems: decodeItems, filterItems: filterItems,
-    figureHref: figureHref, itemFile: itemFile, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
+    figureHref: figureHref, itemFile: itemFile, recordFile: recordFile, caseMask: caseMask, safeStem: safeStem,
+    markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
     catalogPdfUrl: catalogPdfUrl, textMatcher: textMatcher, normContent: normContent, releaseKey: releaseKey,
     sortVersions: sortVersions, buildTimeline: buildTimeline, versionHash: versionHash
   };
@@ -833,6 +891,8 @@
 
   // ------------------------------------------------------------------ Laden
   var loading = {};
+  // Abweichende Dateistämme aus dem geladenen Index (rec: versions/data, item: items/ und Belegseiten)
+  function stems(kind) { return (data.el && data.el.stems && data.el.stems[kind]) || null; }
   function fetchJson(url) {
     return fetch(url).then(function (r) {
       if (!r.ok) throw new Error(r.status + " " + url);
@@ -1156,14 +1216,17 @@
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     }
     var p = (EL.rec && EL.rec.id === id) ? Promise.resolve(EL.rec) :
-      fetchJson(ROOT + "versions/data/" + encodeURIComponent(id) + ".json")
+      fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))))
         .catch(function () { return fetchJson("/api/versions?id=" + encodeURIComponent(id)); });
     p.then(function (rec) {
       if (my !== token.el) return;
       if (!rec || (!rec.ok && !rec.versions)) throw new Error(t("not_found", { id: id }));
       rec.id = id;
       if (EL.rec !== rec) {
-        rec.versions = C.sortVersions(rec.versions || []);
+        // Präsenz-Einträge (im PDF vorhanden, Wortlaut nicht erfasst) gehören in die Zeitachse,
+        // aber nicht in den Vergleich: rec.versions enthält nur erfassten Wortlaut.
+        rec.allVersions = C.sortVersions(rec.versions || []);
+        rec.versions = rec.allVersions.filter(function (v) { return v.text_captured !== false; });
         EL.rec = rec;
         EL.figShown = PAGE.fig; EL.snipShown = PAGE.snip;
         initCompare(rec);
@@ -1182,7 +1245,7 @@
   function initCompare(rec) {
     var versions = rec.versions || [];
     var lifecycle = rec.lifecycle || {};
-    rec.timeline = C.buildTimeline(versions, lifecycle);
+    rec.timeline = C.buildTimeline(rec.allVersions || versions, lifecycle);
     var e = rec.epochs = rec.timeline.filter(function (x) { return x.type === "content"; });
     var drop = rec.timeline.filter(function (x) { return x.type === "dropped"; })[0];
     var from = state.from, to = state.to;
@@ -1207,7 +1270,7 @@
     var latest = versions[versions.length - 1] || {};
     return lc.is_dropped
       ? '<span class="ve-pill-dropped">' + esc(t("pill_dropped", { rel: lc.first_dropped_release || "", last: lc.last_active_release || "" })) + "</span>"
-      : '<span class="ve-pill-ok">' + esc(t("pill_active", { rel: latest.release || "" })) + "</span>";
+      : '<span class="ve-pill-ok">' + esc(t("pill_active", { rel: lc.last_active_release || latest.release || "" })) + "</span>";
   }
 
   function renderElement() {
@@ -1273,7 +1336,7 @@
   // verborgen, bis feststeht, dass die Seiten veröffentlicht sind (Index der jeweiligen Seitenfamilie).
   function canonLink(id, cls) {
     var fam = /^FIG-/.test(id) ? "fig" : "snip";
-    return '<a class="ve-linkbtn ' + (cls || "") + '" hidden data-canon="' + fam + '" href="' + esc(C.figureHref(ROOT, id)) + '">' +
+    return '<a class="ve-linkbtn ' + (cls || "") + '" hidden data-canon="' + fam + '" href="' + esc(C.figureHref(ROOT, id, stems("item"))) + '">' +
       esc(t(fam === "fig" ? "page_fig" : "page_snip")) + "</a>";
   }
   var canonProbe = null;
@@ -1423,6 +1486,15 @@
           esc(title) + '</span><span class="ve-epoch-status ve-status-absent">' + esc(t("ep_absent")) + '</span></div><div class="ve-epoch-body"><div>' +
           esc(seg.type === "absent" ? t("ep_absent_text", { rel: seg.releases[seg.releases.length - 1] }) : t("ep_gap_text", { rels: seg.releases.join(", ") })) +
           '</div><div class="ve-epoch-subreleases">' + seg.releases.map(function (r) { return '<span class="ve-epoch-rel-pill">' + esc(r) + "</span>"; }).join(" ") +
+          "</div></div></div>";
+      }
+      if (seg.type === "presence" || seg.type === "unchecked") {
+        var isPres = seg.type === "presence";
+        return '<div class="ve-epoch-card ve-epoch-absent ve-epoch-' + seg.type + '" data-epoch="' + seg.type + '"><div class="ve-epoch-header"><span class="ve-epoch-span">' +
+          esc(span) + '</span><span class="ve-epoch-status ' + (isPres ? "ve-status-presence" : "ve-status-unchecked") + '">' +
+          esc(t(isPres ? "ep_presence" : "ep_unchecked")) + '</span></div><div class="ve-epoch-body"><div>' +
+          esc(t(isPres ? "ep_presence_text" : "ep_unchecked_text")) + '</div><div class="ve-epoch-subreleases">' +
+          seg.releases.map(function (r) { return '<span class="ve-epoch-rel-pill">' + esc(r) + "</span>"; }).join(" ") +
           "</div></div></div>";
       }
       if (seg.type === "dropped") {
@@ -1941,7 +2013,7 @@
     var r = ui[tab];
     var my = ++token[tab];
     r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
-    fetchJson(ROOT + "versions/explorer/items/" + C.itemFile(id)).then(function (info) {
+    fetchJson(ROOT + "versions/explorer/items/" + encodeURIComponent(C.itemFile(id, stems("item")))).then(function (info) {
       if (my !== token[tab]) return;
       shown[tab] = id;
       r.vbody.innerHTML = itemHtml(tab, info);

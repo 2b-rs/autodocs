@@ -1,73 +1,101 @@
 {
  "annahmen": [
-  "1) FrSMTrcvStdbyDelay-Verhalten bei Werten größer null führt zu verzögertem Übergang – Begründung: Folgt direkt aus der negierten Bedingung von SWS_FrSM_00209 bezüglich des Timers t_TrcvStdbyDelay."
+  "1) Text: FrSM_BswM_StateType meldet CcCtrl-Zustand und TrcvCtrl-Passivstatus kombiniert in einem Wert – Begründung: Der Wertebereich führt jeden Zustand doppelt mit Suffix _ECU_PASSIVE; eine Zuordnungsregel enthält der Payload nicht.",
+  "2) Text: Eine SilentCom-Anforderung löst FRSM_E_INV_MODE aus – Begründung: SilentCom ist laut 7.3.3 nicht unterstützt und SWS_FrSM_91001 definiert „Invalid communication mode requested“; die Verknüpfung ist nicht ausdrücklich belegt.",
+  "3) Diagramm diag-hochlauf: Reihenfolge der FrIf-Aufrufe im Startup – Begründung: Die Figurtexte im Payload sind nur ungeordnet extrahiert.",
+  "4) Diagramm diag-keyslot: ComM_BusSM_ModeIndication(FULL) erst bei Erreichen von FRSM_ONLINE – Begründung: Die Position in Figure 9.10 ist nicht eindeutig; die Annahme passt dazu, dass GetCurrentComMode in KEYSLOT_ONLY NoCom liefert.",
+  "5) Diagramm diag-abschaltung: Reihenfolge der Aufrufe innerhalb von FrSM_RequestComMode – Begründung: Der Figurtext zu Figure 9.11 ist nur ungeordnet extrahiert."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-frsm-context",
-   "quelle": "anchor_r20_11.diag-frsm-context.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-frsm-states",
-   "quelle": "anchor_r20_11.diag-frsm-states.dot"
+   "id": "diag-zustaende",
+   "quelle": "anchor_r20_11.diag-zustaende.dot"
   },
   {
    "art": "seq",
-   "id": "diag-frsm-mode-request",
-   "quelle": "anchor_r20_11.diag-frsm-mode-request.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-frsm-allslots-flow",
-   "quelle": "anchor_r20_11.diag-frsm-allslots-flow.seq.json"
+   "id": "diag-hochlauf",
+   "quelle": "anchor_r20_11.diag-hochlauf.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-frsm-halt-decision",
-   "quelle": "anchor_r20_11.diag-frsm-halt-decision.dot"
+   "id": "diag-wakeup",
+   "quelle": "anchor_r20_11.diag-wakeup.dot"
   },
   {
    "art": "seq",
-   "id": "diag-frsm-syncloss-seq",
-   "quelle": "anchor_r20_11.diag-frsm-syncloss-seq.seq.json"
+   "id": "diag-keyslot",
+   "quelle": "anchor_r20_11.diag-keyslot.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-abschaltung",
+   "quelle": "anchor_r20_11.diag-abschaltung.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/frsm/anchor_r20_11.html",
- "lint": [
-  "zitiert SWS_FrSM_000190, nicht im Prompt (INV-QL-08)"
- ],
- "output_sha256": "8f0d68202d08f3d075202aa74b4349aaaef62c1d93236a9f2a743b61c032519a",
- "output_store": "ai/store/outputs/8f/8f0d68202d08f3d075202aa74b4349aaaef62c1d93236a9f2a743b61c032519a.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_FRIF_SECTION_8_3_5_FrSM_AllSlots": "SNIP_CLASSIC_FRSM_SECTION_8_3_5_FrSM_AllSlots",
+    "SNIP_CLASSIC_FRIF_SECTION_8_3_6_FrSM_SetEcuPassive": "SNIP_CLASSIC_FRSM_SECTION_8_3_6_FrSM_SetEcuPassive"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_CLASSIC_FRSM_SECTION_10_3_Published_Information"
+   ],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_FRSM_SECTION_7_Functional_specification",
+    "SNIP_CLASSIC_FRSM_SECTION_8_API_specification",
+    "SNIP_CLASSIC_FRSM_SECTION_9_Sequence_diagrams",
+    "SNIP_det_AUTOSAR_SWS_Flex_P40_299"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 42,
+  "im_prompt_schaubilder": 15,
+  "kandidaten": 49,
+  "schema": "guide-context@1"
+ },
+ "lint": [],
+ "output_sha256": "4088a9362590298f8bccc97cca2b7975dbbd578331b4fdd36d47866ff0fa817a",
+ "output_store": "ai/store/outputs/40/4088a9362590298f8bccc97cca2b7975dbbd578331b4fdd36d47866ff0fa817a.html",
  "params": {
   "module": "frsm",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "5f5a8cdeea5f6149d3a78623eef455da6ce1f706bbbca5e6f8977420dd4791da",
- "prompt_store": "ai/store/prompts/5f/5f5a8cdeea5f6149d3a78623eef455da6ce1f706bbbca5e6f8977420dd4791da.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "f922c98546e248eae814dc77317049df2ef4a2501c27e92860fbf173296e8211",
+ "prompt_store": "ai/store/prompts/f9/f922c98546e248eae814dc77317049df2ef4a2501c27e92860fbf173296e8211.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -79,18 +107,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:44:00Z",
-   "duration_seconds": 35.805205,
-   "route": "agy-cli-print",
-   "run_id": "d469b7f4-543f-4d48-9603-1d0f461fcdf4",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/d469b7f4-543f-4d48-9603-1d0f461fcdf4.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.436732,
+   "cost_usd_reported": 1.436732,
+   "created_at": "2026-10-09T07:06:56Z",
+   "duration_api_seconds": 469.918,
+   "duration_seconds": 470.036,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.436732,
+     "inputTokens": 48888,
+     "maxOutputTokens": 128000,
+     "outputTokens": 62059,
+     "provider": "firstParty",
+     "thinkingTokens": 37448,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "f382d430-61c7-4f70-a4ff-2208bb3f41b5",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/f382d430-61c7-4f70-a4ff-2208bb3f41b5.json",
    "usage": {
-    "cache_read_tokens": 8150,
-    "input_tokens": 8936,
-    "output_tokens": 11929,
-    "thinking_tokens": 2653,
-    "total_tokens": 20865
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 48888,
+    "output_tokens": 62059,
+    "output_tokens_details": {
+     "thinking_tokens": 37448
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 48888,
+    "output": 62059,
+    "thinking": 37448
+   },
+   "wall_seconds": 472.02
   }
  ],
  "schema": "ai-trace@2",

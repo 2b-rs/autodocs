@@ -1,67 +1,119 @@
 {
  "annahmen": [
-  "1) Interpretation: Die Unterbrechung eines laufenden Auftrags mittels Ea_Cancel dürfte den zugrundeliegenden Eep-Treiber über Eep_Cancel synchron stoppen und den internen Auftragsstatus auf MEMIF_JOB_CANCELED setzen. – Begründung: Ea_Cancel ist synchron und korrespondiert mit Eep_Cancel sowie dem Zustand MEMIF_JOB_CANCELED aus SWS_Ea_00090.",
-  "2) Interpretation: Die Weiterleitung an den NVRAM-Manager via NvM_JobEndNotification bzw. NvM_JobErrorNotification dürfte wahlweise aus den Treibernotifikationen oder im Kontext der zyklischen Ea_MainFunction erfolgen. – Begründung: Die Spezifikation definiert sowohl Treiber-Callbacks als auch Ea_MainFunction zur Auftragsverwaltung, ohne den exakten Aufrufkontext der NvM-Callbacks einzuschränken."
+  "Text:",
+  "1) EA_E_BUSY und EA_E_INVALID_CANCEL werden als Laufzeitfehler über Det_ReportRuntimeError gemeldet – Begründung: eigene Tabelle SWS_Ea_91002 und verpflichtende Schnittstelle in SWS_Ea_00097; die Zuordnung steht nicht explizit im Payload. diag-status:",
+  "1) Nach Annahme eines Auftrags in MEMIF_BUSY_INTERNAL meldet Ea_GetStatus MEMIF_BUSY – Begründung: MEMIF_BUSY steht für die Bearbeitung eines Auftrags der oberen Schicht (S. 28); der Übergang selbst ist nicht beschrieben.",
+  "2) Ea_Cancel führt nach MEMIF_IDLE – Begründung: Der Text auf S. 27 bricht nach „ready for a new job request“ ab. diag-annahme:",
+  "1) Reihenfolge der Prüfungen – Begründung: Im Payload ist keine Reihenfolge festgelegt.",
+  "2) EA_E_BUSY wird unabhängig von der Entwicklungsfehlererkennung geprüft – Begründung: getrennte Tabelle SWS_Ea_91002. diag-block:",
+  "1) Ein Schreibauftrag hebt die Invalidierung auf – Begründung: S. 19 beschreibt nur die Konsistenzmarkierung beim Schreiben."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-ea-kontext",
-   "quelle": "anchor_r20_11.diag-ea-kontext.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-ea-lebenszyklus",
-   "quelle": "anchor_r20_11.diag-ea-lebenszyklus.dot"
+   "id": "diag-status",
+   "quelle": "anchor_r20_11.diag-status.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-annahme",
+   "quelle": "anchor_r20_11.diag-annahme.dot"
   },
   {
    "art": "seq",
-   "id": "diag-ea-schreibablauf",
-   "quelle": "anchor_r20_11.diag-ea-schreibablauf.seq.json"
+   "id": "diag-write",
+   "quelle": "anchor_r20_11.diag-write.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-ea-leseablauf",
-   "quelle": "anchor_r20_11.diag-ea-leseablauf.seq.json"
+   "id": "diag-read",
+   "quelle": "anchor_r20_11.diag-read.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-block",
+   "quelle": "anchor_r20_11.diag-block.dot"
   },
   {
    "art": "seq",
-   "id": "diag-ea-auftragsabbruch",
-   "quelle": "anchor_r20_11.diag-ea-auftragsabbruch.seq.json"
+   "id": "diag-cancel",
+   "quelle": "anchor_r20_11.diag-cancel.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-setmode",
+   "quelle": "anchor_r20_11.diag-setmode.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/ea/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_EA_SECTION_8_6_2_Optional_Interfaces": "SNIP_CLASSIC_DET_SECTION_8_6_2_Optional_Interfaces_EEPROMABSTRACTION"
+   },
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_EA_FIGURE_Figure_9_1",
+    "SNIP_CLASSIC_EA_FIGURE_Figure_9_2",
+    "SNIP_CLASSIC_EA_FIGURE_Figure_9_3",
+    "SNIP_CLASSIC_EA_FIGURE_Figure_9_4",
+    "SNIP_CLASSIC_EA_SECTION_6_2_6_2_Roles_of_the_modules",
+    "SNIP_CLASSIC_EA_SECTION_6_2_7_2_Roles_of_the_modules",
+    "SNIP_CLASSIC_EA_SECTION_6_2_8_2_Roles_of_the_modules",
+    "SNIP_CLASSIC_EA_SECTION_6_2_9_2_Roles_of_the_modules",
+    "SNIP_CLASSIC_EA_SECTION_6_3_2_2_Roles_of_the_modules",
+    "SNIP_CLASSIC_EA_SECTION_8_3_Function_definitions",
+    "SNIP_CLASSIC_EA_SECTION_8_API_specification",
+    "SNIP_CLASSIC_EA_SECTION_9_Sequence_diagrams_EEPROMDRIVER",
+    "SNIP_det_AUTOSAR_SWS_EEPR_P26_512"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 32,
+  "im_prompt_schaubilder": 11,
+  "kandidaten": 46,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "07ce3c709d2ec3b0fa2f8ae0ce194ea9a6868c48b59eca83c2eaf8a4ed22f945",
- "output_store": "ai/store/outputs/07/07ce3c709d2ec3b0fa2f8ae0ce194ea9a6868c48b59eca83c2eaf8a4ed22f945.html",
+ "output_sha256": "0803c89700deeba0e619a3e1fa01710f944928361f12451b60d79d398b444b5d",
+ "output_store": "ai/store/outputs/08/0803c89700deeba0e619a3e1fa01710f944928361f12451b60d79d398b444b5d.html",
  "params": {
   "module": "ea",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "a0867e1dd291379a1a8a17829488aee820397dc9d49c11481de0cdd208439b90",
- "prompt_store": "ai/store/prompts/a0/a0867e1dd291379a1a8a17829488aee820397dc9d49c11481de0cdd208439b90.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "a220fba897f2ee76af8e62e40602690f11c36923e65427151259126e59fd9839",
+ "prompt_store": "ai/store/prompts/a2/a220fba897f2ee76af8e62e40602690f11c36923e65427151259126e59fd9839.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -73,18 +125,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:42:19Z",
-   "duration_seconds": 43.917552,
-   "route": "agy-cli-print",
-   "run_id": "3e4ef5de-58aa-42ca-b8b7-41250b78a557",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/3e4ef5de-58aa-42ca-b8b7-41250b78a557.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.0071,
+   "cost_usd_reported": 1.0070999999999999,
+   "created_at": "2026-10-09T06:56:25Z",
+   "duration_api_seconds": 332.818,
+   "duration_seconds": 333.006,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.0070999999999999,
+     "inputTokens": 33335,
+     "maxOutputTokens": 128000,
+     "outputTokens": 43688,
+     "provider": "firstParty",
+     "thinkingTokens": 22181,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "16f2bd42-6e98-4a37-97b3-770937380d38",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/16f2bd42-6e98-4a37-97b3-770937380d38.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 17968,
-    "output_tokens": 12917,
-    "thinking_tokens": 2944,
-    "total_tokens": 30885
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 33335,
+    "output_tokens": 43688,
+    "output_tokens_details": {
+     "thinking_tokens": 22181
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 33335,
+    "output": 43688,
+    "thinking": 22181
+   },
+   "wall_seconds": 335.578
   }
  ],
  "schema": "ai-trace@2",

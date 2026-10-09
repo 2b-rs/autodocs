@@ -1,66 +1,117 @@
 {
  "annahmen": [
-  "1) Die Trennung in KeyM_MainFunction und KeyM_MainBackgroundFunction dient der Vermeidung von Task-Blockaden bei rechenintensiven Krypto-Operationen – Begründung: SWS_KeyM_00075 erwähnt explizit zeitintensive synchrone Funktionen wie KeyM_KH_Update in präemptiven Betriebssystemen."
+  "1) Text: Der Konfigurationszeiger von KeyM_Init dürfte in R20-11 faktisch keine Konfiguration übergeben – Begründung: SWS_KeyM_00158 fordert stets NULL_PTR, SWS_KeyM_00043 nennt einen Post-Build-Satz; die Quellen lösen den Widerspruch nicht auf.",
+  "2) Text: KeyM_MainFunction/KeyM_MainBackgroundFunction treiben vermutlich die asynchronen Dienste voran – Begründung: Die Quellen nennen nur „periodisch“ bzw. „im Hintergrund“, ohne die Zuordnung explizit zu machen.",
+  "3) Diagramm diag-zertstatus: Zuordnung von VALIDITY_PERIOD_FAIL, SIGNATURE_FAIL, INVALID_CHAIN_OF_TRUST, INVALID_CONTENT, REVOKED und CERTIFICATE_INVALID zur Verifikationsphase – Begründung: Belegt ist nur die Zuordnung von INVALID_FORMAT/INVALID_TYPE zu Parse-Fehlern; die übrigen Werte beschreiben Prüfergebnisse.",
+  "4) Diagramm diag-zertstatus: Rücksetzen per KeyM_SetCertificate(len=",
+  "0) aus jedem Status – Begründung: Die Quelle spricht allgemein vom Zurücksetzen „eines Zertifikats und seines Status“ ohne Einschränkung des Ausgangsstatus."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-keym-context",
-   "quelle": "anchor_r20_11.diag-keym-context.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-keym-lifecycle",
-   "quelle": "anchor_r20_11.diag-keym-lifecycle.dot"
+   "id": "diag-kette",
+   "quelle": "anchor_r20_11.diag-kette.dot"
   },
   {
    "art": "dot",
-   "id": "diag-keym-update-decision",
-   "quelle": "anchor_r20_11.diag-keym-update-decision.dot"
+   "id": "diag-zertstatus",
+   "quelle": "anchor_r20_11.diag-zertstatus.dot"
   },
   {
    "art": "seq",
-   "id": "diag-keym-key-update-seq",
-   "quelle": "anchor_r20_11.diag-keym-key-update-seq.seq.json"
+   "id": "diag-verifikation",
+   "quelle": "anchor_r20_11.diag-verifikation.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-keym-cert-verify-seq",
-   "quelle": "anchor_r20_11.diag-keym-cert-verify-seq.seq.json"
+   "id": "diag-servicecert",
+   "quelle": "anchor_r20_11.diag-servicecert.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-sitzung",
+   "quelle": "anchor_r20_11.diag-sitzung.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-update",
+   "quelle": "anchor_r20_11.diag-update.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/keym/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_CSM_SECTION_7_1_1_General_behavior": "SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior",
+    "SNIP_CLASSIC_CSM_SECTION_8_3_2_4_KeyM_Finalize": "SNIP_CLASSIC_KEYM_SECTION_8_3_2_4_KeyM_Finalize",
+    "SNIP_CLASSIC_DET_SECTION_8_7_1_Mandatory_interfaces_KEYMANAGER": "SNIP_CLASSIC_NVM_SECTION_8_7_1_Mandatory_interfaces_KEYMANAGER",
+    "SNIP_CLASSIC_STD_SECTION_8_3_2_3_KeyM_Update": "SNIP_CLASSIC_CSM_SECTION_8_3_2_3_KeyM_Update",
+    "SNIP_CLASSIC_STD_SECTION_8_3_2_5_KeyM_Verify": "SNIP_CLASSIC_KEYM_SECTION_8_3_2_5_KeyM_Verify"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_CLASSIC_KEYM_SECTION_8_3_3_8_KeyM_CertElementGetByIndex"
+   ],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_CSM_SECTION_10_Csm_KeyElementSet_MyEccKeyId_CRYPTO_KE_SIGNATURE_KEY_EccKey_sizeof",
+    "SNIP_CLASSIC_KEYM_FIGURE_Figure_10_1",
+    "SNIP_CLASSIC_KEYM_SECTION_2_SEQUENCE_1_elem",
+    "SNIP_CLASSIC_KEYM_SECTION_7_5_2_Runtime_Errors",
+    "SNIP_CLASSIC_KEYM_SECTION_8_3_1_General",
+    "SNIP_CLASSIC_KEYM_SECTION_8_3_2_Crypto_key_operation",
+    "SNIP_CLASSIC_KEYM_SECTION_8_3_3_Certificate_handling",
+    "SNIP_CLASSIC_KEYM_SECTION_8_8_2_Data_Types",
+    "SNIP_CLASSIC_KEYM_SECTION_8_8_3_Client_Server_Interfaces",
+    "SNIP_CLASSIC_KEYM_SECTION_8_8_4_Ports",
+    "SNIP_CLASSIC_KEYM_SECTION_8_API_specification",
+    "SNIP_CLASSIC_KEYM_SECTION_9_KEYM_E_KEY_CERT"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 101,
+  "im_prompt_schaubilder": 15,
+  "kandidaten": 119,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "c8c49ef4c39b95bdf528bdd394dcdc386e75cc2489245cc23e1bfb06614742ac",
- "output_store": "ai/store/outputs/c8/c8c49ef4c39b95bdf528bdd394dcdc386e75cc2489245cc23e1bfb06614742ac.html",
+ "output_sha256": "a35296c0ddbd022b2e105bf1f9fb93320e5de20fab9a9a81092ac0df14fa931a",
+ "output_store": "ai/store/outputs/a3/a35296c0ddbd022b2e105bf1f9fb93320e5de20fab9a9a81092ac0df14fa931a.html",
  "params": {
   "module": "keym",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "e0be0488ebe81d243fa765f596cf2b54fafb7de0f3ad6e0b08b4387ee8b99693",
- "prompt_store": "ai/store/prompts/e0/e0be0488ebe81d243fa765f596cf2b54fafb7de0f3ad6e0b08b4387ee8b99693.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "ca15c72b3f31f3cbfcb88a23af514ef815bd6d10446d2464a14a80e22e71f5b2",
+ "prompt_store": "ai/store/prompts/ca/ca15c72b3f31f3cbfcb88a23af514ef815bd6d10446d2464a14a80e22e71f5b2.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -72,18 +123,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:44:18Z",
-   "duration_seconds": 62.708605,
-   "route": "agy-cli-print",
-   "run_id": "d0d794e9-0018-4304-bda7-6289b14fdef4",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/d0d794e9-0018-4304-bda7-6289b14fdef4.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.32348,
+   "cost_usd_reported": 1.32348,
+   "created_at": "2026-10-09T07:13:32Z",
+   "duration_api_seconds": 348.963,
+   "duration_seconds": 349.046,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.32348,
+     "inputTokens": 102865,
+     "maxOutputTokens": 128000,
+     "outputTokens": 45601,
+     "provider": "firstParty",
+     "thinkingTokens": 21481,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "e96582ec-b824-4b42-b4fb-3d4f1fcb746a",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/e96582ec-b824-4b42-b4fb-3d4f1fcb746a.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 29686,
-    "output_tokens": 19987,
-    "thinking_tokens": 7253,
-    "total_tokens": 49673
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 102865,
+    "output_tokens": 45601,
+    "output_tokens_details": {
+     "thinking_tokens": 21481
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 102865,
+    "output": 45601,
+    "thinking": 21481
+   },
+   "wall_seconds": 350.883
   }
  ],
  "schema": "ai-trace@2",

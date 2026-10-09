@@ -1,62 +1,100 @@
 {
  "annahmen": [
-  "1) Die Umschaltung dient primär übergeordneten Mode-Management-Konzepten – Begründung: Die Kopplung an modellierte Zustände und InstanceSpecifier entspricht dem Muster anderer Adaptive-Zustandssteuerungen.",
-  "2) Parallele Umschaltanforderungen bergen Risiken von Race-Conditions im Daemon – Begründung: Da Move und Destruktion nicht thread-sicher sind und der Zustand plattformweit wirkt, ist eine externe Koordination geboten."
+  "1) Der InstanceSpecifier des Konstruktors bezeichnet den durch FirewallStateSwitchInterface typisierten RPortPrototype der Anwendung (Text und diag-manifest) – Begründung: Das Manifest-Schaubild S. 677 verbindet genau diesen Port mit der Firewall-Instanziierung, nennt den Specifier aber nicht.",
+  "2) EnumT in SwitchFirewallState steht für das generierte enum aus AP_SWS_Fw_81001 – Begründung: AP_SWS_Fw_81001 definiert dieses enum als Zustandstyp für FirewallStateSwitchInterface; die Signatur nennt nur EnumT.",
+  "3) Die Enumeratoren aus AP_SWS_Fw_81002 entsprechen den Modes der über firewallStateMachine aggregierten ModeDeclarationGroup (Text und diag-manifest) – Begründung: Laut AP_SWS_Fw_81002 entsteht ein Enumerator je modelliertem Zustand; die Modellierung erfolgt laut TPS S. 263 über ModeDeclarationGroupPrototype.",
+  "4) Diagramm diag-sev: Reihenfolge packetBlocked() → handlePacketBlocked() → raiseSecurityEvent() → ReportEvent() – Begründung: Die Bildtexte des Schaubilds S. 232 nennen die Nachrichten, die gekürzte Beschreibung legt die Reihenfolge aber nicht vollständig fest."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-fw-arch",
-   "quelle": "anchor_r25_11.diag-fw-arch.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r25_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-fsm-lifecycle",
-   "quelle": "anchor_r25_11.diag-fsm-lifecycle.dot"
+   "id": "diag-filter",
+   "quelle": "anchor_r25_11.diag-filter.dot"
   },
   {
    "art": "seq",
-   "id": "diag-state-switch",
-   "quelle": "anchor_r25_11.diag-state-switch.seq.json"
+   "id": "diag-switch",
+   "quelle": "anchor_r25_11.diag-switch.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-error-handling",
-   "quelle": "anchor_r25_11.diag-error-handling.dot"
+   "id": "diag-manifest",
+   "quelle": "anchor_r25_11.diag-manifest.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-lebenszyklus",
+   "quelle": "anchor_r25_11.diag-lebenszyklus.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-sev",
+   "quelle": "anchor_r25_11.diag-sev.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-fehler",
+   "quelle": "anchor_r25_11.diag-fehler.dot"
   }
  ],
  "fragment": "content/ai/modules/fw/anchor_r25_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {},
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_fw_AP_SWS_Fw_82003",
+    "SNIP_fw_AP_SWS_Fw_83007",
+    "SNIP_fw_AP_SWS_Fw_83008",
+    "SNIP_fw_AP_SWS_Fw_83009"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 32,
+  "im_prompt_schaubilder": 16,
+  "kandidaten": 36,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "f7d86cdd1a238756685cd671a68de70fd0e4ff2fee38431207aa060387766a55",
- "output_store": "ai/store/outputs/f7/f7d86cdd1a238756685cd671a68de70fd0e4ff2fee38431207aa060387766a55.html",
+ "output_sha256": "dbf5b7eada8281cc599c9e8be4c83925e8d4eda153957ce063cb3a9aad1a0d89",
+ "output_store": "ai/store/outputs/db/dbf5b7eada8281cc599c9e8be4c83925e8d4eda153957ce063cb3a9aad1a0d89.html",
  "params": {
   "module": "fw",
   "platform": "adaptive",
   "release": "R25-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "f42f04805f76fa14c596f330567fc24cbd244e8b48387d051f851abf82a3170f",
- "prompt_store": "ai/store/prompts/f4/f42f04805f76fa14c596f330567fc24cbd244e8b48387d051f851abf82a3170f.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "d04a55b01cb51af1294b13159005cfad0eebd1925262666c1922d20be051d6a8",
+ "prompt_store": "ai/store/prompts/d0/d04a55b01cb51af1294b13159005cfad0eebd1925262666c1922d20be051d6a8.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R25-11"
  ],
@@ -68,18 +106,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T12:20:54Z",
-   "duration_seconds": 30.571809000000002,
-   "route": "agy-cli-print",
-   "run_id": "0e441cc8-5f1f-41c0-b612-39130ee5e2eb",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/0e441cc8-5f1f-41c0-b612-39130ee5e2eb.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 0.800564,
+   "cost_usd_reported": 0.8005639999999999,
+   "created_at": "2026-10-09T07:42:53Z",
+   "duration_api_seconds": 270.883,
+   "duration_seconds": 271.052,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 0.8005639999999999,
+     "inputTokens": 26966,
+     "maxOutputTokens": 128000,
+     "outputTokens": 34635,
+     "provider": "firstParty",
+     "thinkingTokens": 17895,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "c3a9bbdf-281d-48d6-bf92-af44888814cb",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/c3a9bbdf-281d-48d6-bf92-af44888814cb.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 17247,
-    "output_tokens": 9513,
-    "thinking_tokens": 1389,
-    "total_tokens": 26760
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 26966,
+    "output_tokens": 34635,
+    "output_tokens_details": {
+     "thinking_tokens": 17895
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 26966,
+    "output": 34635,
+    "thinking": 17895
+   },
+   "wall_seconds": 272.968
   }
  ],
  "schema": "ai-trace@2",

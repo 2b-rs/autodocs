@@ -1,6 +1,14 @@
 {
  "annahmen": [
-  "1) Die Unterbrechung via Suspend/Resume dient der Schonung von Systemressourcen bei Fahrzustandswechseln – Begründung: Anforderung SWS_UCM_00397 erwähnt zeitaufwendige Aktionen, nennt aber keine konkreten fahrzeugseitigen Auslöser."
+  "Text:",
+  "1) GetProgress löst GetSwProcessProgress ab und verallgemeinert die Fortschrittsabfrage auf alle Zustände – Begründung: Die R25-11-Signatur hat keine TransferId und bezieht sich auf den aktiven Zustand; die alte Methode ist nur in R21-11 belegt.",
+  "2) Suspend/Resume betreffen vor allem lang laufende Verarbeitungsschritte – Begründung: Die Requirements sprechen nur allgemein von „time consuming actions“.",
+  "3) Die R21-11-Vorbedingung kReady für Activate entspricht in R25-11 dem Ende der Preparation-Phase – Begründung: Das R24-11/R25-11-Phasenmodell führt kPreparing anstelle der älteren Zustandsnamen vor kActivating. Diagramm diag-paketlebenszyklus:",
+  "1) Cancel führt aus kProcessing zurück nach kTransferred – Begründung: Cancel ist in den Schaubildern an kProcessing angetragen, das Ziel ist nicht vollständig lesbar; Cancel macht nur die Verarbeitung rückgängig.",
+  "2) Cancel aus kProcessingStream führt in den Endzustand – Begründung: Bei Abbruch werden alle temporären und verarbeiteten Daten des gestreamten Pakets entfernt (SWS UCM S. 40). Diagramm diag-updatezyklus:",
+  "1) Nach kCleaningUp kehrt UCM in die Preparation-Phase zurück – Begründung: Die CleaningUp-Phase verweist im Schaubild auf den Eintrittspunkt Preparation, die Beschreibung ist gekürzt.",
+  "2) RevertProcessedSwPackages führt über den Austrittspunkt Reverting in die CleaningUp-Phase – Begründung: Der Austrittspunkt ist benannt, sein Ziel aber nicht explizit beschrieben. Diagramm diag-fehlschlag:",
+  "1) „Zurück in die Preparation-Phase“ entspricht dem in R21-11 genannten Zielzustand kReady – Begründung: Gleiche Zuordnung wie in Text-Annahme 3."
  ],
  "diagrams": [
   {
@@ -9,53 +17,218 @@
    "quelle": "anchor_r25_11.diag-kontext.dot"
   },
   {
+   "art": "dot",
+   "id": "diag-swcluster",
+   "quelle": "anchor_r25_11.diag-swcluster.dot"
+  },
+  {
    "art": "seq",
    "id": "diag-transfer",
    "quelle": "anchor_r25_11.diag-transfer.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-update-lifecycle",
-   "quelle": "anchor_r25_11.diag-update-lifecycle.dot"
+   "id": "diag-paketlebenszyklus",
+   "quelle": "anchor_r25_11.diag-paketlebenszyklus.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-updatezyklus",
+   "quelle": "anchor_r25_11.diag-updatezyklus.dot"
   },
   {
    "art": "seq",
-   "id": "diag-unterbrechung",
-   "quelle": "anchor_r25_11.diag-unterbrechung.seq.json"
+   "id": "diag-aktivierung",
+   "quelle": "anchor_r25_11.diag-aktivierung.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-identifikation",
+   "quelle": "anchor_r25_11.diag-identifikation.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-fehlschlag",
+   "quelle": "anchor_r25_11.diag-fehlschlag.dot"
   }
  ],
  "fragment": "content/ai/modules/ucm/anchor_r25_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [
+    "FIG-0cd16ff1d4927a7c",
+    "FIG-0e2d5e33c84c4d5b",
+    "FIG-166629c1f00adf68",
+    "FIG-16b2df7355c6a168",
+    "FIG-212a25a3fee1ec26",
+    "FIG-404c543529f71f1b",
+    "FIG-4b651f661811131c",
+    "FIG-55c79c0fd43b37ba",
+    "FIG-6972b75a84221cd7",
+    "FIG-6b1c1cffc2022345",
+    "FIG-6c3e34a64c193ed0",
+    "FIG-7662c1a8c1ba66ef",
+    "FIG-928c36a09d184e28",
+    "FIG-9d0f8642cbca31cc",
+    "FIG-bd5709b88c590077",
+    "FIG-c2311a2924ddfc3e",
+    "FIG-c621420d06746c7c",
+    "FIG-d42930f25486a06a",
+    "FIG-d997a8c05b27c713",
+    "FIG-e1f3abeda4f514dd",
+    "FIG-e315d63d970b3ef7",
+    "FIG-ec17d201240b3fab",
+    "FIG-f7a7c6fd5a432061",
+    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_10_34",
+    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_13_16",
+    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_13_2_PLATFORMDESIGN",
+    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_13_4_PLATFORMDESIGN",
+    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_13_5_PLATFORMDESIGN",
+    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_14_16",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_10_16",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_10_20",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_13_8",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_2_33",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_2_36",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_4_UPDATEANDCONFIGURATIONMANAGEMENT",
+    "SNIP_CLASSIC_CAN_FIGURE_Figure_13_4_PLATFORMDESIGN",
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_36",
+    "SNIP_sm_AUTOSAR_AP_EXP_S_P238_357"
+   ],
+   "dublette": {
+    "SNIP_CLASSIC_CAN_FIGURE_Figure_13_16": "SNIP_ADAPTIVE_CAN_FIGURE_Figure_13_16",
+    "SNIP_CLASSIC_CAN_FIGURE_Figure_13_8_PLATFORMDESIGN": "SNIP_ADAPTIVE_CAN_FIGURE_Figure_13_8",
+    "SNIP_CLASSIC_CAN_FIGURE_Figure_14_16": "SNIP_ADAPTIVE_CAN_FIGURE_Figure_14_16",
+    "SNIP_CLASSIC_COM_FIGURE_Figure_9_71": "SNIP_ADAPTIVE_COM_FIGURE_Figure_9_71",
+    "SNIP_CLASSIC_COM_FIGURE_Figure_9_72": "SNIP_ADAPTIVE_COM_FIGURE_Figure_9_72"
+   },
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P104_137",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P108_139",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P16_04",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P16_05",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P16_06",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P17_07",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P17_08",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P17_09",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P17_10",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P17_11",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P17_12",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P18_13",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P18_14",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P18_15",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P18_16",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P19_17",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P19_18",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P19_19",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P19_20",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P19_21",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P20_22",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P20_23",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P20_24",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P20_25",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P21_26",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P21_27",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P21_28",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_29",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_30",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_31",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_32",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_33",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_34",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P22_35",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P23_36",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P23_37",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P23_38",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P24_39",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P24_40",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P24_41",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P24_42",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P25_43",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P25_44",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P25_45",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P25_46",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P25_47",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P79_98",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P79_99",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P80_100",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P80_101",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P80_102",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P80_103",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P81_104",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P81_105",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P81_106",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P82_107",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P82_108",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P83_109",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P83_110",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P83_111",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P84_112",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P84_113",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P84_114",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P85_115",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P85_116",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P85_117",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P86_118",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P86_119",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P87_120",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P87_121",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P87_122",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P88_123",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P88_124",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P88_125",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P89_126",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P89_127",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P90_128",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P90_129",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P90_130",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P91_131",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P91_133",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P98_135",
+    "SNIP_ucm_AUTOSAR_AP_SWS_U_P9_02"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 142,
+  "im_prompt_schaubilder": 84,
+  "kandidaten": 268,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "b0fb0710bee0ef8b3f6bb0ceb61588179a7033c9f27ae5302cfcd2ca978d353c",
- "output_store": "ai/store/outputs/b0/b0fb0710bee0ef8b3f6bb0ceb61588179a7033c9f27ae5302cfcd2ca978d353c.html",
+ "output_sha256": "13bf7ddfecba7a93e48b528fdc151286217ec42194c78a5b505d1e7e6cc92430",
+ "output_store": "ai/store/outputs/13/13bf7ddfecba7a93e48b528fdc151286217ec42194c78a5b505d1e7e6cc92430.html",
  "params": {
   "module": "ucm",
   "platform": "adaptive",
   "release": "R25-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "9911a73c7f193317d32f9ce1d06a458bbde2a05b9d72ee68ce10926ced308d93",
- "prompt_store": "ai/store/prompts/99/9911a73c7f193317d32f9ce1d06a458bbde2a05b9d72ee68ce10926ced308d93.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "2517c16630a66d1485ba9f058391a8c4fbf04f23d80a0e5afffb7b2560665ea8",
+ "prompt_store": "ai/store/prompts/25/2517c16630a66d1485ba9f058391a8c4fbf04f23d80a0e5afffb7b2560665ea8.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R25-11"
  ],
@@ -67,18 +240,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T12:22:23Z",
-   "duration_seconds": 24.208431,
-   "route": "agy-cli-print",
-   "run_id": "9e982e6b-b6c3-4354-a22e-f61f029d7550",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/9e982e6b-b6c3-4354-a22e-f61f029d7550.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.463132,
+   "cost_usd_reported": 1.4631319999999999,
+   "created_at": "2026-10-09T07:56:39Z",
+   "duration_api_seconds": 356.597,
+   "duration_seconds": 356.691,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.4631319999999999,
+     "inputTokens": 130513,
+     "maxOutputTokens": 128000,
+     "outputTokens": 47054,
+     "provider": "firstParty",
+     "thinkingTokens": 22309,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "63acae32-b8e6-4627-a75e-013cc7d00bd5",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/63acae32-b8e6-4627-a75e-013cc7d00bd5.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 18593,
-    "output_tokens": 8503,
-    "thinking_tokens": 2127,
-    "total_tokens": 27096
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 130513,
+    "output_tokens": 47054,
+    "output_tokens_details": {
+     "thinking_tokens": 22309
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 130513,
+    "output": 47054,
+    "thinking": 22309
+   },
+   "wall_seconds": 358.221
   }
  ],
  "schema": "ai-trace@2",

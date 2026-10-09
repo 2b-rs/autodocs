@@ -1,66 +1,106 @@
 {
  "annahmen": [
-  "1) Triggerung der Servicing-Routine durch OS-Task oder ISR – Begründung: SWS_Wdg_00079 fordert Wdg_Irq.c für Interrupt-Servicing, spezifiziert aber keinen festen Scheduler-Task-Namen im MCAL-Treiber."
+  "1) Die NULL-Zeiger-Prüfung von Wdg_GetVersionInfo (WDG_E_PARAM_POINTER) gilt auch in R20-11 – Begründung: Fehlercode in SWS_Wdg_00010 vorhanden, DET-Fehler laut Änderungshistorie seit 4.0.3; das explizite Requirement ist nur in späteren Releases belegt.",
+  "2) (Diagramm diag-kontext) EcuM initialisiert auch die externe Instanz – Begründung: EcuM führt Wdg_Init, Namen werden je Instanz erweitert (SWS_Wdg_00172); der Aufrufer der externen Instanz ist nicht explizit genannt.",
+  "3) (Diagramm diag-triggerbedingung) Die Parameterprüfung erfolgt vor der Nullzählerprüfung – Begründung: SWS_Wdg_00146 und SWS_Wdg_00140 legen keine Reihenfolge fest.",
+  "4) (Diagramm diag-setmode) Reihenfolge Zustandsprüfung → Parameterprüfung → Abschaltprüfung → Umschaltung – Begründung: SWS_Wdg_00017, SWS_Wdg_00091, SWS_Wdg_00092 und SWS_Wdg_00179 legen keine Reihenfolge fest."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-architektur-einbettung",
-   "quelle": "anchor_r20_11.diag-architektur-einbettung.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-lebenszyklus-treiber",
-   "quelle": "anchor_r20_11.diag-lebenszyklus-treiber.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "seq",
-   "id": "diag-initialisierung",
-   "quelle": "anchor_r20_11.diag-initialisierung.seq.json"
+   "id": "diag-hochlauf",
+   "quelle": "anchor_r20_11.diag-hochlauf.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-moduswechsel",
-   "quelle": "anchor_r20_11.diag-moduswechsel.seq.json"
+   "id": "diag-servicing",
+   "quelle": "anchor_r20_11.diag-servicing.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-trigger-zyklus",
-   "quelle": "anchor_r20_11.diag-trigger-zyklus.dot"
+   "id": "diag-triggerbedingung",
+   "quelle": "anchor_r20_11.diag-triggerbedingung.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-modi",
+   "quelle": "anchor_r20_11.diag-modi.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-modulzustand",
+   "quelle": "anchor_r20_11.diag-modulzustand.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-setmode",
+   "quelle": "anchor_r20_11.diag-setmode.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/wdg/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_WDG_SECTION_8_3_1_WdgIf_SetMode": "SNIP_CLASSIC_STD_SECTION_8_3_1_WdgIf_SetMode"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_CLASSIC_WDGM_SECTION_7_4_2_Setting_the_Trigger_Conditions"
+   ],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_WDG_SECTION_7_Functional_specification",
+    "SNIP_CLASSIC_WDG_SECTION_8_3_Function_definitions_WATCHDOGDRIVER",
+    "SNIP_CLASSIC_WDG_SECTION_8_API_specification_WATCHDOGINTERFACE",
+    "SNIP_CLASSIC_WDG_SECTION_9_Sequence_diagrams",
+    "SNIP_Can_AUTOSAR_SRS_Can_P24_005",
+    "SNIP_det_AUTOSAR_SWS_Watc_P25_1027"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 45,
+  "im_prompt_schaubilder": 22,
+  "kandidaten": 53,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "f563c6995164453eb78281066d3271746a2d48e1516d08feb46a6f6802053360",
- "output_store": "ai/store/outputs/f5/f563c6995164453eb78281066d3271746a2d48e1516d08feb46a6f6802053360.html",
+ "output_sha256": "5c08ce6b4e90855c64fff8f024069868f98bdca63cb0b11c538182f276e3fdb8",
+ "output_store": "ai/store/outputs/5c/5c08ce6b4e90855c64fff8f024069868f98bdca63cb0b11c538182f276e3fdb8.html",
  "params": {
   "module": "wdg",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "914ca2341aa3adb456012d05745252ca617eedfa89ddc0c7649ea58dc6f388fa",
- "prompt_store": "ai/store/prompts/91/914ca2341aa3adb456012d05745252ca617eedfa89ddc0c7649ea58dc6f388fa.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "7e33ad457d60c1ebc7c20c294996d9b5a25f1455c51647b36475e6cf9f733fee",
+ "prompt_store": "ai/store/prompts/7e/7e33ad457d60c1ebc7c20c294996d9b5a25f1455c51647b36475e6cf9f733fee.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -72,18 +112,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:47:16Z",
-   "duration_seconds": 64.263331,
-   "route": "agy-cli-print",
-   "run_id": "758078d7-1d98-48c4-a746-b94f6040beb5",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/758078d7-1d98-48c4-a746-b94f6040beb5.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.002832,
+   "cost_usd_reported": 1.002832,
+   "created_at": "2026-10-09T07:33:11Z",
+   "duration_api_seconds": 301.422,
+   "duration_seconds": 301.505,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.002832,
+     "inputTokens": 48698,
+     "maxOutputTokens": 128000,
+     "outputTokens": 40402,
+     "provider": "firstParty",
+     "thinkingTokens": 20654,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "4f9f067c-a6b2-4c85-8422-9842fa0b76e8",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/4f9f067c-a6b2-4c85-8422-9842fa0b76e8.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 19528,
-    "output_tokens": 23343,
-    "thinking_tokens": 11079,
-    "total_tokens": 42871
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 48698,
+    "output_tokens": 40402,
+    "output_tokens_details": {
+     "thinking_tokens": 20654
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 48698,
+    "output": 40402,
+    "thinking": 20654
+   },
+   "wall_seconds": 303.101
   }
  ],
  "schema": "ai-trace@2",

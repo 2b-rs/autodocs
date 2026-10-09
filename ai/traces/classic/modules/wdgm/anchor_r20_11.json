@@ -1,66 +1,133 @@
 {
  "annahmen": [
-  "1) Die Verfügbarkeit von WdgM_GetFirstExpiredSEID vor WdgM_Init aus uninitialisiertem RAM dient der Post-Mortem-Analyse – Begründung: Die Spezifikation (SWS_WdgM_00348, SWS_WdgM_00349) definiert die Verfügbarkeit und den Speicherort, nennt jedoch den übergeordneten Systemzweck nicht explizit."
+  "1) Text: Ein von WdgM_Init verweigerter Start ist nur über den Laufzeitfehler WDGM_E_DISABLE_NOT_ALLOWED erkennbar – Begründung: SWS_WdgM_00151 definiert keinen Rückgabewert, SWS_WdgM_00030 nennt dennoch E_NOT_OK.",
+  "2) Text: SWS_WdgM_00389 meint vermutlich „nicht in DEACTIVATED“ (Schutz vor doppelter Initialisierung) – Begründung: Das Gegenstück SWS_WdgM_00390 formuliert die Bedingung so; ein Init-Aufruf in DEACTIVATED ist der Regelfall.",
+  "3) diag-lokal: Übergang DEACTIVATED → OK, wenn ein Moduswechsel die SE aktiviert – Begründung: Das Schaubild zeigt weitere Übergänge, der Payload beschreibt die Aktivierung durch WdgM_SetMode aber nicht explizit.",
+  "4) diag-global: Übergang FAILED → OK, wenn alle aktiven SEs wieder OK sind – Begründung: Abgeleitet aus der Heilbarkeit von FAILED in SWS_WdgM_00359; die globale Übergangsbedingung ist im Payload nicht ausformuliert.",
+  "5) diag-setmode: Reihenfolge „SE-Behandlung vor WdgIf_SetMode“ – Begründung: Die Requirements beschreiben beide Wirkungen, legen die Reihenfolge aber nicht fest.",
+  "6) diag-laufzeit: Die Triggerbedingung wird im Rahmen der WdgM_MainFunction gesetzt – Begründung: Gestützt auf das ältere Schaubild zur Trigger-Hauptfunktion (S. 78) und auf SWS_WdgM_00406; ein konkreter Aufrufzeitpunkt steht in keinem R20-11-Requirement."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-wdgm-kontext",
-   "quelle": "anchor_r20_11.diag-wdgm-kontext.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-global-zustand",
-   "quelle": "anchor_r20_11.diag-global-zustand.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "seq",
-   "id": "diag-init-setmode",
-   "quelle": "anchor_r20_11.diag-init-setmode.seq.json"
+   "id": "diag-init",
+   "quelle": "anchor_r20_11.diag-init.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-checkpoint-reached",
-   "quelle": "anchor_r20_11.diag-checkpoint-reached.seq.json"
+   "id": "diag-shutdown",
+   "quelle": "anchor_r20_11.diag-shutdown.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-laufzeit",
+   "quelle": "anchor_r20_11.diag-laufzeit.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-mainfunction-zyklus",
-   "quelle": "anchor_r20_11.diag-mainfunction-zyklus.dot"
+   "id": "diag-lokal",
+   "quelle": "anchor_r20_11.diag-lokal.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-global",
+   "quelle": "anchor_r20_11.diag-global.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-setmode",
+   "quelle": "anchor_r20_11.diag-setmode.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-ports",
+   "quelle": "anchor_r20_11.diag-ports.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/wdgm/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_DEM_SECTION_10_2_10_WdgMMode": "SNIP_CLASSIC_WDGM_SECTION_10_2_10_WdgMMode",
+    "SNIP_CLASSIC_ECUM_SECTION_8_6_2_Optional_interfaces_WATCHDOGMANAGER": "SNIP_CLASSIC_DEM_SECTION_8_6_2_Optional_interfaces_WATCHDOGMANAGER"
+   },
+   "inhaltsverzeichnis": [
+    "SNIP_CLASSIC_WDGM_SECTION_7_4_2_Setting_the_Trigger_Conditions"
+   ],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_WDGM_FIGURE_Figure_10_1",
+    "SNIP_CLASSIC_WDGM_FIGURE_Figure_7_10",
+    "SNIP_CLASSIC_WDGM_FIGURE_Figure_7_12",
+    "SNIP_CLASSIC_WDGM_SECTION_0_Supervision_did_not_show_any",
+    "SNIP_CLASSIC_WDGM_SECTION_4_2_Applicability_to_car_domains",
+    "SNIP_CLASSIC_WDGM_SECTION_7_5_Switching_Modes",
+    "SNIP_CLASSIC_WDGM_SECTION_7_6_Watchdog_Manager_Configuration",
+    "SNIP_CLASSIC_WDGM_SECTION_7_8_4_Extended_Production_Errors",
+    "SNIP_CLASSIC_WDGM_SECTION_7_8_5_Extended_Production_Errors",
+    "SNIP_CLASSIC_WDGM_SECTION_8_4_Callback_notifications",
+    "SNIP_CLASSIC_WDGM_SECTION_8_7_1_Ports_and_Port_Interface_for_Supervision",
+    "SNIP_CLASSIC_WDGM_SECTION_8_7_2_Configurable_interfaces",
+    "SNIP_CLASSIC_WDGM_SECTION_8_7_2_Ports_and_Port_Interface_for_Status_Reporting",
+    "SNIP_CLASSIC_WDGM_SECTION_8_API_specification",
+    "SNIP_det_AUTOSAR_SWS_Watc_P113_1020",
+    "SNIP_det_AUTOSAR_SWS_Watc_P11_1000",
+    "SNIP_det_AUTOSAR_SWS_Watc_P135_1024",
+    "SNIP_det_AUTOSAR_SWS_Watc_P18_1002",
+    "SNIP_det_AUTOSAR_SWS_Watc_P20_1003",
+    "SNIP_det_AUTOSAR_SWS_Watc_P31_1028",
+    "SNIP_det_AUTOSAR_SWS_Watc_P50_1008",
+    "SNIP_det_AUTOSAR_SWS_Watc_P50_1010",
+    "SNIP_det_AUTOSAR_SWS_Watc_P50_1011",
+    "SNIP_det_AUTOSAR_SWS_Watc_P51_1012",
+    "SNIP_det_AUTOSAR_SWS_Watc_P52_1013"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 158,
+  "im_prompt_schaubilder": 79,
+  "kandidaten": 186,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "fef55763ee5e2eb6ae771edb0a7639df3fd0c4e88f0c5bfad0a72dfff80229e0",
- "output_store": "ai/store/outputs/fe/fef55763ee5e2eb6ae771edb0a7639df3fd0c4e88f0c5bfad0a72dfff80229e0.html",
+ "output_sha256": "d6fbce851c1e2b0cf9d8f3e691e28ebe4711cb0895c9e008985881cf1273457e",
+ "output_store": "ai/store/outputs/d6/d6fbce851c1e2b0cf9d8f3e691e28ebe4711cb0895c9e008985881cf1273457e.html",
  "params": {
   "module": "wdgm",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "7af7cb1e7a3f0f62adaad2a7761f864b042d70955e6a830258947b1be39bd725",
- "prompt_store": "ai/store/prompts/7a/7af7cb1e7a3f0f62adaad2a7761f864b042d70955e6a830258947b1be39bd725.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "4dfe5017f9449a7e694a2958f5a679e7384eb7c89a76c3b9b2e33beba8f208dd",
+ "prompt_store": "ai/store/prompts/4d/4dfe5017f9449a7e694a2958f5a679e7384eb7c89a76c3b9b2e33beba8f208dd.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -72,18 +139,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:47:37Z",
-   "duration_seconds": 82.466883,
-   "route": "agy-cli-print",
-   "run_id": "ad3506cf-8064-4c35-8ba1-f940116c3c87",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/ad3506cf-8064-4c35-8ba1-f940116c3c87.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.517236,
+   "cost_usd_reported": 1.517236,
+   "created_at": "2026-10-09T07:34:21Z",
+   "duration_api_seconds": 374.616,
+   "duration_seconds": 374.713,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.517236,
+     "inputTokens": 138934,
+     "maxOutputTokens": 128000,
+     "outputTokens": 48075,
+     "provider": "firstParty",
+     "thinkingTokens": 25153,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "0804c6fe-84c9-4830-90b7-2cbe1168bba5",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/0804c6fe-84c9-4830-90b7-2cbe1168bba5.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 24317,
-    "output_tokens": 29158,
-    "thinking_tokens": 14979,
-    "total_tokens": 53475
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 138934,
+    "output_tokens": 48075,
+    "output_tokens_details": {
+     "thinking_tokens": 25153
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 138934,
+    "output": 48075,
+    "thinking": 25153
+   },
+   "wall_seconds": 376.272
   }
  ],
  "schema": "ai-trace@2",

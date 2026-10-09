@@ -1,67 +1,121 @@
 {
  "annahmen": [
-  "1) In SWS_LinSM_00230 und SWS_LinSM_10208/00036 wird die Anforderung COMM_NO_COMMUNICATION als Speichern des Zielmodus interpretiert, während gleichzeitig der Schlafbefehl direkt an LinIf abgesetzt wird. – Begründung: SWS_LinSM_00036 fordert den direkten Aufruf von LinIf_GotoSleep, während SWS_LinSM_00230 das Speichern und Rückmelden ohne weitere sofortige Aktion beschreibt, was ein asynchrones Abwarten der Bestätigung nahelegt.",
-  "2) Die Funktion des Silence-After-Wakeup-Timers (LinSMSilenceAfterWakeupTimeout) wird als Schutzzeit gegen Bus-Fluten nach Weckfehlern interpretiert. – Begründung: SWS_LinSM_00237 erzwingt eine Verzögerung von LinIf_Wakeup bis zum Ablauf des Timers."
+  "Text:",
+  "1) Eintritt in LINSM_GOTO_SLEEP bei E_OK von LinIf_GotoSleep – Begründung: Der Anforderungstext im Payload ist abgeschnitten („sets the sub…“); das Schaubild S. 22 zeigt den Übergang mit dieser Bedingung.",
+  "2) Meldung von LINSM_E_CONFIRMATION_TIMEOUT über Det_ReportRuntimeError – Begründung: SWS_LinSM_00224 nennt nur den Code; die Schnittstelle ist nur in einer späteren Fassung belegt. Diagramm diag-zustaende:",
+  "1) Übergang RUN_COMMUNICATION nach GOTO_SLEEP bei E_OK von LinIf_GotoSleep – Begründung: wie Text 1.",
+  "2) Der Slave-Pfad läuft ebenfalls über LINSM_GOTO_SLEEP – Begründung: Die Slave-Schaubilder zeigen dieselbe Bestätigungsfolge, ein explizites Requirement fehlt im Payload. Diagramm diag-schedule:",
+  "1) Timeout-Erkennung in LinSM_MainFunction – Begründung: SWS_LinSM_00156 nennt nur allgemein die Timer der Anforderungs-Timeouts."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-linsm-kontext",
-   "quelle": "anchor_r20_11.diag-linsm-kontext.dot"
+   "id": "diag-kontext",
+   "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
    "art": "dot",
-   "id": "diag-linsm-zustandsmodell",
-   "quelle": "anchor_r20_11.diag-linsm-zustandsmodell.dot"
+   "id": "diag-zustaende",
+   "quelle": "anchor_r20_11.diag-zustaende.dot"
   },
   {
    "art": "seq",
-   "id": "diag-linsm-sleep-master",
-   "quelle": "anchor_r20_11.diag-linsm-sleep-master.seq.json"
+   "id": "diag-wakeup",
+   "quelle": "anchor_r20_11.diag-wakeup.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-sleep-master",
+   "quelle": "anchor_r20_11.diag-sleep-master.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-sleep-slave",
+   "quelle": "anchor_r20_11.diag-sleep-slave.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-linsm-wakeup-timer",
-   "quelle": "anchor_r20_11.diag-linsm-wakeup-timer.dot"
+   "id": "diag-requestcommode",
+   "quelle": "anchor_r20_11.diag-requestcommode.dot"
   },
   {
    "art": "seq",
-   "id": "diag-linsm-schedule-request",
-   "quelle": "anchor_r20_11.diag-linsm-schedule-request.seq.json"
+   "id": "diag-schedule",
+   "quelle": "anchor_r20_11.diag-schedule.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/linsm/anchor_r20_11.html",
+ "kontext": {
+  "ausgelassen": {
+   "budget": [],
+   "dublette": {
+    "SNIP_CLASSIC_COMM_SECTION_7_1_5_Goto_sleep": "SNIP_CLASSIC_LINIF_SECTION_7_1_5_Goto_sleep",
+    "SNIP_CLASSIC_LINIF_SECTION_7_1_5_1_Goto_sleep_specific_for_master_node": "SNIP_CLASSIC_COMM_SECTION_7_1_5_1_Goto_sleep_specific_for_master_node",
+    "SNIP_CLASSIC_LINIF_SECTION_7_1_7_Wake_up_process": "SNIP_CLASSIC_BSWM_SECTION_7_1_7_Wake_up_process",
+    "SNIP_CLASSIC_LINSM_SECTION_7_1_3_LINSM_NO_COM": "SNIP_CLASSIC_COMM_SECTION_7_1_3_LINSM_NO_COM",
+    "SNIP_CLASSIC_LINSM_SECTION_7_1_4_LINSM_FULL_COM": "SNIP_CLASSIC_COMM_SECTION_7_1_4_LINSM_FULL_COM",
+    "SNIP_CLASSIC_LINSM_SECTION_7_1_8_Timeout_of_requests": "SNIP_CLASSIC_LINIF_SECTION_7_1_8_Timeout_of_requests",
+    "SNIP_CLASSIC_MODEMANAGEMENTGUIDE_SECTION_3_2_2_2_7_BswMLinSMIndication": "SNIP_CLASSIC_BSWM_SECTION_3_2_2_2_7_BswMLinSMIndication"
+   },
+   "inhaltsverzeichnis": [],
+   "ohne_inhalt": [
+    "SNIP_CLASSIC_LINSM_FIGURE_Figure_5_1",
+    "SNIP_CLASSIC_LINSM_FIGURE_Figure_7_1",
+    "SNIP_CLASSIC_LINSM_FIGURE_Figure_7_2",
+    "SNIP_CLASSIC_LINSM_FIGURE_Figure_9_14",
+    "SNIP_CLASSIC_LINSM_FIGURE_Figure_9_4",
+    "SNIP_CLASSIC_LINSM_SECTION_5_3_File_structure",
+    "SNIP_CLASSIC_LINSM_SECTION_8_5_LinSM_callbacks",
+    "SNIP_CLASSIC_LINSM_SECTION_8_7_Service_Interfaces",
+    "SNIP_CLASSIC_LINSM_SECTION_8_API_specification",
+    "SNIP_LinIf_AUTOSAR_SWS_LINI_P50_040",
+    "SNIP_LinIf_AUTOSAR_SWS_LINS_P26_134",
+    "SNIP_LinIf_AUTOSAR_SWS_LINS_P26_135",
+    "SNIP_LinIf_AUTOSAR_SWS_LINS_P51_146",
+    "SNIP_det_AUTOSAR_SWS_LINS_P14_072",
+    "SNIP_det_AUTOSAR_SWS_LINS_P25_074"
+   ],
+   "ohne_text": []
+  },
+  "im_prompt": 69,
+  "im_prompt_schaubilder": 26,
+  "kandidaten": 91,
+  "schema": "guide-context@1"
+ },
  "lint": [],
- "output_sha256": "304c46c971adecfa0e3e1221d96f5c0e25b5eefd789a7830937381ec586fb8f9",
- "output_store": "ai/store/outputs/30/304c46c971adecfa0e3e1221d96f5c0e25b5eefd789a7830937381ec586fb8f9.html",
+ "output_sha256": "daf23d3a01e0402878f50fbda324b9ffaa7857e65b4e4984f876725da0cb932a",
+ "output_store": "ai/store/outputs/da/daf23d3a01e0402878f50fbda324b9ffaa7857e65b4e4984f876725da0cb932a.html",
  "params": {
   "module": "linsm",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "medium",
+  "effort": "high",
   "extra": {
-   "client": "agy 1.2.17",
-   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
-   "tools": "angeboten, Nutzung führt zum Verwerfen"
+   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
+   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
+   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
+   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
+   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
+   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
   },
-  "max_output_tokens": null,
-  "model": "gemini-3.8-flash-medium",
-  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
-  "provider": "google",
-  "route": "agy-cli-print",
+  "max_output_tokens": 64000,
+  "model": "claude-opus-5-5",
+  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
+  "provider": "anthropic",
+  "route": "claude-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": null,
+  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "fd8115c8d0bf52d7b47dd195aa26d62943df00ec3eb862c13d43e66957a6af2f",
- "prompt_store": "ai/store/prompts/fd/fd8115c8d0bf52d7b47dd195aa26d62943df00ec3eb862c13d43e66957a6af2f.txt",
- "recipe": "module-guide@1",
+ "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
+ "prompt_hash": "ca6b1ec12766b80d7160dd6f42115db2d2056c6851a9737ee7c2e69f5025efa2",
+ "prompt_store": "ai/store/prompts/ca/ca6b1ec12766b80d7160dd6f42115db2d2056c6851a9737ee7c2e69f5025efa2.txt",
+ "recipe": "module-guide@2",
  "releases": [
   "R20-11"
  ],
@@ -73,18 +127,65 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:44:52Z",
-   "duration_seconds": 60.378321,
-   "route": "agy-cli-print",
-   "run_id": "abc201f3-7800-47db-9734-8e4f2d276c12",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/abc201f3-7800-47db-9734-8e4f2d276c12.jsonl",
+   "attempt": 1,
+   "client": "2.1.287 (Claude Code)",
+   "cost_usd_list": 1.130124,
+   "cost_usd_reported": 1.1301240000000001,
+   "created_at": "2026-10-09T07:14:48Z",
+   "duration_api_seconds": 326.802,
+   "duration_seconds": 326.899,
+   "effort": "high",
+   "lint_warnings": [],
+   "model": "claude-opus-5-5",
+   "model_usage": {
+    "claude-opus-5-5": {
+     "cacheCreationInputTokens": 0,
+     "cacheReadInputTokens": 0,
+     "canonicalModel": "claude-opus-5-5",
+     "contextWindow": 1000000,
+     "costBasis": "list",
+     "costUSD": 1.1301240000000001,
+     "inputTokens": 63626,
+     "maxOutputTokens": 128000,
+     "outputTokens": 43781,
+     "provider": "firstParty",
+     "thinkingTokens": 21079,
+     "webSearchRequests": 0
+    }
+   },
+   "route": "claude-cli-print",
+   "run_id": "b0134c5e-86db-4ac0-a397-06116df53445",
+   "stop_reason": "end_turn",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/b0134c5e-86db-4ac0-a397-06116df53445.json",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 18426,
-    "output_tokens": 22020,
-    "thinking_tokens": 11841,
-    "total_tokens": 40446
-   }
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "fallback_credit": null,
+    "inference_geo": "not_available",
+    "input_tokens": 63626,
+    "output_tokens": 43781,
+    "output_tokens_details": {
+     "thinking_tokens": 21079
+    },
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+   },
+   "usage_normalized": {
+    "cache_write": 0,
+    "cached": 0,
+    "input_uncached": 63626,
+    "output": 43781,
+    "thinking": 21079
+   },
+   "wall_seconds": 328.787
   }
  ],
  "schema": "ai-trace@2",
