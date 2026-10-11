@@ -1,0 +1,528 @@
+<dialog id="dossier-modal-cl_ara_per_FileAccessor_efe7d0" class="dossier-modal dossier-workbench" data-dossier-sha="263341a2622266cf" aria-labelledby="dossier-modal-cl_ara_per_FileAccessor_efe7d0-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-cl_ara_per_FileAccessor_efe7d0-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_per_FileAccessor_efe7d0)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,284 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Class Guide: cl_ara_per_FileAccessor_efe7d0" data-fragment="classes/cl_ara_per_FileAccessor_efe7d0.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Klassen-Leitfaden (&lt;div class="ai class-guide"&gt;) für die C++ Klasse 'ara::per::FileAccessor' (adaptive, Modul per) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR KLASSEN-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Klassen-Leitfaden für 'ara::per::FileAccessor' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "class_id": "cl_ara_per_FileAccessor_efe7d0",
+ "class_name": "ara::per::FileAccessor",
+ "description": "FileAccessor contains a common basis for ReadAccessor and WriteAccessor. It provides methods for checking and setting the current position in the file (GetPosition, Set Position, MovePosition, IsEof) and for checking the current size of the file (GetSize).",
+ "dokumentstellen": [],
+ "member_requirements": [
+  {
+   "id": "SWS_PER_00589",
+   "text": "function FileAccessor [SWS_PER_00589] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00129 , RS_AP_00146 FileAccessor ()=delete; The default constructor for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono"
+  },
+  {
+   "id": "SWS_PER_00590",
+   "text": "function FileAccessor [SWS_PER_00590] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00121 , RS_AP_00129 , RS_AP_00145 , RS_AP_00159 FileAccessor ( FileAccessor &amp;amp;&amp;amp;ra)=delete; The move constructor for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono"
+  },
+  {
+   "id": "SWS_PER_00592",
+   "text": "function FileAccessor [SWS_PER_00592] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00145 FileAccessor (const FileAccessor &amp;amp;)=delete; The copy constructor for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono"
+  },
+  {
+   "id": "SWS_PER_00162",
+   "text": "function GetPosition [SWS_PER_00162] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00159 std::uint64_t GetPosition () const noexcept; Returns the current position relative to the beginning of the file. The returned position may be at the end of the file. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Rückgabewert th Typ th Beschreibung td std::uint64_t td The current position in the file in bytes from the beginning of the file."
+  },
+  {
+   "id": "SWS_PER_00424",
+   "text": "function GetSize [SWS_PER_00424] Upstream: RS_PER_00017 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 , RS_AP_00127 , RS_AP_00128 , RS_AP_00129 , RS_AP_00159 std::uint64_t GetSize () const noexcept; Returns the current size of a file in bytes. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Rückgabewert th Typ th Beschreibung td std::uint64_t td The current size of the file in bytes."
+  },
+  {
+   "id": "SWS_PER_00107",
+   "text": "function IsEof [SWS_PER_00107] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00159 bool IsEof () const noexcept; Checks if the current position is at end of file. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Rückgabewert th Typ th Beschreibung td bool td True if the current position is at the end of the file, false otherwise."
+  },
+  {
+   "id": "SWS_PER_00164",
+   "text": "function MovePosition [SWS_PER_00164] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00121, RS_AP_00135 , RS_AP_00139 , RS_AP_00159 ara::core::Result &amp;lt; std::uint64_t &amp;gt; MovePosition ( Origin origin, std::int64_t offset) noexcept; Moves the current position in the file relative to the Origin. In case of an error, the current position is not changed. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Parameter th Beschreibung td origin td Starting point from which to move ’offset’ bytes. td offset td Offset in bytes relative to ’origin’. Can be positive in case of k Beginning and kCurrent and negative in case of kCurrent and k End. In case of kCurrent, an offset of zero will not change the current position. In case of kEnd, an offset of zero will set the position to the end of the file. Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt;std::uint64_t &amp;gt; td A Result containing the new position in bytes from the beginning of the file. In case of an error, it contains any of the errors defined below, or a vendor specific error. Fehler th Fehlercode th Beschreibung td PerErrc ::kInvalidPosition td rollback_semantics Returned if the resulting position is lower than zero or beyond the end of the file."
+  },
+  {
+   "id": "SWS_PER_00163",
+   "text": "function SetPosition [SWS_PER_00163] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00121, RS_AP_00135 , RS_AP_00139 , RS_AP_00159 ara::core::Result &amp;lt; void &amp;gt; SetPosition ( std::uint64_t position) noexcept; Sets the current position relative to the beginning of the file. In case of an error, the current position is not changed. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Parameter th Beschreibung td position td Current position in the file in bytes from the beginning of the file. Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; void &amp;gt; td A Result of void. In case of an error, it contains any of the errors defined below, or a vendor specific error. Fehler th Fehlercode th Beschreibung td PerErrc ::kInvalidPosition td rollback_semantics Returned if the given position is beyond the end of the file."
+  },
+  {
+   "id": "SWS_PER_00591",
+   "text": "function operator= [SWS_PER_00591] Upstream: RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 , RS_AP_00145 , RS_AP_00159 FileAccessor &amp;amp; operator= ( FileAccessor &amp;amp;&amp;amp;ra)=delete; The move assignment operator for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono"
+  },
+  {
+   "id": "SWS_PER_00593",
+   "text": "function operator= [SWS_PER_00593] Upstream: RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_AP_00145 FileAccessor &amp;amp; operator= (const FileAccessor &amp;amp;)=delete; The copy assignment operator for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono"
+  },
+  {
+   "id": "SWS_PER_00594",
+   "text": "function ~FileAccessor [SWS_PER_00594] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00129 , RS_AP_00134 , RS_AP_00145 , RS_AP_00159 virtual ~ FileAccessor () noexcept; Destructor for FileAccessor. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono"
+  }
+ ],
+ "module": "per",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "syntax": "class FileAccessor {...};"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e144e80ff9300d015b3a0bf1a4b7e3f53c73afb8bd7fab735ea3cb7b45b50079" data-trace-output="263341a2622266cf0f55c3e6683011e2c2d6ef1858553a501297acab6d68a3aa" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;In the Persistency module of the AUTOSAR Adaptive Platform, class &lt;code&gt;ara::per::FileAccessor&lt;/code&gt; forms the common base for file-based access classes. It bundles the methods for querying and modifying the current file position as well as for determining the current file size, and is extended by the specialized classes &lt;code&gt;ReadAccessor&lt;/code&gt; and &lt;code&gt;WriteAccessor&lt;/code&gt;. Through this abstraction, read and write file accesses share the same standardized interface for position management, avoiding redundant control logic.&lt;/p&gt;
+&lt;p&gt;Application components typically interact with &lt;code&gt;FileAccessor&lt;/code&gt; via instances of the derived access objects, but can handle position- and state-related checks generically via the common base interface.&lt;/p&gt;
+&lt;div class="diagram" id="diag-fileaccessor-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 206.94 232.80" style="max-width:276px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
+&lt;!-- Application --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Application&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M109.43,-36C109.43,-36 65.49,-36 65.49,-36 59.49,-36 53.49,-30 53.49,-24 53.49,-24 53.49,-12 53.49,-12 53.49,-6 59.49,0 65.49,0 65.49,0 109.43,0 109.43,0 115.43,0 121.43,-6 121.43,-12 121.43,-12 121.43,-24 121.43,-24 121.43,-30 115.43,-36 109.43,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="87.46" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Application&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- ReadAccessor --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;ReadAccessor&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M66.92,-120C66.92,-120 12,-120 12,-120 6,-120 0,-114 0,-108 0,-108 0,-96 0,-96 0,-90 6,-84 12,-84 12,-84 66.92,-84 66.92,-84 72.92,-84 78.92,-90 78.92,-96 78.92,-96 78.92,-108 78.92,-108 78.92,-114 72.92,-120 66.92,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="39.46" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_ReadAccessor_4ffb0b.html" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html"&gt;ReadAccessor&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Application&amp;#45;&amp;gt;ReadAccessor --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Application-&amp;gt;ReadAccessor&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M77.28,-36.39C70.92,-47.26 62.58,-61.49 55.36,-73.83"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="52.5,-71.8 50.46,-82.2 58.54,-75.34 52.5,-71.8"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="76.33" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- WriteAccessor --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;WriteAccessor&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M166.14,-120C166.14,-120 108.78,-120 108.78,-120 102.78,-120 96.78,-114 96.78,-108 96.78,-108 96.78,-96 96.78,-96 96.78,-90 102.78,-84 108.78,-84 108.78,-84 166.14,-84 166.14,-84 172.14,-84 178.14,-90 178.14,-96 178.14,-96 178.14,-108 178.14,-108 178.14,-114 172.14,-120 166.14,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="137.46" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_WriteAccessor_a926f9.html" href="../classes/cl_ara_per_WriteAccessor_a926f9.html"&gt;WriteAccessor&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Application&amp;#45;&amp;gt;WriteAccessor --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;Application-&amp;gt;WriteAccessor&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M98.06,-36.39C104.69,-47.26 113.37,-61.49 120.89,-73.83"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="117.81,-75.5 126,-82.21 123.79,-71.85 117.81,-75.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="125.45" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- FileAccessor --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;FileAccessor&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M113.17,-204C113.17,-204 63.74,-204 63.74,-204 57.74,-204 51.74,-198 51.74,-192 51.74,-192 51.74,-180 51.74,-180 51.74,-174 57.74,-168 63.74,-168 63.74,-168 113.17,-168 113.17,-168 119.17,-168 125.17,-174 125.17,-180 125.17,-180 125.17,-192 125.17,-192 125.17,-198 119.17,-204 113.17,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="88.46" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileAccessor_efe7d0.html" href="../classes/cl_ara_per_FileAccessor_efe7d0.html"&gt;FileAccessor&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- ReadAccessor&amp;#45;&amp;gt;FileAccessor --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;ReadAccessor-&amp;gt;FileAccessor&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M49.85,-120.39C56.35,-131.26 64.85,-145.49 72.22,-157.83"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="69.09,-159.42 77.23,-166.21 75.1,-155.83 69.09,-159.42"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="83.42" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erbt von&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- WriteAccessor&amp;#45;&amp;gt;FileAccessor --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;WriteAccessor-&amp;gt;FileAccessor&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M127.07,-120.39C120.57,-131.26 112.07,-145.49 104.69,-157.83"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="101.81,-155.83 99.69,-166.21 107.82,-159.42 101.81,-155.83"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="132.42" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erbt von&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Embedding of FileAccessor as a common base class for specialized file accesses. Sources: &lt;a class="spec-record-ref" data-req="SWS_PER_00589" href="../spec/record.html?id=SWS_PER_00589"&gt;[SWS_PER_00589]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00594" href="../spec/record.html?id=SWS_PER_00594"&gt;[SWS_PER_00594]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
+&lt;p&gt;The lifecycle management of &lt;code&gt;ara::per::FileAccessor&lt;/code&gt; is strictly regulated and prevents direct instantiations as well as any duplication. The parameterless default constructor is explicitly deleted &lt;a class="spec-record-ref" data-req="SWS_PER_00589" href="../spec/record.html?id=SWS_PER_00589"&gt;[SWS_PER_00589]&lt;/a&gt;. Likewise, the copy constructor &lt;a class="spec-record-ref" data-req="SWS_PER_00592" href="../spec/record.html?id=SWS_PER_00592"&gt;[SWS_PER_00592]&lt;/a&gt; and the copy assignment operator &lt;a class="spec-record-ref" data-req="SWS_PER_00593" href="../spec/record.html?id=SWS_PER_00593"&gt;[SWS_PER_00593]&lt;/a&gt; are deleted, so that instances can be copied neither shallowly nor deeply.&lt;/p&gt;
+&lt;p&gt;Furthermore, the move constructor &lt;a class="spec-record-ref" data-req="SWS_PER_00590" href="../spec/record.html?id=SWS_PER_00590"&gt;[SWS_PER_00590]&lt;/a&gt; and the move assignment operator &lt;a class="spec-record-ref" data-req="SWS_PER_00591" href="../spec/record.html?id=SWS_PER_00591"&gt;[SWS_PER_00591]&lt;/a&gt; are also deleted. Interpretation: Since all default, copy, and move operations are deleted, &lt;code&gt;FileAccessor&lt;/code&gt; is likely to act exclusively as a protected base class whose instantiation and lifetime are bound to the concrete child classes &lt;code&gt;ReadAccessor&lt;/code&gt; and &lt;code&gt;WriteAccessor&lt;/code&gt;, respectively. This prevents accidental slicing during polymorphic handling.&lt;/p&gt;
+&lt;p&gt;Resources are cleaned up via the virtual destructor &lt;code&gt;~FileAccessor()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00594" href="../spec/record.html?id=SWS_PER_00594"&gt;[SWS_PER_00594]&lt;/a&gt;. The declaration as &lt;code&gt;virtual&lt;/code&gt; and &lt;code&gt;noexcept&lt;/code&gt; ensures that during destruction via pointers or references to the base class, the destructors of the derived classes are called properly and in an exception-safe manner &lt;a class="spec-record-ref" data-req="SWS_PER_00594" href="../spec/record.html?id=SWS_PER_00594"&gt;[SWS_PER_00594]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;With regard to concurrency, the destructor as well as all methods are specified as not thread-safe (&lt;em&gt;not thread-safe&lt;/em&gt;) &lt;a class="spec-record-ref" data-req="SWS_PER_00162" href="../spec/record.html?id=SWS_PER_00162"&gt;[SWS_PER_00162]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00424" href="../spec/record.html?id=SWS_PER_00424"&gt;[SWS_PER_00424]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00107" href="../spec/record.html?id=SWS_PER_00107"&gt;[SWS_PER_00107]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00594" href="../spec/record.html?id=SWS_PER_00594"&gt;[SWS_PER_00594]&lt;/a&gt;. If multiple threads access the same instance concurrently, the calling application must ensure external synchronization.&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;A typical usage path of &lt;code&gt;FileAccessor&lt;/code&gt; comprises determining the file state, navigating to defined positions, and validating file boundaries:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Size query:&lt;/strong&gt; Via &lt;code&gt;GetSize()&lt;/code&gt;, the application determines the current total size of the file in bytes &lt;a class="spec-record-ref" data-req="SWS_PER_00424" href="../spec/record.html?id=SWS_PER_00424"&gt;[SWS_PER_00424]&lt;/a&gt;. This provides the frame of reference for valid positions.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Position query:&lt;/strong&gt; By means of &lt;code&gt;GetPosition()&lt;/code&gt;, the application queries the current position in bytes relative to the beginning of the file &lt;a class="spec-record-ref" data-req="SWS_PER_00162" href="../spec/record.html?id=SWS_PER_00162"&gt;[SWS_PER_00162]&lt;/a&gt;. The reported position can also be at the end of the file.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Absolute positioning:&lt;/strong&gt; With &lt;code&gt;SetPosition()&lt;/code&gt;, the application sets the file pointer to an absolute byte position from the beginning of the file &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Relative shift:&lt;/strong&gt; Alternatively, &lt;code&gt;MovePosition()&lt;/code&gt; enables moving the position relative to an origin &lt;code&gt;origin&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Origin::kBeginning&lt;/code&gt;: Positive offset from the beginning of the file.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Origin::kCurrent&lt;/code&gt;: Positive or negative offset from the current position; an offset of &lt;code&gt;0&lt;/code&gt; leaves the position unchanged.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Origin::kEnd&lt;/code&gt;: Negative offset relative to the end of the file; an offset of &lt;code&gt;0&lt;/code&gt; sets the position exactly to the end of the file.&lt;/li&gt;
+&lt;/ul&gt;
+Upon a successful call, the new position from the beginning of the file is provided in the return value &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;End-of-file check:&lt;/strong&gt; Via &lt;code&gt;IsEof()&lt;/code&gt;, the application checks whether the current position has reached the end of the file &lt;a class="spec-record-ref" data-req="SWS_PER_00107" href="../spec/record.html?id=SWS_PER_00107"&gt;[SWS_PER_00107]&lt;/a&gt;. The function returns &lt;code&gt;true&lt;/code&gt; if the pointer is at the end of the file, otherwise &lt;code&gt;false&lt;/code&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="diagram" id="diag-fileaccessor-navigation"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 480 408" font-family="Helvetica,sans-Serif" style="max-width:480px"&gt;&lt;text x="240.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Dateinavigation und Positionsprüfung&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="394" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="394" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileAccessor_efe7d0.html" href="../classes/cl_ara_per_FileAccessor_efe7d0.html"&gt;FileAccessor&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00424" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00424"&gt;GetSize&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;std::uint64_t (Dateigröße)&lt;/text&gt;&lt;line x1="345" y1="166" x2="135" y2="166" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00163" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00163"&gt;SetPosition&lt;/a&gt;(position)&lt;/text&gt;&lt;line x1="135" y1="200" x2="345" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="228" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html"&gt;ara::core::Result&lt;/a&gt;&amp;lt;void&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="234" x2="135" y2="234" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="262" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00164" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00164"&gt;MovePosition&lt;/a&gt;(origin, offset)&lt;/text&gt;&lt;line x1="135" y1="268" x2="345" y2="268" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="296" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html"&gt;ara::core::Result&lt;/a&gt;&amp;lt;std::uint64_t&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="302" x2="135" y2="302" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="330" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00107" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00107"&gt;IsEof&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="336" x2="345" y2="336" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="364" text-anchor="middle" font-size="11" fill="#28251d"&gt;bool (Dateiende)&lt;/text&gt;&lt;line x1="345" y1="370" x2="135" y2="370" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Sequence of a typical file navigation with position check and relative shift. Sources: &lt;a class="spec-record-ref" data-req="SWS_PER_00424" href="../spec/record.html?id=SWS_PER_00424"&gt;[SWS_PER_00424]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00107" href="../spec/record.html?id=SWS_PER_00107"&gt;[SWS_PER_00107]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;Error handling in &lt;code&gt;ara::per::FileAccessor&lt;/code&gt; follows the error-model-based approach of the AUTOSAR Adaptive Platform via &lt;code&gt;ara::core::Result&lt;/code&gt;. All methods are declared as &lt;code&gt;noexcept&lt;/code&gt; and exception-safe (&lt;em&gt;exception safe&lt;/em&gt;), which is why no C++ exceptions are thrown &lt;a class="spec-record-ref" data-req="SWS_PER_00162" href="../spec/record.html?id=SWS_PER_00162"&gt;[SWS_PER_00162]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00424" href="../spec/record.html?id=SWS_PER_00424"&gt;[SWS_PER_00424]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00107" href="../spec/record.html?id=SWS_PER_00107"&gt;[SWS_PER_00107]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Errors primarily occur when range boundaries are violated:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Exceedance during absolute positioning:&lt;/strong&gt; If the application passes a value to &lt;code&gt;SetPosition()&lt;/code&gt; that lies beyond the end of the file, the call fails and returns the error code &lt;code&gt;PerErrc::kInvalidPosition&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Boundary violation during relative shift:&lt;/strong&gt; If the calculation in &lt;code&gt;MovePosition()&lt;/code&gt; results in a position less than zero or beyond the end of the file, the operation is rejected with &lt;code&gt;PerErrc::kInvalidPosition&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Rollback semantics:&lt;/strong&gt; In the event of an error, both &lt;code&gt;SetPosition()&lt;/code&gt; and &lt;code&gt;MovePosition()&lt;/code&gt; guarantee strict rollback semantics (&lt;em&gt;rollback_semantics&lt;/em&gt;): The current file position is not modified in the event of an error &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Vendor-specific errors:&lt;/strong&gt; In addition to &lt;code&gt;PerErrc::kInvalidPosition&lt;/code&gt;, vendor-specific error codes can also be returned in &lt;code&gt;ara::core::Result&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00163" href="../spec/record.html?id=SWS_PER_00163"&gt;[SWS_PER_00163]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00164" href="../spec/record.html?id=SWS_PER_00164"&gt;[SWS_PER_00164]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Da sämtliche Konstruktoren gelöscht sind, dürfte FileAccessor ausschließlich als gemeinsame Basisklasse für konkrete Accessoren wie ReadAccessor und WriteAccessor fungieren – Begründung: SWS_PER_00589, SWS_PER_00590 und SWS_PER_00592 löschen Standard-, Verschiebe- und Kopierkonstruktoren, während die Klassenbeschreibung FileAccessor als Basis für ReadAccessor und WriteAccessor ausweist. --&gt;
+&lt;p class="ai-note"&gt;This guide was created by an AI system based on the AUTOSAR Adaptive Release R25-11 specification.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e144e80ff930…</code></div>
+              <div><strong>Konstituierende Records:</strong> 11</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 0</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">11</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">11 von 11 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (11 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (0 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PER_00589","k":"function","d":"PER","t":"function FileAccessor [SWS_PER_00589] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00129 , RS_AP_00146 FileAccessor ()=delete; The default constructor for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono","n":"FileAccessor"},{"i":"SWS_PER_00590","k":"function","d":"PER","t":"function FileAccessor [SWS_PER_00590] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00121 , RS_AP_00129 , RS_AP_00145 , RS_AP_00159 FileAccessor ( FileAccessor &&ra)=delete; The move constructor for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono","n":"FileAccessor"},{"i":"SWS_PER_00592","k":"function","d":"PER","t":"function FileAccessor [SWS_PER_00592] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00145 FileAccessor (const FileAccessor &)=delete; The copy constructor for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono","n":"FileAccessor"},{"i":"SWS_PER_00162","k":"function","d":"PER","t":"function GetPosition [SWS_PER_00162] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00159 std::uint64_t GetPosition () const noexcept; Returns the current position relative to the beginning of the file. The returned position may be at the end of the file. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Rückgabewert th Typ th Beschreibung td std::uint64_t td The current position in the file in bytes from the beginning of the file.","n":"GetPosition"},{"i":"SWS_PER_00424","k":"function","d":"PER","t":"function GetSize [SWS_PER_00424] Upstream: RS_PER_00017 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 , RS_AP_00127 , RS_AP_00128 , RS_AP_00129 , RS_AP_00159 std::uint64_t GetSize () const noexcept; Returns the current size of a file in bytes. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Rückgabewert th Typ th Beschreibung td std::uint64_t td The current size of the file in bytes.","n":"GetSize"},{"i":"SWS_PER_00107","k":"function","d":"PER","t":"function IsEof [SWS_PER_00107] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00159 bool IsEof () const noexcept; Checks if the current position is at end of file. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Rückgabewert th Typ th Beschreibung td bool td True if the current position is at the end of the file, false otherwise.","n":"IsEof"},{"i":"SWS_PER_00164","k":"function","d":"PER","t":"function MovePosition [SWS_PER_00164] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00121, RS_AP_00135 , RS_AP_00139 , RS_AP_00159 ara::core::Result \u003c std::uint64_t > MovePosition ( Origin origin, std::int64_t offset) noexcept; Moves the current position in the file relative to the Origin. In case of an error, the current position is not changed. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Parameter th Beschreibung td origin td Starting point from which to move ’offset’ bytes. td offset td Offset in bytes relative to ’origin’. Can be positive in case of k Beginning and kCurrent and negative in case of kCurrent and k End. In case of kCurrent, an offset of zero will not change the current position. In case of kEnd, an offset of zero will set the position to the end of the file. Rückgabewert th Typ th Beschreibung td ara::core::Result \u003cstd::uint64_t > td A Result containing the new position in bytes from the beginning of the file. In case of an error, it contains any of the errors defined below, or a vendor specific error. Fehler th Fehlercode th Beschreibung td PerErrc ::kInvalidPosition td rollback_semantics Returned if the resulting position is lower than zero or beyond the end of the file.","n":"MovePosition"},{"i":"SWS_PER_00163","k":"function","d":"PER","t":"function SetPosition [SWS_PER_00163] Upstream: RS_PER_00001 , RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_ AP_00121, RS_AP_00135 , RS_AP_00139 , RS_AP_00159 ara::core::Result \u003c void > SetPosition ( std::uint64_t position) noexcept; Sets the current position relative to the beginning of the file. In case of an error, the current position is not changed. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Parameter th Beschreibung td position td Current position in the file in bytes from the beginning of the file. Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c void > td A Result of void. In case of an error, it contains any of the errors defined below, or a vendor specific error. Fehler th Fehlercode th Beschreibung td PerErrc ::kInvalidPosition td rollback_semantics Returned if the given position is beyond the end of the file.","n":"SetPosition"},{"i":"SWS_PER_00591","k":"function","d":"PER","t":"function operator= [SWS_PER_00591] Upstream: RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 , RS_AP_00145 , RS_AP_00159 FileAccessor & operator= ( FileAccessor &&ra)=delete; The move assignment operator for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono","n":"operator="},{"i":"SWS_PER_00593","k":"function","d":"PER","t":"function operator= [SWS_PER_00593] Upstream: RS_PER_00004 , RS_AP_00119 , RS_AP_00120 , RS_AP_00145 FileAccessor & operator= (const FileAccessor &)=delete; The copy assignment operator for FileAccessor shall not be used. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono","n":"operator="},{"i":"SWS_PER_00594","k":"function","d":"PER","t":"function ~FileAccessor [SWS_PER_00594] Upstream: RS_PER_00004 , RS_AP_00120 , RS_AP_00129 , RS_AP_00134 , RS_AP_00145 , RS_AP_00159 virtual ~ FileAccessor () noexcept; Destructor for FileAccessor. Header-Datei #include \"ara/per/file_accessor.h\" class mono Scope class ara::per::FileAccessor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono","n":"~FileAccessor"}],"inbound":[]}</script></dialog>

@@ -1,0 +1,560 @@
+<dialog id="dossier-modal-ns_com_ara_com_e2e_f19464" class="dossier-modal dossier-workbench" data-dossier-sha="cd93328792917625" aria-labelledby="dossier-modal-ns_com_ara_com_e2e_f19464-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-ns_com_ara_com_e2e_f19464-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_com_ara_com_e2e_f19464)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,909 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Namespace Guide: ns_com_ara_com_e2e_f19464" data-fragment="namespaces/ns_com_ara_com_e2e_f19464.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Namespace-Überblick (&lt;div class="ai namespace-guide"&gt;) für den Namespace 'namespace ara::com::e2e' (adaptive, Modul com) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR NAMESPACE-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften. Der Kontext beschreibt das
+  Zusammenspiel der Kernklassen des Namespace; Lebenszyklus nur, wenn der Namespace selbst
+  eine Initialisierungs- oder Betriebsphase vorgibt; der Nutzungspfad geht über mehrere
+  Klassen bzw. Funktionen des Namespace.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Namespace-Leitfaden für 'namespace ara::com::e2e' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "classes": [
+  "ComE2EErrorDomain — Defines a class representing the E2E error domain",
+  "ComE2EException — Defines a class for exceptions to be thrown by the E2E APIs"
+ ],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1062",
+   "page": 9,
+   "text": "ara::com::e2e::E2EErrorDomain according to\n[SWS_CM_10474] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_SWArchitecture",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_S_P68_1285",
+   "page": 68,
+   "text": "Provides possibility to register a\nara::com::e2e::\nTransportFaultConditionHandler\nfor all methods\nin a given Skeleton."
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_SWArchitecture",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_S_P68_1286",
+   "page": 68,
+   "text": "Provides the possibility to unregister a previously set\nara::com::e2e::\nTransportFaultConditionHandler\nfor all methods\nin a given Skeleton."
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_SWArchitecture",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_S_P69_1290",
+   "page": 69,
+   "text": "Provides possibility to register a\nara::com::e2e::\nTransportFaultConditionHandler\nfor a given\nSkeleton Field Get/Set."
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_SWArchitecture",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_S_P69_1291",
+   "page": 69,
+   "text": "Provides the possibility to unregister a previously set\nara::com::e2e::\nTransportFaultConditionHandler\nfor a given\nSkeleton Field Get/Set."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P40_054",
+   "page": 40,
+   "text": "△\n[SWS_CM_11611] [SWS_CM_11615]\n[SWS_CM_12002] [SWS_CM_12003]\n[SWS_CM_12021] [SWS_CM_12022]\n[SWS_CM_12026] [SWS_CM_90420]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90434] [SWS_CM_90435]\n[SWS_CM_90437] [SWS_CM_90438]\n[SWS_CM_98444] [SWS_CM_99332]\n[SWS_CM_99333] [SWS_CM_99444]\n[SWS_CM_99445] [SWS_CM_99446]\n[SWS_CM_99447] [SWS_CM_99556]\n[SWS_CM_99557] [SWS_CM_99558]\n[SWS_CM_99559]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P40_055",
+   "page": 40,
+   "text": "[SWS_CM_00118] [SWS_CM_00122]\n[SWS_CM_00123] [SWS_CM_00152]\n[SWS_CM_00153] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_11352]\n[SWS_CM_11365] [SWS_CM_12021]\n[SWS_CM_12022] [SWS_CM_12026]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90438]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P40_057",
+   "page": 40,
+   "text": "[SWS_CM_00048] [SWS_CM_00049]\n[SWS_CM_00118] [SWS_CM_00122]\n[SWS_CM_00123] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_10383]\n[SWS_CM_10440] [SWS_CM_11265]\n[SWS_CM_11352] [SWS_CM_11365]\n[SWS_CM_12021] [SWS_CM_12022]\n[SWS_CM_12026] [SWS_CM_90421]\n[SWS_CM_90422] [SWS_CM_99030]"
+  }
+ ],
+ "member_requirements": [
+  {
+   "id": "SWS_CM_10474",
+   "text": "enumeration ComE2EErrc [SWS_CM_10474] Upstream: RS_AP_00130 enum class ComE2EErrc : ara::core::ErrorDomain::CodeType {...}; Defines the error codes for the ara::com::e2e::ComE2EErrc Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol ComE2EErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kRepeated td =1 Data has a repeated counter td kWrongSequence td =2 The checks of the Data in this cycle were successful, with the exception of counter jump, which changed more than the allowed delta td kError td =3 Error not related to counters occurred (e.g. wrong crc, wrong length, wrong Data ID) or the return of the check function was not OK td kNoNewData td =5 No new data is available td kUnspecifiedE2EError td = 13 A remote service returned an unspecified E2E error."
+  },
+  {
+   "id": "SWS_CM_90421",
+   "text": "enumeration ProfileCheckStatus [SWS_CM_90421] Upstream: RS_E2E_08534 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 enum class ProfileCheckStatus : std::uint8_t {...}; The result of the check of a single ara::com::SamplePtr Header-Datei #include \"ara/com/e2e/profile_check_status.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol ProfileCheckStatus class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kOk td The checks of the sample in this cycle were successful (including counter check) td kRepeated td Sample has a repeated counter td kWrongSequence td The checks of the sample in this cycle were successful, with the exception of counter jump, which changed more than the allowed delta. td kError td Error not related to counters occurred (e.g. wrong crc, wrong length, wrong Data ID). td kCheckDisabled td No E2E check status available. Return value of function GetProfile CheckStatus if EndToEndTransformationComSpecProps. disableEndToEndCheck is set to TRUE Siehe auch: [PRS_E2E_00322] , [PRS_E2E_00677]"
+  },
+  {
+   "id": "SWS_CM_90422",
+   "text": "enumeration SMState [SWS_CM_90422] Upstream: RS_E2E_08534 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 enum class SMState : std::uint8_t {...}; The state of the E2E supervision after the most recent check of a received sample of the event. If ara::com::e2e::SMState == kValid, and the ara::com::SamplePtr :: GetProfileCheckStatus did not result in an Error then, the last checked sample can be used. Header-Datei #include \"ara/com/e2e/sm_state.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol SMState class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kValid td Communication of the samples of this event is functioning properly according to E2E checks; sample(s) can be used td kNoData td No data have been received from the publisher at all td kInit td Not enough data where the E2E check yielded OK from the publisher is available since the initialization; sample(s) cannot be used td kInvalid td Too little data (where the E2E check yielded OK), or too much data (where the e2e check yielded ERROR) were received within the E2 E time window - communication of the sample of this event not functioning properly; sample(s) cannot be used td kStateMDisabled td No E2E state machine available. Return value of function Get SMState if disableEndToEndStateMachine == TRUE td kIncompatibleQoS td Samples can’t be received because configured QoS policies at each end of communication don’t match. (Only applicable to certain network bindings.) Siehe auch: [PRS_E2E_00322] , [PRS_E2E_00678]"
+  },
+  {
+   "id": "SWS_CM_00091",
+   "text": "enumeration TransportFaultCondition [SWS_CM_00091] enum class TransportFaultCondition : std::uint8_t {...}; Defines the TransportFaultCondition which represent a single transport-related fault event Header-Datei #include \"ara/com/e2e/transport_fault_condition.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol TransportFaultCondition class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kSampleRejected td A sample has been rejected on layer 4 or above due to end-point resource exhaustion td kDeadlineMissed td A sample has missed its configured deadline period td kSampleLost td Loss of a sample has been detected (e.g. gap in expected sequence numbering)"
+  },
+  {
+   "id": "SWS_CM_00092",
+   "text": "type alias TransportFaultConditionHandler [SWS_CM_00092] using TransportFaultConditionHandler = std::function &amp;lt;void(Transport FaultCondition, std::size_t )&amp;gt;; Handler type to be called when one or more (determined by the value of the std::size_t) fault conditions are detected Header-Datei #include \"ara/com/e2e/transport_fault_condition.h\" class mono Scope namespace ara::com::e2e class mono Symbol TransportFaultConditionHandler class mono"
+  },
+  {
+   "id": "SWS_CM_12510",
+   "text": "function GetComE2EErrorDomain [SWS_CM_12510] Upstream: RS_AP_00120 , RS_AP_00130 constexpr const ara::core::ErrorDomain &amp;amp; GetComE2EErrorDomain () noexcept; Returns a reference to the ara::com::e2e::ComE2EErrorDomain object Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Scope namespace ara::com::e2e class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain &amp;amp; td Reference to the ara::com::e2e::ComE2EErrorDomain object"
+  },
+  {
+   "id": "SWS_CM_12511",
+   "text": "function MakeErrorCode [SWS_CM_12511] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00130 constexpr ara::core::ErrorCode MakeErrorCode ( ara::com::e2e::ComE2 EErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an instance of ara::core::ErrorCode Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Scope namespace ara::com::e2e class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ara::core::ErrorCode object."
+  }
+ ],
+ "module": "com",
+ "namespace_id": "ns_com_ara_com_e2e_f19464",
+ "namespace_name": "namespace ara::com::e2e",
+ "platform": "adaptive",
+ "release": "R25-11"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="bc20d9c0cf55e1cf8a099fccf4d868ad7979283dd821761897bbaf95e7868ee7" data-trace-output="cd93328792917625fe0102803e2f5bd80bf962d4e1cfcdf987a768fb69698898" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;The namespace &lt;code&gt;ara::com::e2e&lt;/code&gt; provides data types, status enumerations, and error handling mechanisms for End-to-End protection (E2E) in the AUTOSAR Adaptive Platform. Its primary responsibility lies in providing standardized interfaces for evaluating the E2E integrity of transmitted data, as well as for reporting and handling transport-related error conditions in service-oriented communication.&lt;/p&gt;
+&lt;p&gt;The central interaction partners include skeleton and proxy instances of the communication layer as well as application-side error handling routines. On the server side, the interface enables the registration of an application-specific handler of type &lt;code&gt;TransportFaultConditionHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00092" href="../spec/record.html?id=SWS_CM_00092"&gt;[SWS_CM_00092]&lt;/a&gt; for all methods of a skeleton &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=68"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 68&lt;/a&gt; and dedicatedly for skeleton fields (Field Get/Set) &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=69"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 69&lt;/a&gt;. If a fault occurs in the transport channel, Communication Management notifies the registered handler, specifying the concrete error condition &lt;code&gt;TransportFaultCondition&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00091" href="../spec/record.html?id=SWS_CM_00091"&gt;[SWS_CM_00091]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;div class="diagram" id="diag-e2e-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 339.10 268.40" style="max-width:452px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 254)"&gt;
+&lt;!-- Skeleton --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Skeleton&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M216.9,-239.6C216.9,-239.6 107.91,-239.6 107.91,-239.6 101.91,-239.6 95.91,-233.6 95.91,-227.6 95.91,-227.6 95.91,-215.6 95.91,-215.6 95.91,-209.6 101.91,-203.6 107.91,-203.6 107.91,-203.6 216.9,-203.6 216.9,-203.6 222.9,-203.6 228.9,-209.6 228.9,-215.6 228.9,-215.6 228.9,-227.6 228.9,-227.6 228.9,-233.6 222.9,-239.6 216.9,-239.6"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="162.41" y="-218.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Skeleton (Service-Instanz)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Middleware --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;Middleware&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M231.41,-143.6C231.41,-143.6 93.4,-143.6 93.4,-143.6 87.4,-143.6 81.4,-137.6 81.4,-131.6 81.4,-131.6 81.4,-119.6 81.4,-119.6 81.4,-113.6 87.4,-107.6 93.4,-107.6 93.4,-107.6 231.41,-107.6 231.41,-107.6 237.41,-107.6 243.41,-113.6 243.41,-119.6 243.41,-119.6 243.41,-131.6 243.41,-131.6 243.41,-137.6 237.41,-143.6 231.41,-143.6"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="162.41" y="-128.9" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/com.html" href="../modules/com.html"&gt;ara::com&lt;/a&gt; Laufzeitschicht&lt;/text&gt;
+&lt;text text-anchor="middle" x="162.41" y="-115.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(E2E- &amp;amp; Transportüberwachung)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Skeleton&amp;#45;&amp;gt;Middleware --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Skeleton-&amp;gt;Middleware&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M162.41,-203.36C162.41,-189.93 162.41,-170.99 162.41,-155.28"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="165.91,-155.71 162.41,-145.71 158.91,-155.72 165.91,-155.71"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="204.62" y="-176.6" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;registriert Handler&lt;/text&gt;
+&lt;text text-anchor="middle" x="204.62" y="-164.6" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;(Methoden &amp;amp; Fields)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Handler --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;Handler&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M148.81,-41.8C148.81,-41.8 12,-41.8 12,-41.8 6,-41.8 0,-35.8 0,-29.8 0,-29.8 0,-17.8 0,-17.8 0,-11.8 6,-5.8 12,-5.8 12,-5.8 148.81,-5.8 148.81,-5.8 154.81,-5.8 160.81,-11.8 160.81,-17.8 160.81,-17.8 160.81,-29.8 160.81,-29.8 160.81,-35.8 154.81,-41.8 148.81,-41.8"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="80.41" y="-27.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_00092" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_00092"&gt;TransportFaultConditionHandler&lt;/a&gt;&lt;/text&gt;
+&lt;text text-anchor="middle" x="80.41" y="-13.9" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Anwendungs-Callback)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- ComE2E --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;ComE2E&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M298.3,-47.6C298.3,-47.6 190.51,-47.6 190.51,-47.6 184.51,-47.6 178.51,-41.6 178.51,-35.6 178.51,-35.6 178.51,-12 178.51,-12 178.51,-6 184.51,0 190.51,0 190.51,0 298.3,0 298.3,0 304.3,0 310.3,-6 310.3,-12 310.3,-12 310.3,-35.6 310.3,-35.6 310.3,-41.6 304.3,-47.6 298.3,-47.6"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="244.41" y="-33.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_e2e_f19464.html" href="../namespaces/ns_com_ara_com_e2e_f19464.html"&gt;ara::com::e2e&lt;/a&gt;&lt;/text&gt;
+&lt;text text-anchor="middle" x="244.41" y="-20.5" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_00091" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_00091"&gt;TransportFaultCondition&lt;/a&gt;,&lt;/text&gt;
+&lt;text text-anchor="middle" x="244.41" y="-7.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_com_e2e_ComE2EErrorDomain_fb2892.html" href="../classes/cl_ara_com_e2e_ComE2EErrorDomain_fb2892.html"&gt;ComE2EErrorDomain&lt;/a&gt;)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Middleware&amp;#45;&amp;gt;Handler --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Middleware-&amp;gt;Handler&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M142.34,-107.17C136.56,-101.77 130.42,-95.65 125.21,-89.6 115.04,-77.77 105.04,-63.62 97.07,-51.56"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="100.18,-49.92 91.81,-43.42 94.3,-53.72 100.18,-49.92"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="156.31" y="-80.6" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;ruft auf bei&lt;/text&gt;
+&lt;text text-anchor="middle" x="156.31" y="-68.6" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Transportfehler&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Middleware&amp;#45;&amp;gt;ComE2E --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;Middleware-&amp;gt;ComE2E&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M176.69,-107.22C188.07,-93.36 204.32,-73.59 218.05,-56.88"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="220.67,-59.21 224.31,-49.26 215.26,-54.76 220.67,-59.21"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="247.26" y="-80.6" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;verwendet Fehler-&lt;/text&gt;
+&lt;text text-anchor="middle" x="247.26" y="-68.6" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Definitionen&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Interaction between skeleton instance, communication runtime, and error handler. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_00091" href="../spec/record.html?id=SWS_CM_00091"&gt;[SWS_CM_00091]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00092" href="../spec/record.html?id=SWS_CM_00092"&gt;[SWS_CM_00092]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=68"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 68&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=69"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 69&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;The typical usage path when processing incoming event samples comprises a two-stage validation consisting of individual sample check and state monitoring:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Individual sample check:&lt;/strong&gt; Upon receiving a sample, the result of the E2E profile check for the respective &lt;code&gt;ara::com::SamplePtr&lt;/code&gt; is first evaluated via &lt;code&gt;ProfileCheckStatus&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90421" href="../spec/record.html?id=SWS_CM_90421"&gt;[SWS_CM_90421]&lt;/a&gt;. In this process, checksums, data lengths, and counter values are analyzed. If the check is active and successful, the query returns the status &lt;code&gt;ProfileCheckStatus::kOk&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90421" href="../spec/record.html?id=SWS_CM_90421"&gt;[SWS_CM_90421]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;State check of the state machine:&lt;/strong&gt; Subsequently, the higher-level state of the E2E monitoring state machine is checked using &lt;code&gt;SMState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422"&gt;[SWS_CM_90422]&lt;/a&gt;. Only when &lt;code&gt;SMState::kValid&lt;/code&gt; is present and the individual check &lt;code&gt;ProfileCheckStatus&lt;/code&gt; has yielded no error may the checked sample be consumed and further processed by the application &lt;a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422"&gt;[SWS_CM_90422]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Error registration on the skeleton:&lt;/strong&gt; In parallel, a service provider registers a &lt;code&gt;TransportFaultConditionHandler&lt;/code&gt; on the skeleton for methods &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=68"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 68&lt;/a&gt; or field accesses &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=69"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 69&lt;/a&gt; during initialization. Handlers that are no longer required can be deregistered again later &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=68"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 68&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_SWArchitecture&amp;amp;page=69"&gt;AUTOSAR_AP_EXP_SWArchitecture p. 69&lt;/a&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class="diagram" id="diag-e2e-pruefung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 573" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;E2E-Validierung empfangener Samples&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="559" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="559" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="559" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_com_SamplePtr_f95130.html" href="../classes/cl_ara_com_SamplePtr_f95130.html"&gt;SamplePtr&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;E2E-Prüfung&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="394" width="610" height="145" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;line x1="40" y1="120" x2="650" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Schritt 1: Status des Einzel-Samples prüfen&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_com_SamplePtr_f95130.html#SWS_CM_90420" href="../classes/cl_ara_com_SamplePtr_f95130.html#SWS_CM_90420"&gt;GetProfileCheckStatus&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;Prüfe CRC, Counter, Länge&lt;/text&gt;&lt;line x1="345" y1="203" x2="555" y2="203" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="231" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_90421" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_90421"&gt;ProfileCheckStatus&lt;/a&gt; (z. B. kOk)&lt;/text&gt;&lt;line x1="555" y1="237" x2="345" y2="237" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="265" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_90421" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_90421"&gt;ProfileCheckStatus&lt;/a&gt;&lt;/text&gt;&lt;line x1="345" y1="271" x2="135" y2="271" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="293" x2="650" y2="293" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="308" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Schritt 2: Zustandsmaschine der E2E-Überwachung abfragen&lt;/text&gt;&lt;text x="345.0" y="336" text-anchor="middle" font-size="11" fill="#28251d"&gt;GetSMState()&lt;/text&gt;&lt;line x1="135" y1="342" x2="555" y2="342" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="370" text-anchor="middle" font-size="11" fill="#28251d"&gt;SMState (z. B. kValid)&lt;/text&gt;&lt;line x1="555" y1="376" x2="135" y2="376" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 394 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="409" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="409" font-size="11" font-style="italic" fill="#28251d"&gt;SMState == kValid &amp;amp;&amp;amp; &lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_90421" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_90421"&gt;ProfileCheckStatus&lt;/a&gt; == kOk&lt;/text&gt;&lt;path d="M 135 420 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="435" text-anchor="start" font-size="11" fill="#28251d"&gt;Sample als gültig akzeptieren und verarbeiten&lt;/text&gt;&lt;line x1="40" y1="465" x2="650" y2="465" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="480" font-size="11" font-style="italic" fill="#28251d"&gt;sonst (z. B. kInvalid, kError)&lt;/text&gt;&lt;path d="M 135 494 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="509" text-anchor="start" font-size="11" fill="#28251d"&gt;Sample verwerfen / Fehlerbehandlung ausführen&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Validation sequence of received samples based on ProfileCheckStatus and SMState. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_90421" href="../spec/record.html?id=SWS_CM_90421"&gt;[SWS_CM_90421]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422"&gt;[SWS_CM_90422]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;In the event of an error, the namespace differentiates between protocol-related E2E check errors, states of the monitoring state machine, and transport-related errors:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;E2E error codes (&lt;code&gt;ComE2EErrc&lt;/code&gt;):&lt;/strong&gt; Erroneous checks or incorrect counter sequences are mapped via the enumeration &lt;code&gt;ComE2EErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10474" href="../spec/record.html?id=SWS_CM_10474"&gt;[SWS_CM_10474]&lt;/a&gt;. These include repeated counters (&lt;code&gt;kRepeated&lt;/code&gt;), invalid counter jumps (&lt;code&gt;kWrongSequence&lt;/code&gt;), checksum or length errors (&lt;code&gt;kError&lt;/code&gt;), the absence of new data (&lt;code&gt;kNoNewData&lt;/code&gt;), and unspecified errors of remote services (&lt;code&gt;kUnspecifiedE2EError&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CM_10474" href="../spec/record.html?id=SWS_CM_10474"&gt;[SWS_CM_10474]&lt;/a&gt;. For integration into the platform-wide error model, &lt;code&gt;GetComE2EErrorDomain()&lt;/code&gt; provides a reference to the &lt;code&gt;ComE2EErrorDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_12510" href="../spec/record.html?id=SWS_CM_12510"&gt;[SWS_CM_12510]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=9"&gt;AUTOSAR_AP_EXP_ARAComAPI p. 9&lt;/a&gt;, while &lt;code&gt;MakeErrorCode()&lt;/code&gt; generates standardized error codes &lt;a class="spec-record-ref" data-req="SWS_CM_12511" href="../spec/record.html?id=SWS_CM_12511"&gt;[SWS_CM_12511]&lt;/a&gt;. For exception handling, the exception class &lt;code&gt;ComE2EException&lt;/code&gt; exists.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;State errors of the E2E monitoring (&lt;code&gt;SMState&lt;/code&gt;):&lt;/strong&gt; If the state machine after evaluation is not in the status &lt;code&gt;kValid&lt;/code&gt;, but in the states &lt;code&gt;kInit&lt;/code&gt; (not yet sufficient error-free data since initialization), &lt;code&gt;kInvalid&lt;/code&gt; (too many erroneous or too few valid transmissions within the time window), or &lt;code&gt;kNoData&lt;/code&gt;, the data must not be used &lt;a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422"&gt;[SWS_CM_90422]&lt;/a&gt;. In the case of incompatible Quality of Service parameters, the state &lt;code&gt;kIncompatibleQoS&lt;/code&gt; is signaled &lt;a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422"&gt;[SWS_CM_90422]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Transport-related fault conditions (&lt;code&gt;TransportFaultCondition&lt;/code&gt;):&lt;/strong&gt; If a resource shortage occurs at layer 4 or higher, &lt;code&gt;kSampleRejected&lt;/code&gt; is reported &lt;a class="spec-record-ref" data-req="SWS_CM_00091" href="../spec/record.html?id=SWS_CM_00091"&gt;[SWS_CM_00091]&lt;/a&gt;. When configured timeouts are exceeded, the system reports &lt;code&gt;kDeadlineMissed&lt;/code&gt;, and when gaps in the packet sequence are detected, &lt;code&gt;kSampleLost&lt;/code&gt; is reported &lt;a class="spec-record-ref" data-req="SWS_CM_00091" href="../spec/record.html?id=SWS_CM_00091"&gt;[SWS_CM_00091]&lt;/a&gt;. These conditions are passed to the application via the registered &lt;code&gt;TransportFaultConditionHandler&lt;/code&gt; together with the number of occurred errors &lt;a class="spec-record-ref" data-req="SWS_CM_00092" href="../spec/record.html?id=SWS_CM_00092"&gt;[SWS_CM_00092]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Der konkrete Aufruf von GetSMState() erfolgt vermutlich an einer Proxy-Event-Instanz oder dem SamplePtr – Begründung: SWS_CM_90422 nennt SamplePtr::GetProfileCheckStatus und GetSMState explizit im Validierungskontext. --&gt;
+&lt;p class="ai-note"&gt;This guide is based exclusively on the specification documents of AUTOSAR release R25-11.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>bc20d9c0cf55…</code></div>
+              <div><strong>Konstituierende Records:</strong> 7</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 8</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">15</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">5</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">15 von 15 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (7 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (8 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CM_10474","k":"enumeration","d":"COM","t":"enumeration ComE2EErrc [SWS_CM_10474] Upstream: RS_AP_00130 enum class ComE2EErrc : ara::core::ErrorDomain::CodeType {...}; Defines the error codes for the ara::com::e2e::ComE2EErrc Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol ComE2EErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kRepeated td =1 Data has a repeated counter td kWrongSequence td =2 The checks of the Data in this cycle were successful, with the exception of counter jump, which changed more than the allowed delta td kError td =3 Error not related to counters occurred (e.g. wrong crc, wrong length, wrong Data ID) or the return of the check function was not OK td kNoNewData td =5 No new data is available td kUnspecifiedE2EError td = 13 A remote service returned an unspecified E2E error.","n":"ComE2EErrc"},{"i":"SWS_CM_90421","k":"enumeration","d":"COM","t":"enumeration ProfileCheckStatus [SWS_CM_90421] Upstream: RS_E2E_08534 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 enum class ProfileCheckStatus : std::uint8_t {...}; The result of the check of a single ara::com::SamplePtr Header-Datei #include \"ara/com/e2e/profile_check_status.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol ProfileCheckStatus class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kOk td The checks of the sample in this cycle were successful (including counter check) td kRepeated td Sample has a repeated counter td kWrongSequence td The checks of the sample in this cycle were successful, with the exception of counter jump, which changed more than the allowed delta. td kError td Error not related to counters occurred (e.g. wrong crc, wrong length, wrong Data ID). td kCheckDisabled td No E2E check status available. Return value of function GetProfile CheckStatus if EndToEndTransformationComSpecProps. disableEndToEndCheck is set to TRUE Siehe auch: [PRS_E2E_00322] , [PRS_E2E_00677]","n":"ProfileCheckStatus"},{"i":"SWS_CM_90422","k":"enumeration","d":"COM","t":"enumeration SMState [SWS_CM_90422] Upstream: RS_E2E_08534 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 enum class SMState : std::uint8_t {...}; The state of the E2E supervision after the most recent check of a received sample of the event. If ara::com::e2e::SMState == kValid, and the ara::com::SamplePtr :: GetProfileCheckStatus did not result in an Error then, the last checked sample can be used. Header-Datei #include \"ara/com/e2e/sm_state.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol SMState class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kValid td Communication of the samples of this event is functioning properly according to E2E checks; sample(s) can be used td kNoData td No data have been received from the publisher at all td kInit td Not enough data where the E2E check yielded OK from the publisher is available since the initialization; sample(s) cannot be used td kInvalid td Too little data (where the E2E check yielded OK), or too much data (where the e2e check yielded ERROR) were received within the E2 E time window - communication of the sample of this event not functioning properly; sample(s) cannot be used td kStateMDisabled td No E2E state machine available. Return value of function Get SMState if disableEndToEndStateMachine == TRUE td kIncompatibleQoS td Samples can’t be received because configured QoS policies at each end of communication don’t match. (Only applicable to certain network bindings.) Siehe auch: [PRS_E2E_00322] , [PRS_E2E_00678]","n":"SMState"},{"i":"SWS_CM_00091","k":"enumeration","d":"COM","t":"enumeration TransportFaultCondition [SWS_CM_00091] enum class TransportFaultCondition : std::uint8_t {...}; Defines the TransportFaultCondition which represent a single transport-related fault event Header-Datei #include \"ara/com/e2e/transport_fault_condition.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com::e2e class mono Symbol TransportFaultCondition class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kSampleRejected td A sample has been rejected on layer 4 or above due to end-point resource exhaustion td kDeadlineMissed td A sample has missed its configured deadline period td kSampleLost td Loss of a sample has been detected (e.g. gap in expected sequence numbering)","n":"TransportFaultCondition"},{"i":"SWS_CM_00092","k":"type","d":"COM","t":"type alias TransportFaultConditionHandler [SWS_CM_00092] using TransportFaultConditionHandler = std::function \u003cvoid(Transport FaultCondition, std::size_t )>; Handler type to be called when one or more (determined by the value of the std::size_t) fault conditions are detected Header-Datei #include \"ara/com/e2e/transport_fault_condition.h\" class mono Scope namespace ara::com::e2e class mono Symbol TransportFaultConditionHandler class mono","n":"alias"},{"i":"SWS_CM_12510","k":"function","d":"COM","t":"function GetComE2EErrorDomain [SWS_CM_12510] Upstream: RS_AP_00120 , RS_AP_00130 constexpr const ara::core::ErrorDomain & GetComE2EErrorDomain () noexcept; Returns a reference to the ara::com::e2e::ComE2EErrorDomain object Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Scope namespace ara::com::e2e class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain & td Reference to the ara::com::e2e::ComE2EErrorDomain object","n":"GetComE2EErrorDomain"},{"i":"SWS_CM_12511","k":"function","d":"COM","t":"function MakeErrorCode [SWS_CM_12511] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00130 constexpr ara::core::ErrorCode MakeErrorCode ( ara::com::e2e::ComE2 EErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an instance of ara::core::ErrorCode Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Scope namespace ara::com::e2e class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ara::core::ErrorCode object.","n":"MakeErrorCode"}],"inbound":[{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1062","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"ara::com::e2e::E2EErrorDomain according to\n[SWS_CM_10474] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_S_P68_1285","d":"AUTOSAR_AP_EXP_SWArchitecture","p":68,"t":"Provides possibility to register a\nara::com::e2e::\nTransportFaultConditionHandler\nfor all methods\nin a given Skeleton."},{"i":"SNIP_Com_AUTOSAR_AP_EXP_S_P68_1286","d":"AUTOSAR_AP_EXP_SWArchitecture","p":68,"t":"Provides the possibility to unregister a previously set\nara::com::e2e::\nTransportFaultConditionHandler\nfor all methods\nin a given Skeleton."},{"i":"SNIP_Com_AUTOSAR_AP_EXP_S_P69_1290","d":"AUTOSAR_AP_EXP_SWArchitecture","p":69,"t":"Provides possibility to register a\nara::com::e2e::\nTransportFaultConditionHandler\nfor a given\nSkeleton Field Get/Set."},{"i":"SNIP_Com_AUTOSAR_AP_EXP_S_P69_1291","d":"AUTOSAR_AP_EXP_SWArchitecture","p":69,"t":"Provides the possibility to unregister a previously set\nara::com::e2e::\nTransportFaultConditionHandler\nfor a given\nSkeleton Field Get/Set."},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P40_054","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":40,"t":"△\n[SWS_CM_11611] [SWS_CM_11615]\n[SWS_CM_12002] [SWS_CM_12003]\n[SWS_CM_12021] [SWS_CM_12022]\n[SWS_CM_12026] [SWS_CM_90420]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90434] [SWS_CM_90435]\n[SWS_CM_90437] [SWS_CM_90438]\n[SWS_CM_98444] [SWS_CM_99332]\n[SWS_CM_99333] [SWS_CM_99444]\n[SWS_CM_99445] [SWS_CM_99446]\n[SWS_CM_99447] [SWS_CM_99556]\n[SWS_CM_99557] [SWS_CM_99558]\n[SWS_CM_99559]"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P40_055","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":40,"t":"[SWS_CM_00118] [SWS_CM_00122]\n[SWS_CM_00123] [SWS_CM_00152]\n[SWS_CM_00153] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_11352]\n[SWS_CM_11365] [SWS_CM_12021]\n[SWS_CM_12022] [SWS_CM_12026]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90438]"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P40_057","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":40,"t":"[SWS_CM_00048] [SWS_CM_00049]\n[SWS_CM_00118] [SWS_CM_00122]\n[SWS_CM_00123] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_10383]\n[SWS_CM_10440] [SWS_CM_11265]\n[SWS_CM_11352] [SWS_CM_11365]\n[SWS_CM_12021] [SWS_CM_12022]\n[SWS_CM_12026] [SWS_CM_90421]\n[SWS_CM_90422] [SWS_CM_99030]"}]}</script></dialog>

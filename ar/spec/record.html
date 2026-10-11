@@ -6,7 +6,7 @@
 <script>
 (function(){try{var t=localStorage.getItem("autodocs-theme");var d=localStorage.getItem("autodocs-density");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(d==="compact"||d==="comfortable")document.documentElement.setAttribute("data-density",d);}catch(e){}})();
 </script>
-<script src="../../ai-access.js" defer></script><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../static/discuss.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script><script src="../../component-inspector.js" defer></script><script src="../../classic-filter.js" defer></script><script src="../../ns-index.js" defer></script></head>
+<script src="../../ai-access.js" defer></script><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../static/discuss.js" defer></script></head>
 <body class="vis-app"><a class="skip-link" href="#main">Skip to content</a>
 <header class="shell" role="banner"><div class="titleblock"><a class="home" href="../index.html">autodocs</a></div>
 <nav class="shell-domains" aria-label="Application domains"><details class="shell-dropdown domain-dropdown"><summary class="shell-toggle domain-toggle" aria-haspopup="true"><span class="domain-current">Explore</span> <span class="dropdown-caret" aria-hidden="true">▾</span></summary><div class="shell-dropdown-menu"><a data-domain="explore" href="../index.html">Explore</a><a data-domain="extract" href="../extraction-reports.html">Extract</a><a data-domain="build" href="../build-reports.html">Build</a><a data-domain="curate" href="../curation-report.html">Curate</a><a data-domain="review" href="../open-reviews.html">Review</a><a data-domain="trace" href="../adaptive/index.html#component-graph-data">Trace</a><a data-domain="work" href="../process.html">Work</a></div></details></nav>
@@ -774,30 +774,18 @@
   }
 
   function loadRecordData(reqId) {
-    if (typeof FrozenPack !== "undefined") {
-      return FrozenPack.record(rootPrefix, reqId).then(data => {
-        if (data && data.versions && data.versions.length) return data;
-        return caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop());
-      }).catch(() => caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
-    }
-    return new Promise(resolve => {
-      const s = document.createElement("script");
-      s.src = rootPrefix + "static/frozen-pack.js";
-      s.onload = () => {
+    // 1. Direktabruf des schlanken Einzel-Records (~5-10 KB) statt 9 MB Pack-Index/JSONL
+    return caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop())
+      .catch(() => {
+        // Fallback: FrozenPack (Offline-Packs)
         if (typeof FrozenPack !== "undefined") {
-          FrozenPack.record(rootPrefix, reqId).then(data => {
-            if (data && data.versions && data.versions.length) resolve(data);
-            else resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
-          }).catch(() => resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop())));
-        } else {
-          resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
+          return FrozenPack.record(rootPrefix, reqId).then(data => {
+            if (data && data.versions && data.versions.length) return data;
+            throw new Error("not found in pack");
+          });
         }
-      };
-      s.onerror = () => {
-        resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
-      };
-      document.head.appendChild(s);
-    });
+        throw new Error("not found");
+      });
   }
 
   /* case-safe-names:begin */

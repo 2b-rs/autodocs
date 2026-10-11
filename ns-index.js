@@ -25,6 +25,22 @@
   var ORDER_KEY = "nsx-fold-order", BY_KEY = "nsx-group-by", W_KEY = "nsx-aside-w", TDOCK_KEY = "nsx-titledock", TOPDOCK_KEY = "nsx-topdock";
   var ICON_DOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7M5 6.5l3 3 3-3M2.5 13h11"/></svg>';
   var ICON_CLOSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+  var ICON_TABDOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 3.5h11v9h-11z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 6.5h11" stroke="currentColor" stroke-width="1.4"/><path d="M6 3.5v3" stroke="currentColor" stroke-width="1.4"/></svg>';
+
+  function clearSelection() {
+    try {
+      if (window.getSelection) {
+        var sel = window.getSelection();
+        if (sel) {
+          if (sel.removeAllRanges) sel.removeAllRanges();
+          if (sel.empty) sel.empty();
+        }
+      }
+      if (document.selection && document.selection.empty) {
+        document.selection.empty();
+      }
+    } catch (e) {}
+  }
 
   function dict() { return Object.create(null); }
   function words(el, a) { return (el && el.getAttribute(a) || "").split(" ").filter(Boolean); }
@@ -73,6 +89,33 @@
   var behavior = reduceMotion ? "auto" : "smooth";
 
   function init(root) {
+    if (root._nsxInitialized) return;
+    root._nsxInitialized = true;
+
+    // Building in Pieces — Progressiver Aufbau der Seite
+    root.classList.add("nsx-assembling");
+    var pieces = [];
+    var parent = root.parentElement;
+    if (parent) {
+      var ov = parent.querySelector(".cluster-overview");
+      if (ov) pieces.push(ov);
+      parent.querySelectorAll(".cards > .card").forEach(function (c) { pieces.push(c); });
+    }
+    root.querySelectorAll(".nsx-col").forEach(function (col) { pieces.push(col); });
+    if (parent) {
+      parent.querySelectorAll(".nsx-topdock details.nsx-fold").forEach(function (f) { pieces.push(f); });
+    }
+    var folds = root.querySelector(".nsx-folds");
+    if (folds) {
+      folds.querySelectorAll("details.nsx-fold").forEach(function (f) { pieces.push(f); });
+    }
+    pieces.forEach(function (el, idx) {
+      el.style.setProperty("--nsx-piece-idx", idx);
+    });
+    setTimeout(function () {
+      root.classList.remove("nsx-assembling");
+    }, 700);
+
     // Namensschlüssel ohne Prototyp: Mitglieder heißen auch toString oder constructor
     var rows = dict(), chips = dict(), oitems = dict(), recOwner = dict();
     root.querySelectorAll(".nsx-row").forEach(function (r) {
@@ -157,22 +200,74 @@
       (fnIndex[fname] = fnIndex[fname] || []).push({ id: go.getAttribute("href").slice(1), code: code });
     });
 
-    // ---- Clusterseiten: die Modulkarten stehen als Zeile unter der Überschrift (und Einleitung)
-    var cluCards = isClu && document.querySelector("main > div.cards"), mainH1 = document.querySelector("main > h1");
-    if (cluCards && mainH1) {
-      var ch2 = cluCards.previousElementSibling;
-      if (ch2 && ch2.matches("h2.sect")) ch2.hidden = true;
-      cluCards.classList.add("nsx-clucards");
-      var afterEl = document.querySelector("main > div.cluster-overview") || mainH1;
-      afterEl.parentNode.insertBefore(cluCards, afterEl.nextSibling);
+    // ---- Clusterseiten: Definition und Modulkarten als Folds mit Griffen
+    var cluOv = document.querySelector("main > div.cluster-overview");
+    if (cluOv && !cluOv.closest("details[data-fold]")) {
+      var ovFold = document.createElement("details");
+      ovFold.className = "fold nsx-fold";
+      ovFold.setAttribute("data-fold", "overview");
+      ovFold.open = true;
+      ovFold._initTop = true;
+      ovFold._initDock = "lead";
+      var ovSm = document.createElement("summary");
+      var ovGr = document.createElement("span");
+      ovGr.className = "nsx-grip";
+      ovGr.setAttribute("role", "button");
+      ovGr.setAttribute("tabindex", "0");
+      ovSm.appendChild(ovGr);
+      var ovH2 = document.createElement("h2");
+      ovH2.className = "sect";
+      ovH2.textContent = "Definition";
+      ovSm.appendChild(ovH2);
+      ovFold.appendChild(ovSm);
+      cluOv.parentNode.insertBefore(ovFold, cluOv);
+      ovFold.appendChild(cluOv);
     }
 
-    // ---- Seitenspannende Dropzone über die volle Breite (Themenkarte & Guides)
-    var topDock = document.querySelector(".nsx-topdock");
-    if (!topDock && root) {
-      topDock = document.createElement("div");
-      topDock.className = "nsx-topdock";
-      root.parentNode.insertBefore(topDock, root);
+    var cluCards = isClu && document.querySelector("main > div.cards");
+    if (cluCards && !cluCards.closest("details[data-fold]")) {
+      var ch2 = cluCards.previousElementSibling;
+      var cardsTitle = (ch2 && ch2.matches("h2.sect")) ? ch2.textContent.trim() : "Module im Cluster";
+      if (ch2 && ch2.matches("h2.sect")) ch2.remove();
+
+      var cardsFold = document.createElement("details");
+      cardsFold.className = "fold nsx-fold";
+      cardsFold.setAttribute("data-fold", "cards");
+      cardsFold.open = true;
+      cardsFold._initTop = true;
+      cardsFold._initDock = "post";
+      var cSm = document.createElement("summary");
+      var cGr = document.createElement("span");
+      cGr.className = "nsx-grip";
+      cGr.setAttribute("role", "button");
+      cGr.setAttribute("tabindex", "0");
+      cSm.appendChild(cGr);
+      var cH2 = document.createElement("h2");
+      cH2.className = "sect";
+      cH2.textContent = cardsTitle;
+      cSm.appendChild(cH2);
+      cardsFold.appendChild(cSm);
+      cluCards.parentNode.insertBefore(cardsFold, cluCards);
+      cardsFold.appendChild(cluCards);
+      cluCards.classList.add("nsx-clucards");
+    }
+
+    // ---- Content Area (Gliederung, Inspektor, Elementansicht) als andockbares Element
+    root.setAttribute("data-fold", "elements");
+    var elHead = root.querySelector(".nsx-elements-head");
+    if (!elHead) {
+      elHead = document.createElement("div");
+      elHead.className = "nsx-elements-head";
+      var elGr = document.createElement("span");
+      elGr.className = "nsx-grip";
+      elGr.setAttribute("role", "button");
+      elGr.setAttribute("tabindex", "0");
+      elHead.appendChild(elGr);
+      var elH2 = document.createElement("h2");
+      elH2.className = "sect";
+      elH2.textContent = "Elemente";
+      elHead.appendChild(elH2);
+      root.insertBefore(elHead, root.firstChild);
     }
 
     // ---- Titelleiste des Namespace bleibt oben stehen
@@ -186,6 +281,33 @@
       if (window.ResizeObserver) new ResizeObserver(setTop).observe(title);
     }
 
+    // ---- Seitenspannende Dropzonen (Lead unter der Überschrift, Pre vor der Gliederung, Post hinter der Gliederung)
+    var dockLead = document.querySelector(".nsx-dock-lead");
+    if (!dockLead && root) {
+      dockLead = document.createElement("div");
+      dockLead.className = "nsx-topdock nsx-dock-lead";
+      dockLead.setAttribute("data-dock", "lead");
+      if (title && title.nextSibling) title.parentNode.insertBefore(dockLead, title.nextSibling);
+      else if (root.parentNode) root.parentNode.insertBefore(dockLead, root.parentNode.firstChild);
+    }
+    var dockPre = document.querySelector(".nsx-dock-pre");
+    if (!dockPre && root) {
+      dockPre = document.createElement("div");
+      dockPre.className = "nsx-topdock nsx-dock-pre";
+      dockPre.setAttribute("data-dock", "pre");
+      root.parentNode.insertBefore(dockPre, root);
+    }
+    var dockPost = document.querySelector(".nsx-dock-post");
+    if (!dockPost && root) {
+      dockPost = document.createElement("div");
+      dockPost.className = "nsx-topdock nsx-dock-post";
+      dockPost.setAttribute("data-dock", "post");
+      if (root.nextSibling) root.parentNode.insertBefore(dockPost, root.nextSibling);
+      else root.parentNode.appendChild(dockPost);
+    }
+    var topDock = dockPre;
+    var allDocks = [dockLead, dockPre, dockPost];
+
     // ---- Dokumentationsabschnitte: Inhalt erscheint nur noch in der Detailansicht
     document.querySelectorAll("details.nsx-doc").forEach(function (d) { d.hidden = true; });
 
@@ -194,8 +316,10 @@
     // bekommen einen eigenen andockbaren Schlüssel; ein gemerktes „guide“ springt
     // dadurch nicht auf einen anderen Fold.
     function titleKeyKind(k) {
-      var m = /^(guide|impl)(?:-[A-Za-z0-9_-]+)?$|^(map|uml)$/.exec(k || "");
-      return m ? (m[1] || m[2]) : "";
+      if (!k || k === "detail") return "";
+      var m = /^(guide|impl)(?:-[A-Za-z0-9_-]+)?$|^(map|uml)$/.exec(k);
+      if (m) return m[1] || m[2];
+      return k;
     }
     var usedFoldKeys = {};
     function allocFoldKey(el, kind) {
@@ -213,7 +337,7 @@
     for (var p = root.previousElementSibling, prevP; p; p = prevP) {
       prevP = p.previousElementSibling;   // vor dem Umhängen merken
       if (p.tagName === "DETAILS" && p.classList.contains("fold") && !p.classList.contains("nsx-doc") && p.querySelector(".ai")) {
-        candidateGuides.unshift(p);
+        candidateGuides.push(p);
       }
     }
     for (var n = root.nextElementSibling, nextN; n; n = nextN) {
@@ -234,6 +358,7 @@
         gr.className = "nsx-grip";
         gr.setAttribute("role", "button");
         gr.setAttribute("tabindex", "0");
+        bindGrip(gr);
         sm.insertBefore(gr, sm.firstChild);
       }
       folds.insertBefore(g, folds.firstChild);
@@ -252,32 +377,66 @@
       }
     }
 
-    // ---- Weitere Abschnitte vor der Übersicht (z.B. Synopsis, Ablauf- oder Lebenszyklus-
-    // diagramm einer Klassenseite): je Überschrift ein Fold der Mitte hinter den Guides
+    // ---- Große Themen und Abschnitte vor oder hinter der Übersicht (z.B. Namespaces,
+    // Service-Interfaces, UML-Diagramme, Synopsis, Ablauf- oder Lebenszyklusdiagramme):
+    // je Überschrift ein Fold mit Griff und Summary.
     (function () {
-      var kids = [], cur = null, n = 0;
+      var beforeKids = [], afterKids = [], cur = null, n = 0;
       var at = Array.prototype.filter.call(folds.children, function (x) {
         var k = titleKeyKind(x.getAttribute("data-fold") || "");
         return k !== "guide" && k !== "impl";
       })[0] || null;
-      for (var q = root.previousElementSibling; q; q = q.previousElementSibling) kids.unshift(q);
-      kids.forEach(function (k) {
-        if (k.matches("h2.sect")) {
-          cur = document.createElement("details");
-          cur.className = "fold nsx-fold nsx-secfold";
-          cur.open = true;
-          cur.setAttribute("data-fold", "sec" + (++n));
-          var sm = document.createElement("summary"), gr = document.createElement("span");
-          gr.className = "nsx-grip";
-          gr.setAttribute("role", "button");
-          gr.setAttribute("tabindex", "0");
-          sm.appendChild(gr);
-          sm.appendChild(k);
-          cur.appendChild(sm);
-          folds.insertBefore(cur, at);
-        } else if (cur && !k.matches("details, dialog, script, article.rec")) cur.appendChild(k);
-        else cur = null;
-      });
+
+      for (var q = root.previousElementSibling; q; q = q.previousElementSibling) beforeKids.unshift(q);
+      for (var a = root.nextElementSibling, nextA; a; a = nextA) {
+        nextA = a.nextElementSibling;
+        if (a.matches("details.fold, dialog, script, footer, article.rec, .dossier-modal")) continue;
+        afterKids.push(a);
+      }
+
+      function sectionKind(h2El) {
+        var txt = (h2El.textContent || "").toLowerCase();
+        if (/uml|diagramm|kollaboration/.test(txt)) return "uml";
+        if (/namespace/.test(txt)) return "namespaces";
+        if (/service/.test(txt)) return "services";
+        if (/modul/.test(txt)) return "modules";
+        if (/klasse/.test(txt)) return "classes";
+        return "sec";
+      }
+
+      function processKids(kids, isAfter) {
+        kids.forEach(function (k) {
+          if (k.matches("h2.sect") && !k.hidden) {
+            cur = document.createElement("details");
+            cur.className = "fold nsx-fold nsx-secfold";
+            cur.open = true;
+            var kind = sectionKind(k);
+            var key = allocFoldKey(cur, kind);
+            cur.setAttribute("data-fold", key);
+            var sm = document.createElement("summary"), gr = document.createElement("span");
+            gr.className = "nsx-grip";
+            gr.setAttribute("role", "button");
+            gr.setAttribute("tabindex", "0");
+            bindGrip(gr);
+            sm.appendChild(gr);
+            sm.appendChild(k);
+            cur.appendChild(sm);
+            if (isAfter || kind === "namespaces" || kind === "uml" || kind === "services" || kind === "modules") {
+              cur._initTop = true;
+              cur._initDock = "pre";
+            }
+            folds.insertBefore(cur, at);
+          } else if (cur && !k.matches("details, dialog, script, article.rec, footer, .dossier-modal")) {
+            cur.appendChild(k);
+          } else {
+            cur = null;
+          }
+        });
+      }
+
+      processKids(beforeKids, false);
+      cur = null;
+      processKids(afterKids, true);
     })();
 
     // ---- Auf- und Zuklappen lässt die Fold-Zeile an ihrer Bildschirmposition
@@ -294,11 +453,15 @@
     // ---- Reihenfolge der Folds
     function foldList() {
       var list = Array.prototype.filter.call(folds.children, function (x) { return x.matches("details[data-fold]"); });
-      if (topDock) {
-        Array.prototype.forEach.call(topDock.children, function (x) {
+      allDocks.forEach(function (dock) {
+        if (!dock) return;
+        Array.prototype.forEach.call(dock.children, function (x) {
           if (x.matches("details[data-fold]") && list.indexOf(x) < 0) list.push(x);
         });
-      }
+      });
+      document.querySelectorAll("main > details.nsx-fold[data-fold]").forEach(function (x) {
+        if (list.indexOf(x) < 0) list.push(x);
+      });
       return list;
     }
     function applyOrder() {
@@ -315,17 +478,130 @@
     function saveOrder() { save(ORDER_KEY, foldList().map(function (f) { return f.getAttribute("data-fold"); }).join(",")); }
     applyOrder();
     var dragging = null;
+    var gripActive = false;
+    var draggingJustNow = false;
+
+    function cleanupDnd() {
+      gripActive = false;
+      draggingJustNow = true;
+      setTimeout(function () { draggingJustNow = false; }, 300);
+      document.querySelectorAll("details[data-fold]").forEach(function (el) {
+        el.draggable = false;
+        el.removeAttribute("draggable");
+      });
+      document.querySelectorAll(".nsx-tab-dragging").forEach(function (t) {
+        t.classList.remove("nsx-tab-dragging");
+      });
+      root.classList.remove("nsx-dnd");
+      document.body.classList.remove("nsx-dnd-active");
+      allDocks.forEach(function (d) {
+        if (d) d.classList.remove("nsx-drop-zone", "nsx-drop-over");
+      });
+      if (title) title.classList.remove("nsx-drop-zone", "nsx-drop-over");
+      if (dropZone) dropZone.classList.remove("nsx-drop-over");
+      if (dragging) {
+        dragging.classList.remove("nsx-dragging");
+        dragging = null;
+      }
+      lastDrag = null;
+      clearSelection();
+      setTimeout(clearSelection, 0);
+      setTimeout(clearSelection, 30);
+      setTimeout(clearSelection, 100);
+    }
+
+    function startFoldDrag(ev, f, fromTitle) {
+      if (!f) return;
+      clearSelection();
+      dragging = f;
+      f._fromTitle = !!fromTitle;
+      f._fromTop = f.classList.contains("nsx-topdocked");
+      f._fromZone = f.getAttribute("data-docked-zone") || (f._fromTop ? "pre" : "center");
+      f._dropped = false;
+      f.classList.add("nsx-dragging");
+      root.classList.add("nsx-dnd");
+      document.body.classList.add("nsx-dnd-active");
+
+      if (fromTitle) {
+        var tab = tdock && tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
+        if (tab) tab.classList.add("nsx-tab-dragging");
+        setPop(null);
+      }
+
+      if (canTopDock(f)) {
+        allDocks.forEach(function (d) {
+          if (d) d.classList.add("nsx-drop-zone");
+        });
+      }
+      if (canTitleDock(f) && title) title.classList.add("nsx-drop-zone");
+
+      ev.dataTransfer.effectAllowed = "move";
+      try { ev.dataTransfer.setData("text/plain", f.getAttribute("data-fold")); } catch (e) {}
+
+      var sm = f.querySelector("summary") || f.querySelector(".nsx-elements-head");
+      if (ev.dataTransfer.setDragImage) {
+        var imgSource = fromTitle ? (tdock && tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]')) : sm;
+        if (imgSource) {
+          try { ev.dataTransfer.setDragImage(imgSource, 20, 16); } catch (e) {}
+        }
+      }
+    }
+
     function bindGrip(g) {
-      var d = g.closest("details");
+      var d = g.closest("details[data-fold], section.nsx[data-fold]");
       var gl = (canTopDock(d) || canTitleDock(d) ? labels.gripdock : labels.grip) || "";
       g.setAttribute("title", gl);
       g.setAttribute("aria-label", gl);
-      g.addEventListener("click", function (ev) { ev.preventDefault(); ev.stopPropagation(); });
-      g.addEventListener("pointerdown", function () { g.closest("details").draggable = true; });
+      g.setAttribute("draggable", "true");
+      g.draggable = true;
+
+      function armDraggable() {
+        gripActive = true;
+        if (d && d !== root) {
+          d.draggable = true;
+          d.setAttribute("draggable", "true");
+        }
+      }
+      function disarmDraggable() {
+        if (!dragging) {
+          gripActive = false;
+          if (d && d !== root) {
+            d.draggable = false;
+            d.removeAttribute("draggable");
+          }
+        }
+      }
+
+      g.addEventListener("mouseenter", armDraggable);
+      g.addEventListener("pointerenter", armDraggable);
+      g.addEventListener("pointerdown", function () {
+        armDraggable();
+        clearSelection();
+      });
+      g.addEventListener("mousedown", function () {
+        armDraggable();
+        clearSelection();
+      });
+      g.addEventListener("selectstart", function (ev) { ev.preventDefault(); return false; });
+      g.addEventListener("dragstart", function (ev) {
+        armDraggable();
+        var f = g.closest("details[data-fold], section.nsx[data-fold]");
+        if (f) startFoldDrag(ev, f, f.classList.contains("nsx-tdocked"));
+      });
+      g.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return false;
+      });
       g.addEventListener("keydown", function (ev) {
         if (ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
         ev.preventDefault();
-        var f = g.closest("details");
+        var f = g.closest("details[data-fold], section.nsx[data-fold]");
+        if (!f) return;
+        if (f === root) {
+          if (ev.key === "ArrowUp") dockTitle(root);
+          return;
+        }
         if (f.classList.contains("nsx-topdocked")) {
           if (ev.key === "ArrowDown") undockTop(f);
           return;
@@ -339,35 +615,57 @@
         saveOrder();
       });
     }
-    folds.querySelectorAll(".nsx-grip").forEach(bindGrip);
+
+    document.querySelectorAll(".nsx-grip").forEach(bindGrip);
+
+    document.addEventListener("pointerdown", function (ev) {
+      if (!ev.target.closest || !ev.target.closest(".nsx-grip")) {
+        gripActive = false;
+        document.querySelectorAll("details[data-fold]").forEach(function (el) {
+          el.draggable = false;
+          el.removeAttribute("draggable");
+        });
+      }
+    });
+
     function onDragStart(ev) {
-      var f = ev.target.closest && ev.target.closest("details[data-fold]");
-      if (!f || !f.draggable) return;
-      dragging = f;
-      f._fromTitle = f.classList.contains("nsx-tdocked");
-      f._fromTop = f.classList.contains("nsx-topdocked");
-      f._dropped = false;
-      f.classList.add("nsx-dragging");
-      root.classList.add("nsx-dnd");
-      if (canTopDock(f) && topDock) topDock.classList.add("nsx-drop-zone");
-      if (canTitleDock(f)) title.classList.add("nsx-drop-zone");
-      ev.dataTransfer.effectAllowed = "move";
-      try { ev.dataTransfer.setData("text/plain", f.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
+      var g = ev.target.closest && ev.target.closest(".nsx-grip");
+      var f = ev.target.closest && ev.target.closest("details[data-fold], section.nsx[data-fold]");
+      if (!f && g) f = g.closest("details[data-fold], section.nsx[data-fold]");
+      if (!f) return;
+      var allowed = gripActive || g || (ev.target.classList && ev.target.classList.contains("nsx-grip"));
+      if (!allowed) {
+        ev.preventDefault();
+        return;
+      }
+      startFoldDrag(ev, f, f.classList.contains("nsx-tdocked"));
     }
+    document.addEventListener("dragstart", onDragStart);
     folds.addEventListener("dragstart", onDragStart);
-    if (topDock) topDock.addEventListener("dragstart", onDragStart);
-    // Ablagefläche ist die ganze mittlere Spalte, nicht nur die Folds: Ist die Mitte leer
-    // (alles angedockt, nichts ausgewählt), war sie nur so hoch wie der Hinweis, und ein
-    // Reiter, der darunter losgelassen wurde, dockte wieder an (Aufnahme 12:24)
+
+    // Klicks auf den Griff oder kurz nach dem Ziehen auf Summary blockieren, damit Safari den Fold nicht umschaltet
+    document.addEventListener("click", function (ev) {
+      if (ev.target.closest && ev.target.closest(".nsx-grip")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return false;
+      }
+      if (draggingJustNow && ev.target.closest && ev.target.closest("details > summary")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        return false;
+      }
+    }, true);
+
+    // Ablagefläche ist die ganze mittlere Spalte, nicht nur die Folds
     var dropZone = folds.parentNode;
     dropZone.addEventListener("dragover", function (ev) {
       if (!dragging) return;
+      var at = { x: ev.clientX, y: ev.clientY };
+      var overTop = allDocks.some(function (d) { return d && d.contains(ev.target); });
+      if (dropZoneAt(at) === "lead" || dropZoneAt(at) === "pre" || dropZoneAt(at) === "post" || overTop) return;
       ev.preventDefault();
       try { ev.dataTransfer.dropEffect = "move"; } catch (e) { /* alte Browser */ }
-      if (dragging.classList.contains("nsx-tdocked")) {
-        undockTitle(dragging, undefined, true);     // Vorschau; endgültig erst beim Ablegen
-        dragging.classList.add("nsx-dragging");
-      }
       var t = ev.target.closest && ev.target.closest("details[data-fold]");
       if (t && t !== dragging && t.parentNode === folds) {
         var r = t.getBoundingClientRect();
@@ -376,37 +674,106 @@
       }
       if (t) return;
       // Freie Fläche: über dem ersten sichtbaren Fold an den Anfang, sonst ans Ende
-      var vis = foldList().filter(function (x) { return x !== dragging && docked(x); });
+      var vis = foldList().filter(function (x) { return x !== dragging && docked(x) && x.parentNode === folds; });
       if (!vis.length) return;
       if (ev.clientY < vis[0].getBoundingClientRect().top) folds.insertBefore(dragging, vis[0]);
       else if (ev.clientY > vis[vis.length - 1].getBoundingClientRect().bottom) folds.insertBefore(dragging, vis[vis.length - 1].nextSibling);
     });
+
     dropZone.addEventListener("drop", function (ev) {
       if (!dragging) return;
-      ev.preventDefault();
       var at = { x: ev.clientX, y: ev.clientY };
-      if (dropZoneAt(at) === "top" && canTopDock(dragging)) {
-        dragging._dropped = true;
-        dockTop(dragging);
+      var dz = dropZoneAt(at);
+      var f = dragging;
+      f._dropped = true;
+      if ((dz === "lead" || dz === "pre" || dz === "post") && canTopDock(f)) {
+        ev.preventDefault();
+        dockTo(f, dz);
+      } else if (dz === "title" && canTitleDock(f)) {
+        ev.preventDefault();
+        dockTitle(f);
       } else {
-        dragging._dropped = true;
+        ev.preventDefault();
+        dockTo(f, "center");
+      }
+      cleanupDnd();
+    });
+
+    var lastDrag = null;
+    document.addEventListener("dragover", function (ev) {
+      if (!dragging) return;
+      lastDrag = { x: ev.clientX, y: ev.clientY };
+      var dz = dropZoneAt(lastDrag);
+      if (dz) {
+        ev.preventDefault();
+        try { ev.dataTransfer.dropEffect = "move"; } catch (e) {}
+      }
+      if (title) {
+        title.classList.toggle("nsx-drop-over", dz === "title" && canTitleDock(dragging));
+      }
+      allDocks.forEach(function (d) {
+        if (d) {
+          var z = d.getAttribute("data-dock");
+          d.classList.toggle("nsx-drop-over", dz === z && canTopDock(dragging));
+        }
+      });
+    });
+
+    document.addEventListener("drop", function (ev) {
+      if (!dragging) return;
+      var at = { x: ev.clientX, y: ev.clientY };
+      var dz = dropZoneAt(at);
+      var f = dragging;
+      if (dz === "title" && canTitleDock(f)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        f._dropped = true;
+        dockTitle(f);
+        cleanupDnd();
+      } else if ((dz === "lead" || dz === "pre" || dz === "post") && canTopDock(f)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        f._dropped = true;
+        dockTo(f, dz);
+        cleanupDnd();
+      } else if (dz === "center") {
+        ev.preventDefault();
+        ev.stopPropagation();
+        f._dropped = true;
+        dockTo(f, "center");
+        cleanupDnd();
       }
     });
-    // Ablage nicht allein am drop-Ereignis festmachen: Manche Browser (Aufnahme 13:02, Safari)
-    // liefern es nicht zuverlässig, der Fold flog dann kommentarlos zurück. Maßgeblich ist die
-    // letzte Zeigerposition während des Zugs: Titelleiste (mit 16 px Toleranz) oder mittlere
-    // Spalte; außerhalb erscheint ein Hinweis statt eines stillen Zurückspringens.
-    var lastDrag = null;
-    document.addEventListener("dragover", function (ev) { if (dragging) lastDrag = { x: ev.clientX, y: ev.clientY }; });
-    function inRect(p, r, tol) { return p.x >= r.left - tol && p.x <= r.right + tol && p.y >= r.top - tol && p.y <= r.bottom + tol; }
+
+    function inRect(p, r, tol) { return p && r && p.x >= r.left - tol && p.x <= r.right + tol && p.y >= r.top - tol && p.y <= r.bottom + tol; }
     function dropZoneAt(p) {
       if (!p) return null;
-      if (title && inRect(p, title.getBoundingClientRect(), 16)) return "title";
-      if (topDock && inRect(p, topDock.getBoundingClientRect(), 24)) return "top";
-      var z = dropZone.getBoundingClientRect();
-      if (p.x >= z.left && p.x <= z.right && p.y >= z.top) return "center";
+      var tb = title ? title.getBoundingClientRect() : null;
+      var rb = root ? root.getBoundingClientRect() : null;
+      var zb = dropZone ? dropZone.getBoundingClientRect() : null;
+
+      // 0. Oberhalb der Überschrift / Titelleiste darf überhaupt nichts abgelegt werden:
+      if (tb && p.y < tb.top - 8) return null;
+
+      // 1. Titelleiste: Maus über oder nahe der Titelleiste
+      if (tb && (p.y <= tb.bottom + 20 || inRect(p, tb, 24))) return "title";
+
+      // 2. Lead: direkt unter der Überschrift (über dockLead oder cluster-overview)
+      var leadEnd = rb ? rb.top : (tb ? tb.bottom + 120 : 200);
+      if (dockLead && (inRect(p, dockLead.getBoundingClientRect(), 20) || (tb && p.y > tb.bottom + 20 && p.y < leadEnd - 30))) return "lead";
+
+      // 3. Pre: oberhalb der Gliederung
+      if (dockPre && (inRect(p, dockPre.getBoundingClientRect(), 20) || (rb && p.y >= leadEnd - 30 && p.y <= rb.top + 10))) return "pre";
+
+      // 4. Post: unterhalb der Gliederung
+      if (dockPost && (inRect(p, dockPost.getBoundingClientRect(), 20) || (rb && p.y >= rb.bottom - 10 && p.y <= rb.bottom + 80))) return "post";
+
+      // 5. Center: mittlere Spalte (zwischen Gliederung links und Inspektor rechts)
+      if (zb && p.x >= zb.left - 30 && p.x <= zb.right + 30 && p.y > tb.bottom) return "center";
+
       return null;
     }
+
     var dropHint = null, dropHintTimer = 0;
     function showDropHint(p) {
       if (!dropHint) {
@@ -422,50 +789,47 @@
       clearTimeout(dropHintTimer);
       dropHintTimer = setTimeout(function () { dropHint.hidden = true; }, 4000);
     }
+
     document.addEventListener("dragend", function () {
-      if (!dragging) return;
-      root.classList.remove("nsx-dnd");
-      if (topDock) topDock.classList.remove("nsx-drop-zone", "nsx-drop-over");
-      if (title) title.classList.remove("nsx-drop-zone", "nsx-drop-over");
+      if (!dragging) { cleanupDnd(); return; }
+      var f = dragging;
       var at = lastDrag, zone = dropZoneAt(at);
-      lastDrag = null;
-      if (!dragging._dropped) {
-        if (zone === "top" && canTopDock(dragging)) {
-          dragging._dropped = true;
-          dockTop(dragging);
-        } else if (zone === "title" && !dragging._fromTitle && canTitleDock(dragging)) {
-          dragging._dropped = true;
-          dockTitle(dragging);
+      if (!f._dropped) {
+        if ((zone === "lead" || zone === "pre" || zone === "post") && canTopDock(f)) {
+          f._dropped = true;
+          dockTo(f, zone);
+        } else if (zone === "title" && canTitleDock(f)) {
+          f._dropped = true;
+          dockTitle(f);
         } else if (zone === "center") {
-          dragging._dropped = true;
-          if (dragging._fromTitle && dragging.classList.contains("nsx-tdocked")) undockTitle(dragging, undefined, true);
-          if (dragging.classList.contains("nsx-topdocked")) undockTop(dragging);
-        } else if (!zone && (dragging._fromTitle || dragging.classList.contains("nsx-topdocked") || canTitleDock(dragging) || canTopDock(dragging))) showDropHint(at);
+          f._dropped = true;
+          dockTo(f, "center");
+        } else {
+          if (!zone && (f._fromTitle || canTitleDock(f))) showDropHint(at);
+          // Snap back silently
+          if (f._fromTitle) dockTitle(f);
+          else if (f._fromTop) dockTo(f, f._fromZone);
+          else dockTo(f, "center");
+        }
       }
-      if (dragging._fromTop && zone === "center") {
-        undockTop(dragging);
-      }
-      // Aus der Titelleiste gezogen: in der Mitte abgelegt → endgültig gelöst,
-      // sonst (abgebrochen, auf der Leiste losgelassen) bleibt der Reiter angedockt
-      if (dragging._fromTitle) {
+      if (f._fromTitle && f._dropped && !f.classList.contains("nsx-tdocked")) {
+        var tb = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
+        if (tb) tb.remove();
         saveTitleDock();
-        if (dragging._dropped && !dragging.classList.contains("nsx-tdocked")) {
-          var tb = tdock.querySelector('[data-fold="' + dragging.getAttribute("data-fold") + '"]');
-          if (tb) tb.remove();
-          saveTitleDock();
-        } else dockTitle(dragging);
-        dragging._fromTitle = false;
       }
-      dragging.classList.remove("nsx-dragging");
-      dragging.draggable = false;
-      dragging = null;
+      cleanupDnd();
       saveOrder();
+      saveAllDocks();
       if (selected) drawArrows(selected);
     });
+
     document.addEventListener("pointerup", function () {
-      foldList().forEach(function (f) { if (f !== dragging) f.draggable = false; });
-      if (topDock) {
-        topDock.querySelectorAll("details.nsx-fold").forEach(function (f) { if (f !== dragging) f.draggable = false; });
+      if (dragging) cleanupDnd();
+    });
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && dragging) {
+        ev.preventDefault();
+        cleanupDnd();
       }
     });
 
@@ -475,6 +839,20 @@
       var h = r.getAttribute("data-href") || "";
       return !!h && h.charAt(0) !== "#" && !r.getAttribute("data-recs");
     }
+    function formatModelName(m) {
+      if (!m) return "";
+      var l = m.toLowerCase();
+      if (l.indexOf("claude-3-5-sonnet") >= 0) return "Claude 3.5 Sonnet";
+      if (l.indexOf("claude-3-7-sonnet") >= 0) return "Claude 3.7 Sonnet";
+      if (l.indexOf("claude-opus-5-5") >= 0) return "Claude Opus 5.5";
+      if (l.indexOf("claude-opus") >= 0) return "Claude Opus";
+      if (l.indexOf("claude-sonnet") >= 0) return "Claude Sonnet";
+      if (l.indexOf("gpt-4o") >= 0) return "GPT-4o";
+      if (l.indexOf("o1") >= 0) return "o1";
+      if (l.indexOf("o3") >= 0) return "o3";
+      return m.replace(/^[\w.-]*\//, "").replace(/-20\d{6}$/, "");
+    }
+
     // Kennzahlen eines KI-Texts: Prüfstatus, Release, Abschnitte, Lesezeit, SWS-Verweise, Diagramme
     function statsHtml(scope) {
       var rel = currentRelease(), all = scope.querySelectorAll(".ai-guide-release-variant");
@@ -488,27 +866,51 @@
       ai.querySelectorAll(".spec-record-ref[data-req]").forEach(function (a) { refs[a.getAttribute("data-req")] = 1; });
       var rev = ai.querySelector(".ai-review-state"), parts = [];
       if (rev) parts.push('<span class="nsx-st nsx-st-rev nsx-st-' + esc(ai.getAttribute("data-trace-review") || "") + '">' + esc(rev.textContent.trim()) + "</span>");
+
+      var model = ai.getAttribute("data-trace-model");
+      if (!model) {
+        var mCode = ai.querySelector(".ai-trace-meta code");
+        if (mCode) model = mCode.textContent.trim();
+      }
+      if (model) {
+        parts.push('<span class="nsx-st nsx-st-model" title="KI-Modell">' + esc(formatModelName(model)) + '</span>');
+      }
+
       var asof = v.getAttribute && v.getAttribute("data-asof-release");
       if (asof) parts.push('<span class="nsx-st">' + esc(asof) + "</span>");
       function st(k, n) { if (n) parts.push('<span class="nsx-st">' + esc(labels[k] || "") + " <b>" + n + "</b></span>"); }
-      st("secs", ai.querySelectorAll("h4").length);
+      st("secs", ai.querySelectorAll("h4, h3").length);
       if (nw) parts.push('<span class="nsx-st">' + esc(labels.read || "") + " <b>≈" + Math.max(1, Math.round(nw / 200)) + " min</b></span>");
       st("refs", Object.keys(refs).length);
       st("diag", ai.querySelectorAll(".diagram").length);
+
+      var dosBtn = scope.querySelector(".dossier-open-link, .ai-badge-dossier-btn");
+      if (dosBtn) {
+        var tgt = dosBtn.getAttribute("data-dossier-target") || "";
+        parts.push('<button type="button" class="nsx-st nsx-st-dossier dossier-open-link" data-dossier-target="' + esc(tgt) + '" title="Audit-Dossier öffnen">🗎 Dossier</button>');
+      }
+
       return parts.join("");
     }
 
-    // ---- Kennzahlen des User Guide in seiner Titelzeile
+    // ---- Kennzahlen aller Guides in ihren Titelzeilen
     function guideStats() {
-      if (!guideFold) return;
-      var sm = guideFold.querySelector("summary"), box = sm.querySelector(".nsx-stats");
-      if (!box) {
-        box = document.createElement("span");
-        box.className = "nsx-stats";
-        sm.insertBefore(box, sm.querySelector(".nsx-hbtn"));
-      }
-      box.innerHTML = statsHtml(guideFold);
-      if (typeof fillTab === "function" && guideFold.classList.contains("nsx-tdocked")) fillTab(guideFold);
+      var allG = (candidateGuides && candidateGuides.length) ? candidateGuides : (guideFold ? [guideFold] : []);
+      allG.forEach(function (g) {
+        if (!g) return;
+        var sm = g.querySelector("summary");
+        if (!sm) return;
+        var box = sm.querySelector(".nsx-stats");
+        if (!box) {
+          box = document.createElement("span");
+          box.className = "nsx-stats";
+          var refBtn = sm.querySelector(".nsx-tabbtn, .nsx-hbtn");
+          if (refBtn) sm.insertBefore(box, refBtn);
+          else sm.appendChild(box);
+        }
+        box.innerHTML = statsHtml(g);
+        if (typeof fillTab === "function" && g.classList.contains("nsx-tdocked")) fillTab(g);
+      });
     }
 
     // ---- Andocken von User Guide und Themenkarte in die Titelleiste
@@ -517,10 +919,21 @@
     // Knopf im Panel, Pfeil-ab am Reiter) löst ihn wieder. Tastatur: Pfeil-auf am
     // Griff des obersten Folds dockt an.
     var tdock = null, popFold = null;
-    function canTitleDock(f) { return !!(title && f && titleKeyKind(f.getAttribute("data-fold"))); }
+    function canTitleDock(f) {
+      if (!title || !f) return false;
+      var k = f.getAttribute("data-fold");
+      return !!(k && k !== "detail");
+    }
+    function canTopDock(f) {
+      if (!f || f === root) return false;
+      var k = f.getAttribute("data-fold");
+      return !!(k && k !== "detail" && k !== "elements");
+    }
     function foldLabel(f) {
-      var h = f.querySelector("summary > h2");
-      if (!h) return f.getAttribute("data-fold");
+      if (!f) return "";
+      if (f === root || f.getAttribute("data-fold") === "elements") return "Elemente";
+      var h = f.querySelector("summary > h2, .nsx-elements-head > h2");
+      if (!h) return f.getAttribute("data-fold") || "";
       var c = h.cloneNode(true);
       c.querySelectorAll(".ai-badge").forEach(function (x) { x.remove(); });
       return c.textContent.trim();
@@ -532,20 +945,52 @@
     }
     var isCls = root.classList.contains("nsx-cls");
     var tdockKey = TDOCK_KEY + (isCls ? "-cls" : "");
+    var topDockKey = TOPDOCK_KEY + (isCls ? "-cls" : "");
+    var pageDockKey = "nsx-docks:" + location.pathname;
+
     function saveTitleDock() {
       var keys = tdock ? Array.prototype.filter.call(tdock.children, function (b) { return !b.hidden; })
         .map(function (b) { return b.getAttribute("data-fold"); }) : [];
-      save(tdockKey, keys.join(","));          // auch leer speichern: sonst gälte wieder die Vorgabe
+      save(tdockKey, keys.join(","));
     }
+    function saveTopDock() {
+      if (!dockPre) return;
+      var keys = Array.prototype.map.call(dockPre.querySelectorAll(":scope > details[data-fold]"), function (f) {
+        return f.getAttribute("data-fold");
+      }).filter(Boolean);
+      save(topDockKey, keys.join(","));
+    }
+    function saveAllDocks() {
+      var state = {
+        title: tdock ? Array.prototype.filter.call(tdock.children, function (b) { return !b.hidden; })
+          .map(function (b) { return b.getAttribute("data-fold"); }).filter(Boolean) : [],
+        lead: dockLead ? Array.prototype.map.call(dockLead.querySelectorAll(":scope > details[data-fold]"), function (f) {
+          return f.getAttribute("data-fold");
+        }).filter(Boolean) : [],
+        pre: dockPre ? Array.prototype.map.call(dockPre.querySelectorAll(":scope > details[data-fold]"), function (f) {
+          return f.getAttribute("data-fold");
+        }).filter(Boolean) : [],
+        post: dockPost ? Array.prototype.map.call(dockPost.querySelectorAll(":scope > details[data-fold]"), function (f) {
+          return f.getAttribute("data-fold");
+        }).filter(Boolean) : []
+      };
+      save(pageDockKey, JSON.stringify(state));
+      saveTitleDock();
+      saveTopDock();
+    }
+
     // Das Panel hängt bündig unter seinem Reiter; der Reiter ist sein Titel
     function placePop() {
       if (!popFold) return;
       var b = tdock.querySelector('[data-fold="' + popFold.getAttribute("data-fold") + '"]');
       if (!b) return;
+      if (popFold === root) {
+        var ob = tdock.querySelector('[data-fold="elements"]');
+        if (ob) ob.setAttribute("aria-expanded", "true");
+        return;
+      }
       var t = b.getBoundingClientRect(), c = folds.getBoundingClientRect();
       var rtl = getComputedStyle(root).direction === "rtl";
-      // Breite wie die Mitte (mindestens 480 px); steht der Reiter weit rechts (links bei
-      // RTL), rückt das Panel zurück ins Fenster, statt schmal zu werden
       var w = Math.max(t.width, Math.min(Math.max(c.width, 480), innerWidth - 24));
       var left = rtl ? Math.max(12, Math.min(t.right - w, innerWidth - 12 - w)) : Math.max(12, Math.min(t.left, innerWidth - 12 - w));
       var tabx = rtl ? left + w - t.right : t.left - left;
@@ -566,19 +1011,19 @@
       popFold = f;
       if (!f) return;
       f.classList.add("nsx-pop");
-      f.open = true;
+      if (f.tagName === "DETAILS") f.open = true;
       placePop();
       var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
       if (b) b.setAttribute("aria-expanded", "true");
       if (selected) drawArrows(selected);
     }
-    // Der Reiter zeigt dieselbe Zeile wie der Fold in der Mitte: Griff, Titel samt
-    // Badge und Kennzahlen (ohne Knöpfe)
     function fillTab(f) {
       var b = tdock && tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
       if (!b) return;
-      var c = f.querySelector("summary").cloneNode(true);
-      c.querySelectorAll(".nsx-hbtn, .nsx-canon-link").forEach(function (x) { x.remove(); });
+      var headerEl = f.querySelector("summary, .nsx-elements-head");
+      if (!headerEl) return;
+      var c = headerEl.cloneNode(true);
+      c.querySelectorAll(".nsx-hbtn, .nsx-canon-link, .nsx-tabbtn, .nsx-backbtn").forEach(function (x) { x.remove(); });
       c.querySelectorAll("[role], [tabindex], [id]").forEach(function (x) { x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("id"); });
       var g = c.querySelector(".nsx-grip");
       if (g) { g.removeAttribute("title"); g.removeAttribute("aria-label"); g.setAttribute("aria-hidden", "true"); }
@@ -591,127 +1036,246 @@
       }
       b.innerHTML = c.innerHTML;
     }
+
+    function foldByKey(k) {
+      if (!k) return null;
+      if (k === "elements" || (root && root.getAttribute("data-fold") === k)) return root;
+      var f = folds && folds.querySelector(':scope > details[data-fold="' + k + '"]');
+      if (f) return f;
+      for (var i = 0; i < allDocks.length; i++) {
+        if (allDocks[i]) {
+          f = allDocks[i].querySelector(':scope > details[data-fold="' + k + '"]');
+          if (f) return f;
+        }
+      }
+      return document.querySelector('details.nsx-fold[data-fold="' + k + '"]');
+    }
+
+    function decorateFoldButtons(f) {
+      if (!f) return;
+      var sm = f.querySelector("summary, .nsx-elements-head");
+      if (!sm) return;
+      var gr = sm.querySelector(".nsx-grip");
+      if (gr && !gr.draggable) bindGrip(gr);
+      
+      // Tab-Knopf: Als Reiter in die Titelleiste
+      var tabBtn = sm.querySelector(".nsx-tabbtn");
+      if (canTitleDock(f) && !f.classList.contains("nsx-tdocked")) {
+        if (!tabBtn) {
+          tabBtn = document.createElement("button");
+          tabBtn.type = "button";
+          tabBtn.className = "nsx-hbtn nsx-tabbtn";
+          tabBtn.innerHTML = ICON_TABDOCK;
+          tabBtn.title = labels.tdock || "Als Reiter in die Titelleiste";
+          tabBtn.setAttribute("aria-label", labels.tdock || "Als Reiter in die Titelleiste");
+          tabBtn.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            dockTitle(f);
+          });
+          sm.appendChild(tabBtn);
+        }
+      } else if (tabBtn) {
+        tabBtn.remove();
+      }
+      
+      // Zurück-Knopf: In die mittlere Spalte zurück
+      var backBtn = sm.querySelector(".nsx-backbtn");
+      if (f.classList.contains("nsx-topdocked") || f.classList.contains("nsx-tdocked")) {
+        if (!backBtn) {
+          backBtn = document.createElement("button");
+          backBtn.type = "button";
+          backBtn.className = "nsx-hbtn nsx-backbtn";
+          backBtn.innerHTML = ICON_CLOSE;
+          backBtn.title = labels.tback || "In die mittlere Spalte";
+          backBtn.setAttribute("aria-label", labels.tback || "In die mittlere Spalte");
+          backBtn.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (f.classList.contains("nsx-tdocked")) {
+              undockTitle(f);
+            } else {
+              undockTop(f);
+            }
+          });
+          sm.appendChild(backBtn);
+        }
+      } else if (backBtn && !f.classList.contains("nsx-pop")) {
+        backBtn.remove();
+      }
+    }
+
     function dockTitle(f) {
-      if (!canTitleDock(f) || f.classList.contains("nsx-tdocked")) return;
+      if (!canTitleDock(f)) return;
       var key = f.getAttribute("data-fold");
+      f.classList.remove("nsx-topdocked", "nsx-pop", "nsx-pop-shift", "nsx-dragging");
+      f.removeAttribute("data-docked-zone");
+      ["top", "left", "width"].forEach(function (k) { f.style[k] = ""; });
+      if (f !== root && f.parentNode !== folds) {
+        folds.appendChild(f);
+      }
+      f.classList.add("nsx-tdocked");
+
       var old = tdock.querySelector('[data-fold="' + key + '"]');
       if (old) {
-        // Reiter aus einer abgebrochenen Ziehvorschau wieder zeigen
         old.hidden = false;
-        f.classList.add("nsx-tdocked");
-        f.classList.remove("nsx-dragging");
-        updateEmpty();
-        return;
+      } else {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "nsx-tab";
+        b.draggable = true;
+        b.setAttribute("data-fold", key);
+        b.setAttribute("aria-expanded", "false");
+        b.title = labels.tundock || "";
+        tdock.appendChild(b);
       }
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "nsx-tab";
-      b.draggable = true;
-      b.setAttribute("data-fold", key);
-      b.setAttribute("aria-expanded", "false");
-      b.title = labels.tundock || "";
-      tdock.appendChild(b);
       fillTab(f);
-      f.classList.add("nsx-tdocked");
-      saveTitleDock();
+      decorateFoldButtons(f);
+      saveAllDocks();
       updateEmpty();
     }
-    // preview: während des Ziehens nur in der Mitte zeigen; der Reiter bleibt (versteckt)
-    // im DOM, damit dragend an ihm ankommt
+
     function undockTitle(f, before, preview) {
       if (!f || !f.classList.contains("nsx-tdocked")) return;
       if (popFold === f) setPop(null);
       f.classList.remove("nsx-tdocked");
       var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
       if (b) { if (preview) b.hidden = true; else b.remove(); }
-      if (before !== undefined) folds.insertBefore(f, before);
+      if (f !== root) {
+        if (before !== undefined) folds.insertBefore(f, before);
+        else if (f.parentNode !== folds) folds.appendChild(f);
+      }
+      decorateFoldButtons(f);
       if (preview) { updateEmpty(); return; }
-      saveTitleDock();
+      saveAllDocks();
       updateEmpty();
       saveOrder();
       if (selected) drawArrows(selected);
     }
-    // ---- Seitenspannendes Andocken oberhalb der Überschrift (Themenkarte & Cluster-Guide)
-    var topDockKey = TOPDOCK_KEY + (isCls ? "-cls" : "");
-    function canTopDock(f) {
-      if (!f) return false;
-      var k = f.getAttribute("data-fold") || "";
-      var kind = titleKeyKind(k);
-      return kind === "map" || kind === "guide";
-    }
-    function saveTopDock() {
-      if (!topDock) return;
-      var keys = Array.prototype.map.call(topDock.querySelectorAll(":scope > details[data-fold]"), function (f) {
-        return f.getAttribute("data-fold");
-      }).filter(Boolean);
-      save(topDockKey, keys.join(","));
-    }
-    function dockTop(f) {
-      if (!f || !canTopDock(f) || !topDock) return;
-      if (f.classList.contains("nsx-tdocked")) undockTitle(f);
+
+    function dockTo(f, zoneName, beforeEl) {
+      if (!f) return;
+      if (f === root) {
+        if (zoneName === "title") dockTitle(root);
+        else undockTitle(root);
+        return;
+      }
+      if (zoneName === "title") {
+        dockTitle(f);
+        return;
+      }
+      if (zoneName === "center") {
+        if (f.classList.contains("nsx-tdocked")) {
+          undockTitle(f, beforeEl || folds.firstChild);
+        } else {
+          f.classList.remove("nsx-topdocked");
+          f.removeAttribute("data-docked-zone");
+          if (beforeEl && beforeEl.parentNode === folds) folds.insertBefore(f, beforeEl);
+          else if (f.parentNode !== folds) folds.appendChild(f);
+        }
+        f.classList.remove("nsx-topdocked");
+        f.removeAttribute("data-docked-zone");
+        f.open = true;
+        decorateFoldButtons(f);
+        saveOrder();
+        saveAllDocks();
+        updateEmpty();
+        if (selected) drawArrows(selected);
+        return;
+      }
+      
+      var targetDock = (zoneName === "lead" ? dockLead : (zoneName === "post" ? dockPost : dockPre));
+      if (!targetDock) targetDock = dockPre;
+      if (f.classList.contains("nsx-tdocked")) {
+        undockTitle(f);
+      }
       f.classList.add("nsx-topdocked");
+      f.setAttribute("data-docked-zone", zoneName);
       f.classList.remove("nsx-tdocked", "nsx-pop", "nsx-pop-shift");
       ["top", "left", "width"].forEach(function (k) { f.style[k] = ""; });
       f.open = true;
-      if (f.parentNode !== topDock) {
-        f._origNext = f.nextSibling;
-        topDock.appendChild(f);
+      if (beforeEl && beforeEl.parentNode === targetDock) {
+        targetDock.insertBefore(f, beforeEl);
+      } else if (f.parentNode !== targetDock) {
+        targetDock.appendChild(f);
       }
-      var sm = f.querySelector("summary");
-      if (sm && !sm.querySelector(".nsx-backbtn")) {
-        var btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "nsx-hbtn nsx-backbtn";
-        btn.setAttribute("aria-label", labels.tback || "In die Mitte zurück");
-        btn.title = labels.tback || "In die Mitte zurück";
-        btn.innerHTML = ICON_CLOSE;
-        btn.addEventListener("click", function (ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          undockTop(f);
-        });
-        sm.appendChild(btn);
-      }
-      saveTopDock();
+      decorateFoldButtons(f);
+      saveAllDocks();
       updateEmpty();
       if (selected) drawArrows(selected);
     }
+
+    function dockTop(f, targetZone) {
+      dockTo(f, targetZone || (f.getAttribute("data-docked-zone") || "pre"));
+    }
+
     function undockTop(f) {
-      if (!f || !f.classList.contains("nsx-topdocked")) return;
-      f.classList.remove("nsx-topdocked");
-      var restoreTarget = (f._origNext && f._origNext.parentNode === folds) ? f._origNext : folds.firstChild;
-      folds.insertBefore(f, restoreTarget);
-      applyOrder();
-      saveTopDock();
+      dockTo(f, "center");
+    }
+
+    function applyAllDocks() {
+      var raw = load(pageDockKey);
+      var saved = null;
+      if (raw) {
+        try { saved = JSON.parse(raw); } catch (e) { saved = null; }
+      }
+      var savedTitle = (saved && saved.title) || (load(tdockKey) || "").split(",").filter(Boolean);
+      var td = savedTitle.filter(function (k) { return foldByKey(k); });
+      var tdDefault = isCls ? ["map", "guide", "uml"] : ["guide", "map"];
+      tdDefault.forEach(function (k) { if (td.indexOf(k) < 0 && foldByKey(k)) td.push(k); });
+      td.forEach(function (k) { var f = foldByKey(k); if (f && canTitleDock(f)) dockTitle(f); });
+
+      if (saved) {
+        if (saved.lead) saved.lead.forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "lead"); });
+        if (saved.pre) saved.pre.forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "pre"); });
+        if (saved.post) saved.post.forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "post"); });
+      } else {
+        var fl = foldList();
+        fl.forEach(function (f) {
+          if (f && f._initTop && canTopDock(f) && !f.classList.contains("nsx-tdocked") && !f.classList.contains("nsx-topdocked")) {
+            dockTo(f, f._initDock || "pre");
+          }
+        });
+      }
+      foldList().forEach(decorateFoldButtons);
+      decorateFoldButtons(root);
       updateEmpty();
-      if (selected) drawArrows(selected);
     }
+
     function applyTopDock() {
-      if (!topDock) return;
-      var saved = (load(topDockKey) || "").split(",").filter(Boolean);
-      if (!saved.length) return;
-      saved.forEach(function (k) {
-        var f = foldByKey(k);
-        if (f && canTopDock(f)) dockTop(f);
-      });
+      applyAllDocks();
     }
-    if (topDock) {
-      topDock.addEventListener("dragover", function (ev) {
+
+    allDocks.forEach(function (dock) {
+      if (!dock) return;
+      dock.addEventListener("dragstart", onDragStart);
+      dock.addEventListener("dragover", function (ev) {
         if (!dragging || !canTopDock(dragging)) return;
         ev.preventDefault();
         try { ev.dataTransfer.dropEffect = "move"; } catch (e) {}
-        topDock.classList.add("nsx-drop-over");
+        dock.classList.add("nsx-drop-over");
+        var t = ev.target.closest && ev.target.closest("details[data-fold]");
+        if (t && t !== dragging && t.parentNode === dock) {
+          var r = t.getBoundingClientRect();
+          dock.insertBefore(dragging, ev.clientY < r.top + r.height / 2 ? t : t.nextSibling);
+        }
       });
-      topDock.addEventListener("dragleave", function (ev) {
-        if (!topDock.contains(ev.relatedTarget)) topDock.classList.remove("nsx-drop-over");
+      dock.addEventListener("dragleave", function (ev) {
+        if (!dock.contains(ev.relatedTarget)) dock.classList.remove("nsx-drop-over");
       });
-      topDock.addEventListener("drop", function (ev) {
-        if (!dragging || !canTopDock(dragging)) return;
+      dock.addEventListener("drop", function (ev) {
+        if (!dragging || !canTopDock(dragging)) { cleanupDnd(); return; }
         ev.preventDefault();
-        dragging._dropped = true;
-        dockTop(dragging);
+        ev.stopPropagation();
+        var f = dragging;
+        f._dropped = true;
+        var zone = dock.getAttribute("data-dock") || "pre";
+        var t = ev.target.closest && ev.target.closest("details[data-fold]");
+        var beforeEl = (t && t !== f && t.parentNode === dock) ? (ev.clientY < t.getBoundingClientRect().top + t.getBoundingClientRect().height / 2 ? t : t.nextSibling) : undefined;
+        dockTo(f, zone, beforeEl);
+        cleanupDnd();
       });
-      topDock.addEventListener("click", function (ev) {
+      dock.addEventListener("click", function (ev) {
         var back = ev.target.closest(".nsx-backbtn");
         if (back) {
           ev.preventDefault();
@@ -720,20 +1284,18 @@
           if (f) undockTop(f);
         }
       });
-    }
+    });
+
     // Ist die Mitte leer (alles angedockt, nichts ausgewählt), steht dort der Hinweis
     var emptyHint = detBody && detBody.querySelector(".nsx-hint");
     if (emptyHint) folds.setAttribute("data-empty", emptyHint.textContent.trim());
     function updateEmpty() { folds.classList.toggle("nsx-empty", !foldList().some(function (f) { return !f.hidden && !f.classList.contains("nsx-tdocked"); })); }
-    function foldByKey(k) {
-      return (folds && folds.querySelector('details[data-fold="' + k + '"]')) ||
-             (topDock && topDock.querySelector('details[data-fold="' + k + '"]')) ||
-             document.querySelector('details.nsx-fold[data-fold="' + k + '"]');
-    }
+
     if (tdock) {
       tdock.addEventListener("click", function (ev) {
         var b = ev.target.closest(".nsx-tab");
         if (!b) return;
+        clearSelection();
         var f = foldByKey(b.getAttribute("data-fold"));
         setPop(popFold === f ? null : f);
       });
@@ -746,24 +1308,20 @@
           if (fwd && b.nextElementSibling) tdock.insertBefore(b.nextElementSibling, b);
           else if (!fwd && b.previousElementSibling) tdock.insertBefore(b, b.previousElementSibling);
           b.focus();
-          saveTitleDock();
+          saveAllDocks();
           return;
         }
         if (ev.key !== "ArrowDown") return;
         ev.preventDefault();
         undockTitle(foldByKey(b.getAttribute("data-fold")), folds.firstChild);
       });
-      // Reiter zurück in die Mitte ziehen
+      // Reiter zurück in die Mitte oder ins topDock ziehen
       tdock.addEventListener("dragstart", function (ev) {
         var b = ev.target.closest && ev.target.closest(".nsx-tab");
         if (!b) return;
-        dragging = foldByKey(b.getAttribute("data-fold"));
-        dragging._fromTitle = true;
-        dragging._dropped = false;
-        root.classList.add("nsx-dnd");
-        setPop(null);
-        ev.dataTransfer.effectAllowed = "move";
-        try { ev.dataTransfer.setData("text/plain", b.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
+        var f = foldByKey(b.getAttribute("data-fold"));
+        if (!f) return;
+        startFoldDrag(ev, f, true);
       });
       // Fold auf die Titelleiste ziehen
       title.addEventListener("dragover", function (ev) {
@@ -788,11 +1346,22 @@
       });
       title.addEventListener("dragleave", function (ev) { if (!title.contains(ev.relatedTarget)) title.classList.remove("nsx-drop-over"); });
       title.addEventListener("drop", function (ev) {
-        if (dragging && dragging._fromTitle) { ev.preventDefault(); dragging._dropped = false; return; }
-        if (!dragging || !canTitleDock(dragging)) return;
+        if (dragging && dragging._fromTitle) {
+          ev.preventDefault();
+          dragging._dropped = true;
+          saveAllDocks();
+          cleanupDnd();
+          return;
+        }
+        if (!dragging || !canTitleDock(dragging)) {
+          cleanupDnd();
+          return;
+        }
         ev.preventDefault();
-        dragging._dropped = true;
-        dockTitle(dragging);
+        var f = dragging;
+        f._dropped = true;
+        dockTitle(f);
+        cleanupDnd();
       });
       document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && popFold) setPop(null); });
       document.addEventListener("click", function (ev) {
@@ -811,7 +1380,6 @@
       f.querySelector("summary").appendChild(b);
       return b;
     }
-    foldList().forEach(function (f) { if (canTitleDock(f)) addButton(f, "nsx-backbtn", ICON_DOCK, labels.tundock); });
     guideStats();
     window.addEventListener("hashchange", guideStats);
 
@@ -1959,16 +2527,7 @@
       detFold.hidden = true;
     }
     updateEmpty();
-    // Beim Öffnen sind User Guide (bzw. Cluster Guide), Karte und Klassendiagramm immer in
-    // der Titelleiste (Klassenseiten: Mitgliederkarte, User Guide, Klassendiagramm). Gemerkt
-    // wird nur die Reihenfolge der Reiter: Ein in einer früheren Sitzung oder auf einer
-    // anderen Seite gelöster Reiter fehlt sonst dauerhaft (Aufnahme 12:02). Zusätzlich
-    // angedockte Folds (Implementer's Guide) bleiben angedockt.
-    var tdDefault = isCls ? ["map", "guide", "uml"] : ["guide", "map", "uml"];
-    var td = (load(tdockKey) || "").split(",").filter(function (k) { return k && foldByKey(k); });
-    tdDefault.forEach(function (k) { if (td.indexOf(k) < 0) td.push(k); });
-    td.forEach(function (k) { dockTitle(foldByKey(k)); });
-    applyTopDock();
+    applyAllDocks();
 
     // Klick auf eine leere Fläche löst die Auswahl; der Inspektor folgt dann wieder
     // dem Mauszeiger. Lesebereiche (Detailansicht, Guide-Text, Inspektor) und
@@ -2077,5 +2636,6 @@
       }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-density"] });
     }
   }
+  window.initNsx = boot;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

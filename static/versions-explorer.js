@@ -1667,7 +1667,8 @@
     if (!EL.rec || EL.rec.id !== id) {
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     }
-    var D = data.el, di = D ? D.byId.get(id) : null;
+    var D = data.el, di = D ? (D.byId.get(id) != null ? D.byId.get(id) : resolveId(D, id)) : -1;
+    var isRef = !!(D && di >= 0 && D.ref && D.ref[di] === 1);
     function loadFromFile() {
       return fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
         .catch(function (err) {
@@ -1684,7 +1685,13 @@
       p = fetchJson(ROOT + "versions/explorer/refs/" + encodeURIComponent(C.recordFile(id, stems("ref"))), signal);
     } else if (typeof FrozenPack !== "undefined") {
       p = FrozenPack.record(ROOT, id, signal).then(function (rec) {
-        return (rec && rec.versions) ? rec : loadFromFile();
+        if (!rec || !rec.versions) return loadFromFile();
+        if (!rec.evidence) {
+          return loadFromFile().then(function (full) {
+            return (full && full.evidence) ? full : rec;
+          }).catch(function () { return rec; });
+        }
+        return rec;
       }).catch(function (err) {
         if (C.isAbortError(err)) throw err;
         return loadFromFile();

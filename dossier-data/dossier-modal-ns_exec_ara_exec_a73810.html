@@ -1,0 +1,547 @@
+<dialog id="dossier-modal-ns_exec_ara_exec_a73810" class="dossier-modal dossier-workbench" data-dossier-sha="439df44cec4cf5db" aria-labelledby="dossier-modal-ns_exec_ara_exec_a73810-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-ns_exec_ara_exec_a73810-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_exec_ara_exec_a73810)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,104 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Namespace Guide: ns_exec_ara_exec_a73810" data-fragment="namespaces/ns_exec_ara_exec_a73810.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Namespace-Überblick (&lt;div class="ai namespace-guide"&gt;) für den Namespace 'namespace ara::exec' (adaptive, Modul exec) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR NAMESPACE-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften. Der Kontext beschreibt das
+  Zusammenspiel der Kernklassen des Namespace; Lebenszyklus nur, wenn der Namespace selbst
+  eine Initialisierungs- oder Betriebsphase vorgibt; der Nutzungspfad geht über mehrere
+  Klassen bzw. Funktionen des Namespace.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Namespace-Leitfaden für 'namespace ara::exec' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "classes": [
+  "ExecErrorDomain — Defines a class representing the Execution Management error domain.",
+  "ExecException — Defines a class for exceptions to be thrown by the Execution Management.",
+  "ExecutionClient — The ara::exec::ExecutionClient API provides the functionality for a Process to report its Execution State to the Execution Management.",
+  "ExecutionErrorEvent — Represents an execution error event which happens in a Function Group.",
+  "FunctionGroup — Class representing Function Group defined in meta-model (ARXML)",
+  "FunctionGroupState — Class representing Function Group State defined in meta-model (ARXML)",
+  "StateClient — ara::exec::StateClient is an interface of Execution Management that is used by State Management to request transitions between Function Grou"
+ ],
+ "dokumentstellen": [],
+ "member_requirements": [
+  {
+   "id": "SWS_EM_02281",
+   "text": "enumeration ExecErrc [SWS_EM_02281] Upstream: RS_AP_00130 , RS_AP_00122 , RS_AP_00127 , RS_AP_00154 , RS_AP_00125 , RS_AP_00142 , RS_AP_00129 , RS_AP_00149 enum class ExecErrc : ara::core::ErrorDomain::CodeType {...}; Defines an enumeration class for the Execution Management error codes. Header-Datei #include \"ara/exec/exec_error_domain.h\" class mono Forwarding-Header #include \"ara/exec/exec_fwd.h\" class mono Scope namespace ara::exec class mono Symbol ExecErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kNoCommunication td =3 Communication error occurred, e.g. request cannot be send or result cannot be retrieved td kInvalidMetaModelIdentifier td =4 Wrong meta model identifier passed to a function td kOperationCanceled td =5 Transition to the requested Function Group state was canceled by a newer request td kOperationFailed td =6 Requested operation could not be performed, e.g. Function Group state transition cannot be finished because kRunning was not reported on time td kInvalidTransition td =9 Invalid transition (e.g. Process attempted to report kRunning, when it was already in a Running Process State) td kIntegrityOrAuthenticityCheckFailed td = 14 Integrity or authenticity check for a Process to be spawned in the requested Function Group state failed td kUnexpectedTermination td = 15 Abnormal Termination during a Function Group State transition occurred td kInvalidArgument td = 16 Passed argument doesn’t appear to be valid. Hinweise: If a kNoCommunication occurs at Execution Management or State Management level (or communication between both), the system may need to enter an Unrecoverable State. The internal mechanisms can detect this issue in the moment that a communication attempt occurs. This is not the case for applications that are using the interface of the ara::exec :: ExecutionClient or ara::exec::StateClient - they eventually get a communication error in the moment of the API use, i.e. possibly after the actual error occurrence. However, this is not problematic as the recovery options are limited from a client side viewpoint."
+  },
+  {
+   "id": "SWS_EM_02000",
+   "text": "enumeration ExecutionState [SWS_EM_02000] Upstream: RS_EM_00103 , RS_AP_00125 , RS_AP_00143 , RS_AP_00129 enum class ExecutionState : std::uint32_t {...}; Defines the internal states of a Process. Scoped enumeration of uint32_t. Please note that ara::exec::ExecutionState includes only states reportable by the Process to Execution Management and therefore does not include enumerations e.g. the \"Initializing\" state mentioned in Figure 7.2 and Figure 7.12, which are an implied states for Execution Management. The Initializing state starts when Process is first scheduled (so no code executed yet) and ends when kRunning is reported ( [SWS_EM_01004] ). The Terminating state starts when termination is requested by Execution Management and ends when the Process terminates ( [SWS_EM_01404] ). For the reasons mentioned, Execution Management assumes that Process is in initializing state until kRunning will be reported by it. Header-Datei #include \"ara/exec/execution_client.h\" class mono Forwarding-Header #include \"ara/exec/exec_fwd.h\" class mono Scope namespace ara::exec class mono Symbol ExecutionState class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kRunning td =0 After a Process has been started by Execution Management, it reports ExecutionState kRunning."
+  },
+  {
+   "id": "SWS_EM_02541",
+   "text": "type alias ExecutionError [SWS_EM_02541] Upstream: RS_EM_00101 , RS_AP_00122 , RS_AP_00154 using ExecutionError = std::uint32_t ; Represents the execution error. Header-Datei #include \"ara/exec/execution_error_event.h\" class mono Scope namespace ara::exec class mono Symbol ExecutionError class mono"
+  },
+  {
+   "id": "SWS_EM_02290",
+   "text": "function GetExecErrorDomain [SWS_EM_02290] Upstream: RS_AP_00120 , RS_AP_00130 , RS_AP_00154 , RS_AP_00159 const ara::core::ErrorDomain &amp;amp; GetExecErrorDomain () noexcept; Returns a reference to the global ExecErrorDomain object. Header-Datei #include \"ara/exec/exec_error_domain.h\" class mono Scope namespace ara::exec class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain &amp;amp; td Return a reference to the global ExecErrorDomain object."
+  },
+  {
+   "id": "SWS_EM_02291",
+   "text": "function MakeErrorCode [SWS_EM_02291] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00130 , RS_AP_00154 , RS_AP_00159 ara::core::ErrorCode MakeErrorCode ( ara::exec::ExecErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an instance of ErrorCode. Header-Datei #include \"ara/exec/exec_error_domain.h\" class mono Scope namespace ara::exec class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error. Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ErrorCode object."
+  }
+ ],
+ "module": "exec",
+ "namespace_id": "ns_exec_ara_exec_a73810",
+ "namespace_name": "namespace ara::exec",
+ "platform": "adaptive",
+ "release": "R25-11"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="aaebac626d17a906bbd6d8281b603b2cf3be222fb7eb66176f5f990f50eee5ac" data-trace-output="439df44cec4cf5db8f1e6c07406855d270eaf4a25c261bcc7318a519842898a8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;The namespace &lt;code&gt;ara::exec&lt;/code&gt; provides the interfaces of the Execution Management module on the AUTOSAR Adaptive Platform. The module is responsible for the lifecycle of processes, controls system startup, and monitors the state transitions of configured function groups (&lt;em&gt;Function Groups&lt;/em&gt;). The classes of the namespace encapsulate the interaction between three key actors: the application-specific processes, the central Execution Management, and the State Management.&lt;/p&gt;
+&lt;p&gt;For processes, the class &lt;code&gt;ExecutionClient&lt;/code&gt; serves as the primary communication channel through which a started process reports its current execution state to Execution Management. State Management accesses Execution Management via the class &lt;code&gt;StateClient&lt;/code&gt; in order to request defined state transitions between function groups (&lt;code&gt;FunctionGroup&lt;/code&gt;) and their target states (&lt;code&gt;FunctionGroupState&lt;/code&gt;). If an execution error occurs during the operation of a function group, this is represented via &lt;code&gt;ExecutionErrorEvent&lt;/code&gt; with the corresponding error type &lt;code&gt;ExecutionError&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02541" href="../spec/record.html?id=SWS_EM_02541"&gt;[SWS_EM_02541]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 363.71 118.80" style="max-width:485px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 104.4)"&gt;
+&lt;title&gt;diag_kontext&lt;/title&gt;
+&lt;!-- process --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;process&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M64.08,-90C64.08,-90 34.08,-90 34.08,-90 28.08,-90 22.08,-84 22.08,-78 22.08,-78 22.08,-66 22.08,-66 22.08,-60 28.08,-54 34.08,-54 34.08,-54 64.08,-54 64.08,-54 70.08,-54 76.08,-60 76.08,-66 76.08,-66 76.08,-78 76.08,-78 76.08,-84 70.08,-90 64.08,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="49.08" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Prozess&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- exec_mgmt --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;exec_mgmt&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M322.91,-63C322.91,-63 226.14,-63 226.14,-63 220.14,-63 214.14,-57 214.14,-51 214.14,-51 214.14,-39 214.14,-39 214.14,-33 220.14,-27 226.14,-27 226.14,-27 322.91,-27 322.91,-27 328.91,-27 334.91,-33 334.91,-39 334.91,-39 334.91,-51 334.91,-51 334.91,-57 328.91,-63 322.91,-63"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="274.53" y="-41.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/exec.html" href="../modules/exec.html"&gt;Execution Management&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- process&amp;#45;&amp;gt;exec_mgmt --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;process-&amp;gt;exec_mgmt&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M76.15,-68.85C106.84,-65.14 159.07,-58.83 202.1,-53.63"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="202.52,-57.11 212.02,-52.43 201.68,-50.16 202.52,-57.11"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="156.15" y="-78.27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_exec_ExecutionClient_e0f3df.html" href="../classes/cl_ara_exec_ExecutionClient_e0f3df.html"&gt;ExecutionClient&lt;/a&gt;&lt;/text&gt;
+&lt;text text-anchor="middle" x="156.15" y="-66.27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;(Statusmeldung)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- state_mgmt --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;state_mgmt&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M86.17,-36C86.17,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 86.17,0 86.17,0 92.17,0 98.17,-6 98.17,-12 98.17,-12 98.17,-24 98.17,-24 98.17,-30 92.17,-36 86.17,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="49.08" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/sm.html" href="../modules/sm.html"&gt;State Management&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- state_mgmt&amp;#45;&amp;gt;exec_mgmt --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;state_mgmt-&amp;gt;exec_mgmt&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M98.65,-18.96C127.16,-20.03 163.84,-22.28 196.14,-27 198.2,-27.3 200.29,-27.63 202.39,-27.98"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="201.62,-31.4 212.09,-29.75 202.88,-24.51 201.62,-31.4"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="156.15" y="-42" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_exec_StateClient_276b21.html" href="../classes/cl_ara_exec_StateClient_276b21.html"&gt;StateClient&lt;/a&gt;&lt;/text&gt;
+&lt;text text-anchor="middle" x="156.15" y="-30" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;(Zustandsübergang)&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Interaction between processes, Execution Management, and State Management. Sources: &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
+&lt;p&gt;The lifecycle of a process is described by states that are partly managed implicitly by Execution Management and partly reported actively by the process &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;. The enumeration &lt;code&gt;ExecutionState&lt;/code&gt; exclusively describes those states that the process can actively transmit to Execution Management. The only state value defined for this is &lt;code&gt;ExecutionState::kRunning&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;From the perspective of Execution Management, a process passes through the following phases:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Initializing:&lt;/strong&gt; An implicit state that begins as soon as the process is scheduled by the operating system (before application-specific code is executed) and ends as soon as the process reports &lt;code&gt;kRunning&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Running:&lt;/strong&gt; The active execution state after successfully reporting &lt;code&gt;ExecutionState::kRunning&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Terminating:&lt;/strong&gt; Another implicit state that starts when Execution Management requests the termination of the process and concludes with the complete termination of the process &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="diagram" id="diag-lebenszyklus"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 657.58 64.80" style="max-width:877px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
+&lt;title&gt;diag_lebenszyklus&lt;/title&gt;
+&lt;!-- init --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;init&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M52.26,-36C52.26,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 52.26,0 52.26,0 58.26,0 64.26,-6 64.26,-12 64.26,-12 64.26,-24 64.26,-24 64.26,-30 58.26,-36 52.26,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="32.13" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Initializing&lt;/text&gt;
+&lt;text text-anchor="middle" x="32.13" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(implizit)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- running --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;running&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M250.54,-36C250.54,-36 207.82,-36 207.82,-36 201.82,-36 195.82,-30 195.82,-24 195.82,-24 195.82,-12 195.82,-12 195.82,-6 201.82,0 207.82,0 207.82,0 250.54,0 250.54,0 256.54,0 262.54,-6 262.54,-12 262.54,-12 262.54,-24 262.54,-24 262.54,-30 256.54,-36 250.54,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="229.18" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Running&lt;/text&gt;
+&lt;text text-anchor="middle" x="229.18" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(kRunning)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- init&amp;#45;&amp;gt;running --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;init-&amp;gt;running&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M64.47,-18C96.93,-18 147.9,-18 184.34,-18"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="183.96,-21.5 193.96,-18 183.96,-14.5 183.96,-21.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="130.04" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Meldung von kRunning&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- terminating --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;terminating&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M464.65,-36C464.65,-36 418.28,-36 418.28,-36 412.28,-36 406.28,-30 406.28,-24 406.28,-24 406.28,-12 406.28,-12 406.28,-6 412.28,0 418.28,0 418.28,0 464.65,0 464.65,0 470.65,0 476.65,-6 476.65,-12 476.65,-12 476.65,-24 476.65,-24 476.65,-30 470.65,-36 464.65,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="441.47" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Terminating&lt;/text&gt;
+&lt;text text-anchor="middle" x="441.47" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(implizit)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- running&amp;#45;&amp;gt;terminating --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;running-&amp;gt;terminating&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M263.04,-18C298.39,-18 354.88,-18 394.6,-18"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="394.43,-21.5 404.43,-18 394.43,-14.5 394.43,-21.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="334.41" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Terminierungsanforderung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- terminated --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;terminated&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M616.78,-36C616.78,-36 574.08,-36 574.08,-36 568.08,-36 562.08,-30 562.08,-24 562.08,-24 562.08,-12 562.08,-12 562.08,-6 568.08,0 574.08,0 574.08,0 616.78,0 616.78,0 622.78,0 628.78,-6 628.78,-12 628.78,-12 628.78,-24 628.78,-24 628.78,-30 622.78,-36 616.78,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="595.43" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Terminated&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- terminating&amp;#45;&amp;gt;terminated --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;terminating-&amp;gt;terminated&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M476.95,-18C498.67,-18 526.93,-18 550.28,-18"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="549.98,-21.5 559.98,-18 549.98,-14.5 549.98,-21.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="519.37" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Prozessende&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;State diagram: State phases of a process in Execution Management. Sources: &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;The typical usage path of an application process comprises initialization and the subsequent signaling of operational readiness. After being started by Execution Management, the process executes its internal startup routines. As soon as initialization is complete and regular operation begins, the process creates an instance of &lt;code&gt;ExecutionClient&lt;/code&gt; and transmits the state &lt;code&gt;ExecutionState::kRunning&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Execution Management receives this report and validates the transition. Should a process attempt to report &lt;code&gt;kRunning&lt;/code&gt; while it is already in the &lt;em&gt;Running&lt;/em&gt; state, this is evaluated as an invalid transition &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;. Execution Management likewise monitors whether the report is made in time, as its absence can lead to the failure of function group transitions &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 343" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Signalisierung der Betriebsbereitschaft eines Prozesses&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="329" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="329" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="329" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/exec.html" href="../modules/exec.html"&gt;Execution Management&lt;/a&gt;&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Prozess&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_exec_ExecutionClient_e0f3df.html" href="../classes/cl_ara_exec_ExecutionClient_e0f3df.html"&gt;ExecutionClient&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Startet Prozess&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 345 146 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="399" y="161" text-anchor="start" font-size="11" fill="#28251d"&gt;Initialisierung durchführen&lt;/text&gt;&lt;text x="450.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;Zustandsmeldung initiieren (kRunning)&lt;/text&gt;&lt;line x1="345" y1="203" x2="555" y2="203" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="231" text-anchor="middle" font-size="11" fill="#28251d"&gt;Übermittelt ExecutionState::kRunning&lt;/text&gt;&lt;line x1="555" y1="237" x2="135" y2="237" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="265" text-anchor="middle" font-size="11" fill="#28251d"&gt;Quittierung / Validierung&lt;/text&gt;&lt;line x1="135" y1="271" x2="555" y2="271" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="450.0" y="299" text-anchor="middle" font-size="11" fill="#28251d"&gt;Rückmeldung an Prozess&lt;/text&gt;&lt;line x1="555" y1="305" x2="345" y2="305" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Signaling of kRunning via ExecutionClient. Sources: &lt;a class="spec-record-ref" data-req="SWS_EM_02000" href="../spec/record.html?id=SWS_EM_02000"&gt;[SWS_EM_02000]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;Error conditions within the module are represented by the error domain &lt;code&gt;ExecErrorDomain&lt;/code&gt;. The function &lt;code&gt;GetExecErrorDomain()&lt;/code&gt; provides a thread-safe and exception-safe reference to the global domain instance &lt;a class="spec-record-ref" data-req="SWS_EM_02290" href="../spec/record.html?id=SWS_EM_02290"&gt;[SWS_EM_02290]&lt;/a&gt;. The function &lt;code&gt;MakeErrorCode()&lt;/code&gt; serves to create standardized error objects of type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02291" href="../spec/record.html?id=SWS_EM_02291"&gt;[SWS_EM_02291]&lt;/a&gt; by specifying the error code and vendor-specific additional data.&lt;/p&gt;
+&lt;p&gt;The specific error causes are defined in the enumeration &lt;code&gt;ExecErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;kNoCommunication&lt;/code&gt; (=3): Communication error, for example when sending a request or retrieving a result. If this error occurs between Execution Management and State Management, the overall system may have to transition to an unrecoverable state (&lt;em&gt;Unrecoverable State&lt;/em&gt;) &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kInvalidMetaModelIdentifier&lt;/code&gt; (=4): Invalid metamodel identifier in function calls &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOperationCanceled&lt;/code&gt; (=5): A state transition to a function group was canceled by a newer request &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOperationFailed&lt;/code&gt; (=6): The requested operation failed, for example because &lt;code&gt;kRunning&lt;/code&gt; of a process was not reported in time &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kInvalidTransition&lt;/code&gt; (=9): An invalid state transition was requested, e.g., reporting &lt;code&gt;kRunning&lt;/code&gt; again when the process is already running &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kIntegrityOrAuthenticityCheckFailed&lt;/code&gt; (=14): The integrity or authenticity check of a process to be started has failed &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kUnexpectedTermination&lt;/code&gt; (=15): A process was terminated unexpectedly during a state transition &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kInvalidArgument&lt;/code&gt; (=16): A passed argument is invalid &lt;a class="spec-record-ref" data-req="SWS_EM_02281" href="../spec/record.html?id=SWS_EM_02281"&gt;[SWS_EM_02281]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For exception-based error handling, the module also provides the exception class &lt;code&gt;ExecException&lt;/code&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Interpretation: ExecutionClient stellt anwendungsseitig eine synchrone oder asynchrone Reporting-Methode bereit, um den Enum-Wert ExecutionState::kRunning an das Execution Management zu übermitteln. – Begründung: Der Payload belegt die Zuständigkeit von ExecutionClient zur Statusmeldung und ExecutionState::kRunning, spezifiziert jedoch nicht den konkreten Methodennamen. --&gt;
+&lt;p class="ai-note"&gt;This guide is based on the specifications of the AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>aaebac626d17…</code></div>
+              <div><strong>Konstituierende Records:</strong> 5</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 0</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">3</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">5 von 5 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (5 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (0 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EM_02281","k":"enumeration","d":"EXEC","t":"enumeration ExecErrc [SWS_EM_02281] Upstream: RS_AP_00130 , RS_AP_00122 , RS_AP_00127 , RS_AP_00154 , RS_AP_00125 , RS_AP_00142 , RS_AP_00129 , RS_AP_00149 enum class ExecErrc : ara::core::ErrorDomain::CodeType {...}; Defines an enumeration class for the Execution Management error codes. Header-Datei #include \"ara/exec/exec_error_domain.h\" class mono Forwarding-Header #include \"ara/exec/exec_fwd.h\" class mono Scope namespace ara::exec class mono Symbol ExecErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kNoCommunication td =3 Communication error occurred, e.g. request cannot be send or result cannot be retrieved td kInvalidMetaModelIdentifier td =4 Wrong meta model identifier passed to a function td kOperationCanceled td =5 Transition to the requested Function Group state was canceled by a newer request td kOperationFailed td =6 Requested operation could not be performed, e.g. Function Group state transition cannot be finished because kRunning was not reported on time td kInvalidTransition td =9 Invalid transition (e.g. Process attempted to report kRunning, when it was already in a Running Process State) td kIntegrityOrAuthenticityCheckFailed td = 14 Integrity or authenticity check for a Process to be spawned in the requested Function Group state failed td kUnexpectedTermination td = 15 Abnormal Termination during a Function Group State transition occurred td kInvalidArgument td = 16 Passed argument doesn’t appear to be valid. Hinweise: If a kNoCommunication occurs at Execution Management or State Management level (or communication between both), the system may need to enter an Unrecoverable State. The internal mechanisms can detect this issue in the moment that a communication attempt occurs. This is not the case for applications that are using the interface of the ara::exec :: ExecutionClient or ara::exec::StateClient - they eventually get a communication error in the moment of the API use, i.e. possibly after the actual error occurrence. However, this is not problematic as the recovery options are limited from a client side viewpoint.","n":"ExecErrc"},{"i":"SWS_EM_02000","k":"enumeration","d":"EXEC","t":"enumeration ExecutionState [SWS_EM_02000] Upstream: RS_EM_00103 , RS_AP_00125 , RS_AP_00143 , RS_AP_00129 enum class ExecutionState : std::uint32_t {...}; Defines the internal states of a Process. Scoped enumeration of uint32_t. Please note that ara::exec::ExecutionState includes only states reportable by the Process to Execution Management and therefore does not include enumerations e.g. the \"Initializing\" state mentioned in Figure 7.2 and Figure 7.12, which are an implied states for Execution Management. The Initializing state starts when Process is first scheduled (so no code executed yet) and ends when kRunning is reported ( [SWS_EM_01004] ). The Terminating state starts when termination is requested by Execution Management and ends when the Process terminates ( [SWS_EM_01404] ). For the reasons mentioned, Execution Management assumes that Process is in initializing state until kRunning will be reported by it. Header-Datei #include \"ara/exec/execution_client.h\" class mono Forwarding-Header #include \"ara/exec/exec_fwd.h\" class mono Scope namespace ara::exec class mono Symbol ExecutionState class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kRunning td =0 After a Process has been started by Execution Management, it reports ExecutionState kRunning.","n":"ExecutionState"},{"i":"SWS_EM_02541","k":"type","d":"EXEC","t":"type alias ExecutionError [SWS_EM_02541] Upstream: RS_EM_00101 , RS_AP_00122 , RS_AP_00154 using ExecutionError = std::uint32_t ; Represents the execution error. Header-Datei #include \"ara/exec/execution_error_event.h\" class mono Scope namespace ara::exec class mono Symbol ExecutionError class mono","n":"alias"},{"i":"SWS_EM_02290","k":"function","d":"EXEC","t":"function GetExecErrorDomain [SWS_EM_02290] Upstream: RS_AP_00120 , RS_AP_00130 , RS_AP_00154 , RS_AP_00159 const ara::core::ErrorDomain & GetExecErrorDomain () noexcept; Returns a reference to the global ExecErrorDomain object. Header-Datei #include \"ara/exec/exec_error_domain.h\" class mono Scope namespace ara::exec class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain & td Return a reference to the global ExecErrorDomain object.","n":"GetExecErrorDomain"},{"i":"SWS_EM_02291","k":"function","d":"EXEC","t":"function MakeErrorCode [SWS_EM_02291] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00130 , RS_AP_00154 , RS_AP_00159 ara::core::ErrorCode MakeErrorCode ( ara::exec::ExecErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an instance of ErrorCode. Header-Datei #include \"ara/exec/exec_error_domain.h\" class mono Scope namespace ara::exec class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error. Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ErrorCode object.","n":"MakeErrorCode"}],"inbound":[]}</script></dialog>

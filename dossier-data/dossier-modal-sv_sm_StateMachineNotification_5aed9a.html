@@ -1,0 +1,447 @@
+<dialog id="dossier-modal-sv_sm_StateMachineNotification_5aed9a" class="dossier-modal dossier-workbench" data-dossier-sha="2df9afcfcedbb1b9" aria-labelledby="dossier-modal-sv_sm_StateMachineNotification_5aed9a-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-sv_sm_StateMachineNotification_5aed9a-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Service Guide: sv_sm_StateMachineNotification_5aed9a)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,893 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Service Guide: sv_sm_StateMachineNotification_5aed9a" data-fragment="services/sv_sm_StateMachineNotification_5aed9a.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Service-Leitfaden (&lt;div class="ai service-guide"&gt;) für das Service-Interface 'StateMachineNotification' (adaptive, Modul sm) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR SERVICE-LEITFÄDEN (ara::com / Adaptive Platform):
+- 400–900 Wörter in 3–5 thematischen Abschnitten mit &lt;h4&gt;-Überschriften:
+  1. Rolle und Systemkontext der Service-Schnittstelle (Provider/Consumer, Client/Server, Proxy/Skeleton, Interaktionspartner).
+  2. Methoden, Ereignisse und Felder (Aufrufsemantik, Parameter, synchrone Rückmeldung via Future/Promise oder Fire-and-Forget).
+  3. Lebenszyklus, Sitzungsabläufe und Zustandsabhängigkeiten (z. B. Initialisierung, Update-Sitzungen, Vorbedingungen).
+  4. Fehlerbehandlung und Application Errors (spezifische ErrorDomains und Fehlercodes wie kOperationRejected, kOperationFailed).
+- Jeder Absatz enthält mindestens einen Beleg (Requirement-ID oder Dokumentstelle).
+- Optional ein Sequenzdiagramm für den zentralen Methoden-/Ereignisablauf zwischen Client und Service.
+- Das Fragment beginnt mit &lt;div class="ai service-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Service-Leitfaden für Service-Interface 'StateMachineNotification' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P142_206",
+   "page": 142,
+   "text": "⌋\nService Interface\n[SWS_SM_91028] Definition of ServiceInterface StateMachineNotification\nUpstream requirements:\nRS_SM_00001, RS_SM_00004, RS_AP_00150, RS_AP_00115, RS_-\nAP_00120, RS_AP_00142, RS_AP_00119, RS_AP_00121\n⌈"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": true,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P44_068",
+   "page": 44,
+   "text": "Figure 7.8: TransitionRequestTable\nPlease note that \"Examples\" section for\nState Management\nof TPS Manifest Spec-\nification [13] shows in detail how the\nTransitionRequestTable\nand the\nError-\nRecoveryTable\ncan be build with the available meta-class elements.\n[SWS_SM_00600] StateMachineService interface\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nState Management\nshall provide the ara::com based service\nStateMachineSer-\nvice\nfor each instance of the\nStateMachine\nconfigured.\n⌋\n[SWS_SM_00665] StateMachineNotification service interface\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nIf configured\nStateMachineNotification State Management\nshall instantiate\nStateMachineNotification\ninterface for that\nStateMachine\n.\n⌋\nPlease note that the\nStateMachineNotification\nservice interface mostly inter-\nacts with\nAdaptive Applications\n. Therefore it may be possible, in a project spe-\ncific context, that some\nStateMachines\nare not relevant for the application layer,"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P45_069",
+   "page": 45,
+   "text": "and therefore there is no need to force the creation and offering of their respective\nStateMachineNotification\nservice interfaces.\n[SWS_SM_00618] StateMachine service interfaces - Offer\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nEach configured ara::com based service (\nStateMachineService\n,\nStateMachi-\nneNotification\n) for the\nStateMachine\nto be started shall be available (offered)\nwhen the\nActionListItem\n\"StartStateMachine\" is processed successfully.\n⌋\nPlease note that see [SWS_SM_00618] allows the\nSMControlApplication\nthe pos-\nsibility to request a new\nStateMachine State\ntransition immediately after the suc-\ncessful\nStateMachine\ncreation, even if the\nStateMachine\nis processing the initial\nActionList\n.\n[SWS_SM_00619] StateMachine service interfaces - StopOffer\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nEach configured ara::com based service (\nStateMachineService\n,\nStateMachi-\nneNotification\n) for a\nStateMachine\nshall be no longer available (offered) at the\ntime when pro…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P59_085",
+   "page": 59,
+   "text": "[SWS_SM_CONSTR_00016] Completeness of controlled StateMachines\n⌈\nEach\nActionList\nreferencing a\nStateMachine State\nof a\nStateMachines\nof type\nController\n, shall reference the complete set of\nAgents\nthat are controlled by the\nController\n.\n⌋\nThe process of starting a\nStateMachine\nis a protracted operation that involves mul-\ntiple steps. On the one hand, the configured interfaces, such as the\nStateMachi-\nneService\nand the\nStateMachineNotification\n, associated with the specific\nStateMachine\nmust be initialized and provided to ensure that the\nStateMachine\nis accessible from the application layer. On the other hand, the\nStateMachine\nitself\nmust initiate the processing of the\nActionList\nthat corresponds to the requested ini-\ntial\nStateMachine State\n. This processing is governed by the specifications outlined\nin [SWS_SM_00612] or [SWS_SM_00622].\nFrom the perspective of the\nController\n, a\nStateMachine\nis considered started\nonce it exists and its associated interfaces are offered. It is importan…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": true,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P67_095",
+   "page": 67,
+   "text": "Figure 7.25: Value of configured StateMachineNotification::CurrentState field\n[SWS_SM_00616] CurrentState value during StateMachine State transition\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen a\nStateMachineNotification\ninterface is configured for the\nStateMa-\nchine\nand a\nStateMachine State\ntransition has been started, the value of the\nCurrentState\nfield shall be set to \"inTransition\".\n⌋\nPlease note that the value \"inTransition\" is set independently of the source (\nPlatform\nHealth Management\n,\nExecution Management\n,\nSMControlApplication\n, ...)\nand is kept, even if another\nStateMachine State\ntransition, as reaction to an er-\nror notification, is performed.\n[SWS_SM_00617] CurrentState value after StateMachine State transition\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen a\nStateMachineNotification\ninterface is configured for the\nStateMa-\nchine\nthe value of the\nCurrentState\nfield shall be set to the current\nStateMachine\nState\nas soon as all\nActionListItems\n(in the\nAct…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P142_207",
+   "page": 142,
+   "text": "⌋\n[SWS_SM_91109] Definition of Field StateMachineNotification.CurrentState\nUpstream requirements:\nRS_SM_00001, RS_SM_00004\n⌈"
+  }
+ ],
+ "member_requirements": [
+  {
+   "id": "SWS_SM_91109",
+   "text": "service field CurrentState [SWS_SM_91109] Upstream: RS_SM_00001 , RS_SM_00004 CurrentState : StateMachineStateNameType // Field (Getter, Notifier) This field represents the current state of StateMachine. If StateMachine is currently in transition between two different states, then the value of this field is set to \"InTransition\". Adaptive Applications can use this field for notifications if they are interested in state changes of a particular StateMachine. Scope service interface StateMachineNotification class mono Typ StateMachineStateNameType class mono Version 1.0 class mono HasGetter true class mono HasSetter false class mono HasNotifier true class mono"
+  }
+ ],
+ "module": "sm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "service_id": "sv_sm_StateMachineNotification_5aed9a",
+ "service_name": "StateMachineNotification"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai service-guide" data-trace-prompt="1b98e3ef228dda1be0c734d22ad644efbbb6cc0725f3050cf9d5cf27a88e354b" data-trace-output="2df9afcfcedbb1b97d1d14876c8d24cc5efc81197d80979a361153fc44b2ee9b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Role and system context of the service interface&lt;/h4&gt;
+&lt;p&gt;The service interface &lt;code&gt;StateMachineNotification&lt;/code&gt; is a fundamental ara::com service interface of the State Management (SM) functional cluster in the AUTOSAR Adaptive Platform (&lt;a class="spec-record-ref" data-req="SWS_SM_91028" href="../spec/record.html?id=SWS_SM_91028"&gt;[SWS_SM_91028]&lt;/a&gt;). If configured in a project-specific manner for a state machine, State Management instantiates a dedicated service instance of &lt;code&gt;StateMachineNotification&lt;/code&gt; for this instance of &lt;code&gt;StateMachine&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SM_00665" href="../spec/record.html?id=SWS_SM_00665"&gt;[SWS_SM_00665]&lt;/a&gt;). In this communication relationship, State Management acts as a service provider (skeleton), while interested applications act as consumers (proxies).&lt;/p&gt;
+&lt;p&gt;The primary purpose is interaction with regular Adaptive Applications (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=44"&gt;AUTOSAR_AP_SWS_StateManagement §7 “StateMachineNotification service interface”&lt;/a&gt;). Since in real vehicle projects not every internal state machine is relevant to the application layer, there is no obligation to mandatorily provide a notification interface for every instance (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=44"&gt;AUTOSAR_AP_SWS_StateManagement §7 “StateMachineNotification service interface”&lt;/a&gt;). While active state requests are made via the complementary interface &lt;code&gt;StateMachineService&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SM_00600" href="../spec/record.html?id=SWS_SM_00600"&gt;[SWS_SM_00600]&lt;/a&gt;), &lt;code&gt;StateMachineNotification&lt;/code&gt; serves purely observational state monitoring.&lt;/p&gt;
+
+&lt;h4&gt;Fields and Notification Semantics&lt;/h4&gt;
+&lt;p&gt;The interface &lt;code&gt;StateMachineNotification&lt;/code&gt; does not define any RPC methods or isolated events, but provides the state information via a central field: &lt;code&gt;CurrentState&lt;/code&gt; of data type &lt;code&gt;StateMachineStateNameType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SM_91109" href="../spec/record.html?id=SWS_SM_91109"&gt;[SWS_SM_91109]&lt;/a&gt;). According to the field specification, &lt;code&gt;CurrentState&lt;/code&gt; has a getter (&lt;code&gt;HasGetter = true&lt;/code&gt;) and a notifier (&lt;code&gt;HasNotifier = true&lt;/code&gt;), but prohibits write access by applications (&lt;code&gt;HasSetter = false&lt;/code&gt;) (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=142"&gt;AUTOSAR_AP_SWS_StateManagement §8 “Definition of Field StateMachineNotification.CurrentState”&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91109" href="../spec/record.html?id=SWS_SM_91109"&gt;[SWS_SM_91109]&lt;/a&gt;). Adaptive Applications can thus be informed asynchronously about state changes via the notifier or query the current status synchronously at any time.&lt;/p&gt;
+&lt;p&gt;As soon as a state transition is initiated, the value of the field &lt;code&gt;CurrentState&lt;/code&gt; immediately changes to the transition value &lt;code&gt;"inTransition"&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SM_00616" href="../spec/record.html?id=SWS_SM_00616"&gt;[SWS_SM_00616]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=67"&gt;AUTOSAR_AP_SWS_StateManagement §7 “Value of configured StateMachineNotification::CurrentState field”&lt;/a&gt;). This intermediate state signals to consumers that the state machine is not stable and actions are in progress.&lt;/p&gt;
+&lt;p&gt;Only when all associated actions within the processed &lt;code&gt;ActionList&lt;/code&gt; have been completely executed does State Management set the field &lt;code&gt;CurrentState&lt;/code&gt; to the newly reached target state (&lt;a class="spec-record-ref" data-req="SWS_SM_00617" href="../spec/record.html?id=SWS_SM_00617"&gt;[SWS_SM_00617]&lt;/a&gt;). Subscribed clients receive a corresponding notification via the notifier for both changes.&lt;/p&gt;
+
+&lt;div class="diagram" id="diag-statemachinenotification-seq"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 480 522" font-family="Helvetica,sans-Serif" style="max-width:480px"&gt;&lt;text x="240.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf der Zustandsbenachrichtigung über &lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html" href="../services/sv_sm_StateMachineNotification_5aed9a.html"&gt;StateMachineNotification&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="508" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="508" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;AdaptiveApplication&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;StateManagement&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;line x1="40" y1="120" x2="440" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Service-Bereitstellung nach StartStateMachine&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00101" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00101"&gt;OfferService&lt;/a&gt;(&lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html" href="../services/sv_sm_StateMachineNotification_5aed9a.html"&gt;StateMachineNotification&lt;/a&gt;)&lt;/text&gt;&lt;line x1="345" y1="169" x2="135" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109" href="../services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109"&gt;CurrentState&lt;/a&gt;.Subscribe()&lt;/text&gt;&lt;line x1="135" y1="203" x2="345" y2="203" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="231" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109" href="../services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109"&gt;CurrentState&lt;/a&gt;.Get()&lt;/text&gt;&lt;line x1="135" y1="237" x2="345" y2="237" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="265" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109" href="../services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109"&gt;CurrentState&lt;/a&gt; (Initialer Zustand)&lt;/text&gt;&lt;line x1="345" y1="271" x2="135" y2="271" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="293" x2="440" y2="293" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="308" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Zustandstransition&lt;/text&gt;&lt;text x="240.0" y="336" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109" href="../services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109"&gt;CurrentState&lt;/a&gt;.Notify("inTransition")&lt;/text&gt;&lt;line x1="345" y1="342" x2="135" y2="342" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 345 356 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="337" y="371" text-anchor="end" font-size="11" fill="#28251d"&gt;Abarbeitung aller ActionListItems&lt;/text&gt;&lt;text x="240.0" y="407" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109" href="../services/sv_sm_StateMachineNotification_5aed9a.html#SWS_SM_91109"&gt;CurrentState&lt;/a&gt;.Notify(Neuer Zielzustand)&lt;/text&gt;&lt;line x1="345" y1="413" x2="135" y2="413" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="435" x2="440" y2="435" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="450" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Service-Rücknahme&lt;/text&gt;&lt;text x="240.0" y="478" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00111" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00111"&gt;StopOfferService&lt;/a&gt;()&lt;/text&gt;&lt;line x1="345" y1="484" x2="135" y2="484" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Distribution of state updates via the CurrentState field. Sources: &lt;a class="spec-record-ref" data-req="SWS_SM_00616" href="../spec/record.html?id=SWS_SM_00616"&gt;[SWS_SM_00616]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_00617" href="../spec/record.html?id=SWS_SM_00617"&gt;[SWS_SM_00617]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_00618" href="../spec/record.html?id=SWS_SM_00618"&gt;[SWS_SM_00618]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91109" href="../spec/record.html?id=SWS_SM_91109"&gt;[SWS_SM_91109]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle and Service Offering&lt;/h4&gt;
+&lt;p&gt;Starting a state machine is a multi-step process (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=59"&gt;AUTOSAR_AP_SWS_StateManagement §7 “Completeness of controlled StateMachines”&lt;/a&gt;). In addition to initializing and providing the interfaces for the application layer, the state machine must trigger the execution of the &lt;code&gt;ActionList&lt;/code&gt; that corresponds to the initial state (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=59"&gt;AUTOSAR_AP_SWS_StateManagement §7 “Completeness of controlled StateMachines”&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_CONSTR_00016" href="../spec/record.html?id=SWS_SM_CONSTR_00016"&gt;[SWS_SM_CONSTR_00016]&lt;/a&gt;). From the perspective of a higher-level controller (&lt;code&gt;Controller&lt;/code&gt;), the &lt;code&gt;StateMachine&lt;/code&gt; is only considered started once it exists and its associated services are offered (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=59"&gt;AUTOSAR_AP_SWS_StateManagement §7 “Completeness of controlled StateMachines”&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;The provision of the ara::com service &lt;code&gt;StateMachineNotification&lt;/code&gt; occurs at the exact time when the &lt;code&gt;ActionListItem&lt;/code&gt; &lt;code&gt;"StartStateMachine"&lt;/code&gt; has been successfully processed (&lt;a class="spec-record-ref" data-req="SWS_SM_00618" href="../spec/record.html?id=SWS_SM_00618"&gt;[SWS_SM_00618]&lt;/a&gt;). As soon as the service is available via &lt;code&gt;OfferService&lt;/code&gt;, applications can bind the proxy and subscribe to the field (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=45"&gt;AUTOSAR_AP_SWS_StateManagement §7 “StateMachine service interfaces - Offer”&lt;/a&gt;). If the state machine is shut down or stopped, the service is no longer offered (StopOffer) (&lt;a class="spec-record-ref" data-req="SWS_SM_00619" href="../spec/record.html?id=SWS_SM_00619"&gt;[SWS_SM_00619]&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h4&gt;State Monitoring and Error Behavior&lt;/h4&gt;
+&lt;p&gt;State transitions can be triggered by different sources, including Platform Health Management, Execution Management, or a &lt;code&gt;SMControlApplication&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=67"&gt;AUTOSAR_AP_SWS_StateManagement §7 “Value of configured StateMachineNotification::CurrentState field”&lt;/a&gt;). The transition value &lt;code&gt;"inTransition"&lt;/code&gt; is set regardless of the trigger and remains in place even if a subsequent transition for error recovery is initiated directly due to an error message (&lt;a class="spec-record-ref" data-req="SWS_SM_00616" href="../spec/record.html?id=SWS_SM_00616"&gt;[SWS_SM_00616]&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Since &lt;code&gt;StateMachineNotification&lt;/code&gt; is designed as a pure notification interface without methods (&lt;a class="spec-record-ref" data-req="SWS_SM_91028" href="../spec/record.html?id=SWS_SM_91028"&gt;[SWS_SM_91028]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91109" href="../spec/record.html?id=SWS_SM_91109"&gt;[SWS_SM_91109]&lt;/a&gt;), no functional Application Errors exist. Interpretation: Possible errors when reading the field (getter) are limited to communication and infrastructure errors of the ara::com runtime environment.&lt;/p&gt;
+
+&lt;!-- annahmen:
+1) Interpretation: Da für StateMachineNotification keine Methoden oder spezifischen Application Errors spezifiziert sind, beschränken sich Fehler beim Abruf von CurrentState auf generische ara::com-Kommunikationsfehler – Begründung: Der Schnittstellen-Payload definiert ausschließlich ein Feld mit Getter und Notifier ohne Fehlerdomäne.
+2) Interpretation: Die Schreibweisen "inTransition" (SWS_SM_00616) und "InTransition" (SWS_SM_91109) bezeichnen denselben semantischen Statusindikator innerhalb von StateMachineStateNameType – Begründung: Beide Anforderungen beschreiben den Feldwert während einer laufenden Zustandstransition.
+--&gt;
+&lt;p class="ai-note"&gt;This guide was generated by an AI system based on the AUTOSAR R25-11 specification.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>1b98e3ef228d…</code></div>
+              <div><strong>Konstituierende Records:</strong> 1</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 6</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">7 von 7 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (1 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (6 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SM_91109","k":"service","d":"SM","t":"service field CurrentState [SWS_SM_91109] Upstream: RS_SM_00001 , RS_SM_00004 CurrentState : StateMachineStateNameType // Field (Getter, Notifier) This field represents the current state of StateMachine. If StateMachine is currently in transition between two different states, then the value of this field is set to \"InTransition\". Adaptive Applications can use this field for notifications if they are interested in state changes of a particular StateMachine. Scope service interface StateMachineNotification class mono Typ StateMachineStateNameType class mono Version 1.0 class mono HasGetter true class mono HasSetter false class mono HasNotifier true class mono","n":"field"}],"inbound":[{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P142_206","d":"AUTOSAR_AP_SWS_StateManagement","p":142,"t":"⌋\nService Interface\n[SWS_SM_91028] Definition of ServiceInterface StateMachineNotification\nUpstream requirements:\nRS_SM_00001, RS_SM_00004, RS_AP_00150, RS_AP_00115, RS_-\nAP_00120, RS_AP_00142, RS_AP_00119, RS_AP_00121\n⌈"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P44_068","d":"AUTOSAR_AP_SWS_StateManagement","p":44,"t":"Figure 7.8: TransitionRequestTable\nPlease note that \"Examples\" section for\nState Management\nof TPS Manifest Spec-\nification [13] shows in detail how the\nTransitionRequestTable\nand the\nError-\nRecoveryTable\ncan be build with the available meta-class elements.\n[SWS_SM_00600] StateMachineService interface\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nState Management\nshall provide the ara::com based service\nStateMachineSer-\nvice\nfor each instance of the\nStateMachine\nconfigured.\n⌋\n[SWS_SM_00665] StateMachineNotification service interface\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nIf configured\nStateMachineNotification State Management\nshall instantiate\nStateMachineNotification\ninterface for that\nStateMachine\n.\n⌋\nPlease note that the\nStateMachineNotification\nservice interface mostly inter-\nacts with\nAdaptive Applications\n. Therefore it may be possible, in a project spe-\ncific context, that some\nStateMachines\nare not relevant for the application layer,"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P45_069","d":"AUTOSAR_AP_SWS_StateManagement","p":45,"t":"and therefore there is no need to force the creation and offering of their respective\nStateMachineNotification\nservice interfaces.\n[SWS_SM_00618] StateMachine service interfaces - Offer\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nEach configured ara::com based service (\nStateMachineService\n,\nStateMachi-\nneNotification\n) for the\nStateMachine\nto be started shall be available (offered)\nwhen the\nActionListItem\n\"StartStateMachine\" is processed successfully.\n⌋\nPlease note that see [SWS_SM_00618] allows the\nSMControlApplication\nthe pos-\nsibility to request a new\nStateMachine State\ntransition immediately after the suc-\ncessful\nStateMachine\ncreation, even if the\nStateMachine\nis processing the initial\nActionList\n.\n[SWS_SM_00619] StateMachine service interfaces - StopOffer\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nEach configured ara::com based service (\nStateMachineService\n,\nStateMachi-\nneNotification\n) for a\nStateMachine\nshall be no longer available (offered) at the\ntime when pro…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P59_085","d":"AUTOSAR_AP_SWS_StateManagement","p":59,"t":"[SWS_SM_CONSTR_00016] Completeness of controlled StateMachines\n⌈\nEach\nActionList\nreferencing a\nStateMachine State\nof a\nStateMachines\nof type\nController\n, shall reference the complete set of\nAgents\nthat are controlled by the\nController\n.\n⌋\nThe process of starting a\nStateMachine\nis a protracted operation that involves mul-\ntiple steps. On the one hand, the configured interfaces, such as the\nStateMachi-\nneService\nand the\nStateMachineNotification\n, associated with the specific\nStateMachine\nmust be initialized and provided to ensure that the\nStateMachine\nis accessible from the application layer. On the other hand, the\nStateMachine\nitself\nmust initiate the processing of the\nActionList\nthat corresponds to the requested ini-\ntial\nStateMachine State\n. This processing is governed by the specifications outlined\nin [SWS_SM_00612] or [SWS_SM_00622].\nFrom the perspective of the\nController\n, a\nStateMachine\nis considered started\nonce it exists and its associated interfaces are offered. It is importan…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P67_095","d":"AUTOSAR_AP_SWS_StateManagement","p":67,"t":"Figure 7.25: Value of configured StateMachineNotification::CurrentState field\n[SWS_SM_00616] CurrentState value during StateMachine State transition\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen a\nStateMachineNotification\ninterface is configured for the\nStateMa-\nchine\nand a\nStateMachine State\ntransition has been started, the value of the\nCurrentState\nfield shall be set to \"inTransition\".\n⌋\nPlease note that the value \"inTransition\" is set independently of the source (\nPlatform\nHealth Management\n,\nExecution Management\n,\nSMControlApplication\n, ...)\nand is kept, even if another\nStateMachine State\ntransition, as reaction to an er-\nror notification, is performed.\n[SWS_SM_00617] CurrentState value after StateMachine State transition\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen a\nStateMachineNotification\ninterface is configured for the\nStateMa-\nchine\nthe value of the\nCurrentState\nfield shall be set to the current\nStateMachine\nState\nas soon as all\nActionListItems\n(in the\nAct…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P142_207","d":"AUTOSAR_AP_SWS_StateManagement","p":142,"t":"⌋\n[SWS_SM_91109] Definition of Field StateMachineNotification.CurrentState\nUpstream requirements:\nRS_SM_00001, RS_SM_00004\n⌈"}]}</script></dialog>

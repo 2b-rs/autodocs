@@ -1,0 +1,676 @@
+<dialog id="dossier-modal-ns_com_ara_com_4a3210" class="dossier-modal dossier-workbench" data-dossier-sha="131847dcacc19c09" aria-labelledby="dossier-modal-ns_com_ara_com_4a3210-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-ns_com_ara_com_4a3210-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_com_ara_com_4a3210)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~5,106 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Namespace Guide: ns_com_ara_com_4a3210" data-fragment="namespaces/ns_com_ara_com_4a3210.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Namespace-Überblick (&lt;div class="ai namespace-guide"&gt;) für den Namespace 'namespace ara::com' (adaptive, Modul com) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR NAMESPACE-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften. Der Kontext beschreibt das
+  Zusammenspiel der Kernklassen des Namespace; Lebenszyklus nur, wenn der Namespace selbst
+  eine Initialisierungs- oder Betriebsphase vorgibt; der Nutzungspfad geht über mehrere
+  Klassen bzw. Funktionen des Namespace.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Namespace-Leitfaden für 'namespace ara::com' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "classes": [
+  "ComErrorDomain — Defines a class representing the Communication error domain.",
+  "ComException — Defines a class for exceptions to be thrown by the API.",
+  "FindServiceHandle — The exact definition of ara::com::FindServiceHandle is Communication Management implementation specific",
+  "InstanceIdentifier — Unique identifier of a specific AdaptivePlatformServiceInstance, to distinguish different instances of exactly the same service",
+  "SamplePtr — Emulates a std::unique_ptr to an event sample. The ara::com::SamplePtr behaves as a std::unique_ptr as long as the event/ field is subscrib",
+  "ServiceIdentifierType — Specifies a Service Identifier The exact type may be overridden by the Communication Management software provider",
+  "ServiceVersionType — Specifies a Service Version"
+ ],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P2_1050",
+   "page": 2,
+   "text": "• Changed explanation of Event reception\ndue to new ara::com API"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P8_1056",
+   "page": 8,
+   "text": "1 Preface\nTypically, reading formal specifications isn’t the easiest way to learn and understand a\ncertain technology. This especially holds true for the Communication Management API\n(\nara::com\n) in the AUTOSAR Adaptive Platform.\nTherefore this document shall serve as an entry point not only for the developer of\nsoftware components for the Adaptive Platform, who will use the\nara::com\nAPI to\ninteract with other application or service components, but also for Adaptive Platform\nproduct vendors, who are going to implement an optimized\nIPC\nbinding for the\nara::\ncom\nAPI on their platform.\nWe strongly encourage both groups of readers to read this document at hand before\ngoing into the formal details of the related SWS."
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1057",
+   "page": 9,
+   "text": "2 Acronyms and Abbreviations\nThe glossary below includes acronyms and abbreviations relevant to the explanation\nof ara::com API that are not included in the AUTOSAR Glossary [1]."
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1058",
+   "page": 9,
+   "text": "Recoverable Errors according to [SWS_CORE_-\n00020] of [2]. Defined for\nara::com\nfunctions us-\ning\nara::core::ErrorCode\ns, e.g. according to\n[SWS_CM_10432] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1059",
+   "page": 9,
+   "text": "ara::com Instance Identifier according to [SWS_-\nCM_00302] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1060",
+   "page": 9,
+   "text": "ara::com Instance Identifier Container according to\n[SWS_CM_00319] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1061",
+   "page": 9,
+   "text": "ara::com::ComErrorDomain according to [SWS_-\nCM_10432] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P9_1062",
+   "page": 9,
+   "text": "ara::com::e2e::E2EErrorDomain according to\n[SWS_CM_10474] of [3]"
+  }
+ ],
+ "member_requirements": [
+  {
+   "id": "SWS_CM_10432",
+   "text": "enumeration ComErrc [SWS_CM_10432] Upstream: RS_AP_00130 , RS_AP_00122 , RS_AP_00127 enum class ComErrc : ara::core::ErrorDomain::CodeType {...}; Defines the error codes for the ara::com::ComErrorDomain Header-Datei #include \"ara/com/com_error_domain.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol ComErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kServiceNotAvailable td =1 Service is not available after being previously offered via Offer td Service() td td kMaxSamplesExceeded td =2 Application holds more ara::com::SamplePtrs than commited in Subscribe() Samples were possibly skipped. td kCommunicationFailure td =3 The network binding reported a recoverable communications error or a secure communication failure td kFieldValueNotInitialized td =6 Field value has yet not been initialized via Update() (see [SWS_CM_00128] td kFieldSetHandlerNotSet td =7 Field SetHandler has not been registered via RegisterSet Handler() td kServiceNotOffered td = 11 Service has not yet been offered via OfferService() td kInstanceIDNotResolvable td = 15 The ara::core::InstanceSpecifier is valid but could not be resolved/mapped to an existing ara::com :: InstanceIdentifier td kMaxSampleCountNotRealizable td = 16 Provided maxSampleCount for event re-subscription does not match the maxSampleCount for the current subscription td kUnknownApplicationError td = 22 A remote service returned an unconfigured application error. td kMinimumSendIntervalViolationError td = 23 Minimum Send Interval violation, because a transmission request for a service instance element (event, field or method call) was issued faster than allowed, i.e., the configured minimum send interval ServiceInterfaceDeploymentElement. minimumSendInterval for the service instance element has not yet expired."
+  },
+  {
+   "id": "SWS_CM_00301",
+   "text": "enumeration MethodCallProcessingMode [SWS_CM_00301] Upstream: RS_CM_00211 enum class MethodCallProcessingMode : std::uint8_t {...}; Processing modes for the service implementation. Header-Datei #include \"ara/com/types.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol MethodCallProcessingMode class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kPoll td Polling mode td kEvent td Event driven and concurrent mode td kEventSingleThread td Event driven, sequential mode"
+  },
+  {
+   "id": "SWS_CM_01071",
+   "text": "enumeration ServiceState [SWS_CM_01071] enum class ServiceState : std::uint8_t {...}; The state of the service from GetServiceState() Header-Datei #include \"ara/com/types.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol ServiceState class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kNotAvailable td =0 Service is not available td kAvailable td =1 Service is available"
+  },
+  {
+   "id": "SWS_CM_00310",
+   "text": "enumeration SubscriptionState [SWS_CM_00310] Upstream: RS_CM_00103 , RS_CM_00104 , RS_CM_00106 enum class SubscriptionState : std::uint8_t {...}; The subscription state of an event. Header-Datei #include \"ara/com/types.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol SubscriptionState class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kSubscribed td Subscription is active td kNotSubscribed td Subscription is not active td kSubscriptionPending td Subscription is pending"
+  },
+  {
+   "id": "SWS_CM_00309",
+   "text": "type alias EventReceiveHandler [SWS_CM_00309] Upstream: RS_CM_00203 , RS_AP_00114 , RS_AP_00120 using EventReceiveHandler = std::function &amp;lt;void()&amp;gt;; Callback function invoked if new event data arrives for an event. The event receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol EventReceiveHandler class mono"
+  },
+  {
+   "id": "SWS_CM_11615",
+   "text": "type alias FieldReceiveHandler [SWS_CM_11615] Upstream: RS_CM_00203 , RS_AP_00114 , RS_AP_00120 using FieldReceiveHandler = std::function &amp;lt;void()&amp;gt;; Callback function invoked if a new notification arrives for a field. The field receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol FieldReceiveHandler class mono"
+  },
+  {
+   "id": "SWS_CM_00383",
+   "text": "type alias FindServiceHandler [SWS_CM_00383] Upstream: RS_CM_00102 using FindServiceHandler = std::function &amp;lt;void(ServiceHandle Container&amp;lt;T&amp;gt;, FindServiceHandle )&amp;gt;; Callback function invoked if service availability changes. It takes as input parameter a handle container containing handles for all matching service instances and a ara::com :: FindServiceHandle which can be used to invoke StopFindService() from within the ara::com::FindServiceHandler . Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol FindServiceHandler class mono Template-Parameter th Parameter th Beschreibung td T td Data type of data sample Siehe auch: [SWS_CM_00125]"
+  },
+  {
+   "id": "SWS_CM_00319",
+   "text": "type alias InstanceIdentifierContainer [SWS_CM_00319] Upstream: RS_CM_00101 , RS_CM_00102 , RS_AP_00114 , RS_AP_00122 using InstanceIdentifierContainer = ara::core::Vector &amp;lt;Instance Identifier&amp;gt;; Holds a list of ara::com::InstanceIdentifiers . The assigned data type is allowed to be changed by the Communication Management software provider, but must adhere to [container.requirements.general] and [sequence.reqmts] requirements as per [30] A ara::core::Vector ( [SWS_CORE_01301] ) for example fulfills these requirements. Literaturverzeichnis SWS CommunicationManagement: [30] ISO/IEC 14882:2014, Information technology – Programming languages – C++ – www.iso.org Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol InstanceIdentifierContainer class mono"
+  },
+  {
+   "id": "SWS_CM_00308",
+   "text": "type alias SampleAllocateePtr [SWS_CM_00308] Upstream: RS_CM_00201 using SampleAllocateePtr = std::unique_ptr &amp;lt;T&amp;gt;; Pointer to an allocated (by Communication Management) data sample. The implementation is allowed to be changed by the Communication Management software provider. The precondition defined in [SWS_CM_00086] must be fulfilled. Otherwise it is considered a violation. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol SampleAllocateePtr class mono Template-Parameter th Parameter th Beschreibung td T td Data type of data sample"
+  },
+  {
+   "id": "SWS_CM_00304",
+   "text": "type alias ServiceHandleContainer [SWS_CM_00304] Upstream: RS_CM_00102 using ServiceHandleContainer = ara::core::Vector &amp;lt;T&amp;gt;; Holds a list of service handles and is used as a return value of any of the FindService() methods) • [SWS_CM_00122] • [SWS_CM_00622] . The assigned data type is allowed to be changed by the Communication Management software provider, but must adhere to [container.requirements.general] and [sequence.reqmts] requirements as per [30] . A ara::core::Vector ([SWS_CORE_ 01301]) for example fulfills these requirements. Literaturverzeichnis SWS CommunicationManagement: [30] ISO/IEC 14882:2014, Information technology – Programming languages – C++ – www.iso.org Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol ServiceHandleContainer class mono Template-Parameter th Parameter th Beschreibung td T td service handle"
+  },
+  {
+   "id": "SWS_CM_01072",
+   "text": "type alias ServiceStateHandler [SWS_CM_01072] using ServiceStateHandler = std::function &amp;lt;void( ServiceState )&amp;gt;; Functor used as input arguments for any of the SetServiceStateChangeHandler() methods: • [SWS_CM_01074] • [SWS_CM_01076] Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol ServiceStateHandler class mono"
+  },
+  {
+   "id": "SWS_CM_00311",
+   "text": "type alias SubscriptionStateChangeHandler [SWS_CM_00311] Upstream: RS_CM_00103 , RS_CM_00104 , RS_CM_00106 using SubscriptionStateChangeHandler = std::function &amp;lt;void(Subscription State)&amp;gt;; Callback function invoked if ara::com::SubscriptionState of an event has changed. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol SubscriptionStateChangeHandler class mono"
+  },
+  {
+   "id": "SWS_CM_00351",
+   "text": "type alias TriggerReceiveHandler [SWS_CM_00351] Upstream: RS_CM_00203 , RS_AP_00114 , RS_AP_00120 using TriggerReceiveHandler = std::function &amp;lt;void()&amp;gt;; A function wrapper for the handler function that gets called in case a new trigger arrives for an event. The trigger receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol TriggerReceiveHandler class mono"
+  },
+  {
+   "id": "SWS_CM_11334",
+   "text": "function GetComErrorDomain [SWS_CM_11334] Upstream: RS_AP_00120 , RS_AP_00130 constexpr const ara::core::ErrorDomain &amp;amp; GetComErrorDomain () noexcept; Returns a reference to the ara::com::ComErrorDomain object Header-Datei #include \"ara/com/com_error_domain.h\" class mono Scope namespace ara::com class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain &amp;amp; td Reference to the ara::com::ComErrorDomain object"
+  },
+  {
+   "id": "SWS_CM_11335",
+   "text": "function MakeErrorCode [SWS_CM_11335] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00130 constexpr ara::core::ErrorCode MakeErrorCode ( ara::com::ComErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an instance of ara::core::ErrorCode Header-Datei #include \"ara/com/com_error_domain.h\" class mono Scope namespace ara::com class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ara::core::ErrorCode object."
+  }
+ ],
+ "module": "com",
+ "namespace_id": "ns_com_ara_com_4a3210",
+ "namespace_name": "namespace ara::com",
+ "platform": "adaptive",
+ "release": "R25-11"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="b6494c7faedcfdf154b516d35020a52697b1d2512b472d00302e428d1acd74f0" data-trace-output="131847dcacc19c09f963aca141d1c23a8ac38498ce1f04e14ca93fdfb88b8356" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;The &lt;code&gt;ara::com&lt;/code&gt; namespace forms the core interface for Communication Management within the AUTOSAR Adaptive Platform. It provides the standardized abstraction layer through which functional software components interact with each other or with platform services &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=8"&gt;EXP_ARAComAPI §1 “Preface”&lt;/a&gt;. The goal is to decouple application-side components from the details of the underlying communication media, while platform vendors can implement optimized IPC bindings (Inter-Process Communication) or network protocols &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=8"&gt;EXP_ARAComAPI §1 “Preface”&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;InstanceIdentifier&lt;/code&gt;, which uniquely addresses a specific service instance, as well as &lt;code&gt;InstanceIdentifierContainer&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00319" href="../spec/record.html?id=SWS_CM_00319"&gt;[SWS_CM_00319]&lt;/a&gt; as a structured collection of instance identifiers, serve to differentiate similar services. During dynamic instance discovery, the system generates instance handles that are aggregated in a &lt;code&gt;ServiceHandleContainer&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00304" href="../spec/record.html?id=SWS_CM_00304"&gt;[SWS_CM_00304]&lt;/a&gt; and passed to requesting software components via &lt;code&gt;FindServiceHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00383" href="../spec/record.html?id=SWS_CM_00383"&gt;[SWS_CM_00383]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-com-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 875.53 67.28" style="max-width:1167px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 52.88)"&gt;
+&lt;title&gt;com_kontext&lt;/title&gt;
+&lt;!-- client --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;client&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M91.37,-38.48C91.37,-38.48 12,-38.48 12,-38.48 6,-38.48 0,-32.48 0,-26.48 0,-26.48 0,-14.48 0,-14.48 0,-8.48 6,-2.48 12,-2.48 12,-2.48 91.37,-2.48 91.37,-2.48 97.37,-2.48 103.37,-8.48 103.37,-14.48 103.37,-14.48 103.37,-26.48 103.37,-26.48 103.37,-32.48 97.37,-38.48 91.37,-38.48"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="51.69" y="-17.18" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Client-Komponente&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- runtime --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;runtime&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M316.78,-38.48C316.78,-38.48 246.91,-38.48 246.91,-38.48 240.91,-38.48 234.91,-32.48 234.91,-26.48 234.91,-26.48 234.91,-14.48 234.91,-14.48 234.91,-8.48 240.91,-2.48 246.91,-2.48 246.91,-2.48 316.78,-2.48 316.78,-2.48 322.78,-2.48 328.78,-8.48 328.78,-14.48 328.78,-14.48 328.78,-26.48 328.78,-26.48 328.78,-32.48 322.78,-38.48 316.78,-38.48"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="281.85" y="-17.18" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/com.html" href="../modules/com.html"&gt;ara::com&lt;/a&gt; Laufzeit&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- client&amp;#45;&amp;gt;runtime --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;client-&amp;gt;runtime&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M103.61,-20.48C139.04,-20.48 186.35,-20.48 223.17,-20.48"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="223.07,-23.98 233.07,-20.48 223.07,-16.98 223.07,-23.98"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="169.14" y="-23.48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;FindService / Subscribe&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- runtime&amp;#45;&amp;gt;client --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;runtime-&amp;gt;client&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M234.66,-7.51C228.73,-6.26 222.71,-5.2 216.91,-4.48 174.77,0.71 163.56,0.37 121.37,-4.48 119.32,-4.72 117.23,-4.99 115.14,-5.3"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="114.76,-1.81 105.49,-6.94 115.93,-8.72 114.76,-1.81"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="169.14" y="-7.48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_com_SamplePtr_f95130.html" href="../classes/cl_ara_com_SamplePtr_f95130.html"&gt;SamplePtr&lt;/a&gt; / Callbacks&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- binding --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;binding&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M593.23,-38.48C593.23,-38.48 493.69,-38.48 493.69,-38.48 487.69,-38.48 481.69,-32.48 481.69,-26.48 481.69,-26.48 481.69,-14.48 481.69,-14.48 481.69,-8.48 487.69,-2.48 493.69,-2.48 493.69,-2.48 593.23,-2.48 593.23,-2.48 599.23,-2.48 605.23,-8.48 605.23,-14.48 605.23,-14.48 605.23,-26.48 605.23,-26.48 605.23,-32.48 599.23,-38.48 593.23,-38.48"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="543.46" y="-17.18" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;IPC / Netzwerk-Binding&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- runtime&amp;#45;&amp;gt;binding --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;runtime-&amp;gt;binding&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M329.26,-20.48C368.31,-20.48 424.8,-20.48 469.83,-20.48"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="469.65,-23.98 479.65,-20.48 469.65,-16.98 469.65,-23.98"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="405.24" y="-23.48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Service Discovery / Dispatch&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- binding&amp;#45;&amp;gt;runtime --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;binding-&amp;gt;runtime&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M481.58,-6.86C475.56,-5.89 469.52,-5.07 463.69,-4.48 411.99,0.72 398.35,1.87 346.78,-4.48 344.7,-4.74 342.59,-5.04 340.47,-5.38"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="339.87,-1.93 330.68,-7.2 341.15,-8.81 339.87,-1.93"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="405.24" y="-7.48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Datenweiterleitung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- provider --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;provider&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M834.73,-38.48C834.73,-38.48 768.2,-38.48 768.2,-38.48 762.2,-38.48 756.2,-32.48 756.2,-26.48 756.2,-26.48 756.2,-14.48 756.2,-14.48 756.2,-8.48 762.2,-2.48 768.2,-2.48 768.2,-2.48 834.73,-2.48 834.73,-2.48 840.73,-2.48 846.73,-8.48 846.73,-14.48 846.73,-14.48 846.73,-26.48 846.73,-26.48 846.73,-32.48 840.73,-38.48 834.73,-38.48"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="801.47" y="-17.18" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Service-Provider&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- binding&amp;#45;&amp;gt;provider --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;binding-&amp;gt;provider&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M605.46,-20.48C647.68,-20.48 703.45,-20.48 744.53,-20.48"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="744.3,-23.98 754.3,-20.48 744.3,-16.98 744.3,-23.98"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="680.72" y="-23.48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Methodenaufrufe&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- provider&amp;#45;&amp;gt;binding --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;provider-&amp;gt;binding&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M755.84,-7.58C749.95,-6.3 743.96,-5.21 738.2,-4.48 687.51,1.93 674.07,0.63 623.23,-4.48 621.14,-4.69 619.01,-4.93 616.88,-5.2"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="616.39,-1.74 606.99,-6.63 617.39,-8.66 616.39,-1.74"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="680.72" y="-7.48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00308" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00308"&gt;SampleAllocateePtr&lt;/a&gt; / Events&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Interaction between software components, ara::com runtime, and IPC binding. Sources: &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=8"&gt;EXP_ARAComAPI §1 “Preface”&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00304" href="../spec/record.html?id=SWS_CM_00304"&gt;[SWS_CM_00304]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00319" href="../spec/record.html?id=SWS_CM_00319"&gt;[SWS_CM_00319]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
+&lt;p&gt;The lifecycle of communication relationships in &lt;code&gt;ara::com&lt;/code&gt; is divided into service availability, event subscription states, and the management of data samples:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Service availability:&lt;/strong&gt; The state of an offered service is represented by the enum &lt;code&gt;ServiceState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01071" href="../spec/record.html?id=SWS_CM_01071"&gt;[SWS_CM_01071]&lt;/a&gt; with the values &lt;code&gt;kAvailable&lt;/code&gt; and &lt;code&gt;kNotAvailable&lt;/code&gt;. State changes can be registered and evaluated asynchronously using &lt;code&gt;ServiceStateHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01072" href="../spec/record.html?id=SWS_CM_01072"&gt;[SWS_CM_01072]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Subscription state:&lt;/strong&gt; Participation in event updates follows the lifecycle of &lt;code&gt;SubscriptionState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00310" href="../spec/record.html?id=SWS_CM_00310"&gt;[SWS_CM_00310]&lt;/a&gt;. A subscription begins in &lt;code&gt;kNotSubscribed&lt;/code&gt;, transitions to the transitional state &lt;code&gt;kSubscriptionPending&lt;/code&gt; upon request, and changes to &lt;code&gt;kSubscribed&lt;/code&gt; after successful establishment. Status changes are signaled to the application via the functor &lt;code&gt;SubscriptionStateChangeHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00311" href="../spec/record.html?id=SWS_CM_00311"&gt;[SWS_CM_00311]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Memory and sample lifecycle:&lt;/strong&gt; The memory for data to be transmitted is provided on the sender side via &lt;code&gt;SampleAllocateePtr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00308" href="../spec/record.html?id=SWS_CM_00308"&gt;[SWS_CM_00308]&lt;/a&gt;, which is based on &lt;code&gt;std::unique_ptr&lt;/code&gt;. Received data samples are passed to the consumer as &lt;code&gt;SamplePtr&lt;/code&gt;. This emulates a &lt;code&gt;std::unique_ptr&lt;/code&gt; and guarantees the validity of the data as long as the event remains subscribed.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Concurrency in method calls:&lt;/strong&gt; The enum &lt;code&gt;MethodCallProcessingMode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00301" href="../spec/record.html?id=SWS_CM_00301"&gt;[SWS_CM_00301]&lt;/a&gt; controls the behavior for processing incoming method calls. Possible options are synchronous polling (&lt;code&gt;kPoll&lt;/code&gt;), concurrent event-driven processing (&lt;code&gt;kEvent&lt;/code&gt;), or sequential processing in a single thread (&lt;code&gt;kEventSingleThread&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="diagram" id="diag-com-subscription"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 479.54 96.80" style="max-width:639px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 82.4)"&gt;
+&lt;title&gt;com_subscription&lt;/title&gt;
+&lt;!-- kNotSubscribed --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;kNotSubscribed&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M74.88,-53C74.88,-53 12,-53 12,-53 6,-53 0,-47 0,-41 0,-41 0,-29 0,-29 0,-23 6,-17 12,-17 12,-17 74.88,-17 74.88,-17 80.88,-17 86.88,-23 86.88,-29 86.88,-29 86.88,-41 86.88,-41 86.88,-47 80.88,-53 74.88,-53"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="43.44" y="-31.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kNotSubscribed&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kSubscriptionPending --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;kSubscriptionPending&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M292.37,-68C292.37,-68 203.2,-68 203.2,-68 197.2,-68 191.2,-62 191.2,-56 191.2,-56 191.2,-44 191.2,-44 191.2,-38 197.2,-32 203.2,-32 203.2,-32 292.37,-32 292.37,-32 298.37,-32 304.37,-38 304.37,-44 304.37,-44 304.37,-56 304.37,-56 304.37,-62 298.37,-68 292.37,-68"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="247.78" y="-46.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kSubscriptionPending&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kNotSubscribed&amp;#45;&amp;gt;kSubscriptionPending --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;kNotSubscribed-&amp;gt;kSubscriptionPending&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M87.19,-45.29C93.1,-46.39 99.12,-47.35 104.88,-48 129.18,-50.76 155.97,-51.68 179.66,-51.77"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="179.36,-55.27 189.36,-51.76 179.35,-48.27 179.36,-55.27"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="139.04" y="-54.7" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Subscribe()&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kSubscriptionPending&amp;#45;&amp;gt;kNotSubscribed --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;kSubscriptionPending-&amp;gt;kNotSubscribed&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M190.76,-35.68C184.87,-34.58 178.93,-33.65 173.2,-33 143.03,-29.56 135.24,-32.5 104.88,-33 102.93,-33.03 100.95,-33.07 98.95,-33.11"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="98.93,-29.61 89.03,-33.36 99.11,-36.61 98.93,-29.61"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="139.04" y="-36" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Abbruch / Fehler&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kSubscribed --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;kSubscribed&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M438.74,-36C438.74,-36 392.36,-36 392.36,-36 386.36,-36 380.36,-30 380.36,-24 380.36,-24 380.36,-12 380.36,-12 380.36,-6 386.36,0 392.36,0 392.36,0 438.74,0 438.74,0 444.74,0 450.74,-6 450.74,-12 450.74,-12 450.74,-24 450.74,-24 450.74,-30 444.74,-36 438.74,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="415.55" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kSubscribed&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kSubscriptionPending&amp;#45;&amp;gt;kSubscribed --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;kSubscriptionPending-&amp;gt;kSubscribed&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M304.44,-39.26C325.35,-35.22 348.87,-30.68 368.78,-26.83"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="369.26,-30.31 378.41,-24.98 367.93,-23.44 369.26,-30.31"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="342.36" y="-37.96" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Bestaetigt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kSubscribed&amp;#45;&amp;gt;kNotSubscribed --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;kSubscribed-&amp;gt;kNotSubscribed&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M380.33,-15.26C358.59,-13.67 329.85,-11.81 304.37,-11 254.09,-9.4 241.33,-6.93 191.2,-11 160.35,-13.51 126.21,-18.93 98.63,-23.98"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="98.06,-20.53 88.88,-25.81 99.35,-27.41 98.06,-20.53"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="247.78" y="-14" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Unsubscribe()&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;State diagram: Lifecycle of an event subscription via SubscriptionState. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_00310" href="../spec/record.html?id=SWS_CM_00310"&gt;[SWS_CM_00310]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00311" href="../spec/record.html?id=SWS_CM_00311"&gt;[SWS_CM_00311]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;A typical communication sequence between service consumer and service provider comprises the phases discovery, notification registration, and data reception:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Service discovery:&lt;/strong&gt; The consumer initiates the search for matching services. When new instances become available, the registered &lt;code&gt;FindServiceHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00383" href="../spec/record.html?id=SWS_CM_00383"&gt;[SWS_CM_00383]&lt;/a&gt; is called, which passes a &lt;code&gt;ServiceHandleContainer&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00304" href="../spec/record.html?id=SWS_CM_00304"&gt;[SWS_CM_00304]&lt;/a&gt; containing matches as well as a &lt;code&gt;FindServiceHandle&lt;/code&gt; to terminate the search.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Subscription and callback registration:&lt;/strong&gt; The event is subscribed to on the selected service instance. To be notified of incoming data, the consumer registers a &lt;code&gt;EventReceiveHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00309" href="../spec/record.html?id=SWS_CM_00309"&gt;[SWS_CM_00309]&lt;/a&gt;. Analogously, &lt;code&gt;FieldReceiveHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_11615" href="../spec/record.html?id=SWS_CM_11615"&gt;[SWS_CM_11615]&lt;/a&gt; is available for field notifications and &lt;code&gt;TriggerReceiveHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00351" href="../spec/record.html?id=SWS_CM_00351"&gt;[SWS_CM_00351]&lt;/a&gt; for trigger events.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Data transmission and access:&lt;/strong&gt; As soon as new payload data is available, the runtime environment triggers the registered receive handler &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=2"&gt;EXP_ARAComAPI §1 “Changed explanation of Event reception”&lt;/a&gt;. The application then reads the data via &lt;code&gt;SamplePtr&lt;/code&gt; instances.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="diagram" id="diag-com-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 516" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Service-Auffindung und Event-Verarbeitung&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="502" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="502" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="502" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Client&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/com.html" href="../modules/com.html"&gt;ara::com&lt;/a&gt; Laufzeit&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Service-Provider&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;line x1="40" y1="120" x2="650" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Service-Auffindung&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_11352" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_11352"&gt;StartFindService&lt;/a&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00383" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00383"&gt;FindServiceHandler&lt;/a&gt;)&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_com_FindServiceHandle_c56b5d.html" href="../classes/cl_ara_com_FindServiceHandle_c56b5d.html"&gt;FindServiceHandle&lt;/a&gt;&lt;/text&gt;&lt;line x1="345" y1="203" x2="135" y2="203" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="231" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00383" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00383"&gt;FindServiceHandler&lt;/a&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00304" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00304"&gt;ServiceHandleContainer&lt;/a&gt;)&lt;/text&gt;&lt;line x1="345" y1="237" x2="135" y2="237" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;line x1="40" y1="259" x2="650" y2="259" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="274" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Abonnement und Empfang&lt;/text&gt;&lt;text x="240.0" y="302" text-anchor="middle" font-size="11" fill="#28251d"&gt;Subscribe(maxSampleCount)&lt;/text&gt;&lt;line x1="135" y1="308" x2="345" y2="308" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="336" text-anchor="middle" font-size="11" fill="#28251d"&gt;SetReceiveHandler(&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00309" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00309"&gt;EventReceiveHandler&lt;/a&gt;)&lt;/text&gt;&lt;line x1="135" y1="342" x2="345" y2="342" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="370" text-anchor="middle" font-size="11" fill="#28251d"&gt;Bereitstellung Event-Daten (&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00308" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00308"&gt;SampleAllocateePtr&lt;/a&gt;)&lt;/text&gt;&lt;line x1="555" y1="376" x2="345" y2="376" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="404" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00309" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00309"&gt;EventReceiveHandler&lt;/a&gt;()&lt;/text&gt;&lt;line x1="345" y1="410" x2="135" y2="410" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="438" text-anchor="middle" font-size="11" fill="#28251d"&gt;GetNewSamples()&lt;/text&gt;&lt;line x1="135" y1="444" x2="345" y2="444" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="472" text-anchor="middle" font-size="11" fill="#28251d"&gt;Uebergabe &lt;a class="diag-ref" data-ref="classes/cl_ara_com_SamplePtr_f95130.html" href="../classes/cl_ara_com_SamplePtr_f95130.html"&gt;SamplePtr&lt;/a&gt;&lt;/text&gt;&lt;line x1="345" y1="478" x2="135" y2="478" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Typical interaction sequence from service discovery to reception of event samples. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_00383" href="../spec/record.html?id=SWS_CM_00383"&gt;[SWS_CM_00383]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00304" href="../spec/record.html?id=SWS_CM_00304"&gt;[SWS_CM_00304]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00310" href="../spec/record.html?id=SWS_CM_00310"&gt;[SWS_CM_00310]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00309" href="../spec/record.html?id=SWS_CM_00309"&gt;[SWS_CM_00309]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;Recoverable errors in module &lt;code&gt;ara::com&lt;/code&gt; are mapped by the error domain &lt;code&gt;ComErrorDomain&lt;/code&gt; and the error codes of the enum &lt;code&gt;ComErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt; &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=9"&gt;EXP_ARAComAPI §2 “Acronyms and Abbreviations”&lt;/a&gt;. Standardized error objects are created via the helper function &lt;code&gt;MakeErrorCode()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_11335" href="../spec/record.html?id=SWS_CM_11335"&gt;[SWS_CM_11335]&lt;/a&gt;, while &lt;code&gt;GetComErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_11334" href="../spec/record.html?id=SWS_CM_11334"&gt;[SWS_CM_11334]&lt;/a&gt; provides access to the static instance of the error domain.&lt;/p&gt;
+&lt;p&gt;Essential error conditions include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kServiceNotOffered&lt;/code&gt; and &lt;code&gt;ComErrc::kServiceNotAvailable&lt;/code&gt;: Method calls or accesses fail if a service is not or no longer provided via &lt;code&gt;OfferService()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kInstanceIDNotResolvable&lt;/code&gt;: A logical &lt;code&gt;InstanceSpecifier&lt;/code&gt; could not be resolved to a concrete &lt;code&gt;InstanceIdentifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kMaxSamplesExceeded&lt;/code&gt;: The consumer holds more concurrent &lt;code&gt;SamplePtr&lt;/code&gt; instances than specified in &lt;code&gt;Subscribe()&lt;/code&gt;, which can lead to dropped samples &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kMaxSampleCountNotRealizable&lt;/code&gt;: During a resubscription, the passed counter deviates from the existing subscription &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kFieldValueNotInitialized&lt;/code&gt; and &lt;code&gt;ComErrc::kFieldSetHandlerNotSet&lt;/code&gt;: Incomplete initialization of field elements prior to data access &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kMinimumSendIntervalViolationError&lt;/code&gt;: Transmission requests violate the minimum transmission interval configured in the interface deployment &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ComErrc::kCommunicationFailure&lt;/code&gt;: An error in the underlying network binding or an error during secured communication &lt;a class="spec-record-ref" data-req="SWS_CM_10432" href="../spec/record.html?id=SWS_CM_10432"&gt;[SWS_CM_10432]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Der Zustandsübergang von kSubscriptionPending nach kSubscribed erfolgt nach Bestätigung durch das Kommunikations-Binding – Begründung: Der Zwischenzustand kSubscriptionPending in SWS_CM_00310 impliziert eine asynchrone Quittierung vor Erreichen von kSubscribed. --&gt;
+&lt;p class="ai-note"&gt;This guide is based on the specification requirements of AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>b6494c7faedc…</code></div>
+              <div><strong>Konstituierende Records:</strong> 15</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 8</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">23</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">13</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">23 von 23 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (15 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (8 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CM_10432","k":"enumeration","d":"COM","t":"enumeration ComErrc [SWS_CM_10432] Upstream: RS_AP_00130 , RS_AP_00122 , RS_AP_00127 enum class ComErrc : ara::core::ErrorDomain::CodeType {...}; Defines the error codes for the ara::com::ComErrorDomain Header-Datei #include \"ara/com/com_error_domain.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol ComErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kServiceNotAvailable td =1 Service is not available after being previously offered via Offer td Service() td td kMaxSamplesExceeded td =2 Application holds more ara::com::SamplePtrs than commited in Subscribe() Samples were possibly skipped. td kCommunicationFailure td =3 The network binding reported a recoverable communications error or a secure communication failure td kFieldValueNotInitialized td =6 Field value has yet not been initialized via Update() (see [SWS_CM_00128] td kFieldSetHandlerNotSet td =7 Field SetHandler has not been registered via RegisterSet Handler() td kServiceNotOffered td = 11 Service has not yet been offered via OfferService() td kInstanceIDNotResolvable td = 15 The ara::core::InstanceSpecifier is valid but could not be resolved/mapped to an existing ara::com :: InstanceIdentifier td kMaxSampleCountNotRealizable td = 16 Provided maxSampleCount for event re-subscription does not match the maxSampleCount for the current subscription td kUnknownApplicationError td = 22 A remote service returned an unconfigured application error. td kMinimumSendIntervalViolationError td = 23 Minimum Send Interval violation, because a transmission request for a service instance element (event, field or method call) was issued faster than allowed, i.e., the configured minimum send interval ServiceInterfaceDeploymentElement. minimumSendInterval for the service instance element has not yet expired.","n":"ComErrc"},{"i":"SWS_CM_00301","k":"enumeration","d":"COM","t":"enumeration MethodCallProcessingMode [SWS_CM_00301] Upstream: RS_CM_00211 enum class MethodCallProcessingMode : std::uint8_t {...}; Processing modes for the service implementation. Header-Datei #include \"ara/com/types.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol MethodCallProcessingMode class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kPoll td Polling mode td kEvent td Event driven and concurrent mode td kEventSingleThread td Event driven, sequential mode","n":"MethodCallProcessingMode"},{"i":"SWS_CM_01071","k":"enumeration","d":"COM","t":"enumeration ServiceState [SWS_CM_01071] enum class ServiceState : std::uint8_t {...}; The state of the service from GetServiceState() Header-Datei #include \"ara/com/types.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol ServiceState class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kNotAvailable td =0 Service is not available td kAvailable td =1 Service is available","n":"ServiceState"},{"i":"SWS_CM_00310","k":"enumeration","d":"COM","t":"enumeration SubscriptionState [SWS_CM_00310] Upstream: RS_CM_00103 , RS_CM_00104 , RS_CM_00106 enum class SubscriptionState : std::uint8_t {...}; The subscription state of an event. Header-Datei #include \"ara/com/types.h\" class mono Forwarding-Header #include \"ara/com/com_fwd.h\" class mono Scope namespace ara::com class mono Symbol SubscriptionState class mono Basistyp std::uint8_t class mono Werte th Enumerator th Beschreibung td kSubscribed td Subscription is active td kNotSubscribed td Subscription is not active td kSubscriptionPending td Subscription is pending","n":"SubscriptionState"},{"i":"SWS_CM_00309","k":"type","d":"COM","t":"type alias EventReceiveHandler [SWS_CM_00309] Upstream: RS_CM_00203 , RS_AP_00114 , RS_AP_00120 using EventReceiveHandler = std::function \u003cvoid()>; Callback function invoked if new event data arrives for an event. The event receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol EventReceiveHandler class mono","n":"alias"},{"i":"SWS_CM_11615","k":"type","d":"COM","t":"type alias FieldReceiveHandler [SWS_CM_11615] Upstream: RS_CM_00203 , RS_AP_00114 , RS_AP_00120 using FieldReceiveHandler = std::function \u003cvoid()>; Callback function invoked if a new notification arrives for a field. The field receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol FieldReceiveHandler class mono","n":"alias"},{"i":"SWS_CM_00383","k":"type","d":"COM","t":"type alias FindServiceHandler [SWS_CM_00383] Upstream: RS_CM_00102 using FindServiceHandler = std::function \u003cvoid(ServiceHandle Container\u003cT>, FindServiceHandle )>; Callback function invoked if service availability changes. It takes as input parameter a handle container containing handles for all matching service instances and a ara::com :: FindServiceHandle which can be used to invoke StopFindService() from within the ara::com::FindServiceHandler . Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol FindServiceHandler class mono Template-Parameter th Parameter th Beschreibung td T td Data type of data sample Siehe auch: [SWS_CM_00125]","n":"alias"},{"i":"SWS_CM_00319","k":"type","d":"COM","t":"type alias InstanceIdentifierContainer [SWS_CM_00319] Upstream: RS_CM_00101 , RS_CM_00102 , RS_AP_00114 , RS_AP_00122 using InstanceIdentifierContainer = ara::core::Vector \u003cInstance Identifier>; Holds a list of ara::com::InstanceIdentifiers . The assigned data type is allowed to be changed by the Communication Management software provider, but must adhere to [container.requirements.general] and [sequence.reqmts] requirements as per [30] A ara::core::Vector ( [SWS_CORE_01301] ) for example fulfills these requirements. Literaturverzeichnis SWS CommunicationManagement: [30] ISO/IEC 14882:2014, Information technology – Programming languages – C++ – www.iso.org Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol InstanceIdentifierContainer class mono","n":"alias"},{"i":"SWS_CM_00308","k":"type","d":"COM","t":"type alias SampleAllocateePtr [SWS_CM_00308] Upstream: RS_CM_00201 using SampleAllocateePtr = std::unique_ptr \u003cT>; Pointer to an allocated (by Communication Management) data sample. The implementation is allowed to be changed by the Communication Management software provider. The precondition defined in [SWS_CM_00086] must be fulfilled. Otherwise it is considered a violation. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol SampleAllocateePtr class mono Template-Parameter th Parameter th Beschreibung td T td Data type of data sample","n":"alias"},{"i":"SWS_CM_00304","k":"type","d":"COM","t":"type alias ServiceHandleContainer [SWS_CM_00304] Upstream: RS_CM_00102 using ServiceHandleContainer = ara::core::Vector \u003cT>; Holds a list of service handles and is used as a return value of any of the FindService() methods) • [SWS_CM_00122] • [SWS_CM_00622] . The assigned data type is allowed to be changed by the Communication Management software provider, but must adhere to [container.requirements.general] and [sequence.reqmts] requirements as per [30] . A ara::core::Vector ([SWS_CORE_ 01301]) for example fulfills these requirements. Literaturverzeichnis SWS CommunicationManagement: [30] ISO/IEC 14882:2014, Information technology – Programming languages – C++ – www.iso.org Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol ServiceHandleContainer class mono Template-Parameter th Parameter th Beschreibung td T td service handle","n":"alias"},{"i":"SWS_CM_01072","k":"type","d":"COM","t":"type alias ServiceStateHandler [SWS_CM_01072] using ServiceStateHandler = std::function \u003cvoid( ServiceState )>; Functor used as input arguments for any of the SetServiceStateChangeHandler() methods: • [SWS_CM_01074] • [SWS_CM_01076] Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol ServiceStateHandler class mono","n":"alias"},{"i":"SWS_CM_00311","k":"type","d":"COM","t":"type alias SubscriptionStateChangeHandler [SWS_CM_00311] Upstream: RS_CM_00103 , RS_CM_00104 , RS_CM_00106 using SubscriptionStateChangeHandler = std::function \u003cvoid(Subscription State)>; Callback function invoked if ara::com::SubscriptionState of an event has changed. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol SubscriptionStateChangeHandler class mono","n":"alias"},{"i":"SWS_CM_00351","k":"type","d":"COM","t":"type alias TriggerReceiveHandler [SWS_CM_00351] Upstream: RS_CM_00203 , RS_AP_00114 , RS_AP_00120 using TriggerReceiveHandler = std::function \u003cvoid()>; A function wrapper for the handler function that gets called in case a new trigger arrives for an event. The trigger receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory. Header-Datei #include \"ara/com/types.h\" class mono Scope namespace ara::com class mono Symbol TriggerReceiveHandler class mono","n":"alias"},{"i":"SWS_CM_11334","k":"function","d":"COM","t":"function GetComErrorDomain [SWS_CM_11334] Upstream: RS_AP_00120 , RS_AP_00130 constexpr const ara::core::ErrorDomain & GetComErrorDomain () noexcept; Returns a reference to the ara::com::ComErrorDomain object Header-Datei #include \"ara/com/com_error_domain.h\" class mono Scope namespace ara::com class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain & td Reference to the ara::com::ComErrorDomain object","n":"GetComErrorDomain"},{"i":"SWS_CM_11335","k":"function","d":"COM","t":"function MakeErrorCode [SWS_CM_11335] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00130 constexpr ara::core::ErrorCode MakeErrorCode ( ara::com::ComErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an instance of ara::core::ErrorCode Header-Datei #include \"ara/com/com_error_domain.h\" class mono Scope namespace ara::com class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ara::core::ErrorCode object.","n":"MakeErrorCode"}],"inbound":[{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P2_1050","d":"AUTOSAR_AP_EXP_ARAComAPI","p":2,"t":"• Changed explanation of Event reception\ndue to new ara::com API"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P8_1056","d":"AUTOSAR_AP_EXP_ARAComAPI","p":8,"t":"1 Preface\nTypically, reading formal specifications isn’t the easiest way to learn and understand a\ncertain technology. This especially holds true for the Communication Management API\n(\nara::com\n) in the AUTOSAR Adaptive Platform.\nTherefore this document shall serve as an entry point not only for the developer of\nsoftware components for the Adaptive Platform, who will use the\nara::com\nAPI to\ninteract with other application or service components, but also for Adaptive Platform\nproduct vendors, who are going to implement an optimized\nIPC\nbinding for the\nara::\ncom\nAPI on their platform.\nWe strongly encourage both groups of readers to read this document at hand before\ngoing into the formal details of the related SWS."},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1057","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"2 Acronyms and Abbreviations\nThe glossary below includes acronyms and abbreviations relevant to the explanation\nof ara::com API that are not included in the AUTOSAR Glossary [1]."},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1058","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"Recoverable Errors according to [SWS_CORE_-\n00020] of [2]. Defined for\nara::com\nfunctions us-\ning\nara::core::ErrorCode\ns, e.g. according to\n[SWS_CM_10432] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1059","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"ara::com Instance Identifier according to [SWS_-\nCM_00302] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1060","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"ara::com Instance Identifier Container according to\n[SWS_CM_00319] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1061","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"ara::com::ComErrorDomain according to [SWS_-\nCM_10432] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P9_1062","d":"AUTOSAR_AP_EXP_ARAComAPI","p":9,"t":"ara::com::e2e::E2EErrorDomain according to\n[SWS_CM_10474] of [3]"}]}</script></dialog>

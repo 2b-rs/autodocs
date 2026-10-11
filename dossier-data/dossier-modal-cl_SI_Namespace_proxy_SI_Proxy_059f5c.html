@@ -1,0 +1,703 @@
+<dialog id="dossier-modal-cl_SI_Namespace_proxy_SI_Proxy_059f5c" class="dossier-modal dossier-workbench" data-dossier-sha="17d063b8a96ce0b0" aria-labelledby="dossier-modal-cl_SI_Namespace_proxy_SI_Proxy_059f5c-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-cl_SI_Namespace_proxy_SI_Proxy_059f5c-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_SI_Namespace_proxy_SI_Proxy_059f5c)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~7,787 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Class Guide: cl_SI_Namespace_proxy_SI_Proxy_059f5c" data-fragment="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Klassen-Leitfaden (&lt;div class="ai class-guide"&gt;) für die C++ Klasse '&lt;SI-Namespace&gt;::proxy::&lt;SI&gt;Proxy' (adaptive, Modul com) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR KLASSEN-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Klassen-Leitfaden für '&lt;SI-Namespace&gt;::proxy::&lt;SI&gt;Proxy' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "class_id": "cl_SI_Namespace_proxy_SI_Proxy_059f5c",
+ "class_name": "&lt;SI-Namespace&gt;::proxy::&lt;SI&gt;Proxy",
+ "description": "Service Interface Proxy",
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P10_1085",
+   "page": 10,
+   "text": "FindService according to [SWS_CM_00622] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P10_1086",
+   "page": 10,
+   "text": "FindService with Instance Specifier according to\n[SWS_CM_00623] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P10_1087",
+   "page": 10,
+   "text": "StartFindService according to [SWS_CM_00123] of\n[3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P10_1088",
+   "page": 10,
+   "text": "StartFindService with ExecutorT according to\n[SWS_CM_11352] of [3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P10_1089",
+   "page": 10,
+   "text": "StopFindService according to [SWS_CM_00125] of\n[3]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P39_053",
+   "page": 39,
+   "text": "[SWS_CM_00002] [SWS_CM_00003]\n[SWS_CM_00004] [SWS_CM_00006]\n[SWS_CM_00007] [SWS_CM_00008]\n[SWS_CM_00048] [SWS_CM_00049]\n[SWS_CM_00053] [SWS_CM_00054]\n[SWS_CM_00055] [SWS_CM_00056]\n[SWS_CM_00101] [SWS_CM_00111]\n[SWS_CM_00112] [SWS_CM_00113]\n[SWS_CM_00114] [SWS_CM_00116]\n[SWS_CM_00118] [SWS_CM_00119]\n[SWS_CM_00122] [SWS_CM_00123]\n[SWS_CM_00125] [SWS_CM_00130]\n[SWS_CM_00131] [SWS_CM_00134]\n[SWS_CM_00135] [SWS_CM_00136]\n[SWS_CM_00137] [SWS_CM_00152]\n[SWS_CM_00153] [SWS_CM_00162]\n[SWS_CM_00181] [SWS_CM_00191]\n[SWS_CM_00192] [SWS_CM_00193]\n[SWS_CM_00194] [SWS_CM_00195]\n[SWS_CM_00196] [SWS_CM_00197]\n[SWS_CM_00199] [SWS_CM_00226]\n[SWS_CM_00250] [SWS_CM_00302]\n[SWS_CM_00306] [SWS_CM_00309]\n[SWS_CM_00312] [SWS_CM_00317]\n[SWS_CM_00318] [SWS_CM_00319]\n[SWS_CM_00334] [SWS_CM_00351]\n[SWS_CM_00352] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_00701]\n[SWS_CM_00705] [SWS_CM_00721]\n[SWS_CM_00723] [SWS_CM_00726]\n[SWS_CM_00727] [SWS_CM_00810]\n[SWS_CM_01002] [SWS_CM_01005]\n[SWS_CM_01006] [SWS_CM_01009]\n[SWS_CM_0…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P40_054",
+   "page": 40,
+   "text": "△\n[SWS_CM_11611] [SWS_CM_11615]\n[SWS_CM_12002] [SWS_CM_12003]\n[SWS_CM_12021] [SWS_CM_12022]\n[SWS_CM_12026] [SWS_CM_90420]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90434] [SWS_CM_90435]\n[SWS_CM_90437] [SWS_CM_90438]\n[SWS_CM_98444] [SWS_CM_99332]\n[SWS_CM_99333] [SWS_CM_99444]\n[SWS_CM_99445] [SWS_CM_99446]\n[SWS_CM_99447] [SWS_CM_99556]\n[SWS_CM_99557] [SWS_CM_99558]\n[SWS_CM_99559]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P40_055",
+   "page": 40,
+   "text": "[SWS_CM_00118] [SWS_CM_00122]\n[SWS_CM_00123] [SWS_CM_00152]\n[SWS_CM_00153] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_11352]\n[SWS_CM_11365] [SWS_CM_12021]\n[SWS_CM_12022] [SWS_CM_12026]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90438]"
+  }
+ ],
+ "member_requirements": [
+  {
+   "id": "SWS_CM_10438",
+   "text": "function Create [SWS_CM_10438] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00121 , RS_AP_00127 , RS_AP_00128 , RS_AP_00139 static ara::core::Result &amp;lt; &amp;lt;SI&amp;gt; Proxy &amp;gt; Create (const &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt; Proxy :: HandleType &amp;amp;handle) noexcept; Exception-less construction of a Proxy from a HandleType using the Named Constructor idiom. Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) ErroneousService- Provided HandleType is null or corrupt HandleViolation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handle td As per [SWS_CM_00131] Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; {&amp;lt;service-interface-name&amp;gt; }Proxy &amp;gt; td • If successful: an ara::core::Result containing a ara:: core::Result::value_type containing a Proxy • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kServiceNotAvailable td rollback_semantics Service is not available after being previously offered via Offer Service() td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure"
+  },
+  {
+   "id": "SWS_CM_00122",
+   "text": "function FindService [SWS_CM_00122] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 static ara::core::Result &amp;lt; ara::com::ServiceHandleContainer &amp;lt; HandleType &amp;gt; &amp;gt; FindService ( ara::com::InstanceIdentifier instance) noexcept; Find a service using an ara::com::InstanceIdentifier , with immediately returned request Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td instance td ara::com::InstanceIdentifier qualifying the wanted instance of the service Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; ara::com::ServiceHandle Container&amp;lt; {&amp;lt;hierarchical-namespace-list-lower-proxy&amp;gt; }::proxy::{&amp;lt;service-interface-name&amp;gt; }Proxy::HandleType &amp;gt; &amp;gt; td • If successful: an ara::core::Result containing a ara:: core::Result::value_type containing a ara::com :: ServiceHandleContainer further containing HandleTypes for all matching services • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure"
+  },
+  {
+   "id": "SWS_CM_00622",
+   "text": "function FindService [SWS_CM_00622] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00121 , RS_AP_00127 , RS_AP_00137 static ara::core::Result &amp;lt; ara::com::ServiceHandleContainer &amp;lt; HandleType &amp;gt; &amp;gt; FindService ( ara::core::InstanceSpecifier instance) noexcept; Find a service using an ara::core::InstanceSpecifier , with immediately returned request Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of the executable, or it refers to a model element other than tegrityViolation a PortPrototype. PortInterfaceMap- The type of mapping does not match the expected type of Port pingViolation Interface: ServiceInterface referenced by a ServiceInstanceToPortPrototypeMapping. ProcessMappingVio- The type of mapping does not match the expected type of Port lation Interface InstanceSpecifier- The constructor was called with an Instance Specifier already AlreadyInUseViola- tion InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td instance td ara::core::InstanceSpecifier qualifying the wanted instance of the service Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; ara::com::ServiceHandle Container&amp;lt; {&amp;lt;hierarchical-namespace-list-lower-proxy&amp;gt;}::proxy::{&amp;lt;service-interface-name&amp;gt; }Proxy::HandleType &amp;gt; &amp;gt; td As per [SWS_CM_00122] Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure"
+  },
+  {
+   "id": "SWS_CM_10383",
+   "text": "function GetHandle [SWS_CM_10383] Upstream: RS_CM_00107 , RS_AP_00114 , RS_AP_00119 HandleType GetHandle () const noexcept; Return the handle used to create the proxy instance Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy :: HandleType td As per [SWS_CM_00312]"
+  },
+  {
+   "id": "SWS_CM_01073",
+   "text": "function GetServiceState [SWS_CM_01073] ara::core::Result &amp;lt; ara::com::ServiceState &amp;gt; GetServiceState () noexcept; Returns the state of the service Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; ara::com::ServiceState &amp;gt; td • If successful: an ara::core::Result containing a ara:: core::Result::value_type i.e. a ara::com :: ServiceState giving the service state • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure"
+  },
+  {
+   "id": "SWS_CM_00131",
+   "text": "function Proxy [SWS_CM_00131] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00121 explicit &amp;lt;SI&amp;gt;Proxy (const HandleType &amp;amp;handle); Construction of the service proxy from the found handles (from any of the FindService()/ StartFindService() methods) Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt;Proxy class mono Exception-Sicherheit not exception safe class mono Verletzungen (Violations) ErroneousService- Provided HandleType is null or corrupt HandleViolation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handle td A found FindServiceHandle returned by any of the FindService() methods: • [SWS_CM_00122] • [SWS_CM_00622] or a FindServiceHandle found and sent to the assigned FindServiceHandler callback, by any of the StartFindService() methods: • [SWS_CM_00123] • [SWS_CM_00623] • [SWS_CM_11352] • [SWS_CM_11365] Exceptions ara::com :: As per ara::com::ComErrc::kServiceNotAvailable ComException"
+  },
+  {
+   "id": "SWS_CM_00136",
+   "text": "function Proxy [SWS_CM_00136] Upstream: RS_CM_00102 , RS_AP_00114 &amp;lt;SI&amp;gt;Proxy (const &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt;Proxy &amp;amp;other)=delete; Copy Constructor deletion Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt;Proxy class mono"
+  },
+  {
+   "id": "SWS_CM_00137",
+   "text": "function Proxy [SWS_CM_00137] Upstream: RS_CM_00102 , RS_AP_00114 &amp;lt;SI&amp;gt;Proxy ( &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt;Proxy &amp;amp;&amp;amp;other); Move constructor Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt;Proxy class mono Exception-Sicherheit not exception safe class mono Parameter (in) th Parameter th Beschreibung td other td Other object to move"
+  },
+  {
+   "id": "SWS_CM_99444",
+   "text": "function Proxy [SWS_CM_99444] Upstream: RS_CM_00102 , RS_AP_00114 ~ &amp;lt;SI&amp;gt;Proxy (); Destruction of a Proxy Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt;Proxy class mono Exception-Sicherheit not exception safe class mono Verletzungen (Violations) DanglingSamplesVi- Precondition [SWS_CM_00087] has been violated. olation class mono"
+  },
+  {
+   "id": "SWS_CM_00123",
+   "text": "function Service [SWS_CM_00123] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 static ara::core::Result &amp;lt; ara::com::FindServiceHandle &amp;gt; StartFind Service ( ara::com::FindServiceHandler &amp;lt; &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt;Proxy:: HandleType &amp;gt; handler, ara::com::InstanceIdentifier instance) noexcept; Find a service using an ara::com::InstanceIdentifier , with handler registration Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handler td A ara::com::FindServiceHandler for the corresponding ServiceProxy class, which gets called any time a AdaptivePlatformServiceInstance matching the given instance criteria is found. td instance td As per [SWS_CM_00122] Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; ara::com::FindServiceHandle &amp;gt; td • If successful: an ara::core::Result containing a ara:: core::Result::value_type containing a ara::com :: FindServiceHandle for this search/find request which is needed to stop the service availability monitoring and related firing of the given handler. • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure"
+  },
+  {
+   "id": "SWS_CM_00623",
+   "text": "function Service [SWS_CM_00623] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00121 , RS_AP_00127 , RS_AP_00137 static ara::core::Result &amp;lt; ara::com::FindServiceHandle &amp;gt; StartFind Service ( ara::com::FindServiceHandler &amp;lt; &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt;Proxy:: HandleType &amp;gt; handler, ara::core::InstanceSpecifier instance) noexcept; Find a service using an ara::core::InstanceSpecifier , with handler registration Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of the executable, or it refers to a model element other than tegrityViolation a PortPrototype. PortInterfaceMap- The type of mapping does not match the expected type of Port pingViolation Interface: ServiceInterface referenced by a ServiceInstanceToPortPrototypeMapping. ProcessMappingVio- The type of mapping does not match the expected type of Port lation Interface InstanceSpecifier- The constructor was called with an Instance Specifier already AlreadyInUseViola- tion InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_00123] td instance td As per [SWS_CM_00622] Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; ara::com::FindService Handle &amp;gt; td As per [SWS_CM_00123] Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure"
+  },
+  {
+   "id": "SWS_CM_01074",
+   "text": "function SetServiceStateChangeHandler [SWS_CM_01074] void SetServiceStateChangeHandler ( ara::com::ServiceStateHandler handler) noexcept; Register a service state change handler. This handler shall be called by the Communication Management implementation as soon as the service availability state has changed. The Handler may be overwritten during runtime. Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation class mono Parameter (in) th Parameter th Beschreibung td handler td The callback for service state change handler Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_CM_01076",
+   "text": "function SetServiceStateChangeHandler [SWS_CM_01076] template &amp;lt;typename ExecutorT&amp;gt; void SetServiceStateChangeHandler ( ara::com::ServiceStateHandler handler, ExecutorT &amp;amp;&amp;amp;executor) noexcept; As per [SWS_CM_01074] but the method shall execute in a provided context. Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation class mono Template-Parameter th Parameter th Beschreibung td ExecutorT td As per [SWS_CM_11360] Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_01074] td executor td As per [SWS_CM_11360] Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_CM_11352",
+   "text": "function StartFindService [SWS_CM_11352] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 template &amp;lt;typename ExecutorT&amp;gt; static ara::com::FindServiceHandle StartFindService ( ara::com::FindServiceHandler &amp;lt; &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt;Proxy:: HandleType &amp;gt; handler, ara::com::InstanceIdentifier instance, ExecutorT &amp;amp;&amp;amp;executor) noexcept; Find a service using an ara::com::InstanceIdentifier , with handler registration, - in a provided execution context Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Template-Parameter th Parameter th Beschreibung td ExecutorT td As per [SWS_CM_11360] Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_00123] td instance td As per [SWS_CM_00122] td executor td As per [SWS_CM_11360] Rückgabewert th Typ th Beschreibung td ara::com::FindServiceHandle td As per [SWS_CM_00123]"
+  },
+  {
+   "id": "SWS_CM_11365",
+   "text": "function StartFindService [SWS_CM_11365] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 template &amp;lt;typename ExecutorT&amp;gt; static ara::com::FindServiceHandle StartFindService ( ara::com::FindServiceHandler &amp;lt; &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt;Proxy:: HandleType &amp;gt; handler, ara::core::InstanceSpecifier instance, ExecutorT &amp;amp;&amp;amp;executor) noexcept; Find a service using an ara::core::InstanceSpecifier , with handler registration, in a provided context Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of the executable, or it refers to a model element other than tegrityViolation a PortPrototype. PortInterfaceMap- The type of mapping does not match the expected type of Port pingViolation Interface: ServiceInterface referenced by a ServiceInstanceToPortPrototypeMapping. ProcessMappingVio- The type of mapping does not match the expected type of Port lation Interface InstanceSpecifier- The constructor was called with an Instance Specifier already AlreadyInUseViola- tion InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Template-Parameter th Parameter th Beschreibung td ExecutorT td As per [SWS_CM_11360] Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_00123] td instance td As per [SWS_CM_00123] td executor td As per [SWS_CM_11360] Rückgabewert th Typ th Beschreibung td ara::com::FindServiceHandle td As per [SWS_CM_00123]"
+  },
+  {
+   "id": "SWS_CM_00125",
+   "text": "function StopFindService [SWS_CM_00125] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00120 , RS_AP_00121 void StopFindService ( ara::com::FindServiceHandle handle) noexcept; Stop an ongoing StartFindService() - Stops receiving further notifications for the provided ara::com::FindServiceHandle Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td handle td The ara::com::FindServiceHandle returned by StartFind Service methods: • [SWS_CM_00123] • [SWS_CM_00623] • [SWS_CM_11352] • [SWS_CM_11365] Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_CM_01075",
+   "text": "function UnsetServiceStateChangeHandler [SWS_CM_01075] void UnsetServiceStateChangeHandler () noexcept; As per [SWS_CM_01074] Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_CM_11551",
+   "text": "function operator= [SWS_CM_11551] Upstream: RS_CM_00102 , RS_AP_00114 &amp;lt;SI&amp;gt; Proxy &amp;amp; operator= (const &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt; Proxy &amp;amp;other)=delete; Copy assignment constructor deletion Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono"
+  },
+  {
+   "id": "SWS_CM_11552",
+   "text": "function operator= [SWS_CM_11552] Upstream: RS_CM_00102 , RS_AP_00114 &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt; Proxy &amp;amp; operator= ( &amp;lt;SI-Namespace&amp;gt;::proxy:: &amp;lt;SI&amp;gt; Proxy &amp;amp;&amp;amp;other) noexcept; Move assignment constructor Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td other td Other object to move Rückgabewert th Typ th Beschreibung td &amp;lt;SI-Namespace&amp;gt;::proxy::{&amp;lt;service-interface-name&amp;gt; }Proxy &amp;amp; td The moved object"
+  },
+  {
+   "id": "SWS_CM_99445",
+   "text": "variable &amp;lt;Event&amp;gt; [SWS_CM_99445] Upstream: RS_CM_00201 , RS_AP_00114 events:: &amp;lt;Event&amp;gt; &amp;lt;Event&amp;gt; ; Event member, one for each VariableDataPrototype defined in the ServiceInterface in the role event. Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Symbol &amp;lt;Event&amp;gt; class mono Typ events::&amp;lt;Event&amp;gt; class mono"
+  },
+  {
+   "id": "SWS_CM_99446",
+   "text": "variable &amp;lt;Field&amp;gt; [SWS_CM_99446] Upstream: RS_CM_00216 , RS_AP_00114 fields:: &amp;lt;Field&amp;gt; &amp;lt;Field&amp;gt; ; Field member, one for each Field defined in the ServiceInterface in the role field. Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Symbol &amp;lt;Field&amp;gt; class mono Typ fields::&amp;lt;Field&amp;gt; class mono"
+  },
+  {
+   "id": "SWS_CM_99447",
+   "text": "variable &amp;lt;Method&amp;gt; [SWS_CM_99447] Upstream: RS_CM_00212 , RS_CM_00213 , RS_AP_00114 methods:: &amp;lt;Method&amp;gt; &amp;lt;Method&amp;gt; ; Method member, one for each ClientServerOperation defined in the ServiceInterface in the role method. Header-Datei #include \"&amp;lt;SiNamespaceDerivedDirectoryPath&amp;gt;/&amp;lt;SiShortname&amp;gt;_proxy.h\" class mono Scope class &amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt; Proxy class mono Symbol &amp;lt;Method&amp;gt; class mono Typ methods::&amp;lt;Method&amp;gt; class mono"
+  }
+ ],
+ "module": "com",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "syntax": "class &amp;lt;SI&amp;gt;Proxy final {...};"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="20a269a7c24d6754bd24a8740d58375a86f19d2e5adcbd066b4470346b9096d1" data-trace-output="17d063b8a96ce0b06f9983bf249579d9ba40f363e8c37a596bcd03c2a1dbdeed" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;The generated proxy class &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::&amp;lt;SI&amp;gt;Proxy&lt;/code&gt; acts as the primary client-side representative of an AUTOSAR Adaptive service interface within module &lt;code&gt;com&lt;/code&gt;. Its central responsibility is to find service instances, establish communication channels, and provide type-safe access to the communication entities defined in the service interface. For this purpose, the class holds dedicated member variables for events via &lt;code&gt;events::&amp;lt;Event&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_99445" href="../spec/record.html?id=SWS_CM_99445"&gt;[SWS_CM_99445]&lt;/a&gt;, fields via &lt;code&gt;fields::&amp;lt;Field&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_99446" href="../spec/record.html?id=SWS_CM_99446"&gt;[SWS_CM_99446]&lt;/a&gt;, and methods via &lt;code&gt;methods::&amp;lt;Method&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_99447" href="../spec/record.html?id=SWS_CM_99447"&gt;[SWS_CM_99447]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The primary interaction partners include the local client application, the underlying communication infrastructure (network binding), and registered callback functions for monitoring the service status or for asynchronous search operations.&lt;/p&gt;
+
+&lt;div class="diagram" id="diag-proxy-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 606.06 280.80" style="max-width:808px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 266.4)"&gt;
+&lt;title&gt;ProxyKontext&lt;/title&gt;
+&lt;!-- App --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;App&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M88.32,-144C88.32,-144 12,-144 12,-144 6,-144 0,-138 0,-132 0,-132 0,-120 0,-120 0,-114 6,-108 12,-108 12,-108 88.32,-108 88.32,-108 94.32,-108 100.32,-114 100.32,-120 100.32,-120 100.32,-132 100.32,-132 100.32,-138 94.32,-144 88.32,-144"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="50.16" y="-122.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Client-Anwendung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Proxy --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;Proxy&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M323.98,-144C323.98,-144 236.06,-144 236.06,-144 230.06,-144 224.06,-138 224.06,-132 224.06,-132 224.06,-120 224.06,-120 224.06,-114 230.06,-108 236.06,-108 236.06,-108 323.98,-108 323.98,-108 329.98,-108 335.98,-114 335.98,-120 335.98,-120 335.98,-132 335.98,-132 335.98,-138 329.98,-144 323.98,-144"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="280.02" y="-129.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&amp;lt;SI&amp;gt;Proxy&lt;/text&gt;
+&lt;text text-anchor="middle" x="280.02" y="-116.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Client-Repräsentant)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- App&amp;#45;&amp;gt;Proxy --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;App-&amp;gt;Proxy&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M100.6,-126C133.32,-126 176.61,-126 212.36,-126"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="212.02,-129.5 222.02,-126 212.02,-122.5 212.02,-129.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="162.19" y="-129" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Erzeugung &amp;amp; Aufrufe&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Events --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;Events&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M556.19,-252C556.19,-252 491.91,-252 491.91,-252 485.91,-252 479.91,-246 479.91,-240 479.91,-240 479.91,-228 479.91,-228 479.91,-222 485.91,-216 491.91,-216 491.91,-216 556.19,-216 556.19,-216 562.19,-216 568.19,-222 568.19,-228 568.19,-228 568.19,-240 568.19,-240 568.19,-246 562.19,-252 556.19,-252"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="524.05" y="-230.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;events::&amp;lt;Event&amp;gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Proxy&amp;#45;&amp;gt;Events --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;Proxy-&amp;gt;Events&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M301.82,-144.29C315.79,-155.82 335.05,-170.31 353.98,-180 390.33,-198.61 434.35,-212.42 468.36,-221.42"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="467.32,-224.76 477.87,-223.87 469.06,-217.98 467.32,-224.76"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="403.42" y="-220.04" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;beinhaltet&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Fields --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;Fields&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M552.84,-198C552.84,-198 495.27,-198 495.27,-198 489.27,-198 483.27,-192 483.27,-186 483.27,-186 483.27,-174 483.27,-174 483.27,-168 489.27,-162 495.27,-162 495.27,-162 552.84,-162 552.84,-162 558.84,-162 564.84,-168 564.84,-174 564.84,-174 564.84,-186 564.84,-186 564.84,-192 558.84,-198 552.84,-198"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="524.05" y="-176.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;fields::&amp;lt;Field&amp;gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Proxy&amp;#45;&amp;gt;Fields --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Proxy-&amp;gt;Fields&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M336.25,-138.32C376.88,-147.39 431.73,-159.63 471.48,-168.49"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="470.63,-171.89 481.16,-170.65 472.16,-165.06 470.63,-171.89"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="403.42" y="-167.04" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;beinhaltet&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Methods --&gt;
+&lt;g id="node5" class="node"&gt;
+&lt;title&gt;Methods&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M565.06,-144C565.06,-144 483.05,-144 483.05,-144 477.05,-144 471.05,-138 471.05,-132 471.05,-132 471.05,-120 471.05,-120 471.05,-114 477.05,-108 483.05,-108 483.05,-108 565.06,-108 565.06,-108 571.06,-108 577.06,-114 577.06,-120 577.06,-120 577.06,-132 577.06,-132 577.06,-138 571.06,-144 565.06,-144"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="524.05" y="-122.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;methods::&amp;lt;Method&amp;gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Proxy&amp;#45;&amp;gt;Methods --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;Proxy-&amp;gt;Methods&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M336.25,-126C372.79,-126 420.82,-126 459.04,-126"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="458.89,-129.5 468.89,-126 458.89,-122.5 458.89,-129.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="403.42" y="-129" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;beinhaltet&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- StateCallback --&gt;
+&lt;g id="node6" class="node"&gt;
+&lt;title&gt;StateCallback&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M565.26,-90C565.26,-90 482.85,-90 482.85,-90 476.85,-90 470.85,-84 470.85,-78 470.85,-78 470.85,-66 470.85,-66 470.85,-60 476.85,-54 482.85,-54 482.85,-54 565.26,-54 565.26,-54 571.26,-54 577.26,-60 577.26,-66 577.26,-66 577.26,-78 577.26,-78 577.26,-84 571.26,-90 565.26,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="524.05" y="-75.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;ServiceStateHandler&lt;/text&gt;
+&lt;text text-anchor="middle" x="524.05" y="-62.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Zustands-Callback)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Proxy&amp;#45;&amp;gt;StateCallback --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;Proxy-&amp;gt;StateCallback&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M336.25,-113.68C372.94,-105.49 421.24,-94.72 459.53,-86.17"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="459.93,-89.67 468.93,-84.08 458.41,-82.84 459.93,-89.67"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="403.42" y="-111.53" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;notifiziert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Binding --&gt;
+&lt;g id="node7" class="node"&gt;
+&lt;title&gt;Binding&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M558.4,-36C558.4,-36 489.71,-36 489.71,-36 483.71,-36 477.71,-30 477.71,-24 477.71,-24 477.71,-12 477.71,-12 477.71,-6 483.71,0 489.71,0 489.71,0 558.4,0 558.4,0 564.4,0 570.4,-6 570.4,-12 570.4,-12 570.4,-24 570.4,-24 570.4,-30 564.4,-36 558.4,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="524.05" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/com.html" href="../modules/com.html"&gt;ara::com&lt;/a&gt; /&lt;/text&gt;
+&lt;text text-anchor="middle" x="524.05" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Network Binding&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Proxy&amp;#45;&amp;gt;Binding --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;Proxy-&amp;gt;Binding&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M301.82,-107.71C315.79,-96.18 335.05,-81.69 353.98,-72 389.59,-53.77 432.56,-40.14 466.27,-31.14"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="466.92,-34.59 475.72,-28.68 465.16,-27.81 466.92,-34.59"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="403.42" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Service-Kommunikation&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Interaction partners and embedding of &amp;lt;SI&amp;gt;Proxy into the communication architecture. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_99445" href="../spec/record.html?id=SWS_CM_99445"&gt;[SWS_CM_99445]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99446" href="../spec/record.html?id=SWS_CM_99446"&gt;[SWS_CM_99446]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99447" href="../spec/record.html?id=SWS_CM_99447"&gt;[SWS_CM_99447]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_01074" href="../spec/record.html?id=SWS_CM_01074"&gt;[SWS_CM_01074]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
+&lt;p&gt;The lifecycle of a proxy is divided into service discovery, instantiation, state monitoring, and controlled release:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Finding:&lt;/strong&gt; Prior to object creation, matching instances are searched for. This is done either synchronously via &lt;code&gt;FindService&lt;/code&gt; with &lt;code&gt;ara::com::InstanceIdentifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00122" href="../spec/record.html?id=SWS_CM_00122"&gt;[SWS_CM_00122]&lt;/a&gt; or &lt;code&gt;ara::core::InstanceSpecifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00622" href="../spec/record.html?id=SWS_CM_00622"&gt;[SWS_CM_00622]&lt;/a&gt; &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=10"&gt;EXP ARAComAPI p. 10&lt;/a&gt;, respectively, or asynchronously via &lt;code&gt;StartFindService&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00123" href="../spec/record.html?id=SWS_CM_00123"&gt;[SWS_CM_00123]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00623" href="../spec/record.html?id=SWS_CM_00623"&gt;[SWS_CM_00623]&lt;/a&gt; &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=10"&gt;EXP ARAComAPI p. 10&lt;/a&gt;. For asynchronous searches, a user-defined execution context can be passed via &lt;code&gt;ExecutorT&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_11352" href="../spec/record.html?id=SWS_CM_11352"&gt;[SWS_CM_11352]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_11365" href="../spec/record.html?id=SWS_CM_11365"&gt;[SWS_CM_11365]&lt;/a&gt; &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=10"&gt;EXP ARAComAPI p. 10&lt;/a&gt;. Ongoing searches are stopped with &lt;code&gt;StopFindService&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00125" href="../spec/record.html?id=SWS_CM_00125"&gt;[SWS_CM_00125]&lt;/a&gt; &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;amp;page=10"&gt;EXP ARAComAPI p. 10&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Creation:&lt;/strong&gt; The recommended, exception-free creation takes place via the static factory method &lt;code&gt;Create&lt;/code&gt; (Named Constructor Idiom) specifying a valid &lt;code&gt;HandleType&lt;/code&gt; and returns a &lt;code&gt;ara::core::Result&amp;lt;&amp;lt;SI&amp;gt;Proxy&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt;. Alternatively, an explicit constructor &lt;code&gt;&amp;lt;SI&amp;gt;Proxy(const HandleType&amp;amp;)&lt;/code&gt; exists that can throw exceptions in case of errors &lt;a class="spec-record-ref" data-req="SWS_CM_00131" href="../spec/record.html?id=SWS_CM_00131"&gt;[SWS_CM_00131]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Semantics:&lt;/strong&gt; Proxy instances have move-only semantics: The copy constructor &lt;a class="spec-record-ref" data-req="SWS_CM_00136" href="../spec/record.html?id=SWS_CM_00136"&gt;[SWS_CM_00136]&lt;/a&gt; and the copy assignment operator &lt;a class="spec-record-ref" data-req="SWS_CM_11551" href="../spec/record.html?id=SWS_CM_11551"&gt;[SWS_CM_11551]&lt;/a&gt; are deleted (&lt;code&gt;=delete&lt;/code&gt;). A transfer of resources is permissible exclusively via the move constructor &lt;a class="spec-record-ref" data-req="SWS_CM_00137" href="../spec/record.html?id=SWS_CM_00137"&gt;[SWS_CM_00137]&lt;/a&gt; or the noexcept move assignment operator &lt;a class="spec-record-ref" data-req="SWS_CM_11552" href="../spec/record.html?id=SWS_CM_11552"&gt;[SWS_CM_11552]&lt;/a&gt;, respectively. The underlying handle can be queried via &lt;code&gt;GetHandle&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10383" href="../spec/record.html?id=SWS_CM_10383"&gt;[SWS_CM_10383]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;State management:&lt;/strong&gt; The availability state of the connected service instance can be queried synchronously via &lt;code&gt;GetServiceState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01073" href="../spec/record.html?id=SWS_CM_01073"&gt;[SWS_CM_01073]&lt;/a&gt;. For asynchronous state tracking, a &lt;code&gt;ServiceStateHandler&lt;/code&gt; is registered using &lt;code&gt;SetServiceStateChangeHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01074" href="../spec/record.html?id=SWS_CM_01074"&gt;[SWS_CM_01074]&lt;/a&gt; (optionally with execution context &lt;code&gt;ExecutorT&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01076" href="../spec/record.html?id=SWS_CM_01076"&gt;[SWS_CM_01076]&lt;/a&gt;). Deregistration is performed via &lt;code&gt;UnsetServiceStateChangeHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01075" href="../spec/record.html?id=SWS_CM_01075"&gt;[SWS_CM_01075]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Destruction:&lt;/strong&gt; The destructor &lt;code&gt;~&amp;lt;SI&amp;gt;Proxy()&lt;/code&gt; ends the lifetime &lt;a class="spec-record-ref" data-req="SWS_CM_99444" href="../spec/record.html?id=SWS_CM_99444"&gt;[SWS_CM_99444]&lt;/a&gt;. Prior to destruction, all held data samples must be released to avoid violations.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;A typical usage path comprises the synchronous search for a service instance, proxy-based instantiation, monitoring of state changes, and the final cleanup:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Determine service:&lt;/strong&gt; Call to &lt;code&gt;&amp;lt;SI&amp;gt;Proxy::FindService(instance)&lt;/code&gt; to determine available service handles in a &lt;code&gt;ara::com::ServiceHandleContainer&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00122" href="../spec/record.html?id=SWS_CM_00122"&gt;[SWS_CM_00122]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00622" href="../spec/record.html?id=SWS_CM_00622"&gt;[SWS_CM_00622]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Create proxy:&lt;/strong&gt; Passing the selected handle to &lt;code&gt;&amp;lt;SI&amp;gt;Proxy::Create(handle)&lt;/code&gt; for exception-free construction &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Monitor state:&lt;/strong&gt; Registering a change handler via &lt;code&gt;SetServiceStateChangeHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01074" href="../spec/record.html?id=SWS_CM_01074"&gt;[SWS_CM_01074]&lt;/a&gt; and querying the current status via &lt;code&gt;GetServiceState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01073" href="../spec/record.html?id=SWS_CM_01073"&gt;[SWS_CM_01073]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Perform communication:&lt;/strong&gt; Interacting with the members for methods &lt;a class="spec-record-ref" data-req="SWS_CM_99447" href="../spec/record.html?id=SWS_CM_99447"&gt;[SWS_CM_99447]&lt;/a&gt;, events &lt;a class="spec-record-ref" data-req="SWS_CM_99445" href="../spec/record.html?id=SWS_CM_99445"&gt;[SWS_CM_99445]&lt;/a&gt;, and fields &lt;a class="spec-record-ref" data-req="SWS_CM_99446" href="../spec/record.html?id=SWS_CM_99446"&gt;[SWS_CM_99446]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Release resources:&lt;/strong&gt; Deregistering the state handler with &lt;code&gt;UnsetServiceStateChangeHandler&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_01075" href="../spec/record.html?id=SWS_CM_01075"&gt;[SWS_CM_01075]&lt;/a&gt; and controlled destruction of the object &lt;a class="spec-record-ref" data-req="SWS_CM_99444" href="../spec/record.html?id=SWS_CM_99444"&gt;[SWS_CM_99444]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class="diagram" id="diag-proxy-nutzung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 726" font-family="Helvetica,sans-Serif" style="max-width:900px"&gt;&lt;text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Typischer Nutzungspfad für &amp;lt;SI&amp;gt;Proxy&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="712" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="712" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="712" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="765" y1="102" x2="765" y2="712" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Client&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&amp;lt;SI&amp;gt;Proxy (Klasse)&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;proxy (&amp;lt;SI&amp;gt;Proxy)&lt;/text&gt;&lt;rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/com.html" href="../modules/com.html"&gt;ara::com&lt;/a&gt; / Binding&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;line x1="40" y1="120" x2="860" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 1. Service-Instanz auffinden&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00122" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00122"&gt;FindService&lt;/a&gt;(instance)&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;Ermittle Instanzen&lt;/text&gt;&lt;line x1="345" y1="203" x2="765" y2="203" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="231" text-anchor="middle" font-size="11" fill="#28251d"&gt;ServiceHandleContainer&lt;/text&gt;&lt;line x1="765" y1="237" x2="345" y2="237" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="265" text-anchor="middle" font-size="11" fill="#28251d"&gt;Result&amp;lt;ServiceHandleContainer&amp;lt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html"&gt;HandleType&lt;/a&gt;&amp;gt;&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="271" x2="135" y2="271" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="293" x2="860" y2="293" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="308" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 2. Proxy instanziieren&lt;/text&gt;&lt;text x="240.0" y="336" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10438" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10438"&gt;Create&lt;/a&gt;(handle)&lt;/text&gt;&lt;line x1="135" y1="342" x2="345" y2="342" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="370" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge Instanz&lt;/text&gt;&lt;line x1="345" y1="376" x2="555" y2="376" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="404" text-anchor="middle" font-size="11" fill="#28251d"&gt;Result&amp;lt;&amp;lt;SI&amp;gt;Proxy&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="410" x2="135" y2="410" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="432" x2="860" y2="432" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="447" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 3. Zustandsüberwachung aktivieren&lt;/text&gt;&lt;text x="345.0" y="475" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_01074" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_01074"&gt;SetServiceStateChangeHandler&lt;/a&gt;(handler)&lt;/text&gt;&lt;line x1="135" y1="481" x2="555" y2="481" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="509" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_01073" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_01073"&gt;GetServiceState&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="515" x2="555" y2="515" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="543" text-anchor="middle" font-size="11" fill="#28251d"&gt;Result&amp;lt;ServiceState&amp;gt;&lt;/text&gt;&lt;line x1="555" y1="549" x2="135" y2="549" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="571" x2="860" y2="571" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="586" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 4. Interaktion &amp;amp; Freigabe&lt;/text&gt;&lt;text x="345.0" y="614" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_01075" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_01075"&gt;UnsetServiceStateChangeHandler&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="620" x2="555" y2="620" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="648" text-anchor="middle" font-size="11" fill="#28251d"&gt;~&amp;lt;SI&amp;gt;&lt;a class="diag-ref" data-ref="classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00131" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00131"&gt;Proxy&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="654" x2="555" y2="654" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="660.0" y="682" text-anchor="middle" font-size="11" fill="#28251d"&gt;Ressourcen freigeben&lt;/text&gt;&lt;line x1="555" y1="688" x2="765" y2="688" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Typical call sequence from finding the instance through object creation to release. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_00622" href="../spec/record.html?id=SWS_CM_00622"&gt;[SWS_CM_00622]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_01074" href="../spec/record.html?id=SWS_CM_01074"&gt;[SWS_CM_01074]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_01075" href="../spec/record.html?id=SWS_CM_01075"&gt;[SWS_CM_01075]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99444" href="../spec/record.html?id=SWS_CM_99444"&gt;[SWS_CM_99444]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;The methods of the proxy class predominantly signal operational and configuration errors via &lt;code&gt;ara::core::Result&lt;/code&gt; or log specific runtime violations:&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Operation&lt;/th&gt;
+      &lt;th&gt;Error code / violation&lt;/th&gt;
+      &lt;th&gt;Cause and impact&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;Create&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt; / Constructor &lt;a class="spec-record-ref" data-req="SWS_CM_00131" href="../spec/record.html?id=SWS_CM_00131"&gt;[SWS_CM_00131]&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;ComErrc::kServiceNotAvailable&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;The service instance previously offered via &lt;code&gt;OfferService()&lt;/code&gt; is no longer available.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;Create&lt;/code&gt;, &lt;code&gt;FindService&lt;/code&gt;, &lt;code&gt;StartFindService&lt;/code&gt;, &lt;code&gt;GetServiceState&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;ComErrc::kCommunicationFailure&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;The underlying network binding reports a recoverable transmission error or the failure of secure communication &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00122" href="../spec/record.html?id=SWS_CM_00122"&gt;[SWS_CM_00122]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_01073" href="../spec/record.html?id=SWS_CM_01073"&gt;[SWS_CM_01073]&lt;/a&gt;.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;Create&lt;/code&gt;, &lt;code&gt;Proxy(...)&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;ErroneousServiceHandleViolation&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;The passed &lt;code&gt;HandleType&lt;/code&gt; object is invalid or corrupt &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00131" href="../spec/record.html?id=SWS_CM_00131"&gt;[SWS_CM_00131]&lt;/a&gt;.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;FindService&lt;/code&gt;, &lt;code&gt;StartFindService&lt;/code&gt;, &lt;code&gt;Create&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;InsufficientPermissionsViolation&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Access was denied by the grant enforcement of the security architecture &lt;a class="spec-record-ref" data-req="SWS_CM_10438" href="../spec/record.html?id=SWS_CM_10438"&gt;[SWS_CM_10438]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00122" href="../spec/record.html?id=SWS_CM_00122"&gt;[SWS_CM_00122]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00623" href="../spec/record.html?id=SWS_CM_00623"&gt;[SWS_CM_00623]&lt;/a&gt;.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;FindService&lt;/code&gt; / &lt;code&gt;StartFindService&lt;/code&gt; with &lt;code&gt;InstanceSpecifier&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;InstanceSpecifierMappingIntegrityViolation&lt;/code&gt;, &lt;code&gt;PortInterfaceMappingViolation&lt;/code&gt;, &lt;code&gt;ProcessMappingViolation&lt;/code&gt;, &lt;code&gt;InstanceSpecifierAlreadyInUseViolation&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Incorrect modeling configuration in the context of the executable or multiple use of the &lt;code&gt;InstanceSpecifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00622" href="../spec/record.html?id=SWS_CM_00622"&gt;[SWS_CM_00622]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00623" href="../spec/record.html?id=SWS_CM_00623"&gt;[SWS_CM_00623]&lt;/a&gt;.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;StartFindService&lt;/code&gt;, &lt;code&gt;SetServiceStateChangeHandler&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;InvalidHandlerViolation&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;The passed callback function is null or invalid &lt;a class="spec-record-ref" data-req="SWS_CM_00123" href="../spec/record.html?id=SWS_CM_00123"&gt;[SWS_CM_00123]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_01074" href="../spec/record.html?id=SWS_CM_01074"&gt;[SWS_CM_01074]&lt;/a&gt;.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;~&amp;lt;SI&amp;gt;Proxy()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_99444" href="../spec/record.html?id=SWS_CM_99444"&gt;[SWS_CM_99444]&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code&gt;DanglingSamplesViolation&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Violation of the precondition regarding still open, unreleased data samples upon destruction of the proxy object.&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p class="ai-note"&gt;This class guide was generated automatically based on the AUTOSAR Adaptive specification R25-11.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>20a269a7c24d…</code></div>
+              <div><strong>Konstituierende Records:</strong> 22</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 8</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">30</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">19</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">30 von 30 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (22 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (8 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CM_10438","k":"function","d":"COM","t":"function Create [SWS_CM_10438] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00121 , RS_AP_00127 , RS_AP_00128 , RS_AP_00139 static ara::core::Result \u003c \u003cSI> Proxy > Create (const \u003cSI-Namespace>::proxy:: \u003cSI> Proxy :: HandleType &handle) noexcept; Exception-less construction of a Proxy from a HandleType using the Named Constructor idiom. Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) ErroneousService- Provided HandleType is null or corrupt HandleViolation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handle td As per [SWS_CM_00131] Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c {\u003cservice-interface-name> }Proxy > td • If successful: an ara::core::Result containing a ara:: core::Result::value_type containing a Proxy • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kServiceNotAvailable td rollback_semantics Service is not available after being previously offered via Offer Service() td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure","n":"Create"},{"i":"SWS_CM_00122","k":"function","d":"COM","t":"function FindService [SWS_CM_00122] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 static ara::core::Result \u003c ara::com::ServiceHandleContainer \u003c HandleType > > FindService ( ara::com::InstanceIdentifier instance) noexcept; Find a service using an ara::com::InstanceIdentifier , with immediately returned request Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td instance td ara::com::InstanceIdentifier qualifying the wanted instance of the service Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c ara::com::ServiceHandle Container\u003c {\u003chierarchical-namespace-list-lower-proxy> }::proxy::{\u003cservice-interface-name> }Proxy::HandleType > > td • If successful: an ara::core::Result containing a ara:: core::Result::value_type containing a ara::com :: ServiceHandleContainer further containing HandleTypes for all matching services • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure","n":"FindService"},{"i":"SWS_CM_00622","k":"function","d":"COM","t":"function FindService [SWS_CM_00622] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00121 , RS_AP_00127 , RS_AP_00137 static ara::core::Result \u003c ara::com::ServiceHandleContainer \u003c HandleType > > FindService ( ara::core::InstanceSpecifier instance) noexcept; Find a service using an ara::core::InstanceSpecifier , with immediately returned request Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of the executable, or it refers to a model element other than tegrityViolation a PortPrototype. PortInterfaceMap- The type of mapping does not match the expected type of Port pingViolation Interface: ServiceInterface referenced by a ServiceInstanceToPortPrototypeMapping. ProcessMappingVio- The type of mapping does not match the expected type of Port lation Interface InstanceSpecifier- The constructor was called with an Instance Specifier already AlreadyInUseViola- tion InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td instance td ara::core::InstanceSpecifier qualifying the wanted instance of the service Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c ara::com::ServiceHandle Container\u003c {\u003chierarchical-namespace-list-lower-proxy>}::proxy::{\u003cservice-interface-name> }Proxy::HandleType > > td As per [SWS_CM_00122] Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure","n":"FindService"},{"i":"SWS_CM_10383","k":"function","d":"COM","t":"function GetHandle [SWS_CM_10383] Upstream: RS_CM_00107 , RS_AP_00114 , RS_AP_00119 HandleType GetHandle () const noexcept; Return the handle used to create the proxy instance Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td \u003cSI-Namespace>::proxy::\u003cSI> Proxy :: HandleType td As per [SWS_CM_00312]","n":"GetHandle"},{"i":"SWS_CM_01073","k":"function","d":"COM","t":"function GetServiceState [SWS_CM_01073] ara::core::Result \u003c ara::com::ServiceState > GetServiceState () noexcept; Returns the state of the service Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c ara::com::ServiceState > td • If successful: an ara::core::Result containing a ara:: core::Result::value_type i.e. a ara::com :: ServiceState giving the service state • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure","n":"GetServiceState"},{"i":"SWS_CM_00131","k":"function","d":"COM","t":"function Proxy [SWS_CM_00131] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00121 explicit \u003cSI>Proxy (const HandleType &handle); Construction of the service proxy from the found handles (from any of the FindService()/ StartFindService() methods) Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI>Proxy class mono Exception-Sicherheit not exception safe class mono Verletzungen (Violations) ErroneousService- Provided HandleType is null or corrupt HandleViolation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handle td A found FindServiceHandle returned by any of the FindService() methods: • [SWS_CM_00122] • [SWS_CM_00622] or a FindServiceHandle found and sent to the assigned FindServiceHandler callback, by any of the StartFindService() methods: • [SWS_CM_00123] • [SWS_CM_00623] • [SWS_CM_11352] • [SWS_CM_11365] Exceptions ara::com :: As per ara::com::ComErrc::kServiceNotAvailable ComException","n":"Proxy"},{"i":"SWS_CM_00136","k":"function","d":"COM","t":"function Proxy [SWS_CM_00136] Upstream: RS_CM_00102 , RS_AP_00114 \u003cSI>Proxy (const \u003cSI-Namespace>::proxy:: \u003cSI>Proxy &other)=delete; Copy Constructor deletion Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI>Proxy class mono","n":"Proxy"},{"i":"SWS_CM_00137","k":"function","d":"COM","t":"function Proxy [SWS_CM_00137] Upstream: RS_CM_00102 , RS_AP_00114 \u003cSI>Proxy ( \u003cSI-Namespace>::proxy:: \u003cSI>Proxy &&other); Move constructor Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI>Proxy class mono Exception-Sicherheit not exception safe class mono Parameter (in) th Parameter th Beschreibung td other td Other object to move","n":"Proxy"},{"i":"SWS_CM_99444","k":"function","d":"COM","t":"function Proxy [SWS_CM_99444] Upstream: RS_CM_00102 , RS_AP_00114 ~ \u003cSI>Proxy (); Destruction of a Proxy Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI>Proxy class mono Exception-Sicherheit not exception safe class mono Verletzungen (Violations) DanglingSamplesVi- Precondition [SWS_CM_00087] has been violated. olation class mono","n":"Proxy"},{"i":"SWS_CM_00123","k":"function","d":"COM","t":"function Service [SWS_CM_00123] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 static ara::core::Result \u003c ara::com::FindServiceHandle > StartFind Service ( ara::com::FindServiceHandler \u003c \u003cSI-Namespace>::proxy:: \u003cSI>Proxy:: HandleType > handler, ara::com::InstanceIdentifier instance) noexcept; Find a service using an ara::com::InstanceIdentifier , with handler registration Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handler td A ara::com::FindServiceHandler for the corresponding ServiceProxy class, which gets called any time a AdaptivePlatformServiceInstance matching the given instance criteria is found. td instance td As per [SWS_CM_00122] Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c ara::com::FindServiceHandle > td • If successful: an ara::core::Result containing a ara:: core::Result::value_type containing a ara::com :: FindServiceHandle for this search/find request which is needed to stop the service availability monitoring and related firing of the given handler. • If unsuccessful: an ara::core::Result containing an ara:: core::Result::error_type i.e. a corresponding ara:: com::ComErrc Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure","n":"Service"},{"i":"SWS_CM_00623","k":"function","d":"COM","t":"function Service [SWS_CM_00623] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00121 , RS_AP_00127 , RS_AP_00137 static ara::core::Result \u003c ara::com::FindServiceHandle > StartFind Service ( ara::com::FindServiceHandler \u003c \u003cSI-Namespace>::proxy:: \u003cSI>Proxy:: HandleType > handler, ara::core::InstanceSpecifier instance) noexcept; Find a service using an ara::core::InstanceSpecifier , with handler registration Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of the executable, or it refers to a model element other than tegrityViolation a PortPrototype. PortInterfaceMap- The type of mapping does not match the expected type of Port pingViolation Interface: ServiceInterface referenced by a ServiceInstanceToPortPrototypeMapping. ProcessMappingVio- The type of mapping does not match the expected type of Port lation Interface InstanceSpecifier- The constructor was called with an Instance Specifier already AlreadyInUseViola- tion InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_00123] td instance td As per [SWS_CM_00622] Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c ara::com::FindService Handle > td As per [SWS_CM_00123] Fehler th Fehlercode th Beschreibung td ComErrc::kCommunicationFailure td rollback_semantics The network binding reported a recoverable communications error or a secure communication failure","n":"Service"},{"i":"SWS_CM_01074","k":"function","d":"COM","t":"function SetServiceStateChangeHandler [SWS_CM_01074] void SetServiceStateChangeHandler ( ara::com::ServiceStateHandler handler) noexcept; Register a service state change handler. This handler shall be called by the Communication Management implementation as soon as the service availability state has changed. The Handler may be overwritten during runtime. Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation class mono Parameter (in) th Parameter th Beschreibung td handler td The callback for service state change handler Rückgabewert th Typ th Beschreibung td None td","n":"SetServiceStateChangeHandler"},{"i":"SWS_CM_01076","k":"function","d":"COM","t":"function SetServiceStateChangeHandler [SWS_CM_01076] template \u003ctypename ExecutorT> void SetServiceStateChangeHandler ( ara::com::ServiceStateHandler handler, ExecutorT &&executor) noexcept; As per [SWS_CM_01074] but the method shall execute in a provided context. Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation class mono Template-Parameter th Parameter th Beschreibung td ExecutorT td As per [SWS_CM_11360] Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_01074] td executor td As per [SWS_CM_11360] Rückgabewert th Typ th Beschreibung td None td","n":"SetServiceStateChangeHandler"},{"i":"SWS_CM_11352","k":"function","d":"COM","t":"function StartFindService [SWS_CM_11352] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 template \u003ctypename ExecutorT> static ara::com::FindServiceHandle StartFindService ( ara::com::FindServiceHandler \u003c \u003cSI-Namespace>::proxy:: \u003cSI>Proxy:: HandleType > handler, ara::com::InstanceIdentifier instance, ExecutorT &&executor) noexcept; Find a service using an ara::com::InstanceIdentifier , with handler registration, - in a provided execution context Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Template-Parameter th Parameter th Beschreibung td ExecutorT td As per [SWS_CM_11360] Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_00123] td instance td As per [SWS_CM_00122] td executor td As per [SWS_CM_11360] Rückgabewert th Typ th Beschreibung td ara::com::FindServiceHandle td As per [SWS_CM_00123]","n":"StartFindService"},{"i":"SWS_CM_11365","k":"function","d":"COM","t":"function StartFindService [SWS_CM_11365] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00115 , RS_AP_00119 , RS_AP_00120 , RS_AP_00121 template \u003ctypename ExecutorT> static ara::com::FindServiceHandle StartFindService ( ara::com::FindServiceHandler \u003c \u003cSI-Namespace>::proxy:: \u003cSI>Proxy:: HandleType > handler, ara::core::InstanceSpecifier instance, ExecutorT &&executor) noexcept; Find a service using an ara::core::InstanceSpecifier , with handler registration, in a provided context Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of the executable, or it refers to a model element other than tegrityViolation a PortPrototype. PortInterfaceMap- The type of mapping does not match the expected type of Port pingViolation Interface: ServiceInterface referenced by a ServiceInstanceToPortPrototypeMapping. ProcessMappingVio- The type of mapping does not match the expected type of Port lation Interface InstanceSpecifier- The constructor was called with an Instance Specifier already AlreadyInUseViola- tion InvalidHandlerVio- Provided Callable handler does not exist or is null lation InsufficientPer- Refused by Grant Enforcement missionsViolation class mono Template-Parameter th Parameter th Beschreibung td ExecutorT td As per [SWS_CM_11360] Parameter (in) th Parameter th Beschreibung td handler td As per [SWS_CM_00123] td instance td As per [SWS_CM_00123] td executor td As per [SWS_CM_11360] Rückgabewert th Typ th Beschreibung td ara::com::FindServiceHandle td As per [SWS_CM_00123]","n":"StartFindService"},{"i":"SWS_CM_00125","k":"function","d":"COM","t":"function StopFindService [SWS_CM_00125] Upstream: RS_CM_00102 , RS_AP_00114 , RS_AP_00120 , RS_AP_00121 void StopFindService ( ara::com::FindServiceHandle handle) noexcept; Stop an ongoing StartFindService() - Stops receiving further notifications for the provided ara::com::FindServiceHandle Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td handle td The ara::com::FindServiceHandle returned by StartFind Service methods: • [SWS_CM_00123] • [SWS_CM_00623] • [SWS_CM_11352] • [SWS_CM_11365] Rückgabewert th Typ th Beschreibung td None td","n":"StopFindService"},{"i":"SWS_CM_01075","k":"function","d":"COM","t":"function UnsetServiceStateChangeHandler [SWS_CM_01075] void UnsetServiceStateChangeHandler () noexcept; As per [SWS_CM_01074] Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td None td","n":"UnsetServiceStateChangeHandler"},{"i":"SWS_CM_11551","k":"function","d":"COM","t":"function operator= [SWS_CM_11551] Upstream: RS_CM_00102 , RS_AP_00114 \u003cSI> Proxy & operator= (const \u003cSI-Namespace>::proxy:: \u003cSI> Proxy &other)=delete; Copy assignment constructor deletion Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono","n":"operator="},{"i":"SWS_CM_11552","k":"function","d":"COM","t":"function operator= [SWS_CM_11552] Upstream: RS_CM_00102 , RS_AP_00114 \u003cSI-Namespace>::proxy:: \u003cSI> Proxy & operator= ( \u003cSI-Namespace>::proxy:: \u003cSI> Proxy &&other) noexcept; Move assignment constructor Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Exception-Sicherheit exception safe class mono Parameter (in) th Parameter th Beschreibung td other td Other object to move Rückgabewert th Typ th Beschreibung td \u003cSI-Namespace>::proxy::{\u003cservice-interface-name> }Proxy & td The moved object","n":"operator="},{"i":"SWS_CM_99445","k":"variable","d":"COM","t":"variable \u003cEvent> [SWS_CM_99445] Upstream: RS_CM_00201 , RS_AP_00114 events:: \u003cEvent> \u003cEvent> ; Event member, one for each VariableDataPrototype defined in the ServiceInterface in the role event. Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Symbol \u003cEvent> class mono Typ events::\u003cEvent> class mono","n":"&lt;Event&gt;"},{"i":"SWS_CM_99446","k":"variable","d":"COM","t":"variable \u003cField> [SWS_CM_99446] Upstream: RS_CM_00216 , RS_AP_00114 fields:: \u003cField> \u003cField> ; Field member, one for each Field defined in the ServiceInterface in the role field. Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Symbol \u003cField> class mono Typ fields::\u003cField> class mono","n":"&lt;Field&gt;"},{"i":"SWS_CM_99447","k":"variable","d":"COM","t":"variable \u003cMethod> [SWS_CM_99447] Upstream: RS_CM_00212 , RS_CM_00213 , RS_AP_00114 methods:: \u003cMethod> \u003cMethod> ; Method member, one for each ClientServerOperation defined in the ServiceInterface in the role method. Header-Datei #include \"\u003cSiNamespaceDerivedDirectoryPath>/\u003cSiShortname>_proxy.h\" class mono Scope class \u003cSI-Namespace>::proxy::\u003cSI> Proxy class mono Symbol \u003cMethod> class mono Typ methods::\u003cMethod> class mono","n":"&lt;Method&gt;"}],"inbound":[{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P10_1085","d":"AUTOSAR_AP_EXP_ARAComAPI","p":10,"t":"FindService according to [SWS_CM_00622] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P10_1086","d":"AUTOSAR_AP_EXP_ARAComAPI","p":10,"t":"FindService with Instance Specifier according to\n[SWS_CM_00623] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P10_1087","d":"AUTOSAR_AP_EXP_ARAComAPI","p":10,"t":"StartFindService according to [SWS_CM_00123] of\n[3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P10_1088","d":"AUTOSAR_AP_EXP_ARAComAPI","p":10,"t":"StartFindService with ExecutorT according to\n[SWS_CM_11352] of [3]"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P10_1089","d":"AUTOSAR_AP_EXP_ARAComAPI","p":10,"t":"StopFindService according to [SWS_CM_00125] of\n[3]"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P39_053","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":39,"t":"[SWS_CM_00002] [SWS_CM_00003]\n[SWS_CM_00004] [SWS_CM_00006]\n[SWS_CM_00007] [SWS_CM_00008]\n[SWS_CM_00048] [SWS_CM_00049]\n[SWS_CM_00053] [SWS_CM_00054]\n[SWS_CM_00055] [SWS_CM_00056]\n[SWS_CM_00101] [SWS_CM_00111]\n[SWS_CM_00112] [SWS_CM_00113]\n[SWS_CM_00114] [SWS_CM_00116]\n[SWS_CM_00118] [SWS_CM_00119]\n[SWS_CM_00122] [SWS_CM_00123]\n[SWS_CM_00125] [SWS_CM_00130]\n[SWS_CM_00131] [SWS_CM_00134]\n[SWS_CM_00135] [SWS_CM_00136]\n[SWS_CM_00137] [SWS_CM_00152]\n[SWS_CM_00153] [SWS_CM_00162]\n[SWS_CM_00181] [SWS_CM_00191]\n[SWS_CM_00192] [SWS_CM_00193]\n[SWS_CM_00194] [SWS_CM_00195]\n[SWS_CM_00196] [SWS_CM_00197]\n[SWS_CM_00199] [SWS_CM_00226]\n[SWS_CM_00250] [SWS_CM_00302]\n[SWS_CM_00306] [SWS_CM_00309]\n[SWS_CM_00312] [SWS_CM_00317]\n[SWS_CM_00318] [SWS_CM_00319]\n[SWS_CM_00334] [SWS_CM_00351]\n[SWS_CM_00352] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_00701]\n[SWS_CM_00705] [SWS_CM_00721]\n[SWS_CM_00723] [SWS_CM_00726]\n[SWS_CM_00727] [SWS_CM_00810]\n[SWS_CM_01002] [SWS_CM_01005]\n[SWS_CM_01006] [SWS_CM_01009]\n[SWS_CM_0…"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P40_054","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":40,"t":"△\n[SWS_CM_11611] [SWS_CM_11615]\n[SWS_CM_12002] [SWS_CM_12003]\n[SWS_CM_12021] [SWS_CM_12022]\n[SWS_CM_12026] [SWS_CM_90420]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90434] [SWS_CM_90435]\n[SWS_CM_90437] [SWS_CM_90438]\n[SWS_CM_98444] [SWS_CM_99332]\n[SWS_CM_99333] [SWS_CM_99444]\n[SWS_CM_99445] [SWS_CM_99446]\n[SWS_CM_99447] [SWS_CM_99556]\n[SWS_CM_99557] [SWS_CM_99558]\n[SWS_CM_99559]"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P40_055","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":40,"t":"[SWS_CM_00118] [SWS_CM_00122]\n[SWS_CM_00123] [SWS_CM_00152]\n[SWS_CM_00153] [SWS_CM_00622]\n[SWS_CM_00623] [SWS_CM_11352]\n[SWS_CM_11365] [SWS_CM_12021]\n[SWS_CM_12022] [SWS_CM_12026]\n[SWS_CM_90421] [SWS_CM_90422]\n[SWS_CM_90438]"}]}</script></dialog>

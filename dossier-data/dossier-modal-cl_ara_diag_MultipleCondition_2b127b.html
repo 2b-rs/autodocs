@@ -1,0 +1,587 @@
+<dialog id="dossier-modal-cl_ara_diag_MultipleCondition_2b127b" class="dossier-modal dossier-workbench" data-dossier-sha="dc11ed5090fe7b9a" aria-labelledby="dossier-modal-cl_ara_diag_MultipleCondition_2b127b-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-cl_ara_diag_MultipleCondition_2b127b-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_diag_MultipleCondition_2b127b)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~4,172 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Class Guide: cl_ara_diag_MultipleCondition_2b127b" data-fragment="classes/cl_ara_diag_MultipleCondition_2b127b.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Klassen-Leitfaden (&lt;div class="ai class-guide"&gt;) für die C++ Klasse 'ara::diag::MultipleCondition' (adaptive, Modul diag) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR KLASSEN-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Klassen-Leitfaden für 'ara::diag::MultipleCondition' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "class_id": "cl_ara_diag_MultipleCondition_2b127b",
+ "class_name": "ara::diag::MultipleCondition",
+ "description": "Class for multiple condition operations.",
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P69_022",
+   "page": 69,
+   "text": "[SWS_DM_00553] [SWS_DM_00584]\n[SWS_DM_00586] [SWS_DM_00588]\n[SWS_DM_00590] [SWS_DM_00635]\n[SWS_DM_00648] [SWS_DM_00665]\n[SWS_DM_00713] [SWS_DM_00723]\n[SWS_DM_00733] [SWS_DM_00743]\n[SWS_DM_00753] [SWS_DM_00763]\n[SWS_DM_00773] [SWS_DM_00788]\n[SWS_DM_00798] [SWS_DM_00807]\n[SWS_DM_00832] [SWS_DM_01365]\n[SWS_DM_01524] [SWS_DM_01706]\n[SWS_DM_01737] [SWS_DM_02090]\n[SWS_DM_02091] [SWS_DM_02092]\n[SWS_DM_02093] [SWS_DM_02151]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P70_023",
+   "page": 70,
+   "text": "[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00631] [SWS_DM_00633]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_01364]\n[SWS_DM_01695] [SWS_DM_01696]\n[SWS_DM_01697] [SWS_DM_01702]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01972] [SWS_DM_01973]\n[SWS_DM_02121] [SWS_DM_02158]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P70_025",
+   "page": 70,
+   "text": "[SWS_DM_00543] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00619] [SWS_DM_00638]\n[SWS_DM_00649] [SWS_DM_00650]\n[SWS_DM_00653] [SWS_DM_00654]\n[SWS_DM_00655] [SWS_DM_00656]\n[SWS_DM_00666] [SWS_DM_00667]\n[SWS_DM_00668] [SWS_DM_00669]\n[SWS_DM_00670] [SWS_DM_00671]\n[SWS_DM_00672] [SWS_DM_00673]\n[SWS_DM_00674] [SWS_DM_00692]\n[SWS_DM_00694] [SWS_DM_00695]\n[SWS_DM_00696] [SWS_DM_00697]\n[SWS_DM_00698] [SWS_DM_00699]\n[SWS_DM_00700] [SWS_DM_00714]\n[SWS_DM_00715] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00744]\n[SWS_DM_00745] [SWS_DM_00755]\n[SWS_DM_00766] [SWS_DM_00776]\n[SWS_DM_00792] [SWS_DM_00802]\n[SWS_DM_00809] [SWS_DM_00918]\n[SWS_DM_00919] [SWS_DM_01016]\n[SWS_DM_01088] [SWS_DM_01102]\n[SWS_DM_01367] [SWS_DM_01698]\n[SWS_DM_01699] [SWS_DM_01707]\n[SWS_DM_01708] [SWS_DM_01709]\n[SWS_DM_01710] [SWS_DM_01711]\n[SWS_DM_01728] [SWS_DM_01729]\n▽"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P72_029",
+   "page": 72,
+   "text": "△\n[SWS_DM_02065] [SWS_DM_02066]\n[SWS_DM_02067] [SWS_DM_02068]\n[SWS_DM_02069] [SWS_DM_02070]\n[SWS_DM_02071] [SWS_DM_02072]\n[SWS_DM_02073] [SWS_DM_02074]\n[SWS_DM_02147] [SWS_DM_02148]\n[SWS_DM_02149] [SWS_DM_02150]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P72_030",
+   "page": 72,
+   "text": "[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_00831]\n[SWS_DM_01010] [SWS_DM_01124]\n[SWS_DM_01193] [SWS_DM_01325]\n[SWS_DM_01364] [SWS_DM_01480]\n[SWS_DM_01489] [SWS_DM_01695]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01823] [SWS_DM_01847]\n[SWS_DM_01864] [SWS_DM_01910]\n[SWS_DM_01962] [SWS_DM_01972]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P82_076",
+   "page": 82,
+   "text": "[SWS_DM_00568] [SWS_DM_00710]\n[SWS_DM_00711] [SWS_DM_00712]\n[SWS_DM_00713] [SWS_DM_00714]\n[SWS_DM_00715] [SWS_DM_00882]\n[SWS_DM_01093] [SWS_DM_01095]\n[SWS_DM_01726] [SWS_DM_01727]\n[SWS_DM_01728] [SWS_DM_01729]\n[SWS_DM_01730] [SWS_DM_01735]\n[SWS_DM_01736] [SWS_DM_01737]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P237_280",
+   "page": 237,
+   "text": "parameter to identify the condition for which the operation is applicable. Each\nDi-\nagnosticCondition\nrequires a mapping via\nDiagnosticMultipleCondition-\nPortMapping\nto express, that a multiple condition interface can be used for operation\non this condition.\nFunction wise both interfaces offer the same kind of operations and do have the same\nsemantics. For simplicity in this document the functionality of the condition class is\ndescribed only via\nara::diag::Condition\n. Whenever a functionality of the\nara::\ndiag::Condition\nclass is described, the same applies for the operation on the\nara::diag::MultipleCondition\n.\n[SWS_DM_01735] MultipleCondition ConditionHandleType Generation\nUpstream requirements:\nRS_Diag_04192\n⌈\nThe ConditionHandleType is a numerical value created by the following rules:\n• If no\nDiagnosticMultipleConditionPortMapping\n.\noverrideId\nexists, in\nalphabetical order of\nDiagnosticCondition\nshortname the DM assigns for\nthe first\nDiagnosticCondition\na number of 0x010000 and in…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P316_413",
+   "page": 316,
+   "text": "[SWS_DM_01730] Definition of API class ara::diag::MultipleCondition"
+  }
+ ],
+ "member_requirements": [
+  {
+   "id": "SWS_DM_01728",
+   "text": "function GetCondition [SWS_DM_01728] Upstream: RS_AP_00139 , RS_Diag_04192 ara::core::Future &amp;lt; ConditionType &amp;gt; GetCondition ( ConditionHandleType conditionHandle) noexcept; Get condition state of the requested condition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit conditional whether the function has to be implemented thread safe or non-thread safe is determined by the ConcurrencyType given in the constructor class mono Parameter (in) th Parameter th Beschreibung td conditionHandle td Identifies the requested condition Rückgabewert th Typ th Beschreibung td ara::core::Future &amp;lt;ConditionType &amp;gt; td the current condition Fehler th Fehlercode th Beschreibung td DiagErrc ::kInvalidArgument td rollback_semantics e.g. kPreFailed with internal debouncing td DiagErrc ::kServiceNotAvailable td rollback_semantics The call cannot be executed, because essential DM functionality is currently not available."
+  },
+  {
+   "id": "SWS_DM_01727",
+   "text": "function MultipleCondition [SWS_DM_01727] Upstream: RS_AP_00137 , RS_Diag_04192 , RS_AP_00170 , RS_AP_00171 , RS_AP_00172 , RS_AP_00173 explicit MultipleCondition (const ara::core::InstanceSpecifier &amp;amp;specifier) noexcept; Constructor of MultipleCondition Class. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of your executable, or it refers to a model element other tegrityViolation than a PortPrototype. PortInterfaceMap- A PortPrototype that is referenced by a pingViolation DiagnosticMultipleConditionPortMapping needs to be typed by a DiagnosticMultipleConditionInterface. ProcessMappingVio- Matching InstanceRef exists, but no matching (modelled) Process lation found that matches the (runtime) process. InstanceSpecifier- Violation message that is sent in case a constructor in the ara AlreadyInUseViola- framework was called with an InstanceSpecifier already in use in tion this process. class mono Parameter (in) th Parameter th Beschreibung td specifier td InstanceSpecifier to a PortPrototype of a DiagnosticMultipleConditionInterface"
+  },
+  {
+   "id": "SWS_DM_02071",
+   "text": "function MultipleCondition [SWS_DM_02071] Upstream: RS_AP_00147 MultipleCondition ( MultipleCondition &amp;amp;&amp;amp;) noexcept=delete; Move constructor of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono"
+  },
+  {
+   "id": "SWS_DM_02072",
+   "text": "function MultipleCondition [SWS_DM_02072] Upstream: RS_AP_00147 MultipleCondition ( MultipleCondition &amp;amp;)=delete; Copy constructor of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono"
+  },
+  {
+   "id": "SWS_DM_01729",
+   "text": "function SetCondition [SWS_DM_01729] Upstream: RS_AP_00139 , RS_Diag_04192 ara::core::Result &amp;lt; void &amp;gt; SetCondition ( ConditionHandleType condition Handle, ConditionType condition) noexcept; Set condition state of the requested condition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit conditional whether the function has to be implemented thread safe or non-thread safe is determined by the ConcurrencyType given in the constructor class mono Parameter (in) th Parameter th Beschreibung td conditionHandle td Identifies the requested condition td condition td current condition Rückgabewert th Typ th Beschreibung td ara::core::Result &amp;lt; void &amp;gt; td Returns nothing or an error. Fehler th Fehlercode th Beschreibung td DiagErrc ::kInvalidArgument td rollback_semantics e.g. kPreFailed with internal debouncing"
+  },
+  {
+   "id": "SWS_DM_02073",
+   "text": "function operator= [SWS_DM_02073] Upstream: RS_AP_00147 MultipleCondition &amp;amp; operator= ( MultipleCondition &amp;amp;)=delete; Copy assignment operator of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono"
+  },
+  {
+   "id": "SWS_DM_02074",
+   "text": "function operator= [SWS_DM_02074] Upstream: RS_AP_00147 MultipleCondition &amp;amp; operator= ( MultipleCondition &amp;amp;&amp;amp;)=delete; Move assignment operator of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono"
+  },
+  {
+   "id": "SWS_DM_01737",
+   "text": "function ~MultipleCondition [SWS_DM_01737] Upstream: RS_AP_00134 , RS_Diag_04192 ~ MultipleCondition () noexcept; Destructor of class Condition . Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono"
+  }
+ ],
+ "module": "diag",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "syntax": "class MultipleCondition final {...};"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="9a8249437a23d0a432b08a2866a3a364f392cd2c0ff510a096d182634134126f" data-trace-output="dc11ed5090fe7b9a402754d018c89ce38d584145c4c5c91377f1523cb43d8bed" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;The class &lt;code&gt;ara::diag::MultipleCondition&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01730" href="../spec/record.html?id=SWS_DM_01730"&gt;[SWS_DM_01730]&lt;/a&gt;) provides a bundled interface for managing multiple diagnostic conditions (Diagnostic Conditions) in the module &lt;em&gt;diag&lt;/em&gt; of the AUTOSAR Adaptive Platform. While individual conditions are typically mapped via the class &lt;code&gt;ara::diag::Condition&lt;/code&gt;, &lt;code&gt;ara::diag::MultipleCondition&lt;/code&gt; enables the control and querying of multiple conditions via a common port interface (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=237"&gt;AUTOSAR_AP_SWS_Diagnostics §[SWS_DM_01735] “MultipleCondition ConditionHandleType Generation”&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Functionally, both interfaces have the same semantics and offer similar operations (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=237"&gt;AUTOSAR_AP_SWS_Diagnostics §[SWS_DM_01735] “MultipleCondition ConditionHandleType Generation”&lt;/a&gt;). The essential difference is that in &lt;code&gt;ara::diag::MultipleCondition&lt;/code&gt;, each operation accepts an additional identifier of type &lt;code&gt;ConditionHandleType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01729" href="../spec/record.html?id=SWS_DM_01729"&gt;[SWS_DM_01729]&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;The central interaction partners of the class include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Adaptive Application&lt;/strong&gt;: Instantiates the class and controls the states of the assigned conditions using &lt;code&gt;SetCondition&lt;/code&gt; or reads them out via &lt;code&gt;GetCondition&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01729" href="../spec/record.html?id=SWS_DM_01729"&gt;[SWS_DM_01729]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Diagnostic Management (DM)&lt;/strong&gt;: Acts as a platform subsystem, processes state changes, and provides the condition information for diagnostic workflows (&lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Manifest modeling&lt;/strong&gt;: Each &lt;code&gt;DiagnosticCondition&lt;/code&gt; defined in the system requires a mapping via a &lt;code&gt;DiagnosticMultipleConditionPortMapping&lt;/code&gt; to specify that the multiple condition interface can be used for this condition (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=237"&gt;AUTOSAR_AP_SWS_Diagnostics §[SWS_DM_01735] “MultipleCondition ConditionHandleType Generation”&lt;/a&gt;). The assigned &lt;code&gt;PortPrototype&lt;/code&gt; must strictly be typed by a &lt;code&gt;DiagnosticMultipleConditionInterface&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="diagram" id="diag-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 707.96 118.80" style="max-width:944px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 104.4)"&gt;
+&lt;title&gt;G&lt;/title&gt;
+&lt;!-- app --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;app&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M105.89,-90C105.89,-90 18.88,-90 18.88,-90 12.88,-90 6.88,-84 6.88,-78 6.88,-78 6.88,-66 6.88,-66 6.88,-60 12.88,-54 18.88,-54 18.88,-54 105.89,-54 105.89,-54 111.89,-54 117.89,-60 117.89,-66 117.89,-66 117.89,-78 117.89,-78 117.89,-84 111.89,-90 105.89,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="62.39" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Adaptive Application&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- mc --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;mc&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M409.55,-63C409.55,-63 291.07,-63 291.07,-63 285.07,-63 279.07,-57 279.07,-51 279.07,-51 279.07,-39 279.07,-39 279.07,-33 285.07,-27 291.07,-27 291.07,-27 409.55,-27 409.55,-27 415.55,-27 421.55,-33 421.55,-39 421.55,-39 421.55,-51 421.55,-51 421.55,-57 415.55,-63 409.55,-63"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="350.31" y="-41.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html"&gt;ara::diag::MultipleCondition&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- app&amp;#45;&amp;gt;mc --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;app-&amp;gt;mc&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M118.18,-66.83C160.34,-62.84 219.31,-57.28 267.12,-52.76"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="267.42,-56.25 277.05,-51.82 266.76,-49.28 267.42,-56.25"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="201.92" y="-67.02" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01728" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01728"&gt;GetCondition&lt;/a&gt; / &lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01729" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01729"&gt;SetCondition&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- dm --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;dm&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M667.16,-63C667.16,-63 539.53,-63 539.53,-63 533.53,-63 527.53,-57 527.53,-51 527.53,-51 527.53,-39 527.53,-39 527.53,-33 533.53,-27 539.53,-27 539.53,-27 667.16,-27 667.16,-27 673.16,-27 679.16,-33 679.16,-39 679.16,-39 679.16,-51 679.16,-51 679.16,-57 673.16,-63 667.16,-63"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="603.35" y="-41.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Diagnostic Management (DM)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- mc&amp;#45;&amp;gt;dm --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;mc-&amp;gt;dm&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M421.9,-45C451.09,-45 485.22,-45 515.89,-45"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="515.8,-48.5 525.8,-45 515.8,-41.5 515.8,-48.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="474.54" y="-48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Zustandsabgleich&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- manifest --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;manifest&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M112.77,-36C112.77,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 112.77,0 112.77,0 118.77,0 124.77,-6 124.77,-12 124.77,-12 124.77,-24 124.77,-24 124.77,-30 118.77,-36 112.77,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="62.39" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Manifest / PortPrototype&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- manifest&amp;#45;&amp;gt;mc --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;manifest-&amp;gt;mc&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M125.07,-23.83C166.6,-27.75 221.84,-32.96 267.09,-37.24"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="266.73,-40.72 277.01,-38.17 267.39,-33.75 266.73,-40.72"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="201.92" y="-39.27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;InstanceSpecifier &amp;amp; Mapping&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Embedding of ara::diag::MultipleCondition and interaction with application, modeling, and Diagnostic Management. Sources: &lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01730" href="../spec/record.html?id=SWS_DM_01730"&gt;[SWS_DM_01730]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=237"&gt;AUTOSAR_AP_SWS_Diagnostics §[SWS_DM_01735] “MultipleCondition ConditionHandleType Generation”&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
+&lt;p&gt;An instance is created via the explicit constructor &lt;code&gt;MultipleCondition(const ara::core::InstanceSpecifier &amp;amp;specifier)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;). During instantiation, the object is bound to the &lt;code&gt;PortPrototype&lt;/code&gt; referenced by the &lt;code&gt;InstanceSpecifier&lt;/code&gt;. The constructor is specified to be exception-safe (&lt;em&gt;exception safe&lt;/em&gt;) and thread-safe (&lt;em&gt;thread-safe&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Regarding ownership and transferability, the class is strictly bound to its place of creation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The copy constructor is deleted: &lt;code&gt;MultipleCondition(MultipleCondition &amp;amp;) = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_02072" href="../spec/record.html?id=SWS_DM_02072"&gt;[SWS_DM_02072]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;The copy assignment operator is deleted: &lt;code&gt;operator=(MultipleCondition &amp;amp;) = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_02073" href="../spec/record.html?id=SWS_DM_02073"&gt;[SWS_DM_02073]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;The move constructor is deleted: &lt;code&gt;MultipleCondition(MultipleCondition &amp;amp;&amp;amp;) noexcept = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_02071" href="../spec/record.html?id=SWS_DM_02071"&gt;[SWS_DM_02071]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;The move assignment operator is deleted: &lt;code&gt;operator=(MultipleCondition &amp;amp;&amp;amp;) = delete&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_02074" href="../spec/record.html?id=SWS_DM_02074"&gt;[SWS_DM_02074]&lt;/a&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Instances of &lt;code&gt;ara::diag::MultipleCondition&lt;/code&gt; can thus be neither copied nor moved (&lt;em&gt;pinned object&lt;/em&gt;). They must remain at a fixed memory address throughout their entire period of use.&lt;/p&gt;
+&lt;p&gt;Destruction takes place via the destructor &lt;code&gt;~MultipleCondition() noexcept&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01737" href="../spec/record.html?id=SWS_DM_01737"&gt;[SWS_DM_01737]&lt;/a&gt;). This is exception-safe, but explicitly declared as &lt;em&gt;not thread-safe&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01737" href="../spec/record.html?id=SWS_DM_01737"&gt;[SWS_DM_01737]&lt;/a&gt;). The calling application must therefore ensure that no concurrent accesses to the object take place during the destruction process.&lt;/p&gt;
+&lt;p&gt;For the thread safety of ongoing operations (&lt;code&gt;GetCondition&lt;/code&gt; and &lt;code&gt;SetCondition&lt;/code&gt;), conditional synchronization (&lt;em&gt;conditional thread-safety&lt;/em&gt;) applies: Whether the methods must be implemented thread-safe or not thread-safe is determined by the &lt;code&gt;ConcurrencyType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01729" href="../spec/record.html?id=SWS_DM_01729"&gt;[SWS_DM_01729]&lt;/a&gt;). Interpretation: Since the C++ constructor in &lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt; does not feature a &lt;code&gt;ConcurrencyType&lt;/code&gt; argument, this property is likely configured in the software design via the port model and evaluated via the &lt;code&gt;InstanceSpecifier&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;The typical sequence for using &lt;code&gt;ara::diag::MultipleCondition&lt;/code&gt; is divided into the phases of instantiation, identification of the individual condition, and execution of write and read operations:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Instantiation and port binding&lt;/strong&gt;: The application instantiates &lt;code&gt;MultipleCondition&lt;/code&gt; specifying the matching &lt;code&gt;InstanceSpecifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Condition addressing via handles&lt;/strong&gt;: The individual conditions are addressed via numerical values of type &lt;code&gt;ConditionHandleType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01735" href="../spec/record.html?id=SWS_DM_01735"&gt;[SWS_DM_01735]&lt;/a&gt;). Unless a &lt;code&gt;DiagnosticMultipleConditionPortMapping.overrideId&lt;/code&gt; is defined in the model, the Diagnostic Manager assigns handles in alphabetical order of the &lt;code&gt;DiagnosticCondition&lt;/code&gt; short name starting at &lt;code&gt;0x010000&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=237"&gt;AUTOSAR_AP_SWS_Diagnostics §[SWS_DM_01735] “MultipleCondition ConditionHandleType Generation”&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Set state (SetCondition)&lt;/strong&gt;: The application updates the status of a condition synchronously via &lt;code&gt;SetCondition(conditionHandle, condition)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01729" href="../spec/record.html?id=SWS_DM_01729"&gt;[SWS_DM_01729]&lt;/a&gt;). The call returns a &lt;code&gt;ara::core::Result&amp;lt;void&amp;gt;&lt;/code&gt; informing about success or failure.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Query state (GetCondition)&lt;/strong&gt;: To read out the current status, the application calls &lt;code&gt;GetCondition(conditionHandle)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;). The call returns a &lt;code&gt;ara::core::Future&amp;lt;ConditionType&amp;gt;&lt;/code&gt;. The application can subsequently resolve and evaluate the result asynchronously.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="diagram" id="diag-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 658" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Nutzungspfad von &lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html"&gt;ara::diag::MultipleCondition&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="644" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="644" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="644" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Adaptive Application&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html"&gt;ara::diag::MultipleCondition&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Diagnostic Management&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;line x1="40" y1="120" x2="650" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Instanziierung&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html"&gt;MultipleCondition&lt;/a&gt;(specifier)&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;Port-Bindung &amp;amp; Registrierung&lt;/text&gt;&lt;line x1="345" y1="203" x2="555" y2="203" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="231" text-anchor="middle" font-size="11" fill="#28251d"&gt;Bereit&lt;/text&gt;&lt;line x1="555" y1="237" x2="345" y2="237" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="259" x2="650" y2="259" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="274" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Bedingung setzen&lt;/text&gt;&lt;text x="240.0" y="302" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01729" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01729"&gt;SetCondition&lt;/a&gt;(conditionHandle, condition)&lt;/text&gt;&lt;line x1="135" y1="308" x2="345" y2="308" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="336" text-anchor="middle" font-size="11" fill="#28251d"&gt;Zustandsaktualisierung&lt;/text&gt;&lt;line x1="345" y1="342" x2="555" y2="342" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="370" text-anchor="middle" font-size="11" fill="#28251d"&gt;Quittierung&lt;/text&gt;&lt;line x1="555" y1="376" x2="345" y2="376" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="404" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Result_d51722.html" href="../classes/cl_ara_core_Result_d51722.html"&gt;ara::core::Result&lt;/a&gt;&amp;lt;void&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="410" x2="135" y2="410" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="432" x2="650" y2="432" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="447" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Bedingung abfragen&lt;/text&gt;&lt;text x="240.0" y="475" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01728" href="../classes/cl_ara_diag_MultipleCondition_2b127b.html#SWS_DM_01728"&gt;GetCondition&lt;/a&gt;(conditionHandle)&lt;/text&gt;&lt;line x1="135" y1="481" x2="345" y2="481" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="509" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html"&gt;ara::core::Future&lt;/a&gt;&amp;lt;&lt;a class="diag-ref" data-ref="namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00710" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00710"&gt;ConditionType&lt;/a&gt;&amp;gt;&lt;/text&gt;&lt;line x1="345" y1="515" x2="135" y2="515" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="450.0" y="543" text-anchor="middle" font-size="11" fill="#28251d"&gt;Status abfragen&lt;/text&gt;&lt;line x1="345" y1="549" x2="555" y2="549" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="577" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00710" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00710"&gt;ConditionType&lt;/a&gt; liefern&lt;/text&gt;&lt;line x1="555" y1="583" x2="345" y2="583" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 135 597 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="612" text-anchor="start" font-size="11" fill="#28251d"&gt;Future auswerten&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Typical call sequence for managing and querying conditions using ara::diag::MultipleCondition. Sources: &lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_DM_01729" href="../spec/record.html?id=SWS_DM_01729"&gt;[SWS_DM_01729]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=237"&gt;AUTOSAR_AP_SWS_Diagnostics §[SWS_DM_01735] “MultipleCondition ConditionHandleType Generation”&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;Error cases when working with &lt;code&gt;ara::diag::MultipleCondition&lt;/code&gt; are divided into configuration and modeling violations during instantiation as well as runtime errors during method calls:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Initialization errors (violations)&lt;/strong&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01727" href="../spec/record.html?id=SWS_DM_01727"&gt;[SWS_DM_01727]&lt;/a&gt;):
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;InstanceSpecifierMappingIntegrityViolation&lt;/code&gt;: The &lt;code&gt;InstanceSpecifier&lt;/code&gt; cannot be resolved in the model context of the executable or refers to a model element that is not a &lt;code&gt;PortPrototype&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PortInterfaceMappingViolation&lt;/code&gt;: The referenced &lt;code&gt;PortPrototype&lt;/code&gt; is not type-compliantly typed by a &lt;code&gt;DiagnosticMultipleConditionInterface&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ProcessMappingViolation&lt;/code&gt;: A matching &lt;code&gt;InstanceRef&lt;/code&gt; exists in the model, but no matching modeled process exists for the current runtime process.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;InstanceSpecifierAlreadyInUseViolation&lt;/code&gt;: The constructor was called with a &lt;code&gt;InstanceSpecifier&lt;/code&gt; that is already occupied by another instance within the current process.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Runtime errors in SetCondition&lt;/strong&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01729" href="../spec/record.html?id=SWS_DM_01729"&gt;[SWS_DM_01729]&lt;/a&gt;):
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;DiagErrc::kInvalidArgument&lt;/code&gt;: Signals invalid arguments (rollback semantics, e.g. for &lt;code&gt;kPreFailed&lt;/code&gt; with internal debouncing).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Runtime errors in GetCondition&lt;/strong&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01728" href="../spec/record.html?id=SWS_DM_01728"&gt;[SWS_DM_01728]&lt;/a&gt;):
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;DiagErrc::kInvalidArgument&lt;/code&gt;: The specified &lt;code&gt;conditionHandle&lt;/code&gt; is invalid (rollback semantics).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DiagErrc::kServiceNotAvailable&lt;/code&gt;: The call cannot be executed because essential functionality of Diagnostic Management is currently not available (rollback semantics).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Der ConcurrencyType dürfte im Manifest/Port-Modell hinterlegt sein – Begründung: [SWS_DM_01728] und [SWS_DM_01729] erwähnen einen im Konstruktor festgelegten ConcurrencyType, während die C++-Signatur in [SWS_DM_01727] ausschließlich den InstanceSpecifier empfängt. --&gt;
+&lt;p class="ai-note"&gt;This class guide is based on the AUTOSAR Adaptive Platform R25-11 specification (diag module) and summarizes the requirements for ara::diag::MultipleCondition.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>9a8249437a23…</code></div>
+              <div><strong>Konstituierende Records:</strong> 8</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 8</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">16</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">16 von 16 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (8 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (8 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_01728","k":"function","d":"DIAG","t":"function GetCondition [SWS_DM_01728] Upstream: RS_AP_00139 , RS_Diag_04192 ara::core::Future \u003c ConditionType > GetCondition ( ConditionHandleType conditionHandle) noexcept; Get condition state of the requested condition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit conditional whether the function has to be implemented thread safe or non-thread safe is determined by the ConcurrencyType given in the constructor class mono Parameter (in) th Parameter th Beschreibung td conditionHandle td Identifies the requested condition Rückgabewert th Typ th Beschreibung td ara::core::Future \u003cConditionType > td the current condition Fehler th Fehlercode th Beschreibung td DiagErrc ::kInvalidArgument td rollback_semantics e.g. kPreFailed with internal debouncing td DiagErrc ::kServiceNotAvailable td rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.","n":"GetCondition"},{"i":"SWS_DM_01727","k":"function","d":"DIAG","t":"function MultipleCondition [SWS_DM_01727] Upstream: RS_AP_00137 , RS_Diag_04192 , RS_AP_00170 , RS_AP_00171 , RS_AP_00172 , RS_AP_00173 explicit MultipleCondition (const ara::core::InstanceSpecifier &specifier) noexcept; Constructor of MultipleCondition Class. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of your executable, or it refers to a model element other tegrityViolation than a PortPrototype. PortInterfaceMap- A PortPrototype that is referenced by a pingViolation DiagnosticMultipleConditionPortMapping needs to be typed by a DiagnosticMultipleConditionInterface. ProcessMappingVio- Matching InstanceRef exists, but no matching (modelled) Process lation found that matches the (runtime) process. InstanceSpecifier- Violation message that is sent in case a constructor in the ara AlreadyInUseViola- framework was called with an InstanceSpecifier already in use in tion this process. class mono Parameter (in) th Parameter th Beschreibung td specifier td InstanceSpecifier to a PortPrototype of a DiagnosticMultipleConditionInterface","n":"MultipleCondition"},{"i":"SWS_DM_02071","k":"function","d":"DIAG","t":"function MultipleCondition [SWS_DM_02071] Upstream: RS_AP_00147 MultipleCondition ( MultipleCondition &&) noexcept=delete; Move constructor of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono","n":"MultipleCondition"},{"i":"SWS_DM_02072","k":"function","d":"DIAG","t":"function MultipleCondition [SWS_DM_02072] Upstream: RS_AP_00147 MultipleCondition ( MultipleCondition &)=delete; Copy constructor of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono","n":"MultipleCondition"},{"i":"SWS_DM_01729","k":"function","d":"DIAG","t":"function SetCondition [SWS_DM_01729] Upstream: RS_AP_00139 , RS_Diag_04192 ara::core::Result \u003c void > SetCondition ( ConditionHandleType condition Handle, ConditionType condition) noexcept; Set condition state of the requested condition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit conditional whether the function has to be implemented thread safe or non-thread safe is determined by the ConcurrencyType given in the constructor class mono Parameter (in) th Parameter th Beschreibung td conditionHandle td Identifies the requested condition td condition td current condition Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c void > td Returns nothing or an error. Fehler th Fehlercode th Beschreibung td DiagErrc ::kInvalidArgument td rollback_semantics e.g. kPreFailed with internal debouncing","n":"SetCondition"},{"i":"SWS_DM_02073","k":"function","d":"DIAG","t":"function operator= [SWS_DM_02073] Upstream: RS_AP_00147 MultipleCondition & operator= ( MultipleCondition &)=delete; Copy assignment operator of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono","n":"operator="},{"i":"SWS_DM_02074","k":"function","d":"DIAG","t":"function operator= [SWS_DM_02074] Upstream: RS_AP_00147 MultipleCondition & operator= ( MultipleCondition &&)=delete; Move assignment operator of MultipleCondition. Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono","n":"operator="},{"i":"SWS_DM_01737","k":"function","d":"DIAG","t":"function ~MultipleCondition [SWS_DM_01737] Upstream: RS_AP_00134 , RS_Diag_04192 ~ MultipleCondition () noexcept; Destructor of class Condition . Header-Datei #include \"ara/diag/multiple_condition.h\" class mono Scope class ara::diag::MultipleCondition class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono","n":"~MultipleCondition"}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P69_022","d":"AUTOSAR_AP_SWS_Diagnostics","p":69,"t":"[SWS_DM_00553] [SWS_DM_00584]\n[SWS_DM_00586] [SWS_DM_00588]\n[SWS_DM_00590] [SWS_DM_00635]\n[SWS_DM_00648] [SWS_DM_00665]\n[SWS_DM_00713] [SWS_DM_00723]\n[SWS_DM_00733] [SWS_DM_00743]\n[SWS_DM_00753] [SWS_DM_00763]\n[SWS_DM_00773] [SWS_DM_00788]\n[SWS_DM_00798] [SWS_DM_00807]\n[SWS_DM_00832] [SWS_DM_01365]\n[SWS_DM_01524] [SWS_DM_01706]\n[SWS_DM_01737] [SWS_DM_02090]\n[SWS_DM_02091] [SWS_DM_02092]\n[SWS_DM_02093] [SWS_DM_02151]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P70_023","d":"AUTOSAR_AP_SWS_Diagnostics","p":70,"t":"[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00631] [SWS_DM_00633]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_01364]\n[SWS_DM_01695] [SWS_DM_01696]\n[SWS_DM_01697] [SWS_DM_01702]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01972] [SWS_DM_01973]\n[SWS_DM_02121] [SWS_DM_02158]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P70_025","d":"AUTOSAR_AP_SWS_Diagnostics","p":70,"t":"[SWS_DM_00543] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00619] [SWS_DM_00638]\n[SWS_DM_00649] [SWS_DM_00650]\n[SWS_DM_00653] [SWS_DM_00654]\n[SWS_DM_00655] [SWS_DM_00656]\n[SWS_DM_00666] [SWS_DM_00667]\n[SWS_DM_00668] [SWS_DM_00669]\n[SWS_DM_00670] [SWS_DM_00671]\n[SWS_DM_00672] [SWS_DM_00673]\n[SWS_DM_00674] [SWS_DM_00692]\n[SWS_DM_00694] [SWS_DM_00695]\n[SWS_DM_00696] [SWS_DM_00697]\n[SWS_DM_00698] [SWS_DM_00699]\n[SWS_DM_00700] [SWS_DM_00714]\n[SWS_DM_00715] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00744]\n[SWS_DM_00745] [SWS_DM_00755]\n[SWS_DM_00766] [SWS_DM_00776]\n[SWS_DM_00792] [SWS_DM_00802]\n[SWS_DM_00809] [SWS_DM_00918]\n[SWS_DM_00919] [SWS_DM_01016]\n[SWS_DM_01088] [SWS_DM_01102]\n[SWS_DM_01367] [SWS_DM_01698]\n[SWS_DM_01699] [SWS_DM_01707]\n[SWS_DM_01708] [SWS_DM_01709]\n[SWS_DM_01710] [SWS_DM_01711]\n[SWS_DM_01728] [SWS_DM_01729]\n▽"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P72_029","d":"AUTOSAR_AP_SWS_Diagnostics","p":72,"t":"△\n[SWS_DM_02065] [SWS_DM_02066]\n[SWS_DM_02067] [SWS_DM_02068]\n[SWS_DM_02069] [SWS_DM_02070]\n[SWS_DM_02071] [SWS_DM_02072]\n[SWS_DM_02073] [SWS_DM_02074]\n[SWS_DM_02147] [SWS_DM_02148]\n[SWS_DM_02149] [SWS_DM_02150]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P72_030","d":"AUTOSAR_AP_SWS_Diagnostics","p":72,"t":"[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_00831]\n[SWS_DM_01010] [SWS_DM_01124]\n[SWS_DM_01193] [SWS_DM_01325]\n[SWS_DM_01364] [SWS_DM_01480]\n[SWS_DM_01489] [SWS_DM_01695]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01823] [SWS_DM_01847]\n[SWS_DM_01864] [SWS_DM_01910]\n[SWS_DM_01962] [SWS_DM_01972]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P82_076","d":"AUTOSAR_AP_SWS_Diagnostics","p":82,"t":"[SWS_DM_00568] [SWS_DM_00710]\n[SWS_DM_00711] [SWS_DM_00712]\n[SWS_DM_00713] [SWS_DM_00714]\n[SWS_DM_00715] [SWS_DM_00882]\n[SWS_DM_01093] [SWS_DM_01095]\n[SWS_DM_01726] [SWS_DM_01727]\n[SWS_DM_01728] [SWS_DM_01729]\n[SWS_DM_01730] [SWS_DM_01735]\n[SWS_DM_01736] [SWS_DM_01737]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P237_280","d":"AUTOSAR_AP_SWS_Diagnostics","p":237,"t":"parameter to identify the condition for which the operation is applicable. Each\nDi-\nagnosticCondition\nrequires a mapping via\nDiagnosticMultipleCondition-\nPortMapping\nto express, that a multiple condition interface can be used for operation\non this condition.\nFunction wise both interfaces offer the same kind of operations and do have the same\nsemantics. For simplicity in this document the functionality of the condition class is\ndescribed only via\nara::diag::Condition\n. Whenever a functionality of the\nara::\ndiag::Condition\nclass is described, the same applies for the operation on the\nara::diag::MultipleCondition\n.\n[SWS_DM_01735] MultipleCondition ConditionHandleType Generation\nUpstream requirements:\nRS_Diag_04192\n⌈\nThe ConditionHandleType is a numerical value created by the following rules:\n• If no\nDiagnosticMultipleConditionPortMapping\n.\noverrideId\nexists, in\nalphabetical order of\nDiagnosticCondition\nshortname the DM assigns for\nthe first\nDiagnosticCondition\na number of 0x010000 and in…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P316_413","d":"AUTOSAR_AP_SWS_Diagnostics","p":316,"t":"[SWS_DM_01730] Definition of API class ara::diag::MultipleCondition"}]}</script></dialog>

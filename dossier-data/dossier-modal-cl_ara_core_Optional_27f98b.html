@@ -1,0 +1,637 @@
+<dialog id="dossier-modal-cl_ara_core_Optional_27f98b" class="dossier-modal dossier-workbench" data-dossier-sha="38c92f00ec03e46e" aria-labelledby="dossier-modal-cl_ara_core_Optional_27f98b-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-cl_ara_core_Optional_27f98b-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_Optional_27f98b)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~5,940 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Class Guide: cl_ara_core_Optional_27f98b" data-fragment="classes/cl_ara_core_Optional_27f98b.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Klassen-Leitfaden (&lt;div class="ai class-guide"&gt;) für die C++ Klasse 'ara::core::Optional' (adaptive, Modul core) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR KLASSEN-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Klassen-Leitfaden für 'ara::core::Optional' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "class_id": "cl_ara_core_Optional_27f98b",
+ "class_name": "ara::core::Optional",
+ "description": "Implementation of std::optional&amp;lt;T&amp;gt; type from [optional.syn]",
+ "dokumentstellen": [],
+ "member_requirements": [
+  {
+   "id": "SWS_CORE_01103",
+   "text": "function Optional [SWS_CORE_01103] constexpr Optional () noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01104",
+   "text": "function Optional [SWS_CORE_01104] constexpr Optional ( nullopt_t ) noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01105",
+   "text": "function Optional [SWS_CORE_01105] constexpr Optional (const Optional &amp;amp;other) noexcept( std::is_nothrow_ copy_constructible &amp;lt; T &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01106",
+   "text": "function Optional [SWS_CORE_01106] constexpr Optional ( Optional &amp;amp;&amp;amp;other) noexcept( std::is_nothrow_move_ constructible &amp;lt; T &amp;gt;::value); As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01107",
+   "text": "function Optional [SWS_CORE_01107] template &amp;lt;typename... Args&amp;gt; explicit constexpr Optional ( in_place_t , Args &amp;amp;&amp;amp;...) noexcept( std::is_nothrow_constructible &amp;lt; T , Args... &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01108",
+   "text": "function Optional [SWS_CORE_01108] template &amp;lt;typename U, typename... Args&amp;gt; explicit constexpr Optional ( in_place_t , std::initializer_list &amp;lt; U &amp;gt;, Args &amp;amp;&amp;amp;...) noexcept( std::is_nothrow_constructible &amp;lt; T , std::initializer_list &amp;lt; U &amp;gt; &amp;amp;, Args &amp;amp;&amp;amp;... &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01109",
+   "text": "function Optional [SWS_CORE_01109] template &amp;lt;typename U = T &amp;gt; {&amp;lt;cond-explicit-1&amp;gt;} constexpr Optional (U &amp;amp;&amp;amp;) noexcept( std::is_ nothrow_constructible &amp;lt; T , U &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01110",
+   "text": "function Optional [SWS_CORE_01110] template &amp;lt;typename U&amp;gt; {&amp;lt;cond-explicit-2&amp;gt;} Optional (const Optional &amp;lt; U &amp;gt; &amp;amp;) noexcept( std::is_ nothrow_constructible &amp;lt; T , const U &amp;amp; &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01111",
+   "text": "function Optional [SWS_CORE_01111] template &amp;lt;typename U&amp;gt; {&amp;lt;cond-explicit-3&amp;gt;} Optional ( Optional &amp;lt; U &amp;gt; &amp;amp;&amp;amp;) noexcept( std::is_ nothrow_constructible &amp;lt; T , U &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01119",
+   "text": "function emplace [SWS_CORE_01119] template &amp;lt;typename... Args&amp;gt; T &amp;amp; emplace (Args &amp;amp;&amp;amp;...) noexcept( std::is_nothrow_constructible &amp;lt; T , Args &amp;amp;&amp;amp;... &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01120",
+   "text": "function emplace [SWS_CORE_01120] template &amp;lt;typename U, typename... Args&amp;gt; T &amp;amp; emplace ( std::initializer_list &amp;lt; U &amp;gt;, Args &amp;amp;&amp;amp;...) noexcept( std::is_nothrow_constructible &amp;lt; T , std::initializer_list &amp;lt; U &amp;gt; &amp;amp;, Args &amp;amp;&amp;amp;... &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01129",
+   "text": "function has_value [SWS_CORE_01129] constexpr bool has_value () const noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01128",
+   "text": "function operator bool [SWS_CORE_01128] explicit constexpr operator bool () const noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01124",
+   "text": "function operator* [SWS_CORE_01124] constexpr const T &amp;amp; operator* () const &amp;amp; noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01125",
+   "text": "function operator* [SWS_CORE_01125] constexpr T &amp;amp; operator* () &amp;amp; noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01126",
+   "text": "function operator* [SWS_CORE_01126] constexpr T &amp;amp;&amp;amp; operator* () &amp;amp;&amp;amp;noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01127",
+   "text": "function operator* [SWS_CORE_01127] constexpr const T &amp;amp;&amp;amp; operator* () const &amp;amp;&amp;amp;noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01122",
+   "text": "function operator-&amp;gt; [SWS_CORE_01122] const T * operator-&amp;gt; () const noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. Function is not constexpr 3. A IsoStdBadOptionalAccessViolation may be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01123",
+   "text": "function operator-&amp;gt; [SWS_CORE_01123] T * operator-&amp;gt; () noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. Function is not constexpr 3. A IsoStdBadOptionalAccessViolation may be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01113",
+   "text": "function operator= [SWS_CORE_01113] Optional &amp;amp; operator= ( nullopt_t ) &amp;amp; noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01114",
+   "text": "function operator= [SWS_CORE_01114] Optional &amp;amp; operator= (const Optional &amp;amp;other) &amp;amp;noexcept( std::is_ nothrow_copy_constructible &amp;lt; T &amp;gt;::value &amp;amp;&amp;amp; std::is_nothrow_copy_ assignable &amp;lt; T &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier &amp;amp; Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01115",
+   "text": "function operator= [SWS_CORE_01115] Optional &amp;amp; operator= ( Optional &amp;amp;&amp;amp;other) &amp;amp;noexcept( std::is_nothrow_ move_assignable &amp;lt; T &amp;gt;::value &amp;amp;&amp;amp; std::is_nothrow_move_constructible &amp;lt; T &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is declared with the ref-qualifier &amp;amp; Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01116",
+   "text": "function operator= [SWS_CORE_01116] template &amp;lt;typename U = T &amp;gt; Optional &amp;amp; operator= (U &amp;amp;&amp;amp;u) &amp;amp;noexcept( std::is_nothrow_constructible &amp;lt; T , U &amp;gt;::value &amp;amp;&amp;amp; std::is_nothrow_assignable &amp;lt; T &amp;amp;, U &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier &amp;amp; Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01117",
+   "text": "function operator= [SWS_CORE_01117] template &amp;lt;typename U&amp;gt; Optional &amp;amp; operator= (const Optional &amp;lt; U &amp;gt; &amp;amp;) &amp;amp;noexcept( std::is_ nothrow_constructible &amp;lt; T , const U &amp;amp;&amp;gt;::value &amp;amp;&amp;amp; std::is_nothrow_ assignable &amp;lt; T &amp;amp;, const U &amp;amp;&amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier &amp;amp; Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01118",
+   "text": "function operator= [SWS_CORE_01118] template &amp;lt;typename U&amp;gt; Optional &amp;amp; operator= ( Optional &amp;lt; U &amp;gt; &amp;amp;&amp;amp;) &amp;amp;noexcept( std::is_nothrow_ constructible &amp;lt; T , U &amp;gt;::value &amp;amp;&amp;amp; std::is_nothrow_assignable &amp;lt; T &amp;amp;, U &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier &amp;amp; Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01136",
+   "text": "function reset [SWS_CORE_01136] void reset () noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01121",
+   "text": "function swap [SWS_CORE_01121] void swap ( Optional &amp;amp;) noexcept( std::is_nothrow_move_constructible &amp;lt; T &amp;gt;::value &amp;amp;&amp;amp; std::is_nothrow_move_assignable &amp;lt; T &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Conditions for the conditional exception safety are modified Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01130",
+   "text": "function value [SWS_CORE_01130] constexpr const T &amp;amp; value () const &amp;amp; noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01131",
+   "text": "function value [SWS_CORE_01131] constexpr T &amp;amp; value () &amp;amp; noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01132",
+   "text": "function value [SWS_CORE_01132] constexpr T &amp;amp;&amp;amp; value () &amp;amp;&amp;amp;noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01133",
+   "text": "function value [SWS_CORE_01133] constexpr const T &amp;amp;&amp;amp; value () const &amp;amp;&amp;amp;noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono"
+  },
+  {
+   "id": "SWS_CORE_01134",
+   "text": "function value_or [SWS_CORE_01134] template &amp;lt;typename U&amp;gt; constexpr T value_or (U &amp;amp;&amp;amp;) const &amp;amp;; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit not exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01135",
+   "text": "function value_or [SWS_CORE_01135] template &amp;lt;typename U&amp;gt; constexpr T value_or (U &amp;amp;&amp;amp;) &amp;amp;&amp;amp;; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit not exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01112",
+   "text": "function ~Optional [SWS_CORE_01112] ~ Optional () noexcept( std::is_nothrow_destructible &amp;lt; T &amp;gt;::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono"
+  },
+  {
+   "id": "SWS_CORE_01102",
+   "text": "type alias value_type [SWS_CORE_01102] using value_type = T ; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Symbol value_type class mono"
+  }
+ ],
+ "module": "core",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "syntax": "template &amp;lt;typename T&amp;gt; class Optional final {...};"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3f376eab63983a7fc9ebc2ea08c4dea7e6d26b89aca98e7a00c4e071b7ac7f53" data-trace-output="38c92f00ec03e46ee254b151167d8d8fd71ff05b5dd56b84206565fc7c6d8d3d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+  &lt;h4&gt;Context&lt;/h4&gt;
+  &lt;p&gt;The template class &lt;code&gt;ara::core::Optional&lt;/code&gt; provides a standard-compliant implementation of the C++ vocabulary type &lt;code&gt;std::optional&amp;lt;T&amp;gt;&lt;/code&gt; for the AUTOSAR Adaptive Platform. It serves as a container for an optionally present value of type &lt;code&gt;value_type&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01102" href="../spec/record.html?id=SWS_CORE_01102"&gt;[SWS_CORE_01102]&lt;/a&gt;) without allocating dynamic memory on the heap. Typical areas of application in the AUTOSAR environment include function returns, configuration parameters, or message elements whose presence cannot be guaranteed at runtime, thereby avoiding the use of sentinel values or raw pointers.&lt;/p&gt;
+
+  &lt;h4&gt;Lifecycle&lt;/h4&gt;
+  &lt;p&gt;An object of &lt;code&gt;ara::core::Optional&lt;/code&gt; is at any time in exactly one of two discrete states: either it contains no value (empty state) or it holds an initialized instance of type &lt;code&gt;T&lt;/code&gt; (engaged state).&lt;/p&gt;
+
+  &lt;div class="diagram" id="diag-lifecycle"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 510.19 136.75" style="max-width:680px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 122.35)"&gt;
+&lt;title&gt;OptionalLifecycle&lt;/title&gt;
+&lt;!-- Init --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Init&lt;/title&gt;
+&lt;ellipse fill="#ffffff" stroke="#01696f" stroke-width="1.2" cx="1.8" cy="-6" rx="1.8" ry="1.8"&gt;&lt;/ellipse&gt;
+&lt;/g&gt;
+&lt;!-- Uninitialized --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;Uninitialized&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M180.3,-78C180.3,-78 126.91,-78 126.91,-78 120.91,-78 114.91,-72 114.91,-66 114.91,-66 114.91,-54 114.91,-54 114.91,-48 120.91,-42 126.91,-42 126.91,-42 180.3,-42 180.3,-42 186.3,-42 192.3,-48 192.3,-54 192.3,-54 192.3,-66 192.3,-66 192.3,-72 186.3,-78 180.3,-78"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="153.6" y="-56.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Leer (nullopt)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Init&amp;#45;&amp;gt;Uninitialized --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Init-&amp;gt;Uninitialized&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M3.76,-6.34C11.4,-9.1 63.35,-27.83 103.75,-42.39"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="102.37,-45.61 112.96,-45.71 104.74,-39.03 102.37,-45.61"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="56.6" y="-52.84" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html" href="../classes/cl_ara_core_Optional_27f98b.html"&gt;Optional&lt;/a&gt;() /&lt;/text&gt;
+&lt;text text-anchor="middle" x="56.6" y="-40.84" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html" href="../classes/cl_ara_core_Optional_27f98b.html"&gt;Optional&lt;/a&gt;(nullopt)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Engaged --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;Engaged&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M382.73,-36C382.73,-36 319.57,-36 319.57,-36 313.57,-36 307.57,-30 307.57,-24 307.57,-24 307.57,-12 307.57,-12 307.57,-6 313.57,0 319.57,0 319.57,0 382.73,0 382.73,0 388.73,0 394.73,-6 394.73,-12 394.73,-12 394.73,-24 394.73,-24 394.73,-30 388.73,-36 382.73,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="351.15" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Wert vorhanden&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Init&amp;#45;&amp;gt;Engaged --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;Init-&amp;gt;Engaged&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M3.83,-5.94C17.71,-5.21 168.53,2.35 289.57,-8 291.63,-8.18 293.73,-8.38 295.84,-8.62"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="295.22,-12.06 305.58,-9.85 296.1,-5.12 295.22,-12.06"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="153.6" y="-18.15" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html" href="../classes/cl_ara_core_Optional_27f98b.html"&gt;Optional&lt;/a&gt;(val) /&lt;/text&gt;
+&lt;text text-anchor="middle" x="153.6" y="-6.15" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html" href="../classes/cl_ara_core_Optional_27f98b.html"&gt;Optional&lt;/a&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04013" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04013"&gt;in_place&lt;/a&gt;, ...)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Uninitialized&amp;#45;&amp;gt;Engaged --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Uninitialized-&amp;gt;Engaged&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M192.51,-60.35C219.94,-59.71 257.64,-56.98 289.57,-48 295.86,-46.23 302.29,-43.81 308.49,-41.1"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="309.57,-44.46 317.15,-37.05 306.6,-38.12 309.57,-44.46"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="252.59" y="-74.27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html#SWS_CORE_01119" href="../classes/cl_ara_core_Optional_27f98b.html#SWS_CORE_01119"&gt;emplace&lt;/a&gt;(...) /&lt;/text&gt;
+&lt;text text-anchor="middle" x="252.59" y="-62.27" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;operator=(val)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Terminated --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;Terminated&lt;/title&gt;
+&lt;ellipse fill="#ffffff" stroke="#01696f" stroke-width="1.2" cx="479.59" cy="-66" rx="1.8" ry="1.8"&gt;&lt;/ellipse&gt;
+&lt;/g&gt;
+&lt;!-- Uninitialized&amp;#45;&amp;gt;Terminated --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;Uninitialized-&amp;gt;Terminated&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M189.58,-78.44C197.89,-81.98 206.89,-85.16 215.62,-87 293.5,-103.46 315.51,-94.84 394.73,-87 424.08,-84.1 431.62,-82.71 459.79,-74 462.22,-73.25 464.75,-72.3 467.15,-71.31"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="468.46,-74.56 476.09,-67.2 465.54,-68.2 468.46,-74.56"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="351.15" y="-98.95" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;~&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html" href="../classes/cl_ara_core_Optional_27f98b.html"&gt;Optional&lt;/a&gt;()&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Engaged&amp;#45;&amp;gt;Uninitialized --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;Engaged-&amp;gt;Uninitialized&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M307.09,-12.61C280.21,-10.71 245.21,-10.93 215.62,-20 205.04,-23.25 194.57,-28.94 185.37,-35.03"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="183.45,-32.1 177.3,-40.73 187.49,-37.81 183.45,-32.1"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="252.59" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html#SWS_CORE_01136" href="../classes/cl_ara_core_Optional_27f98b.html#SWS_CORE_01136"&gt;reset&lt;/a&gt;() /&lt;/text&gt;
+&lt;text text-anchor="middle" x="252.59" y="-23" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;operator=(nullopt)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Engaged&amp;#45;&amp;gt;Engaged --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;Engaged-&amp;gt;Engaged&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M335.75,-36.15C333.38,-45.54 338.51,-54 351.15,-54 358.06,-54 362.72,-51.47 365.15,-47.64"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="368.61,-48.16 366.34,-37.81 361.66,-47.31 368.61,-48.16"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="351.15" y="-69" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html#SWS_CORE_01119" href="../classes/cl_ara_core_Optional_27f98b.html#SWS_CORE_01119"&gt;emplace&lt;/a&gt;(...) /&lt;/text&gt;
+&lt;text text-anchor="middle" x="351.15" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;operator=(val)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Engaged&amp;#45;&amp;gt;Terminated --&gt;
+&lt;g id="edge7" class="edge"&gt;
+&lt;title&gt;Engaged-&amp;gt;Terminated&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M394.96,-34.25C420.15,-43.81 450.19,-55.22 466.53,-61.42"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="465.26,-64.68 475.85,-64.96 467.74,-58.14 465.26,-64.68"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="436.26" y="-60.95" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;~&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Optional_27f98b.html" href="../classes/cl_ara_core_Optional_27f98b.html"&gt;Optional&lt;/a&gt;()&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+  &lt;p class="diagram-note"&gt;State diagram: Lifecycle and state transitions of an ara::core::Optional object. Sources: &lt;a class="spec-record-ref" data-req="SWS_CORE_01103" href="../spec/record.html?id=SWS_CORE_01103"&gt;[SWS_CORE_01103]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01104" href="../spec/record.html?id=SWS_CORE_01104"&gt;[SWS_CORE_01104]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01107" href="../spec/record.html?id=SWS_CORE_01107"&gt;[SWS_CORE_01107]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01113" href="../spec/record.html?id=SWS_CORE_01113"&gt;[SWS_CORE_01113]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01119" href="../spec/record.html?id=SWS_CORE_01119"&gt;[SWS_CORE_01119]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01136" href="../spec/record.html?id=SWS_CORE_01136"&gt;[SWS_CORE_01136]&lt;/a&gt;&lt;/p&gt;
+
+  &lt;p&gt;Creation into the empty state occurs via the default constructor (&lt;a class="spec-record-ref" data-req="SWS_CORE_01103" href="../spec/record.html?id=SWS_CORE_01103"&gt;[SWS_CORE_01103]&lt;/a&gt;) or by passing &lt;code&gt;nullopt_t&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01104" href="../spec/record.html?id=SWS_CORE_01104"&gt;[SWS_CORE_01104]&lt;/a&gt;); both are unconditionally declared as &lt;code&gt;noexcept&lt;/code&gt;. An engaged state can be assumed directly via copy and move constructors (&lt;a class="spec-record-ref" data-req="SWS_CORE_01105" href="../spec/record.html?id=SWS_CORE_01105"&gt;[SWS_CORE_01105]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01106" href="../spec/record.html?id=SWS_CORE_01106"&gt;[SWS_CORE_01106]&lt;/a&gt;), by direct value passing (&lt;a class="spec-record-ref" data-req="SWS_CORE_01109" href="../spec/record.html?id=SWS_CORE_01109"&gt;[SWS_CORE_01109]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01110" href="../spec/record.html?id=SWS_CORE_01110"&gt;[SWS_CORE_01110]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01111" href="../spec/record.html?id=SWS_CORE_01111"&gt;[SWS_CORE_01111]&lt;/a&gt;), or in-place construction using &lt;code&gt;in_place_t&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01107" href="../spec/record.html?id=SWS_CORE_01107"&gt;[SWS_CORE_01107]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01108" href="../spec/record.html?id=SWS_CORE_01108"&gt;[SWS_CORE_01108]&lt;/a&gt;). These constructors are conditionally exception-safe (&lt;code&gt;conditionally noexcept&lt;/code&gt;), depending on whether the construction of type &lt;code&gt;T&lt;/code&gt; itself is guaranteed to be &lt;code&gt;noexcept&lt;/code&gt;.&lt;/p&gt;
+  &lt;p&gt;State transitions at runtime are controlled by the methods &lt;code&gt;emplace&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01119" href="../spec/record.html?id=SWS_CORE_01119"&gt;[SWS_CORE_01119]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01120" href="../spec/record.html?id=SWS_CORE_01120"&gt;[SWS_CORE_01120]&lt;/a&gt;) for constructing the value in place and the assignment operators (&lt;a class="spec-record-ref" data-req="SWS_CORE_01114" href="../spec/record.html?id=SWS_CORE_01114"&gt;[SWS_CORE_01114]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01115" href="../spec/record.html?id=SWS_CORE_01115"&gt;[SWS_CORE_01115]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01116" href="../spec/record.html?id=SWS_CORE_01116"&gt;[SWS_CORE_01116]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01117" href="../spec/record.html?id=SWS_CORE_01117"&gt;[SWS_CORE_01117]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01118" href="../spec/record.html?id=SWS_CORE_01118"&gt;[SWS_CORE_01118]&lt;/a&gt;), which are provided with the ref-qualifier &lt;code&gt;&amp;amp;&lt;/code&gt;. The transition back to the empty state is performed via &lt;code&gt;reset()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01136" href="../spec/record.html?id=SWS_CORE_01136"&gt;[SWS_CORE_01136]&lt;/a&gt;) or the assignment of &lt;code&gt;nullopt_t&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01113" href="../spec/record.html?id=SWS_CORE_01113"&gt;[SWS_CORE_01113]&lt;/a&gt;). Two instances can be swapped using &lt;code&gt;swap&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01121" href="../spec/record.html?id=SWS_CORE_01121"&gt;[SWS_CORE_01121]&lt;/a&gt;). The destructor (&lt;a class="spec-record-ref" data-req="SWS_CORE_01112" href="../spec/record.html?id=SWS_CORE_01112"&gt;[SWS_CORE_01112]&lt;/a&gt;) destroys the contained value, if present, and is conditionally exception-safe according to &lt;code&gt;std::is_nothrow_destructible&amp;lt;T&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Usage Path&lt;/h4&gt;
+  &lt;p&gt;In typical use, calling components first check for the presence of a value before accessing it:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;Check:&lt;/strong&gt; The check is performed explicitly via &lt;code&gt;has_value()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01129" href="../spec/record.html?id=SWS_CORE_01129"&gt;[SWS_CORE_01129]&lt;/a&gt;) or via the explicit conversion operator &lt;code&gt;operator bool()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01128" href="../spec/record.html?id=SWS_CORE_01128"&gt;[SWS_CORE_01128]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Direct access:&lt;/strong&gt; If a value is guaranteed to be present, the instance of &lt;code&gt;T&lt;/code&gt; can be accessed directly via &lt;code&gt;operator*&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01124" href="../spec/record.html?id=SWS_CORE_01124"&gt;[SWS_CORE_01124]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01125" href="../spec/record.html?id=SWS_CORE_01125"&gt;[SWS_CORE_01125]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01126" href="../spec/record.html?id=SWS_CORE_01126"&gt;[SWS_CORE_01126]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01127" href="../spec/record.html?id=SWS_CORE_01127"&gt;[SWS_CORE_01127]&lt;/a&gt;) or pointer dereferencing &lt;code&gt;operator-&amp;gt;&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01122" href="../spec/record.html?id=SWS_CORE_01122"&gt;[SWS_CORE_01122]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01123" href="../spec/record.html?id=SWS_CORE_01123"&gt;[SWS_CORE_01123]&lt;/a&gt;). Likewise, the member function &lt;code&gt;value()&lt;/code&gt; is available in all reference and const qualifications (&lt;a class="spec-record-ref" data-req="SWS_CORE_01130" href="../spec/record.html?id=SWS_CORE_01130"&gt;[SWS_CORE_01130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01131" href="../spec/record.html?id=SWS_CORE_01131"&gt;[SWS_CORE_01131]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01132" href="../spec/record.html?id=SWS_CORE_01132"&gt;[SWS_CORE_01132]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01133" href="../spec/record.html?id=SWS_CORE_01133"&gt;[SWS_CORE_01133]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Fallback value (fallback):&lt;/strong&gt; If a default value is to be used in the absence of a value, &lt;code&gt;value_or()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01134" href="../spec/record.html?id=SWS_CORE_01134"&gt;[SWS_CORE_01134]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01135" href="../spec/record.html?id=SWS_CORE_01135"&gt;[SWS_CORE_01135]&lt;/a&gt;) provides a compact way to return either the contained value or the passed replacement value.&lt;/li&gt;
+  &lt;/ul&gt;
+
+  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
+  &lt;p&gt;In AUTOSAR, the error behavior upon unauthorized access deliberately deviates from the ISO C++ standard:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;Violation on empty access:&lt;/strong&gt; Both &lt;code&gt;value()&lt;/code&gt; and the operators &lt;code&gt;operator*&lt;/code&gt; and &lt;code&gt;operator-&amp;gt;&lt;/code&gt; are declared as &lt;code&gt;noexcept&lt;/code&gt;. If &lt;code&gt;*this&lt;/code&gt; does not contain a value (precondition violation), a &lt;code&gt;IsoStdBadOptionalAccessViolation&lt;/code&gt; is triggered (&lt;a class="spec-record-ref" data-req="SWS_CORE_01122" href="../spec/record.html?id=SWS_CORE_01122"&gt;[SWS_CORE_01122]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01123" href="../spec/record.html?id=SWS_CORE_01123"&gt;[SWS_CORE_01123]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01124" href="../spec/record.html?id=SWS_CORE_01124"&gt;[SWS_CORE_01124]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01125" href="../spec/record.html?id=SWS_CORE_01125"&gt;[SWS_CORE_01125]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01126" href="../spec/record.html?id=SWS_CORE_01126"&gt;[SWS_CORE_01126]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01127" href="../spec/record.html?id=SWS_CORE_01127"&gt;[SWS_CORE_01127]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01130" href="../spec/record.html?id=SWS_CORE_01130"&gt;[SWS_CORE_01130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01131" href="../spec/record.html?id=SWS_CORE_01131"&gt;[SWS_CORE_01131]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01132" href="../spec/record.html?id=SWS_CORE_01132"&gt;[SWS_CORE_01132]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01133" href="../spec/record.html?id=SWS_CORE_01133"&gt;[SWS_CORE_01133]&lt;/a&gt;). Interpretation: Since these functions are specified as &lt;code&gt;noexcept&lt;/code&gt;, this violation is unlikely to be propagated as a catchable C++ exception in the AUTOSAR runtime environment, but typically leads to a controlled termination or safety handling path.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Exception safety of &lt;code&gt;value_or&lt;/code&gt;:&lt;/strong&gt; The overloads of &lt;code&gt;value_or()&lt;/code&gt; are explicitly specified as &lt;em&gt;not exception safe&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_CORE_01134" href="../spec/record.html?id=SWS_CORE_01134"&gt;[SWS_CORE_01134]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CORE_01135" href="../spec/record.html?id=SWS_CORE_01135"&gt;[SWS_CORE_01135]&lt;/a&gt;). If the creation or conversion of the fallback value fails, exceptions can escape to the outside.&lt;/li&gt;
+  &lt;/ul&gt;
+
+  &lt;p class="ai-note"&gt;This guide is based exclusively on the AUTOSAR specification for ara::core::Optional (Release R25-11).&lt;/p&gt;
+  &lt;!-- annahmen: 1) IsoStdBadOptionalAccessViolation fungiert in den noexcept-Signaturen von value(), operator* und operator-&gt; als plattformspezifischer Verletzungs- bzw. Abbruchmechanismus statt als reguläre C++-Exception – Begründung: Alle betroffenen Zugriffsfunktionen sind noexcept deklariert, was ein herkömmliches Werfen von Ausnahmen unterbindet. --&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3f376eab6398…</code></div>
+              <div><strong>Konstituierende Records:</strong> 35</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 0</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">35</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">34</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">35 von 35 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (35 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (0 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CORE_01103","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01103] constexpr Optional () noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01104","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01104] constexpr Optional ( nullopt_t ) noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01105","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01105] constexpr Optional (const Optional &other) noexcept( std::is_nothrow_ copy_constructible \u003c T >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01106","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01106] constexpr Optional ( Optional &&other) noexcept( std::is_nothrow_move_ constructible \u003c T >::value); As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01107","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01107] template \u003ctypename... Args> explicit constexpr Optional ( in_place_t , Args &&...) noexcept( std::is_nothrow_constructible \u003c T , Args... >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01108","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01108] template \u003ctypename U, typename... Args> explicit constexpr Optional ( in_place_t , std::initializer_list \u003c U >, Args &&...) noexcept( std::is_nothrow_constructible \u003c T , std::initializer_list \u003c U > &, Args &&... >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01109","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01109] template \u003ctypename U = T > {\u003ccond-explicit-1>} constexpr Optional (U &&) noexcept( std::is_ nothrow_constructible \u003c T , U >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01110","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01110] template \u003ctypename U> {\u003ccond-explicit-2>} Optional (const Optional \u003c U > &) noexcept( std::is_ nothrow_constructible \u003c T , const U & >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01111","k":"function","d":"CORE","t":"function Optional [SWS_CORE_01111] template \u003ctypename U> {\u003ccond-explicit-3>} Optional ( Optional \u003c U > &&) noexcept( std::is_ nothrow_constructible \u003c T , U >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"Optional"},{"i":"SWS_CORE_01119","k":"function","d":"CORE","t":"function emplace [SWS_CORE_01119] template \u003ctypename... Args> T & emplace (Args &&...) noexcept( std::is_nothrow_constructible \u003c T , Args &&... >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"emplace"},{"i":"SWS_CORE_01120","k":"function","d":"CORE","t":"function emplace [SWS_CORE_01120] template \u003ctypename U, typename... Args> T & emplace ( std::initializer_list \u003c U >, Args &&...) noexcept( std::is_nothrow_constructible \u003c T , std::initializer_list \u003c U > &, Args &&... >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"emplace"},{"i":"SWS_CORE_01129","k":"function","d":"CORE","t":"function has_value [SWS_CORE_01129] constexpr bool has_value () const noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono","n":"has_value"},{"i":"SWS_CORE_01128","k":"function","d":"CORE","t":"function operator bool [SWS_CORE_01128] explicit constexpr operator bool () const noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono","n":"operator"},{"i":"SWS_CORE_01124","k":"function","d":"CORE","t":"function operator* [SWS_CORE_01124] constexpr const T & operator* () const & noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"operator*"},{"i":"SWS_CORE_01125","k":"function","d":"CORE","t":"function operator* [SWS_CORE_01125] constexpr T & operator* () & noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"operator*"},{"i":"SWS_CORE_01126","k":"function","d":"CORE","t":"function operator* [SWS_CORE_01126] constexpr T && operator* () &&noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"operator*"},{"i":"SWS_CORE_01127","k":"function","d":"CORE","t":"function operator* [SWS_CORE_01127] constexpr const T && operator* () const &&noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"operator*"},{"i":"SWS_CORE_01122","k":"function","d":"CORE","t":"function operator-> [SWS_CORE_01122] const T * operator-> () const noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. Function is not constexpr 3. A IsoStdBadOptionalAccessViolation may be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"operator-&gt;"},{"i":"SWS_CORE_01123","k":"function","d":"CORE","t":"function operator-> [SWS_CORE_01123] T * operator-> () noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. Function is not constexpr 3. A IsoStdBadOptionalAccessViolation may be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"operator-&gt;"},{"i":"SWS_CORE_01113","k":"function","d":"CORE","t":"function operator= [SWS_CORE_01113] Optional & operator= ( nullopt_t ) & noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono","n":"operator="},{"i":"SWS_CORE_01114","k":"function","d":"CORE","t":"function operator= [SWS_CORE_01114] Optional & operator= (const Optional &other) &noexcept( std::is_ nothrow_copy_constructible \u003c T >::value && std::is_nothrow_copy_ assignable \u003c T >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier & Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"operator="},{"i":"SWS_CORE_01115","k":"function","d":"CORE","t":"function operator= [SWS_CORE_01115] Optional & operator= ( Optional &&other) &noexcept( std::is_nothrow_ move_assignable \u003c T >::value && std::is_nothrow_move_constructible \u003c T >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is declared with the ref-qualifier & Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"operator="},{"i":"SWS_CORE_01116","k":"function","d":"CORE","t":"function operator= [SWS_CORE_01116] template \u003ctypename U = T > Optional & operator= (U &&u) &noexcept( std::is_nothrow_constructible \u003c T , U >::value && std::is_nothrow_assignable \u003c T &, U >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier & Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"operator="},{"i":"SWS_CORE_01117","k":"function","d":"CORE","t":"function operator= [SWS_CORE_01117] template \u003ctypename U> Optional & operator= (const Optional \u003c U > &) &noexcept( std::is_ nothrow_constructible \u003c T , const U &>::value && std::is_nothrow_ assignable \u003c T &, const U &>::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier & Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"operator="},{"i":"SWS_CORE_01118","k":"function","d":"CORE","t":"function operator= [SWS_CORE_01118] template \u003ctypename U> Optional & operator= ( Optional \u003c U > &&) &noexcept( std::is_nothrow_ constructible \u003c T , U >::value && std::is_nothrow_assignable \u003c T &, U >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept 2. Function is declared with the ref-qualifier & Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"operator="},{"i":"SWS_CORE_01136","k":"function","d":"CORE","t":"function reset [SWS_CORE_01136] void reset () noexcept; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono","n":"reset"},{"i":"SWS_CORE_01121","k":"function","d":"CORE","t":"function swap [SWS_CORE_01121] void swap ( Optional &) noexcept( std::is_nothrow_move_constructible \u003c T >::value && std::is_nothrow_move_assignable \u003c T >::value); As per corresponding usage in [optional] except for the following deviations: 1. Conditions for the conditional exception safety are modified Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"swap"},{"i":"SWS_CORE_01130","k":"function","d":"CORE","t":"function value [SWS_CORE_01130] constexpr const T & value () const & noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"value"},{"i":"SWS_CORE_01131","k":"function","d":"CORE","t":"function value [SWS_CORE_01131] constexpr T & value () & noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"value"},{"i":"SWS_CORE_01132","k":"function","d":"CORE","t":"function value [SWS_CORE_01132] constexpr T && value () &&noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"value"},{"i":"SWS_CORE_01133","k":"function","d":"CORE","t":"function value [SWS_CORE_01133] constexpr const T && value () const &&noexcept; As per corresponding usage in [optional] except for the following deviations: 1. The function is noexcept 2. A IsoStdBadOptionalAccessViolation may conditionally be raised (see condition) Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit exception safe class mono Verletzungen (Violations) IsoStdBadOption- If *this does not contain a value alAccessViolation class mono","n":"value"},{"i":"SWS_CORE_01134","k":"function","d":"CORE","t":"function value_or [SWS_CORE_01134] template \u003ctypename U> constexpr T value_or (U &&) const &; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit not exception safe class mono","n":"value_or"},{"i":"SWS_CORE_01135","k":"function","d":"CORE","t":"function value_or [SWS_CORE_01135] template \u003ctypename U> constexpr T value_or (U &&) &&; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit not exception safe class mono","n":"value_or"},{"i":"SWS_CORE_01112","k":"function","d":"CORE","t":"function ~Optional [SWS_CORE_01112] ~ Optional () noexcept( std::is_nothrow_destructible \u003c T >::value); As per corresponding usage in [optional] except for the following deviations: 1. Function is conditionally noexcept Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Exception-Sicherheit conditionally exception safe class mono","n":"~Optional"},{"i":"SWS_CORE_01102","k":"type","d":"CORE","t":"type alias value_type [SWS_CORE_01102] using value_type = T ; As per corresponding usage in [optional] Header-Datei #include \"ara/core/optional.h\" class mono Scope class ara::core::Optional class mono Symbol value_type class mono","n":"alias"}],"inbound":[]}</script></dialog>

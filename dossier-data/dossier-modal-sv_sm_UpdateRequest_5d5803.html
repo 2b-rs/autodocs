@@ -1,0 +1,487 @@
+<dialog id="dossier-modal-sv_sm_UpdateRequest_5d5803" class="dossier-modal dossier-workbench" data-dossier-sha="b9c5cbb5279f6497" aria-labelledby="dossier-modal-sv_sm_UpdateRequest_5d5803-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-sv_sm_UpdateRequest_5d5803-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Service Guide: sv_sm_UpdateRequest_5d5803)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~4,063 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Service Guide: sv_sm_UpdateRequest_5d5803" data-fragment="services/sv_sm_UpdateRequest_5d5803.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Service-Leitfaden (&lt;div class="ai service-guide"&gt;) für das Service-Interface 'UpdateRequest' (adaptive, Modul sm) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR SERVICE-LEITFÄDEN (ara::com / Adaptive Platform):
+- 400–900 Wörter in 3–5 thematischen Abschnitten mit &lt;h4&gt;-Überschriften:
+  1. Rolle und Systemkontext der Service-Schnittstelle (Provider/Consumer, Client/Server, Proxy/Skeleton, Interaktionspartner).
+  2. Methoden, Ereignisse und Felder (Aufrufsemantik, Parameter, synchrone Rückmeldung via Future/Promise oder Fire-and-Forget).
+  3. Lebenszyklus, Sitzungsabläufe und Zustandsabhängigkeiten (z. B. Initialisierung, Update-Sitzungen, Vorbedingungen).
+  4. Fehlerbehandlung und Application Errors (spezifische ErrorDomains und Fehlercodes wie kOperationRejected, kOperationFailed).
+- Jeder Absatz enthält mindestens einen Beleg (Requirement-ID oder Dokumentstelle).
+- Optional ein Sequenzdiagramm für den zentralen Methoden-/Ereignisablauf zwischen Client und Service.
+- Das Fragment beginnt mit &lt;div class="ai service-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Service-Leitfaden für Service-Interface 'UpdateRequest' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P137_187",
+   "page": 137,
+   "text": "9.2 Provided Service Interfaces\n9.2.1 UpdateRequest\nThe\nUpdateRequest\ninterface is intended to be used by\nUpdate and Configura-\ntion Management\nto interact with\nState Management\nto perform updates (includ-\ning installation and removal) of\nSoftware Clusters\n.\nPort\n[SWS_SM_91016] Definition of Port UpdateRequest provided by functional clus-\nter SM\nUpstream requirements:\nRS_SM_00001, RS_SM_00004, RS_AP_00150\n⌈"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P137_189",
+   "page": 137,
+   "text": "⌋\nService Interface\n[SWS_SM_91017] Definition of ServiceInterface UpdateRequest\nUpstream requirements:\nRS_SM_00001, RS_SM_00004, RS_AP_00150, RS_AP_00115, RS_-\nAP_00120, RS_AP_00142, RS_AP_00119, RS_AP_00121\n⌈"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P29_051",
+   "page": 29,
+   "text": "[SWS_SM_00031] Nested recovery handling\nUpstream requirements:\nRS_SM_00601\n⌈\nIn case of a nested recovery\nState Management\nshall provide the same result to\nall RecoveryHandler() calls related to the same affected\nStateMachine\nbased on\nthe result when the latest recovery action issued by the last RecoveryHandler() call is\nfinished.\n⌋\nNote: A \"nested recovery\" is very project specific and therefore an implementation\ndetail. For\nStateMachine\napproach this detail is explained in chapter 7.7.5.\nNote:\nPlatform Health Management\nmonitors the return of the RecoveryHan-\ndler() with a configurable timeout. If\nState Management\ngives no response to Re-\ncoveryHandler()\nPlatform Health Management\nwill do its own countermeasures\nby triggering or stop triggering the serviced watchdog.\nIf\nState Management\nis used in Safety Critical Platform, then it is suggested to\nuse Alive/Logical/Deadline supervision(s) and report their checkpoints appropriately\nto\nPlatform Health Management\n.\nHow issue notificatio…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P31_053",
+   "page": 31,
+   "text": "Additionally\nState Management\nhas to persist the information about an ongoing up-\ndate session, thus, after a machine restart (independently if restart was expected or\nnot),\nUpdate and Configuration Management\ncan continue to update. To con-\ntinue the update in a consistent way it will be needed that only a few\nFunction\nGroups\nwill be set to a meaningful\nFunction Group State\n(project specific). At\nleast\nUpdate and Configuration Management\nhas to be in a running state.\n[SWS_SM_00204] Persist session status\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall persist information about ongoing update session, thus it\ncan be read out after any kind of\nMachine\nreset.\n⌋\n[SWS_SM_00213] UpdateRequest method call rejection\nUpstream requirements:\nRS_SM_00004\n⌈\nA call to\nPrepareUpdate\n,\nVerifyUpdate\n,\nPrepareRollback\nor\nStopUpdate-\nSession\nshall return\nkOperationRejected\nif invoked outside an active update ses-\nsion.\n⌋\nPlease note that\nRequestUpdateSession\nis not in the list of the reject…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P32_054",
+   "page": 32,
+   "text": "[SWS_SM_00205] Stop update session\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUp-\ndate and Configuration Management\nwith the method call\nStopUpdateSes-\nsion\nthus it can inform\nState Management\nthat the update session is finished.\n⌋\nDuring the update there will be up to three different steps, depending if a\nSoftware\nCluster\nis installed, removed or updated. If and when the steps are done depends ad-\nditionally on the success or fail of the previous steps. To support\nUpdate and Con-\nfiguration Management\nto request these steps\nState Management\nprovides\nthree different methods as part of the service interface\nUpdateRequest\n.\n[SWS_SM_00206] prepare update\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUpdate\nand Configuration Management\nwith the method call\nPrepareUpdate\nthus it\ncan request\nState Management\nto perform a preparation of the given\nFunction\nGroups\nto be…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P33_055",
+   "page": 33,
+   "text": "when one of these functions is called, before\nState Management\ngranted the right\nto update.\nOnce the\nResetMachine\ncall is processed, the\nMachine\nwill be restarted. This\nmeans\nMachine\nwill go through a startup sequence and it will need to restore its\nown state. For\nState Management\nthis means a transition to the ContinueUpdate\nstate for the\nStateMachine\nof type\nController\n. However, the\nUpdate and Con-\nfiguration Management\nand the\nState Management\nneed to synchronize again.\nFor this reason the result of the\nResetMachine\nrequest is connected to a notification\nmechanism, which can be traced by the\nUpdate and Configuration Manage-\nment\n.\n[SWS_SM_00211] ResetMachine notification\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUpdate\nand Configuration Management\nwith the field\nResetMachineNotifier\nthus it\ncan trace the status from the\nResetMachine\ncall during and after it is performed.\n⌋\n[SWS_SM_00212] Default value for ResetMachin…"
+  }
+ ],
+ "member_requirements": [
+  {
+   "id": "SWS_SM_91105",
+   "text": "service method PrepareRollback [SWS_SM_91105] Upstream: RS_SM_00001 , RS_SM_00004 PrepareRollback (IN FunctionGroupListType functionGroupList) Has to be called by Update And Configuration Management after State Management allowed to update. Scope service interface UpdateRequest class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td functionGroupList td IN td FunctionGroupListType td The list of FunctionGroups within the SoftwareCluster to be prepared to roll back. Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kOperationFailed td Requested operation failed."
+  },
+  {
+   "id": "SWS_SM_91103",
+   "text": "service method PrepareUpdate [SWS_SM_91103] Upstream: RS_SM_00001 , RS_SM_00004 PrepareUpdate (IN FunctionGroupListType functionGroupList) Has to be called by Update And Configuration Management after State Management allowed to update. State Management will decline this request when RequestUpdateSession was not called before successfully. Scope service interface UpdateRequest class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td functionGroupList td IN td FunctionGroupListType td The list of FunctionGroups within the SoftwareCluster to be prepared to be updated. Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kOperationFailed td Requested operation failed."
+  },
+  {
+   "id": "SWS_SM_91102",
+   "text": "service method RequestUpdateSession [SWS_SM_91102] Upstream: RS_SM_00001 , RS_SM_00004 RequestUpdateSession () Has to be called by Update And Configuration Management once it has to start interaction with State Management. State Management might decline this request when machine is not in a state to be updated. Scope service interface UpdateRequest class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kNotAllowedMultipleUpdateSessions td Request for new session was rejected as only single active (update) session is allowed."
+  },
+  {
+   "id": "SWS_SM_91100",
+   "text": "service method ResetMachine [SWS_SM_91100] Upstream: RS_SM_00001 , RS_SM_00004 ResetMachine () Requests a reset of the machine. Before the reset is performed all information within the machine shall be persisted. Request will be rejected when RequestUpdateSession was not called successfully before. Scope service interface UpdateRequest class mono Fire &amp;amp; Forget true class mono Version 1.0 class mono Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state."
+  },
+  {
+   "id": "SWS_SM_91106",
+   "text": "service field ResetMachineNotifier [SWS_SM_91106] Upstream: RS_SM_00001 , RS_SM_00004 ResetMachineNotifier : UpdateStatusType // Field (Getter, Notifier) To be set by State Management to inform UCM about changes during and after processing the method ResetMachine(). Scope service interface UpdateRequest class mono Typ UpdateStatusType class mono Version 1.0 class mono HasGetter true class mono HasSetter false class mono HasNotifier true class mono"
+  },
+  {
+   "id": "SWS_SM_91101",
+   "text": "service method StopUpdateSession [SWS_SM_91101] Upstream: RS_SM_00001 , RS_SM_00004 StopUpdateSession () Has to be called by Update And Configuration Management once the update is finished to let State Management know that the update is done and the Machine is in a stable state. Request will be rejected when RequestUpdateSession was not called successfully before. Scope service interface UpdateRequest class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state."
+  },
+  {
+   "id": "SWS_SM_91104",
+   "text": "service method VerifyUpdate [SWS_SM_91104] Upstream: RS_SM_00001 , RS_SM_00004 VerifyUpdate (IN FunctionGroupListType functionGroupList) Has to be called by Update And Configuration Management after State Management allowed to update and the update preparation has been done. State Management will decline this request when Prepare Update was not called before successfully. Scope service interface UpdateRequest class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td functionGroupList td IN td FunctionGroupListType td The list of FunctionGroups within the SoftwareCluster to be verified. Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kOperationFailed td Requested operation failed."
+  }
+ ],
+ "module": "sm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "service_id": "sv_sm_UpdateRequest_5d5803",
+ "service_name": "UpdateRequest"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai service-guide" data-trace-prompt="adc7382c7923d5b5f14569a847fd4fbfb2a2f62599c163daaa7e3b38eed60670" data-trace-output="b9c5cbb5279f6497ac0884fd2a64cc5f3e185ebbdb595c9b66da806ac47371f6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Role and system context of the service interface&lt;/h4&gt;
+&lt;p&gt;
+The service interface &lt;code&gt;UpdateRequest&lt;/code&gt; serves as a standardized interaction bridge between the functional cluster &lt;em&gt;State Management&lt;/em&gt; (SM) and &lt;em&gt;Update and Configuration Management&lt;/em&gt; (UCM) on the AUTOSAR Adaptive Platform &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=137"&gt;AUTOSAR_AP_SWS_StateManagement §9.2 “Provided Service Interfaces”&lt;/a&gt;. In this architectural context, State Management acts as a server or service provider via a provided port &lt;a class="spec-record-ref" data-req="SWS_SM_91016" href="../spec/record.html?id=SWS_SM_91016"&gt;[SWS_SM_91016]&lt;/a&gt;, whereas UCM acts as a service consumer. The purpose of the interface is to coordinate updates of software clusters—including installation, update, and uninstallation—in a controlled manner with the system and function group states of the machine &lt;a class="spec-record-ref" data-req="SWS_SM_91017" href="../spec/record.html?id=SWS_SM_91017"&gt;[SWS_SM_91017]&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;h4&gt;Methods and Fields of the Service Interface&lt;/h4&gt;
+&lt;p&gt;
+The service interface &lt;code&gt;UpdateRequest&lt;/code&gt; comprises six methods and one field for status monitoring. With the exception of the machine reset, all methods have synchronous client-server semantics (&lt;code&gt;Fire &amp;amp; Forget: false&lt;/code&gt;), so that the caller waits for execution or confirmation by State Management:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;RequestUpdateSession()&lt;/code&gt;: Initiates an update session without parameters; is rejected if the system is not updatable or a session is already running &lt;a class="spec-record-ref" data-req="SWS_SM_91102" href="../spec/record.html?id=SWS_SM_91102"&gt;[SWS_SM_91102]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PrepareUpdate(IN FunctionGroupListType functionGroupList)&lt;/code&gt;: Prepares the function groups of the affected software cluster for the update &lt;a class="spec-record-ref" data-req="SWS_SM_91103" href="../spec/record.html?id=SWS_SM_91103"&gt;[SWS_SM_91103]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00206" href="../spec/record.html?id=SWS_SM_00206"&gt;[SWS_SM_00206]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;VerifyUpdate(IN FunctionGroupListType functionGroupList)&lt;/code&gt;: Verifies the updated function groups after preparation &lt;a class="spec-record-ref" data-req="SWS_SM_91104" href="../spec/record.html?id=SWS_SM_91104"&gt;[SWS_SM_91104]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PrepareRollback(IN FunctionGroupListType functionGroupList)&lt;/code&gt;: Prepares the rollback of the specified function groups if an update fails &lt;a class="spec-record-ref" data-req="SWS_SM_91105" href="../spec/record.html?id=SWS_SM_91105"&gt;[SWS_SM_91105]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ResetMachine()&lt;/code&gt;: Triggers a restart of the machine; this is a fire-and-forget method (&lt;code&gt;Fire &amp;amp; Forget: true&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_SM_91100" href="../spec/record.html?id=SWS_SM_91100"&gt;[SWS_SM_91100]&lt;/a&gt;. Before the reset, all relevant information must be persisted.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;StopUpdateSession()&lt;/code&gt;: Closes the active update session and signals a stable machine state again to State Management &lt;a class="spec-record-ref" data-req="SWS_SM_91101" href="../spec/record.html?id=SWS_SM_91101"&gt;[SWS_SM_91101]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00205" href="../spec/record.html?id=SWS_SM_00205"&gt;[SWS_SM_00205]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ResetMachineNotifier&lt;/code&gt;: A field of type &lt;code&gt;UpdateStatusType&lt;/code&gt; with getter and notifier (no setter), via which UCM can track the status during and after the execution of &lt;code&gt;ResetMachine()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_91106" href="../spec/record.html?id=SWS_SM_91106"&gt;[SWS_SM_91106]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00211" href="../spec/record.html?id=SWS_SM_00211"&gt;[SWS_SM_00211]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;Lifecycle, session sequences, and state dependencies&lt;/h4&gt;
+&lt;p&gt;
+The interaction strictly requires an active update session. UCM must first call &lt;code&gt;RequestUpdateSession()&lt;/code&gt; before subsequent operations are permitted &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=31"&gt;AUTOSAR_AP_SWS_StateManagement §7.7 “Update Handling”&lt;/a&gt;. State Management persists information about an ongoing update session so that UCM can consistently resume the process even after a planned or unplanned machine reset &lt;a class="spec-record-ref" data-req="SWS_SM_00204" href="../spec/record.html?id=SWS_SM_00204"&gt;[SWS_SM_00204]&lt;/a&gt;. After a restart via &lt;code&gt;ResetMachine()&lt;/code&gt;, State Management transitions to state &lt;code&gt;ContinueUpdate&lt;/code&gt;, where UCM must be in a runnable state to synchronize again via &lt;code&gt;ResetMachineNotifier&lt;/code&gt; &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=33"&gt;AUTOSAR_AP_SWS_StateManagement §7.7 “Update Handling”&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+Within the session, the sub-steps depend on one another: &lt;code&gt;VerifyUpdate()&lt;/code&gt; strictly requires a previously successful call to &lt;code&gt;PrepareUpdate()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_91104" href="../spec/record.html?id=SWS_SM_91104"&gt;[SWS_SM_91104]&lt;/a&gt;. Depending on whether software clusters are installed, deleted, or updated, UCM executes the corresponding steps &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_StateManagement&amp;amp;page=32"&gt;AUTOSAR_AP_SWS_StateManagement §7.7 “Update Handling”&lt;/a&gt;. Once all changes are completed, &lt;code&gt;StopUpdateSession()&lt;/code&gt; terminates the process &lt;a class="spec-record-ref" data-req="SWS_SM_00205" href="../spec/record.html?id=SWS_SM_00205"&gt;[SWS_SM_00205]&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;div class="diagram" id="diag-update-session-flow"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 480 746" font-family="Helvetica,sans-Serif" style="max-width:480px"&gt;&lt;text x="240.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf einer Update-Sitzung über &lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html" href="../services/sv_sm_UpdateRequest_5d5803.html"&gt;UpdateRequest&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="732" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="732" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;UCM (Consumer)&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/sm.html" href="../modules/sm.html"&gt;State Management&lt;/a&gt; (Provider)&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="468" width="400" height="139" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;line x1="40" y1="120" x2="440" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 1. Sitzungsinitialisierung&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91102" href="../services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91102"&gt;RequestUpdateSession&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 345 183 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="337" y="198" text-anchor="end" font-size="11" fill="#28251d"&gt;Sitzung validieren &amp;amp; persistieren&lt;/text&gt;&lt;text x="240.0" y="234" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erfolg (void)&lt;/text&gt;&lt;line x1="345" y1="240" x2="135" y2="240" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="262" x2="440" y2="262" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="277" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 2. Vorbereitung und Verifikation&lt;/text&gt;&lt;text x="240.0" y="305" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91103" href="../services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91103"&gt;PrepareUpdate&lt;/a&gt;(functionGroupList)&lt;/text&gt;&lt;line x1="135" y1="311" x2="345" y2="311" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="339" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erfolg (void)&lt;/text&gt;&lt;line x1="345" y1="345" x2="135" y2="345" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="373" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91104" href="../services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91104"&gt;VerifyUpdate&lt;/a&gt;(functionGroupList)&lt;/text&gt;&lt;line x1="135" y1="379" x2="345" y2="379" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="407" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erfolg (void)&lt;/text&gt;&lt;line x1="345" y1="413" x2="135" y2="413" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="435" x2="440" y2="435" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="450" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 3. Optional: Reset &amp;amp; Synchronisation&lt;/text&gt;&lt;path d="M 40 468 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="483" font-size="11" font-weight="bold" fill="#28251d"&gt;opt&lt;/text&gt;&lt;text x="96" y="483" font-size="11" font-style="italic" fill="#28251d"&gt;Neustart erforderlich&lt;/text&gt;&lt;text x="240.0" y="508" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91100" href="../services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91100"&gt;ResetMachine&lt;/a&gt;() [Fire &amp;amp; Forget]&lt;/text&gt;&lt;line x1="135" y1="514" x2="345" y2="514" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 345 528 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="337" y="543" text-anchor="end" font-size="11" fill="#28251d"&gt;Zustand persistieren &amp;amp; Reset ausführen&lt;/text&gt;&lt;text x="240.0" y="579" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91106" href="../services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91106"&gt;ResetMachineNotifier&lt;/a&gt; (Status-Update)&lt;/text&gt;&lt;line x1="345" y1="585" x2="135" y2="585" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="625" x2="440" y2="625" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="640" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 4. Sitzungsabschluss&lt;/text&gt;&lt;text x="240.0" y="668" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91101" href="../services/sv_sm_UpdateRequest_5d5803.html#SWS_SM_91101"&gt;StopUpdateSession&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="674" x2="345" y2="674" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="702" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erfolg (void)&lt;/text&gt;&lt;line x1="345" y1="708" x2="135" y2="708" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Typical interaction flow between UCM and State Management via the service interface UpdateRequest. Sources: &lt;a class="spec-record-ref" data-req="SWS_SM_91102" href="../spec/record.html?id=SWS_SM_91102"&gt;[SWS_SM_91102]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91103" href="../spec/record.html?id=SWS_SM_91103"&gt;[SWS_SM_91103]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91104" href="../spec/record.html?id=SWS_SM_91104"&gt;[SWS_SM_91104]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91100" href="../spec/record.html?id=SWS_SM_91100"&gt;[SWS_SM_91100]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91106" href="../spec/record.html?id=SWS_SM_91106"&gt;[SWS_SM_91106]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_SM_91101" href="../spec/record.html?id=SWS_SM_91101"&gt;[SWS_SM_91101]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Error handling and Application Errors&lt;/h4&gt;
+&lt;p&gt;
+The methods of &lt;code&gt;UpdateRequest&lt;/code&gt; define specific application errors (Application Errors) to signal unauthorized calls or internal error states:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;kOperationRejected&lt;/code&gt;: Returned by all methods if the request is not permitted due to the current internal state of State Management or the machine &lt;a class="spec-record-ref" data-req="SWS_SM_91102" href="../spec/record.html?id=SWS_SM_91102"&gt;[SWS_SM_91102]&lt;/a&gt;. In particular, calls to &lt;code&gt;PrepareUpdate&lt;/code&gt;, &lt;code&gt;VerifyUpdate&lt;/code&gt;, &lt;code&gt;PrepareRollback&lt;/code&gt;, or &lt;code&gt;StopUpdateSession&lt;/code&gt; return this error if they occur outside an active update session &lt;a class="spec-record-ref" data-req="SWS_SM_00213" href="../spec/record.html?id=SWS_SM_00213"&gt;[SWS_SM_00213]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kNotAllowedMultipleUpdateSessions&lt;/code&gt;: Occurs exclusively with &lt;code&gt;RequestUpdateSession()&lt;/code&gt;, since only a single active update session may exist concurrently on a machine at any given time &lt;a class="spec-record-ref" data-req="SWS_SM_91102" href="../spec/record.html?id=SWS_SM_91102"&gt;[SWS_SM_91102]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kOperationFailed&lt;/code&gt;: Indicates in &lt;code&gt;PrepareUpdate&lt;/code&gt;, &lt;code&gt;VerifyUpdate&lt;/code&gt;, and &lt;code&gt;PrepareRollback&lt;/code&gt; that the requested preparation or verification operation on the function groups failed &lt;a class="spec-record-ref" data-req="SWS_SM_91103" href="../spec/record.html?id=SWS_SM_91103"&gt;[SWS_SM_91103]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_91104" href="../spec/record.html?id=SWS_SM_91104"&gt;[SWS_SM_91104]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_91105" href="../spec/record.html?id=SWS_SM_91105"&gt;[SWS_SM_91105]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p class="ai-note"&gt;This guide was generated based on the specification of AUTOSAR Adaptive R25-11.&lt;/p&gt;
+
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>adc7382c7923…</code></div>
+              <div><strong>Konstituierende Records:</strong> 7</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 6</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">13 von 13 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (7 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (6 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SM_91105","k":"service","d":"SM","t":"service method PrepareRollback [SWS_SM_91105] Upstream: RS_SM_00001 , RS_SM_00004 PrepareRollback (IN FunctionGroupListType functionGroupList) Has to be called by Update And Configuration Management after State Management allowed to update. Scope service interface UpdateRequest class mono Fire & Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td functionGroupList td IN td FunctionGroupListType td The list of FunctionGroups within the SoftwareCluster to be prepared to roll back. Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kOperationFailed td Requested operation failed.","n":"method"},{"i":"SWS_SM_91103","k":"service","d":"SM","t":"service method PrepareUpdate [SWS_SM_91103] Upstream: RS_SM_00001 , RS_SM_00004 PrepareUpdate (IN FunctionGroupListType functionGroupList) Has to be called by Update And Configuration Management after State Management allowed to update. State Management will decline this request when RequestUpdateSession was not called before successfully. Scope service interface UpdateRequest class mono Fire & Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td functionGroupList td IN td FunctionGroupListType td The list of FunctionGroups within the SoftwareCluster to be prepared to be updated. Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kOperationFailed td Requested operation failed.","n":"method"},{"i":"SWS_SM_91102","k":"service","d":"SM","t":"service method RequestUpdateSession [SWS_SM_91102] Upstream: RS_SM_00001 , RS_SM_00004 RequestUpdateSession () Has to be called by Update And Configuration Management once it has to start interaction with State Management. State Management might decline this request when machine is not in a state to be updated. Scope service interface UpdateRequest class mono Fire & Forget false class mono Version 1.0 class mono Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kNotAllowedMultipleUpdateSessions td Request for new session was rejected as only single active (update) session is allowed.","n":"method"},{"i":"SWS_SM_91100","k":"service","d":"SM","t":"service method ResetMachine [SWS_SM_91100] Upstream: RS_SM_00001 , RS_SM_00004 ResetMachine () Requests a reset of the machine. Before the reset is performed all information within the machine shall be persisted. Request will be rejected when RequestUpdateSession was not called successfully before. Scope service interface UpdateRequest class mono Fire & Forget true class mono Version 1.0 class mono Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state.","n":"method"},{"i":"SWS_SM_91106","k":"service","d":"SM","t":"service field ResetMachineNotifier [SWS_SM_91106] Upstream: RS_SM_00001 , RS_SM_00004 ResetMachineNotifier : UpdateStatusType // Field (Getter, Notifier) To be set by State Management to inform UCM about changes during and after processing the method ResetMachine(). Scope service interface UpdateRequest class mono Typ UpdateStatusType class mono Version 1.0 class mono HasGetter true class mono HasSetter false class mono HasNotifier true class mono","n":"field"},{"i":"SWS_SM_91101","k":"service","d":"SM","t":"service method StopUpdateSession [SWS_SM_91101] Upstream: RS_SM_00001 , RS_SM_00004 StopUpdateSession () Has to be called by Update And Configuration Management once the update is finished to let State Management know that the update is done and the Machine is in a stable state. Request will be rejected when RequestUpdateSession was not called successfully before. Scope service interface UpdateRequest class mono Fire & Forget false class mono Version 1.0 class mono Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state.","n":"method"},{"i":"SWS_SM_91104","k":"service","d":"SM","t":"service method VerifyUpdate [SWS_SM_91104] Upstream: RS_SM_00001 , RS_SM_00004 VerifyUpdate (IN FunctionGroupListType functionGroupList) Has to be called by Update And Configuration Management after State Management allowed to update and the update preparation has been done. State Management will decline this request when Prepare Update was not called before successfully. Scope service interface UpdateRequest class mono Fire & Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td functionGroupList td IN td FunctionGroupListType td The list of FunctionGroups within the SoftwareCluster to be verified. Application Errors th Fehler th Beschreibung td kOperationRejected td Requested operation was rejected due to State Managements/machines internal state. td kOperationFailed td Requested operation failed.","n":"method"}],"inbound":[{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P137_187","d":"AUTOSAR_AP_SWS_StateManagement","p":137,"t":"9.2 Provided Service Interfaces\n9.2.1 UpdateRequest\nThe\nUpdateRequest\ninterface is intended to be used by\nUpdate and Configura-\ntion Management\nto interact with\nState Management\nto perform updates (includ-\ning installation and removal) of\nSoftware Clusters\n.\nPort\n[SWS_SM_91016] Definition of Port UpdateRequest provided by functional clus-\nter SM\nUpstream requirements:\nRS_SM_00001, RS_SM_00004, RS_AP_00150\n⌈"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P137_189","d":"AUTOSAR_AP_SWS_StateManagement","p":137,"t":"⌋\nService Interface\n[SWS_SM_91017] Definition of ServiceInterface UpdateRequest\nUpstream requirements:\nRS_SM_00001, RS_SM_00004, RS_AP_00150, RS_AP_00115, RS_-\nAP_00120, RS_AP_00142, RS_AP_00119, RS_AP_00121\n⌈"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P29_051","d":"AUTOSAR_AP_SWS_StateManagement","p":29,"t":"[SWS_SM_00031] Nested recovery handling\nUpstream requirements:\nRS_SM_00601\n⌈\nIn case of a nested recovery\nState Management\nshall provide the same result to\nall RecoveryHandler() calls related to the same affected\nStateMachine\nbased on\nthe result when the latest recovery action issued by the last RecoveryHandler() call is\nfinished.\n⌋\nNote: A \"nested recovery\" is very project specific and therefore an implementation\ndetail. For\nStateMachine\napproach this detail is explained in chapter 7.7.5.\nNote:\nPlatform Health Management\nmonitors the return of the RecoveryHan-\ndler() with a configurable timeout. If\nState Management\ngives no response to Re-\ncoveryHandler()\nPlatform Health Management\nwill do its own countermeasures\nby triggering or stop triggering the serviced watchdog.\nIf\nState Management\nis used in Safety Critical Platform, then it is suggested to\nuse Alive/Logical/Deadline supervision(s) and report their checkpoints appropriately\nto\nPlatform Health Management\n.\nHow issue notificatio…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P31_053","d":"AUTOSAR_AP_SWS_StateManagement","p":31,"t":"Additionally\nState Management\nhas to persist the information about an ongoing up-\ndate session, thus, after a machine restart (independently if restart was expected or\nnot),\nUpdate and Configuration Management\ncan continue to update. To con-\ntinue the update in a consistent way it will be needed that only a few\nFunction\nGroups\nwill be set to a meaningful\nFunction Group State\n(project specific). At\nleast\nUpdate and Configuration Management\nhas to be in a running state.\n[SWS_SM_00204] Persist session status\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall persist information about ongoing update session, thus it\ncan be read out after any kind of\nMachine\nreset.\n⌋\n[SWS_SM_00213] UpdateRequest method call rejection\nUpstream requirements:\nRS_SM_00004\n⌈\nA call to\nPrepareUpdate\n,\nVerifyUpdate\n,\nPrepareRollback\nor\nStopUpdate-\nSession\nshall return\nkOperationRejected\nif invoked outside an active update ses-\nsion.\n⌋\nPlease note that\nRequestUpdateSession\nis not in the list of the reject…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P32_054","d":"AUTOSAR_AP_SWS_StateManagement","p":32,"t":"[SWS_SM_00205] Stop update session\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUp-\ndate and Configuration Management\nwith the method call\nStopUpdateSes-\nsion\nthus it can inform\nState Management\nthat the update session is finished.\n⌋\nDuring the update there will be up to three different steps, depending if a\nSoftware\nCluster\nis installed, removed or updated. If and when the steps are done depends ad-\nditionally on the success or fail of the previous steps. To support\nUpdate and Con-\nfiguration Management\nto request these steps\nState Management\nprovides\nthree different methods as part of the service interface\nUpdateRequest\n.\n[SWS_SM_00206] prepare update\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUpdate\nand Configuration Management\nwith the method call\nPrepareUpdate\nthus it\ncan request\nState Management\nto perform a preparation of the given\nFunction\nGroups\nto be…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P33_055","d":"AUTOSAR_AP_SWS_StateManagement","p":33,"t":"when one of these functions is called, before\nState Management\ngranted the right\nto update.\nOnce the\nResetMachine\ncall is processed, the\nMachine\nwill be restarted. This\nmeans\nMachine\nwill go through a startup sequence and it will need to restore its\nown state. For\nState Management\nthis means a transition to the ContinueUpdate\nstate for the\nStateMachine\nof type\nController\n. However, the\nUpdate and Con-\nfiguration Management\nand the\nState Management\nneed to synchronize again.\nFor this reason the result of the\nResetMachine\nrequest is connected to a notification\nmechanism, which can be traced by the\nUpdate and Configuration Manage-\nment\n.\n[SWS_SM_00211] ResetMachine notification\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUpdate\nand Configuration Management\nwith the field\nResetMachineNotifier\nthus it\ncan trace the status from the\nResetMachine\ncall during and after it is performed.\n⌋\n[SWS_SM_00212] Default value for ResetMachin…"}]}</script></dialog>

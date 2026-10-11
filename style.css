@@ -5300,7 +5300,8 @@ a.nsx-oi.sel .nsx-ai { color: #fff; }
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .nsx-folds > details.nsx-fold > summary > h2.sect .ai-badge { margin-inline-start: 6px; vertical-align: 1px; }
 .nsx-grip { flex: none; align-self: center; width: 12px; height: 20px; cursor: grab; border-radius: 3px; opacity: .45;
-  background: radial-gradient(circle, var(--muted) 1.2px, transparent 1.6px) 0 0 / 6px 6px; }
+  background: radial-gradient(circle, var(--muted) 1.2px, transparent 1.6px) 0 0 / 6px 6px;
+  -webkit-user-drag: element !important; user-select: none !important; -webkit-user-select: none !important; touch-action: none; }
 .nsx-grip:hover, .nsx-grip:focus-visible { opacity: 1; outline: none; background-color: var(--surface2); }
 .nsx-fold.nsx-dragging { opacity: .5; }
 /* Detailansicht: Titel des Elements sitzt in der Fold-Zeile, nicht noch einmal im Inhalt */
@@ -5339,11 +5340,39 @@ a.nsx-oi.sel .nsx-ai { color: #fff; }
 /* Detailansicht reicht mindestens bis zum Fensterende: Navigation landet immer oben am Fenster */
 .nsx-live .nsx-folds > details.nsx-fold[data-fold="detail"][open] { min-height: calc(100vh - var(--nsx-top, 0px)); }
 
-/* Titelleiste des Namespace bleibt stehen (deckend über dem Inhalt) */
-main > h1.nsx-pin { position: sticky; top: 0; z-index: 6; margin-top: 0; background-color: var(--bg); }
-body.vis-app main > h1.nsx-pin, body.vis-app main > h1.nsx-pin:hover { background: linear-gradient(var(--vis-app-bg), var(--vis-app-bg)) var(--bg); }
-body.vis-priv main > h1.nsx-pin, body.vis-priv main > h1.nsx-pin:hover { background: linear-gradient(var(--vis-priv-bg), var(--vis-priv-bg)) var(--bg); }
-body.vis-internal main > h1.nsx-pin, body.vis-internal main > h1.nsx-pin:hover { background: linear-gradient(var(--vis-internal-bg), var(--vis-internal-bg)) var(--bg); }
+/* Titelleiste bleibt oben stehen (deckend über dem Inhalt mit Kategoriefarbe) */
+main > h1.nsx-pin {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  margin-top: 0;
+  background-color: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+body.vis-app main > h1.nsx-pin {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--vis-app-bg), var(--vis-app-bg));
+  border-bottom: 3px solid var(--vis-app);
+}
+body.vis-app main > h1.nsx-pin:hover {
+  background-image: linear-gradient(var(--vis-app-bg-hover), var(--vis-app-bg-hover));
+}
+body.vis-priv main > h1.nsx-pin {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--vis-priv-bg), var(--vis-priv-bg));
+  border-bottom: 3px solid var(--vis-priv);
+}
+body.vis-priv main > h1.nsx-pin:hover {
+  background-image: linear-gradient(var(--vis-priv-bg-hover), var(--vis-priv-bg-hover));
+}
+body.vis-internal main > h1.nsx-pin {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--vis-internal-bg), var(--vis-internal-bg));
+  border-bottom: 3px solid var(--vis-internal);
+}
+body.vis-internal main > h1.nsx-pin:hover {
+  background-image: linear-gradient(var(--vis-internal-bg-hover), var(--vis-internal-bg-hover));
+}
 
 /* Kennzahlen und Knöpfe in den Fold-Zeilen */
 .nsx-stats { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: 11.5px; color: var(--muted); }
@@ -5365,7 +5394,10 @@ main > h1.nsx-pin { display: flex; align-items: center; gap: 8px; flex-wrap: wra
 /* Reiter sehen aus wie die Fold-Zeile in der Mitte (Griff, Pfeil, Titel, Badge, Kennzahlen) */
 .nsx-tab { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-height: 30px; padding: 3px 10px 3px 4px;
   font: 400 13px/1.3 var(--font-sans); text-align: start; color: var(--text); background: var(--bg); border: 1px solid var(--border);
-  border-radius: 5px; cursor: pointer; }
+  border-radius: 5px; cursor: pointer; -webkit-user-drag: element; }
+.nsx-tab.nsx-tab-dragging { opacity: .45 !important; }
+.nsx-tab, .nsx-tab * { -webkit-user-select: none !important; user-select: none !important; }
+.nsx-tab * { -webkit-user-drag: none; }
 .nsx-tab .nsx-grip { cursor: grab; }
 .nsx-tab-h { font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .nsx-tab-h::before { content: "\25B8"; display: inline-block; width: .85em; margin-right: .25em; color: var(--primary); transition: transform .15s ease; }
@@ -5375,44 +5407,127 @@ main > h1.nsx-pin { display: flex; align-items: center; gap: 8px; flex-wrap: wra
 .nsx-tab:hover, .nsx-tab:focus-visible { border-color: var(--primary); outline: none; }
 main > h1.nsx-pin.nsx-drop-zone { outline: 2px dashed var(--primary); outline-offset: 2px; }
 main > h1.nsx-pin.nsx-drop-over { outline-style: solid; box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 18%, transparent); }
-.nsx-folds > details.nsx-fold.nsx-tdocked { display: none; }
-.nsx-folds > details.nsx-fold.nsx-tdocked.nsx-pop { display: block; position: fixed; z-index: 7; margin: 0; padding: var(--space-3) 12px 12px;
-  max-height: calc(100vh - var(--nsx-top, 0px) - 24px); overflow: auto; background: var(--bg);
-  border: 1px solid var(--primary); border-top: 0; border-start-start-radius: 0; border-start-end-radius: 8px; border-end-start-radius: 8px; border-end-end-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .2); }
+/* Reiter-Andocken: Globale Regeln für alle tdocked Folds unabhängig vom DOM-Elternknoten */
+details.nsx-fold.nsx-tdocked { display: none !important; }
+details.nsx-fold.nsx-tdocked.nsx-pop { display: block !important; position: fixed !important; z-index: 1000 !important; margin: 0 !important; padding: var(--space-3) 12px 12px !important;
+  max-height: calc(100vh - var(--nsx-top, 0px) - 24px) !important; overflow: auto !important; background: var(--bg) !important;
+  border: 1px solid var(--primary) !important; border-top: 0 !important; border-start-start-radius: 0 !important; border-start-end-radius: 8px !important; border-end-start-radius: 8px !important; border-end-end-radius: 8px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .25) !important; }
 /* Oberkante des Panels mit Lücke unter dem Reiter */
-.nsx-folds > details.nsx-fold.nsx-pop::before { content: ""; position: absolute; top: 0; inset-inline-start: calc(var(--nsx-tabx, 0px) + var(--nsx-tabw, 0px) - 1px); inset-inline-end: 0;
+details.nsx-fold.nsx-pop::before { content: ""; position: absolute; top: 0; inset-inline-start: calc(var(--nsx-tabx, 0px) + var(--nsx-tabw, 0px) - 1px); inset-inline-end: 0;
   border-top: 1px solid var(--primary); border-start-end-radius: 8px; }
 /* Panel ins Fenster gerückt: Oberkante auch links vom Reiter, Ecke gerundet */
-.nsx-folds > details.nsx-fold.nsx-pop.nsx-pop-shift { border-start-start-radius: 8px; }
-.nsx-folds > details.nsx-fold.nsx-pop.nsx-pop-shift::after { content: ""; position: absolute; top: 0; inset-inline-start: 0;
+details.nsx-fold.nsx-pop.nsx-pop-shift { border-start-start-radius: 8px; }
+details.nsx-fold.nsx-pop.nsx-pop-shift::after { content: ""; position: absolute; top: 0; inset-inline-start: 0;
   width: calc(var(--nsx-tabx, 0px) + 1px); border-top: 1px solid var(--primary); border-start-start-radius: 8px; }
 /* Im Panel keine zweite Titelzeile: nur der Knopf zurück in die Mitte, oben in der Ecke */
-.nsx-folds > details.nsx-fold.nsx-pop > summary { position: absolute; top: 6px; inset-inline-end: 8px; min-height: 0; margin: 0; padding: 0; border: 0;
-  background: none; pointer-events: none; }
-.nsx-pop > summary > :not(.nsx-backbtn) { display: none; }
-.nsx-pop > summary > .nsx-backbtn { pointer-events: auto; margin: 0; }
+details.nsx-fold.nsx-pop > summary { position: absolute !important; top: 6px !important; inset-inline-end: 8px !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; border: 0 !important;
+  background: none !important; pointer-events: none !important; }
+details.nsx-fold.nsx-pop > summary > :not(.nsx-backbtn) { display: none !important; }
+details.nsx-fold.nsx-pop > summary > .nsx-backbtn { display: inline-grid !important; pointer-events: auto !important; margin: 0 !important; }
 .nsx-tab[aria-expanded="true"] { position: relative; z-index: 1; border-color: var(--primary); border-bottom-color: transparent;
   border-end-start-radius: 0; border-end-end-radius: 0; box-shadow: none; }
-.nsx-pop .nsx-grip { display: none; }
+.nsx-pop .nsx-grip { display: none !important; }
 .nsx-backbtn { display: none; }
 .nsx-pop .nsx-backbtn, .nsx-topdock .nsx-backbtn { display: inline-grid; }
 
-/* Seitenspannende Dropzone oberhalb der Überschrift (Themenkarte & Cluster-Guide über die volle Breite) */
-.nsx-topdock { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; box-sizing: border-box; margin-bottom: var(--space-4); }
-.nsx-topdock:empty { display: none; }
-.nsx-topdock.nsx-drop-zone:empty { display: flex; position: relative; z-index: 5; height: 48px; border: 2px dashed var(--primary); border-radius: 8px;
+/* Aktions-Knöpfe in der Summary der Folds */
+.nsx-tabbtn { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-inline-start: auto; padding: 0; border: none; border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; }
+.nsx-tabbtn:hover { background: var(--surface2); color: var(--primary); }
+.nsx-topdock .nsx-tabbtn, .nsx-folds details.nsx-fold > summary .nsx-tabbtn { display: inline-grid; }
+.nsx-topdock .nsx-backbtn { margin-inline-start: 4px; }
+
+/* Schutz gegen versehentliche Textmarkierung beim Ziehen/Klicken */
+.nsx-grip, .nsx-tab, .nsx-hbtn, details.nsx-fold > summary, details.nsx-fold > summary * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none;
+}
+.nsx-fold.nsx-dragging, .nsx-fold.nsx-dragging * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+body.nsx-dnd-active, body.nsx-dnd-active * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Seitenspannende Dropzonen (Themenkarte, Guides, Diagramme, Namespaces) */
+.nsx-topdock { display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+.nsx-dock-lead { margin-top: 6px; margin-bottom: 8px; }
+.nsx-dock-pre { margin-bottom: 8px; }
+.nsx-dock-post { margin-top: 8px; }
+.nsx-topdock:empty,
+.nsx-topdock.nsx-drop-zone:empty { display: none; }
+.nsx-topdock.nsx-drop-over:empty { display: flex; position: relative; z-index: 5; min-height: 38px; border: 2px dashed var(--primary); border-radius: 8px;
   background: color-mix(in srgb, var(--primary) 8%, var(--bg)); align-items: center; justify-content: center;
-  color: var(--primary); font-size: 13px; font-weight: 600; pointer-events: none; margin-bottom: var(--space-4); }
-.nsx-topdock.nsx-drop-zone:empty::before { content: "Hier andocken (volle Breite)"; }
-.nsx-topdock.nsx-drop-zone.nsx-drop-over { outline: 2px solid var(--primary); outline-offset: 2px;
-  background: color-mix(in srgb, var(--primary) 12%, transparent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 18%, transparent); }
+  color: var(--primary); font-size: 13px; font-weight: 600; pointer-events: auto; margin-bottom: 8px; cursor: pointer; }
+.nsx-topdock.nsx-drop-over:empty::before { content: "Hier andocken (volle Breite)"; }
+.nsx-dock-lead.nsx-drop-over:empty::before { content: "Hier direkt unter der Überschrift ablegen (volle Breite)"; }
+.nsx-dock-pre.nsx-drop-over:empty::before { content: "Hier oberhalb der Gliederung ablegen (volle Breite)"; }
+.nsx-dock-post.nsx-drop-over:empty::before { content: "Hier unterhalb der Gliederung ablegen (volle Breite)"; }
+.nsx-topdock.nsx-drop-zone:not(:empty) { outline: 2px dashed color-mix(in srgb, var(--primary) 40%, transparent); outline-offset: 3px; border-radius: 8px; }
+.nsx-topdock.nsx-drop-zone.nsx-drop-over, .nsx-topdock.nsx-drop-over { outline: 2px solid var(--primary) !important; outline-offset: 3px !important;
+  background: color-mix(in srgb, var(--primary) 12%, transparent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent); }
 .nsx-topdock > details.nsx-fold { width: 100%; box-sizing: border-box; margin: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: hidden; }
-.nsx-topdock > details.nsx-fold > summary { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface); cursor: pointer; border-bottom: 1px solid transparent; }
+.nsx-topdock > details.nsx-fold > summary { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--surface); cursor: pointer; border-bottom: 1px solid transparent; }
 .nsx-topdock > details.nsx-fold[open] > summary { border-bottom: 1px solid var(--border); }
-.nsx-topdock > details.nsx-fold > :not(summary) { padding: 14px; background: var(--bg); }
-.nsx-topdock > details.nsx-fold .nsx-backbtn { display: inline-grid; margin-inline-start: auto; }
+.nsx-topdock > details.nsx-fold > summary > h2.sect { flex: none; margin: 0; padding: 0; border: 0; font-size: 13px; font-weight: 650;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.nsx-topdock > details.nsx-fold > summary > h2.sect .ai-badge { margin-inline-start: 6px; vertical-align: 1px; }
+.nsx-topdock > details.nsx-fold > :not(summary) { padding: 10px 14px; background: var(--bg); }
 .nsx-topdock > details.nsx-fold .nsx-map { width: 100%; }
+.nsx-topdock > details.nsx-fold .umlwrap { border: none; margin: 0; padding: 0; background: transparent; }
+.nsx-topdock > details.nsx-fold ul.mlist { margin: 0; }
+
+/* Im Kompaktmodus und in angedockten Folds: KI-Trace-Metadaten stehen oben in der Statistikzeile; die redundante Box im Text entfällt */
+.nsx-topdock .ai-trace-badge,
+.nsx-folds .ai-trace-badge,
+.nsx-pop .ai-trace-badge {
+  display: none !important;
+}
+
+/* In Folds und Docks: Guide-Box behält ihre typische Hintergrundfarbe und den linken Farbakzent */
+.nsx-topdock details.nsx-fold .ai,
+.nsx-folds details.nsx-fold .ai,
+.nsx-pop .ai {
+  margin: 6px 0 10px;
+}
+
+/* Überschriften im Guide direkt oben anschließen lassen */
+.nsx-topdock details.nsx-fold .ai > section:first-of-type > h3,
+.nsx-topdock details.nsx-fold .ai > h3:first-of-type,
+.nsx-folds details.nsx-fold .ai > section:first-of-type > h3,
+.nsx-folds details.nsx-fold .ai > h3:first-of-type,
+.nsx-pop .ai > section:first-of-type > h3,
+.nsx-pop .ai > h3:first-of-type {
+  margin-top: 2px !important;
+}
+
+/* Neuer Button für Dossier und Metadaten in der Statistikzeile */
+.nsx-st-dossier {
+  cursor: pointer;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--primary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  line-height: 1.3;
+  margin-inline-start: 4px;
+  transition: all .15s ease;
+}
+.nsx-st-dossier:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.nsx-st-model {
+  color: var(--muted);
+  font-weight: 500;
+}
 
 /* Hervorhebung beim Überfahren von Verweisen im Inspektor */
 .nsx a.nsx-chip.peek, .nsx a.nsx-oi.peek { outline: 2px solid var(--status-candidate); outline-offset: 1px; border-radius: 4px; }
@@ -5558,6 +5673,47 @@ pre.syntax a.nsx-fnlink { color: var(--primary); font-weight: 700; text-decorati
 /* Classic-Modulseiten: Elemente als eigene Artikel im Modul-Record; im Komfortmodus
    sehen sie aus wie die bisherige flache Folge, die abgeleitete Übersicht entfällt */
 article.rec article.nsx-mel { background: none; border: 0; border-radius: 0; padding: 0; margin: 0; }
+
+/* Elemente-Bereich: Kopfzeile mit Griff und Andock-Funktion */
+.nsx-elements-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.nsx-elements-head .sect {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text);
+  flex: 1;
+}
+section.nsx.nsx-tdocked {
+  display: none !important;
+}
+section.nsx.nsx-tdocked.nsx-pop {
+  display: grid !important;
+  position: fixed !important;
+  z-index: 1000 !important;
+  top: var(--nsx-top, 50px) !important;
+  left: 12px !important;
+  right: 12px !important;
+  width: calc(100vw - 24px) !important;
+  max-height: calc(100vh - var(--nsx-top, 50px) - 24px) !important;
+  overflow: auto !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--primary) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .25) !important;
+  padding: 12px !important;
+}
 html:not([data-density="compact"]) section.nsx-mod, html:not([data-density="compact"]) section.nsx-clu { display: none; }
 .nsx-dettitle .nsx-modbadge { margin-inline-start: 8px; padding: 1px 7px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; }
 .nsx-modbadge .kind { font-weight: 600; }
@@ -6256,3 +6412,50 @@ details.impl-fold > summary h2.sect { color: var(--impl-accent); }
 [data-theme="dark"] .btn-toggle-workbench-chat { background: #1c242a; border-color: #3b4954; color: #6edfd5; }
 [data-theme="dark"] .btn-toggle-workbench-chat:hover { background: #253139; border-color: #49b3aa; }
 [data-theme="dark"] .chip-kind.kind-inbound { background: #14373a; color: #6edfd5; }
+
+/* Progressiver Seitenaufbau ("Building in Pieces") */
+.nsx-assembling .nsx-topdock > details.nsx-fold,
+.nsx-assembling .nsx-folds > details.nsx-fold,
+.nsx-assembling .nsx-col,
+.nsx-assembling .cluster-overview,
+.nsx-assembling .cards > .card {
+  animation: nsxPieceIn 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(var(--nsx-piece-idx, 0) * 32ms);
+}
+
+@keyframes nsxPieceIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Seamless Router & Progress Bar */
+#seamless-router-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary, #01696f), var(--accent, #009688), #38bdf8);
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--primary, #01696f) 80%, transparent);
+}
+
+.is-loading-dossier {
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+  cursor: wait !important;
+  animation: dossierPulsing 1s ease-in-out infinite alternate;
+}
+
+@keyframes dossierPulsing {
+  from { opacity: 0.45; }
+  to { opacity: 0.85; }
+}

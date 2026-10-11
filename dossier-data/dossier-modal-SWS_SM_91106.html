@@ -1,0 +1,440 @@
+<dialog id="dossier-modal-SWS_SM_91106" class="dossier-modal dossier-workbench" data-dossier-sha="92daa9670d1078a8" aria-labelledby="dossier-modal-SWS_SM_91106-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-SWS_SM_91106-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SM_91106)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,396 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="SWS_SM_91106" data-fragment="services/sv_sm_UpdateRequest_5d5803.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse einen fundierten Nutzungshinweis (&lt;div class="ai usage"&gt;) für das adaptive-Element 'ResetMachineNotifier' (service field) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt weglassen):
+1. Verwendung: Aufrufkontext, Parameter, Rückgabewerte, synchrone/asynchrone Semantik.
+2. Fehlerbehandlung: spezifische Fehlercodes, DET-/DEM-Meldungen, Verhalten im Fehlerfall.
+3. Nebenläufigkeit und Einschränkungen: Reentranz, Aufrufkontext, Reihenfolgebedingungen.
+4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
+Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+
+=== USER PROMPT ===
+Erstelle den Nutzungshinweis für 'ResetMachineNotifier'.
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P20_035",
+   "page": 20,
+   "text": "△\n[SWS_SM_00644] [SWS_SM_00645]\n[SWS_SM_00646] [SWS_SM_00647]\n[SWS_SM_00648] [SWS_SM_00649]\n[SWS_SM_00650] [SWS_SM_00651]\n[SWS_SM_00654] [SWS_SM_00655]\n[SWS_SM_00656] [SWS_SM_00657]\n[SWS_SM_00658] [SWS_SM_00659]\n[SWS_SM_00660] [SWS_SM_00661]\n[SWS_SM_00662] [SWS_SM_00663]\n[SWS_SM_00664] [SWS_SM_00665]\n[SWS_SM_00667] [SWS_SM_00668]\n[SWS_SM_00669] [SWS_SM_00670]\n[SWS_SM_00671] [SWS_SM_00672]\n[SWS_SM_00673] [SWS_SM_00674]\n[SWS_SM_00675] [SWS_SM_00676]\n[SWS_SM_00677] [SWS_SM_00678]\n[SWS_SM_00679] [SWS_SM_00685]\n[SWS_SM_00686] [SWS_SM_00687]\n[SWS_SM_00688] [SWS_SM_91016]\n[SWS_SM_91017] [SWS_SM_91021]\n[SWS_SM_91022] [SWS_SM_91023]\n[SWS_SM_91024] [SWS_SM_91025]\n[SWS_SM_91026] [SWS_SM_91027]\n[SWS_SM_91028] [SWS_SM_91100]\n[SWS_SM_91101] [SWS_SM_91102]\n[SWS_SM_91103] [SWS_SM_91104]\n[SWS_SM_91105] [SWS_SM_91106]\n[SWS_SM_91107] [SWS_SM_91108]\n[SWS_SM_91109]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P20_037",
+   "page": 20,
+   "text": "[SWS_SM_00202] [SWS_SM_00204]\n[SWS_SM_00205] [SWS_SM_00206]\n[SWS_SM_00207] [SWS_SM_00208]\n[SWS_SM_00209] [SWS_SM_00211]\n[SWS_SM_00212] [SWS_SM_00213]\n[SWS_SM_00214] [SWS_SM_00680]\n[SWS_SM_00681] [SWS_SM_00682]\n[SWS_SM_00683] [SWS_SM_00684]\n[SWS_SM_91010] [SWS_SM_91016]\n[SWS_SM_91017] [SWS_SM_91018]\n[SWS_SM_91019] [SWS_SM_91020]\n[SWS_SM_91021] [SWS_SM_91022]\n[SWS_SM_91023] [SWS_SM_91024]\n[SWS_SM_91025] [SWS_SM_91026]\n[SWS_SM_91027] [SWS_SM_91028]\n[SWS_SM_91100] [SWS_SM_91101]\n[SWS_SM_91102] [SWS_SM_91103]\n[SWS_SM_91104] [SWS_SM_91105]\n[SWS_SM_91106] [SWS_SM_91107]\n[SWS_SM_91108] [SWS_SM_91109]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P33_055",
+   "page": 33,
+   "text": "when one of these functions is called, before\nState Management\ngranted the right\nto update.\nOnce the\nResetMachine\ncall is processed, the\nMachine\nwill be restarted. This\nmeans\nMachine\nwill go through a startup sequence and it will need to restore its\nown state. For\nState Management\nthis means a transition to the ContinueUpdate\nstate for the\nStateMachine\nof type\nController\n. However, the\nUpdate and Con-\nfiguration Management\nand the\nState Management\nneed to synchronize again.\nFor this reason the result of the\nResetMachine\nrequest is connected to a notification\nmechanism, which can be traced by the\nUpdate and Configuration Manage-\nment\n.\n[SWS_SM_00211] ResetMachine notification\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUpdate\nand Configuration Management\nwith the field\nResetMachineNotifier\nthus it\ncan trace the status from the\nResetMachine\ncall during and after it is performed.\n⌋\n[SWS_SM_00212] Default value for ResetMachineNotifier\nUpstream requirements:\nRS_SM_00004\n⌈\nThe default value for the field\nResetMachineNotifier\nshall be\nkIdle\n.\n⌋\nWhen any of these steps fails,\nUpdate and Configuration Management\ncan de-\ncide to revert previous changes. Therefore\nUpdate and Co…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P80_109",
+   "page": 80,
+   "text": "UpdateAllowed\naccordingly. Please note that it is expected the feasibility of an up-\ndate campaign should be assessed at the vehicle level and\nUpdate and Configu-\nration Management\nis not expected to call\nRequestUpdateSession\nwithout up-\nfront synchronization. However, update campaign may involve multiple\nMachines\nand\ntherefore take some time. During this time local circumstances may change and for\nthis reason call to\nRequestUpdateSession\nis necessary.\nWhen\nSMControlApplication\ndoes not allow update,\nModelled Process\ncon-\ntrolling\nStateMachine\nof type\nController\nshould refuse update request from\nUp-\ndate and Configuration Management\n.\n[SWS_SM_00630] Rejection of update session\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen\nUpdateAllowed\nis set to\nkUpdateNotAllowed\n,\nModelled Process\ncon-\ntrolling\nStateMachine\nof type\nController\nshall return\nkOperationRejected\ner-\nror from the\nRequestUpdateSession\nmethod.\n⌋\nIf\nSMControlApplication\nallow update session to start,\nModelled Process\ncon-\ntrolling\nStateMachine\nof type\nController\nshould return a positive response back\nto\nUpdate and Configuration Management\n.\n[SWS_SM_00631] Acceptance of update session\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen\nUpdateAllowed\nis set to…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P90_119",
+   "page": 90,
+   "text": "Please be aware that a project configuration may contain the\nActionListItem\nthat\nreferences\nMachineFG Restart\nstate in more than one\nController\n’s\nStateMa-\nchine State\n. Those\nStateMachine States\nmay be entered following the\nCon-\ntroller\n’s\nTransitionRequestTable\nor\nErrorRecoveryTable\ntriggered by in-\ncoming Triggers or ExecutionErrors. But in the scope of an update session, only the\nStateMachine State Restart\n[SWS_SM_CONSTR_00029] is the state which will\nbe processed once the\nUpdate and Configuration Management\nrequests the\nrestart of the\nMachine\n.\n[SWS_SM_00658] Transition to Restart state for StateMachine of type Controller\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process controlling\nStateMachine\nof type\nController\n, during a call to\nResetMachine\nmethod, shall transition the\nStateMachine\nof type\nController\nto\nthe\nRestart StateMachine State\n.\n⌋\n[SWS_SM_00661] Set ResetMachineNotifier to kRejected\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nIf\nResetMachine\nis called outside an update session\nModelled Process\ncontrol-\nling\nStateMachine\nof type\nController\nshall set the Field\nResetMachineNoti-\nfier\nto\nkRejected\n.\n⌋\nUpdate session ends with a call to\nStopUpdateSession\nmethod. At that point the\nMachine\nis in a…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P93_121",
+   "page": 93,
+   "text": "[SWS_SM_00662] Set ResetMachineNotifier to kSuccessful\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon suc-\ncessfully finalizing the ContinueUpdate transition, shall set the Field\nResetMachi-\nneNotifier\nto\nkSuccessful\n.\n⌋\n[SWS_SM_00663] Set ResetMachineNotifier to kFailed\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon failing\nto perform the transition to ContinueUpdate, shall set the Field\nResetMachineNoti-\nfier\nto\nkFailed\n.\n⌋"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P95_124",
+   "page": 95,
+   "text": "*\nAgent2::stop\n*\n. . .\nThis kind of configuration is just an example for optimization to show how e.g.\nUpdate\nand Configuration Management\ncould be started late on\nMachine\nstartup.\n[SWS_SM_00646] Transition Controller to AfterUpdate state\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon receiv-\ning\nStopUpdateSession\ncall, shall transition\nStateMachine\nof type\nController\nto the\nAfterUpdate StateMachine State\n.\n⌋\n[SWS_SM_00660] Set ResetMachineNotifier to default value when stopping up-\ndate session\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon receiv-\ning\nStopUpdateSession\ncall during an update session, shall set the Field\nReset-\nMachineNotifier\nto its default value (see [SWS_SM_00212]).\n⌋\nAfter\nStopUpdateSession\nis called, requests to\nRequestTransition\nmethod as\nwell as Recovery Actions will be enabled again as described in [SWS_SM_00656].\n[SWS_SM_00647] Enabling RequestTransition method after StopUpdateSession\ncall\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nOnce\nStopUpdateSession\nmethod has been invoked any call to\nRequestTransi-\ntion\nfor\nStateMachine\nof type\nController\nshall not ret…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_StateManagement",
+   "figure": false,
+   "id": "SNIP_sm_AUTOSAR_AP_SWS_S_P135_186",
+   "page": 135,
+   "text": "⌋\n9.1.5 Data types for ResetMachineNotifier\n[SWS_SM_91027] Definition of ImplementationDataType UpdateStatusType\nUpstream requirements:\nRS_SM_00001, RS_SM_00004\n⌈"
+  }
+ ],
+ "element": {
+  "description": "To be set by State Management to inform UCM about changes during and after processing the method ResetMachine().",
+  "id": "SWS_SM_91106",
+  "kind": "service field",
+  "name": "ResetMachineNotifier",
+  "signature": "ResetMachineNotifier : UpdateStatusType  // Field (Getter, Notifier)",
+  "spezifikation": "service field ResetMachineNotifier [SWS_SM_91106] Upstream: RS_SM_00001 , RS_SM_00004 ResetMachineNotifier : UpdateStatusType // Field (Getter, Notifier) To be set by State Management to inform UCM about changes during and after processing the method ResetMachine(). Scope service interface UpdateRequest class mono Typ UpdateStatusType class mono Version 1.0 class mono HasGetter true class mono HasSetter false class mono HasNotifier true class mono"
+ },
+ "module": "sm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "verwandte_requirements": []
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d2818be74af5902a2cdd8f77df3e88c10b5b131d209e95bfc4dfe0c350ebc0ce" data-trace-output="92daa9670d1078a8911e896a744dea463dfc4f36421426169d4d82d733bf1eb5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+  &lt;h4&gt;Usage and Synchronization Semantics&lt;/h4&gt;
+  &lt;p&gt;
+    The service field &lt;code&gt;ResetMachineNotifier&lt;/code&gt; is provided within the service interface &lt;code&gt;UpdateRequest&lt;/code&gt; by State Management for Update and Configuration Management (UCM) &lt;a class="spec-record-ref" data-req="SWS_SM_00211" href="../spec/record.html?id=SWS_SM_00211"&gt;[SWS_SM_00211]&lt;/a&gt;. It possesses a getter and a notifier, but no setter &lt;a class="spec-record-ref" data-req="SWS_SM_91106" href="../spec/record.html?id=SWS_SM_91106"&gt;[SWS_SM_91106]&lt;/a&gt;. Via this field, UCM tracks the status of the method call &lt;code&gt;ResetMachine()&lt;/code&gt; during and after the execution of a machine restart &lt;a class="spec-record-ref" data-req="SWS_SM_00211" href="../spec/record.html?id=SWS_SM_00211"&gt;[SWS_SM_00211]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_91106" href="../spec/record.html?id=SWS_SM_91106"&gt;[SWS_SM_91106]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;h4&gt;State Values and Signaling&lt;/h4&gt;
+  &lt;p&gt;
+    The initial default value of the field of type &lt;code&gt;UpdateStatusType&lt;/code&gt; is &lt;code&gt;kIdle&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00212" href="../spec/record.html?id=SWS_SM_00212"&gt;[SWS_SM_00212]&lt;/a&gt;. Depending on the context of the call as well as the progress of the resynchronization, the controlling model process of the controller's state machine sets the field to the following status values:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;
+      &lt;strong&gt;Rejection outside an update session:&lt;/strong&gt; If the method &lt;code&gt;ResetMachine&lt;/code&gt; is called outside an active update session, the process sets the field to &lt;code&gt;kRejected&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00661" href="../spec/record.html?id=SWS_SM_00661"&gt;[SWS_SM_00661]&lt;/a&gt;.
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;Successful restart and continuation:&lt;/strong&gt; During an update session, &lt;code&gt;ResetMachine&lt;/code&gt; transitions the controller to the state &lt;code&gt;Restart&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00658" href="../spec/record.html?id=SWS_SM_00658"&gt;[SWS_SM_00658]&lt;/a&gt;. After successful completion of the state transition to &lt;code&gt;ContinueUpdate&lt;/code&gt;, the field is set to &lt;code&gt;kSuccessful&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00662" href="../spec/record.html?id=SWS_SM_00662"&gt;[SWS_SM_00662]&lt;/a&gt;.
+    &lt;/li&gt;
+    &lt;li&gt;
+      &lt;strong&gt;Continuation failure:&lt;/strong&gt; If the state transition to &lt;code&gt;ContinueUpdate&lt;/code&gt; fails after the restart, the field is set to &lt;code&gt;kFailed&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00663" href="../spec/record.html?id=SWS_SM_00663"&gt;[SWS_SM_00663]&lt;/a&gt;.
+    &lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;h4&gt;Session End and Resetting&lt;/h4&gt;
+  &lt;p&gt;
+    If the update session is terminated by calling &lt;code&gt;StopUpdateSession&lt;/code&gt;, the modeled process resets the field &lt;code&gt;ResetMachineNotifier&lt;/code&gt; back to the default value &lt;code&gt;kIdle&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00660" href="../spec/record.html?id=SWS_SM_00660"&gt;[SWS_SM_00660]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_SM_00212" href="../spec/record.html?id=SWS_SM_00212"&gt;[SWS_SM_00212]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p class="ai-note"&gt;
+    This usage note is based on the definitions in the AUTOSAR Adaptive Platform State Management specification.
+  &lt;/p&gt;
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d2818be74af5…</code></div>
+              <div><strong>Konstituierende Records:</strong> 1</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 8</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">9 von 9 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (1 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (8 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SM_91106","k":"service field","d":"AUTOSAR","t":"","n":"ResetMachineNotifier"}],"inbound":[{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P20_035","d":"AUTOSAR_AP_SWS_StateManagement","p":20,"t":"△\n[SWS_SM_00644] [SWS_SM_00645]\n[SWS_SM_00646] [SWS_SM_00647]\n[SWS_SM_00648] [SWS_SM_00649]\n[SWS_SM_00650] [SWS_SM_00651]\n[SWS_SM_00654] [SWS_SM_00655]\n[SWS_SM_00656] [SWS_SM_00657]\n[SWS_SM_00658] [SWS_SM_00659]\n[SWS_SM_00660] [SWS_SM_00661]\n[SWS_SM_00662] [SWS_SM_00663]\n[SWS_SM_00664] [SWS_SM_00665]\n[SWS_SM_00667] [SWS_SM_00668]\n[SWS_SM_00669] [SWS_SM_00670]\n[SWS_SM_00671] [SWS_SM_00672]\n[SWS_SM_00673] [SWS_SM_00674]\n[SWS_SM_00675] [SWS_SM_00676]\n[SWS_SM_00677] [SWS_SM_00678]\n[SWS_SM_00679] [SWS_SM_00685]\n[SWS_SM_00686] [SWS_SM_00687]\n[SWS_SM_00688] [SWS_SM_91016]\n[SWS_SM_91017] [SWS_SM_91021]\n[SWS_SM_91022] [SWS_SM_91023]\n[SWS_SM_91024] [SWS_SM_91025]\n[SWS_SM_91026] [SWS_SM_91027]\n[SWS_SM_91028] [SWS_SM_91100]\n[SWS_SM_91101] [SWS_SM_91102]\n[SWS_SM_91103] [SWS_SM_91104]\n[SWS_SM_91105] [SWS_SM_91106]\n[SWS_SM_91107] [SWS_SM_91108]\n[SWS_SM_91109]"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P20_037","d":"AUTOSAR_AP_SWS_StateManagement","p":20,"t":"[SWS_SM_00202] [SWS_SM_00204]\n[SWS_SM_00205] [SWS_SM_00206]\n[SWS_SM_00207] [SWS_SM_00208]\n[SWS_SM_00209] [SWS_SM_00211]\n[SWS_SM_00212] [SWS_SM_00213]\n[SWS_SM_00214] [SWS_SM_00680]\n[SWS_SM_00681] [SWS_SM_00682]\n[SWS_SM_00683] [SWS_SM_00684]\n[SWS_SM_91010] [SWS_SM_91016]\n[SWS_SM_91017] [SWS_SM_91018]\n[SWS_SM_91019] [SWS_SM_91020]\n[SWS_SM_91021] [SWS_SM_91022]\n[SWS_SM_91023] [SWS_SM_91024]\n[SWS_SM_91025] [SWS_SM_91026]\n[SWS_SM_91027] [SWS_SM_91028]\n[SWS_SM_91100] [SWS_SM_91101]\n[SWS_SM_91102] [SWS_SM_91103]\n[SWS_SM_91104] [SWS_SM_91105]\n[SWS_SM_91106] [SWS_SM_91107]\n[SWS_SM_91108] [SWS_SM_91109]"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P33_055","d":"AUTOSAR_AP_SWS_StateManagement","p":33,"t":"when one of these functions is called, before\nState Management\ngranted the right\nto update.\nOnce the\nResetMachine\ncall is processed, the\nMachine\nwill be restarted. This\nmeans\nMachine\nwill go through a startup sequence and it will need to restore its\nown state. For\nState Management\nthis means a transition to the ContinueUpdate\nstate for the\nStateMachine\nof type\nController\n. However, the\nUpdate and Con-\nfiguration Management\nand the\nState Management\nneed to synchronize again.\nFor this reason the result of the\nResetMachine\nrequest is connected to a notification\nmechanism, which can be traced by the\nUpdate and Configuration Manage-\nment\n.\n[SWS_SM_00211] ResetMachine notification\nUpstream requirements:\nRS_SM_00004\n⌈\nState Management\nshall provide the service interface\nUpdateRequest\nto\nUpdate\nand Configuration Management\nwith the field\nResetMachineNotifier\nthus it\ncan trace the status from the\nResetMachine\ncall during and after it is performed.\n⌋\n[SWS_SM_00212] Default value for ResetMachineNotifier\nUpstream requirements:\nRS_SM_00004\n⌈\nThe default value for the field\nResetMachineNotifier\nshall be\nkIdle\n.\n⌋\nWhen any of these steps fails,\nUpdate and Configuration Management\ncan de-\ncide to revert previous changes. Therefore\nUpdate and Co…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P80_109","d":"AUTOSAR_AP_SWS_StateManagement","p":80,"t":"UpdateAllowed\naccordingly. Please note that it is expected the feasibility of an up-\ndate campaign should be assessed at the vehicle level and\nUpdate and Configu-\nration Management\nis not expected to call\nRequestUpdateSession\nwithout up-\nfront synchronization. However, update campaign may involve multiple\nMachines\nand\ntherefore take some time. During this time local circumstances may change and for\nthis reason call to\nRequestUpdateSession\nis necessary.\nWhen\nSMControlApplication\ndoes not allow update,\nModelled Process\ncon-\ntrolling\nStateMachine\nof type\nController\nshould refuse update request from\nUp-\ndate and Configuration Management\n.\n[SWS_SM_00630] Rejection of update session\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen\nUpdateAllowed\nis set to\nkUpdateNotAllowed\n,\nModelled Process\ncon-\ntrolling\nStateMachine\nof type\nController\nshall return\nkOperationRejected\ner-\nror from the\nRequestUpdateSession\nmethod.\n⌋\nIf\nSMControlApplication\nallow update session to start,\nModelled Process\ncon-\ntrolling\nStateMachine\nof type\nController\nshould return a positive response back\nto\nUpdate and Configuration Management\n.\n[SWS_SM_00631] Acceptance of update session\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nWhen\nUpdateAllowed\nis set to…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P90_119","d":"AUTOSAR_AP_SWS_StateManagement","p":90,"t":"Please be aware that a project configuration may contain the\nActionListItem\nthat\nreferences\nMachineFG Restart\nstate in more than one\nController\n’s\nStateMa-\nchine State\n. Those\nStateMachine States\nmay be entered following the\nCon-\ntroller\n’s\nTransitionRequestTable\nor\nErrorRecoveryTable\ntriggered by in-\ncoming Triggers or ExecutionErrors. But in the scope of an update session, only the\nStateMachine State Restart\n[SWS_SM_CONSTR_00029] is the state which will\nbe processed once the\nUpdate and Configuration Management\nrequests the\nrestart of the\nMachine\n.\n[SWS_SM_00658] Transition to Restart state for StateMachine of type Controller\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process controlling\nStateMachine\nof type\nController\n, during a call to\nResetMachine\nmethod, shall transition the\nStateMachine\nof type\nController\nto\nthe\nRestart StateMachine State\n.\n⌋\n[SWS_SM_00661] Set ResetMachineNotifier to kRejected\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nIf\nResetMachine\nis called outside an update session\nModelled Process\ncontrol-\nling\nStateMachine\nof type\nController\nshall set the Field\nResetMachineNoti-\nfier\nto\nkRejected\n.\n⌋\nUpdate session ends with a call to\nStopUpdateSession\nmethod. At that point the\nMachine\nis in a…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P93_121","d":"AUTOSAR_AP_SWS_StateManagement","p":93,"t":"[SWS_SM_00662] Set ResetMachineNotifier to kSuccessful\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon suc-\ncessfully finalizing the ContinueUpdate transition, shall set the Field\nResetMachi-\nneNotifier\nto\nkSuccessful\n.\n⌋\n[SWS_SM_00663] Set ResetMachineNotifier to kFailed\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon failing\nto perform the transition to ContinueUpdate, shall set the Field\nResetMachineNoti-\nfier\nto\nkFailed\n.\n⌋"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P95_124","d":"AUTOSAR_AP_SWS_StateManagement","p":95,"t":"*\nAgent2::stop\n*\n. . .\nThis kind of configuration is just an example for optimization to show how e.g.\nUpdate\nand Configuration Management\ncould be started late on\nMachine\nstartup.\n[SWS_SM_00646] Transition Controller to AfterUpdate state\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon receiv-\ning\nStopUpdateSession\ncall, shall transition\nStateMachine\nof type\nController\nto the\nAfterUpdate StateMachine State\n.\n⌋\n[SWS_SM_00660] Set ResetMachineNotifier to default value when stopping up-\ndate session\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nModelled Process\ncontrolling\nStateMachine\nof type\nController\n, upon receiv-\ning\nStopUpdateSession\ncall during an update session, shall set the Field\nReset-\nMachineNotifier\nto its default value (see [SWS_SM_00212]).\n⌋\nAfter\nStopUpdateSession\nis called, requests to\nRequestTransition\nmethod as\nwell as Recovery Actions will be enabled again as described in [SWS_SM_00656].\n[SWS_SM_00647] Enabling RequestTransition method after StopUpdateSession\ncall\nUpstream requirements:\nRS_SM_00001, RS_SM_00005\n⌈\nOnce\nStopUpdateSession\nmethod has been invoked any call to\nRequestTransi-\ntion\nfor\nStateMachine\nof type\nController\nshall not ret…"},{"i":"SNIP_sm_AUTOSAR_AP_SWS_S_P135_186","d":"AUTOSAR_AP_SWS_StateManagement","p":135,"t":"⌋\n9.1.5 Data types for ResetMachineNotifier\n[SWS_SM_91027] Definition of ImplementationDataType UpdateStatusType\nUpstream requirements:\nRS_SM_00001, RS_SM_00004\n⌈"}]}</script></dialog>

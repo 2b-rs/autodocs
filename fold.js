@@ -948,11 +948,14 @@
 
   function getRootBasePrefix() {
     var script = document.querySelector('script[src*="fold.js"]');
-    if (script) {
-      var src = script.getAttribute("src") || "";
-      return src.replace(/fold\.js(?:\?.*)?$/, "");
+    if (script && script.src) {
+      var s = script.src.replace(/fold\.js(?:\?.*)?$/, "");
+      if (s) return s;
     }
-    return "";
+    var path = (typeof window !== "undefined" && window.location && window.location.pathname) || "";
+    var autoMatch = path.match(/^(\/[^\/]+\/autodocs\/|\/autodocs\/)/);
+    if (autoMatch) return autoMatch[1];
+    return "/";
   }
 
   function getActiveDropdownRelease() {
@@ -5313,56 +5316,119 @@
         if (!modal && !targetId) {
           modal = document.querySelector("dialog.dossier-modal");
         }
-        if (modal && typeof modal.showModal === "function") {
+        function openFoundModal(m) {
           var targetMode = trigger.getAttribute("data-view-mode");
           var tabToClick = null;
           if (targetMode) {
-            tabToClick = modal.querySelector('.dossier-mode-tab[data-view-mode="' + targetMode + '"]');
+            tabToClick = m.querySelector('.dossier-mode-tab[data-view-mode="' + targetMode + '"]');
           }
           if (!tabToClick) {
-            tabToClick = modal.querySelector('.dossier-mode-tab[data-view-mode="prompt"]') || modal.querySelector('.dossier-mode-tab[data-view-mode="raw"]');
+            tabToClick = m.querySelector('.dossier-mode-tab[data-view-mode="prompt"]') || m.querySelector('.dossier-mode-tab[data-view-mode="raw"]');
           }
           if (tabToClick) tabToClick.click();
-          if (typeof window.autodocsHydrateDossier === "function") window.autodocsHydrateDossier(modal);
+          if (typeof window.autodocsHydrateDossier === "function") window.autodocsHydrateDossier(m);
           try {
-            if (!modal.open) {
-              modal.showModal();
+            if (!m.open) {
+              m.showModal();
             }
           } catch (err) {
-            modal.setAttribute("open", "");
+            m.setAttribute("open", "");
           }
+        }
+
+        if (modal && typeof modal.showModal === "function") {
+          openFoundModal(modal);
           return;
         }
 
-        // Kein passendes Modal im DOM: Niemals das falsche Enclosing-Modal öffnen.
-        // Wenn trigger einen direkten Link trägt (nicht nur Anker auf der aktuellen Seite):
-        var href = trigger.getAttribute("href") || "";
-        if (href && !href.startsWith("#")) {
-          window.location.href = href;
-          return;
-        }
-        var foldId = href.replace(/^#/, "");
-        var fold = foldId ? document.getElementById(foldId) : null;
-        if (fold) {
-          fold.open = true;
-          oeffnePfad(fold);
-          fold.scrollIntoView({ behavior: "smooth", block: "start" });
-          return;
-        }
-        var targetParam = targetId ? targetId.replace(/^dossier-modal-/, "") : "";
-        var funcId = trigger.getAttribute("data-func-id") || trigger.getAttribute("data-record-id") || targetParam;
-        var pfx = getRootBasePrefix();
-        if (funcId) {
-          var snipId = trigger.getAttribute("data-snippet-id");
-          var hash = snipId ? "#curate-" + encodeURIComponent(snipId) : "#curate-" + encodeURIComponent(funcId);
-          if (funcId.startsWith("cluster-") || funcId.startsWith("module-")) {
-            window.location.href = pfx + "curation-report.html" + hash;
-          } else {
-            window.location.href = pfx + "spec/record.html?id=" + encodeURIComponent(funcId) + hash;
+        function fallbackNavigation() {
+          // Kein passendes Modal im DOM und nicht nachladbar:
+          // Wenn trigger einen direkten Link trägt (nicht nur Anker auf der aktuellen Seite):
+          var href = trigger.getAttribute("href") || "";
+          if (href && !href.startsWith("#")) {
+            window.location.href = href;
+            return;
           }
+          var foldId = href.replace(/^#/, "");
+          var fold = foldId ? document.getElementById(foldId) : null;
+          if (fold) {
+            fold.open = true;
+            oeffnePfad(fold);
+            fold.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+          // Wenn der Trigger ein Button oder Element ohne echten Link ist, die aktuelle Seite NICHT verlassen!
+          if (trigger.tagName === "BUTTON" || !href) {
+            console.warn("Kurations-Dossier konnte nicht geladen werden:", targetId);
+            var errToast = document.getElementById("dossier-load-error-toast");
+            if (!errToast) {
+              errToast = document.createElement("div");
+              errToast.id = "dossier-load-error-toast";
+              errToast.setAttribute("role", "alert");
+              errToast.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#991b1b;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:opacity 0.3s;pointer-events:none;";
+              document.body.appendChild(errToast);
+            }
+            errToast.textContent = "Kurations-Dossier konnte nicht geladen werden (" + (targetId || "unbekannt") + ").";
+            errToast.style.opacity = "1";
+            setTimeout(function () { errToast.style.opacity = "0"; }, 4000);
+            return;
+          }
+          var targetParam = targetId ? targetId.replace(/^dossier-modal-/, "") : "";
+          var funcId = trigger.getAttribute("data-func-id") || trigger.getAttribute("data-record-id") || targetParam;
+          var pfx = getRootBasePrefix();
+          var lang = (document.documentElement && document.documentElement.lang) || "de";
+          var langPrefix = (lang && lang !== "root") ? lang + "/" : "";
+          if (funcId) {
+            var snipId = trigger.getAttribute("data-snippet-id");
+            var hash = snipId ? "#curate-" + encodeURIComponent(snipId) : "#curate-" + encodeURIComponent(funcId);
+            if (funcId.startsWith("cluster-") || funcId.startsWith("module-")) {
+              window.location.href = pfx + langPrefix + "curation-report.html" + hash;
+            } else {
+              window.location.href = pfx + langPrefix + "spec/record.html?id=" + encodeURIComponent(funcId) + hash;
+            }
+            return;
+          }
+          window.location.href = pfx + langPrefix + "curation-report.html";
+        }
+
+        // On-Demand Nachladen des Kurations-Dossiers aus dossier-data/<targetId>.html
+        if (targetId) {
+          var pfx = getRootBasePrefix();
+          var modalUrl = pfx + "dossier-data/" + encodeURIComponent(targetId) + ".html";
+          trigger.classList.add("is-loading-dossier");
+          fetch(modalUrl).then(function (res) {
+            if (!res.ok) {
+              var altUrl = "/dossier-data/" + encodeURIComponent(targetId) + ".html";
+              if (modalUrl !== altUrl && !modalUrl.endsWith(altUrl)) {
+                return fetch(altUrl);
+              }
+              throw new Error("Status " + res.status);
+            }
+            return res;
+          }).then(function (res) {
+            if (!res.ok) throw new Error("Status " + res.status);
+            return res.text();
+          }).then(function (html) {
+            trigger.classList.remove("is-loading-dossier");
+            var div = document.createElement("div");
+            div.innerHTML = html.trim();
+            var escId = (window.CSS && CSS.escape) ? CSS.escape(targetId) : targetId;
+            var loaded = div.querySelector("dialog#" + escId) || div.querySelector("dialog.dossier-modal") || div.firstElementChild;
+            if (loaded) {
+              document.body.appendChild(loaded);
+              openFoundModal(loaded);
+            } else {
+              fallbackNavigation();
+            }
+          }).catch(function (err) {
+            trigger.classList.remove("is-loading-dossier");
+            console.warn("Kurations-Dossier konnte nicht asynchron geladen werden:", modalUrl, err);
+            fallbackNavigation();
+          });
           return;
         }
-        window.location.href = pfx + "curation-report.html";
+
+        fallbackNavigation();
       }
       if (e.target.closest(".dossier-close-btn")) {
         var dialog = e.target.closest("dialog");
@@ -5422,6 +5488,145 @@
         }
       });
     }
+
+    initSeamlessRouter();
+  }
+
+  /* Seamless Router — Asynchrone Instant-Navigation für flüssige Seitenwechsel */
+  function initSeamlessRouter() {
+    if (window._seamlessRouterInitialized) return;
+    window._seamlessRouterInitialized = true;
+
+    var bar = document.getElementById("seamless-router-bar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "seamless-router-bar";
+      document.body.appendChild(bar);
+    }
+
+    var progressTimer = null;
+
+    function setProgress(pct, complete) {
+      if (!bar) return;
+      if (pct === 0) {
+        bar.style.transition = "none";
+        bar.style.width = "0%";
+        bar.style.opacity = "1";
+        bar.offsetHeight; // Reflow erzwingen
+        bar.style.transition = "width 240ms ease, opacity 200ms ease";
+      } else {
+        bar.style.width = pct + "%";
+      }
+      if (complete) {
+        bar.style.width = "100%";
+        setTimeout(function () {
+          bar.style.opacity = "0";
+          setTimeout(function () { bar.style.width = "0%"; }, 220);
+        }, 120);
+      }
+    }
+
+    function navigate(url, push) {
+      clearTimeout(progressTimer);
+      setProgress(0);
+      setProgress(35);
+      progressTimer = setTimeout(function () { setProgress(75); }, 140);
+
+      fetch(url, { credentials: "same-origin" }).then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.text();
+      }).then(function (html) {
+        clearTimeout(progressTimer);
+        setProgress(90);
+
+        var parser = new DOMParser();
+        var newDoc = parser.parseFromString(html, "text/html");
+
+        var oldMain = document.querySelector("main");
+        var newMain = newDoc.querySelector("main");
+        if (!oldMain || !newMain) {
+          window.location.href = url;
+          return;
+        }
+
+        // Title aktualisieren
+        if (newDoc.title) document.title = newDoc.title;
+
+        // URL in History
+        if (push) {
+          history.pushState({ seamless: true, url: url }, "", url);
+        }
+
+        // Schneller, weicher Inhaltsaustausch
+        oldMain.style.transition = "opacity 60ms ease";
+        oldMain.style.opacity = "0";
+
+        setTimeout(function () {
+          oldMain.className = newMain.className;
+          oldMain.innerHTML = newMain.innerHTML;
+
+          var oldBar = document.querySelector(".crumbbar") || document.querySelector("nav.crumbs, nav");
+          var newBar = newDoc.querySelector(".crumbbar") || newDoc.querySelector("nav.crumbs, nav");
+          if (oldBar && newBar) oldBar.innerHTML = newBar.innerHTML;
+
+          oldMain.style.opacity = "1";
+          setProgress(100, true);
+
+          // Scrollen: Anker anspringen oder nach oben scrollen
+          var hashIdx = url.indexOf("#");
+          if (hashIdx >= 0) {
+            var hashTarget = document.getElementById(url.substring(hashIdx + 1));
+            if (hashTarget) hashTarget.scrollIntoView();
+          } else {
+            window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+          }
+
+          // Komponenten neu initialisieren ("Building in Pieces")
+          if (typeof window.initNsx === "function") {
+            window.initNsx();
+          }
+          if (typeof bindSnippetCurationControls === "function") {
+            bindSnippetCurationControls();
+          }
+          window.dispatchEvent(new CustomEvent("autodocs:navigated", { detail: { url: url } }));
+        }, 60);
+
+      }).catch(function (err) {
+        clearTimeout(progressTimer);
+        setProgress(100, true);
+        console.warn("Seamless Router Fallback:", err);
+        window.location.href = url;
+      });
+    }
+
+    document.addEventListener("click", function (ev) {
+      if (ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      var a = ev.target.closest && ev.target.closest("a[href]");
+      if (!a) return;
+      var href = a.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("javascript:") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+      if (a.getAttribute("target") === "_blank" || a.hasAttribute("download") || a.classList.contains("no-router") || a.classList.contains("dossier-open-link")) return;
+
+      var targetUrl = null;
+      try {
+        targetUrl = new URL(a.href, window.location.href);
+      } catch (e) { return; }
+
+      if (targetUrl.origin !== window.location.origin) return;
+
+      // Nur Dokumentationsseiten (.html oder Verzeichnisse mit Slash)
+      var path = targetUrl.pathname;
+      if (!path.endsWith(".html") && !path.endsWith("/")) return;
+      // Nicht für API-Endpunkte oder Demos mit eigenem Backend-Server
+      if (path.indexOf("/api/") >= 0) return;
+
+      ev.preventDefault();
+      navigate(targetUrl.href, true);
+    });
+
+    window.addEventListener("popstate", function (ev) {
+      navigate(window.location.href, false);
+    });
   }
 
   if (isNode) {

@@ -1,0 +1,537 @@
+<dialog id="dossier-modal-cl_ara_log_Logger_48f21d" class="dossier-modal dossier-workbench" data-dossier-sha="f9b92d1faba89fdc" aria-labelledby="dossier-modal-cl_ara_log_Logger_48f21d-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-cl_ara_log_Logger_48f21d-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_log_Logger_48f21d)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~4,027 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="Class Guide: cl_ara_log_Logger_48f21d" data-fragment="classes/cl_ara_log_Logger_48f21d.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse den Klassen-Leitfaden (&lt;div class="ai class-guide"&gt;) für die C++ Klasse 'ara::log::Logger' (adaptive, Modul log) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+LEITBILD FÜR KLASSEN-LEITFÄDEN (ara::* / Adaptive Platform), Version 2:
+- 400–1000 Wörter in 3–5 Abschnitten mit &lt;h4&gt;-Überschriften.
+ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge wie hier):
+- Kontext: Rolle, Verantwortlichkeit und Interaktionspartner. Kontextdiagramm (dot), wenn
+  mindestens drei Beteiligte belegt sind.
+- Lebenszyklus: Erzeugung, Besitzverhältnisse, Zustände und Übergänge, Zerstörung,
+  Nebenläufigkeit. Zustandsdiagramm (dot), wenn Zustände oder eine feste Abfolge von
+  Lebensphasen belegt sind; sonst nur Text.
+- Nutzungspfad: die typische Aufrufreihenfolge eines konkreten Anwendungsfalls (z. B.
+  erzeugen → konfigurieren → ausführen → Ergebnis prüfen). Sequenzdiagramm (seq) ab drei
+  Schritten.
+- Fehlerszenarien: Fehlercodes, Ausnahmen, Vor- und Nachbedingungen der wichtigen Aufrufe.
+- KEINE Abschnitte für Synopsis, Mitgliederübersicht oder Einzeldokumentation der Mitglieder:
+  Deklaration, Mitgliederliste und Records zeigt die Seite selbst.
+- Diagramme nur mit echtem Mehrwert (keine Trivialdiagramme), höchstens drei; jedes mit
+  Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; und anschließender &lt;p class="diagram-note"&gt;.
+- WICHTIG (Traceability Grounding / INV-QL-08):
+  Zitiere AUSSCHLIESSLICH Spezifikations-Records ([SWS_...]) und Dokumentstellen, die im Payload unter 'member_requirements' oder 'dokumentstellen' explizit enthalten sind.
+  Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
+- Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Danach je Diagramm-Platzhalter genau ein Block:
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; seq
+&lt;JSON nach dem Sequenz-Schema&gt;
+DIAGRAM&gt;&gt;&gt;
+oder
+&lt;&lt;&lt;DIAGRAM diag-&lt;kurzname&gt; dot
+&lt;Graphviz-digraph ohne Stilattribute (Farben/Schriften setzt der Generator)&gt;
+DIAGRAM&gt;&gt;&gt;
+
+Sequenz-Schema (JSON):
+{"titel": str, "teilnehmer": [{"name": str}], "schritte": [
+  {"art": "nachricht", "von": &lt;idx&gt;, "nach": &lt;idx&gt;, "text": [str], "pfeil": "voll"|"offen", "gestrichelt": bool},
+  {"art": "selbst", "teilnehmer": &lt;idx&gt;, "text": [str]},
+  {"art": "notiz", "ueber": [&lt;idx&gt;, &lt;idx&gt;], "text": [str]},
+  {"art": "abschnitt", "text": str},
+  {"art": "rahmen", "typ": "alt"|"opt"|"loop", "guard": str}, {"art": "trenner", "guard": str}, {"art": "rahmen-ende"}
+]}
+Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
+
+=== USER PROMPT ===
+Erstelle den Klassen-Leitfaden für 'ara::log::Logger' (R25-11).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "class_id": "cl_ara_log_Logger_48f21d",
+ "class_name": "ara::log::Logger",
+ "description": "Represents a logger context. The Logging framework defines contexts which can be seen as logger instances within one Application process or process scope. The contexts have the following properties: • Context ID • Description of the Context ID • Default log level A context will be automatically registered against the Logging backend during creation phase, as well as automatically deregistered during process shutdown phase. So the end user does not care for the objects life time. To ensure such housekeeping functionality, a strong ownership of the logger instances needs to be ensured towards the Logging framework. This means that the Application process are not supposed to call the Logger constructor themselves. The user is not allowed to create a Logger object by himself. Logger context needs to be created by one of the ara::log::CreateLogger functions.",
+ "dokumentstellen": [],
+ "member_requirements": [
+  {
+   "id": "SWS_LOG_00070",
+   "text": "function IsEnabled [SWS_LOG_00070] Upstream: RS_LT_00003 , RS_LT_00045 bool IsEnabled ( LogLevel logLevel) const noexcept; Check current configured log reporting level. Applications may want to check the actual configured reporting log level of certain loggers before doing log data preparation that is runtime intensive. Check current configured log reporting level. Applications may want to check the actual configured reporting log level of certain loggers before doing log data preparation that is runtime intensive. Check current configured log reporting level. Applications may want to check the actual configured reporting log level of certain loggers before doing log data preparation that is runtime intensive. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td logLevel td The to be checked log level. Rückgabewert th Typ th Beschreibung td bool td True if desired log level satisfies the configured reporting level."
+  },
+  {
+   "id": "SWS_LOG_00204",
+   "text": "function Log [SWS_LOG_00204] Upstream: RS_LT_00003 template &amp;lt;typename MsgId, typename... Params&amp;gt; void Log (const MsgId &amp;amp;id, const Params &amp;amp;... args) noexcept; Log a modeled message. If this function is called with an argument list that does not match the modeled message, the program is ill-formed. Log a modeled message. If this function is called with an argument list that does not match the modeled message, the program is ill-formed. Log a modeled message. If this function is called with an argument list that does not match the modeled message, the program is ill-formed. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Template-Parameter th Parameter th Beschreibung td MsgIdArgs td the type of the id parameter the types of the args parameters Parameter (in) th Parameter th Beschreibung td id td an implementation-defined type identifying the message object td args td the arguments to add to the message Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_LOG_00068",
+   "text": "function LogDebug [SWS_LOG_00068] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogDebug () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Debug severity."
+  },
+  {
+   "id": "SWS_LOG_00065",
+   "text": "function LogError [SWS_LOG_00065] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogError () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Error severity."
+  },
+  {
+   "id": "SWS_LOG_00064",
+   "text": "function LogFatal [SWS_LOG_00064] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogFatal () const noexcept; Creates a LogStream object. Returned object will accept arguments via the insert stream operator \"@c &amp;lt;&amp;lt;\". Creates a LogStream object. Returned object will accept arguments via the insert stream operator \"@c &lt;&lt;\". Creates a LogStream object. Returned object will accept arguments via the insert stream operator \"@c &lt;&lt;\". Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Fatal severity. Hinweise: In the normal usage scenario, the object’s life time of the created LogStream is scoped within one statement (ends with ; after last passed argument). If one wants to extend the LogStream object’s life time, the object might be assigned to a named variable. Refer to the LogStream class documentation for further details."
+  },
+  {
+   "id": "SWS_LOG_00067",
+   "text": "function LogInfo [SWS_LOG_00067] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogInfo () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Info severity."
+  },
+  {
+   "id": "SWS_LOG_00069",
+   "text": "function LogVerbose [SWS_LOG_00069] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogVerbose () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Verbose severity."
+  },
+  {
+   "id": "SWS_LOG_00066",
+   "text": "function LogWarn [SWS_LOG_00066] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogWarn () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Warn severity."
+  },
+  {
+   "id": "SWS_LOG_00133",
+   "text": "function LogWith [SWS_LOG_00133] Upstream: RS_LT_00003 template &amp;lt;typename... Attrs, typename MsgId, typename... Params&amp;gt; void LogWith (const std::tuple &amp;lt; Attrs... &amp;gt; &amp;amp;attrs, const MsgId &amp;amp;msg Id, const Params &amp;amp;... params) noexcept; This function does not participate in overload resolution if any of Attrs... is not an \"Attr\" (TBD). This function does not participate in overload resolution if any of Attrs.. is not an \"Attr\" (TBD). This function does not participate in overload resolution if any of Attrs.. is not an \"Attr\" (TBD). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Template-Parameter th Parameter th Beschreibung td AttrsMsgIdParams td the types of attrs the type of msgId the types of the params Parameter (in) th Parameter th Beschreibung td attrs td a std::tuple containing attributes of the message td msgId td an implementation-defined instance of type MsgId identifying the message object td params td the arguments to add to the message Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_LOG_00259",
+   "text": "function Logger [SWS_LOG_00259] Upstream: RS_LT_00003 , RS_LT_00046 Logger ()=delete; Default destructor is deleted. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono"
+  },
+  {
+   "id": "SWS_LOG_00255",
+   "text": "function SetThreshold [SWS_LOG_00255] Upstream: RS_LT_00049 void SetThreshold ( LogLevel threshold) noexcept; Set log level threshold for this Logger instance. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td threshold td the new threshold Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_LOG_00131",
+   "text": "function WithLevel [SWS_LOG_00131] Upstream: RS_LT_00003 , RS_LT_00049 LogStream WithLevel ( LogLevel logLevel) const noexcept; Log message with a programmatically determined log level can be written. Log message with a programmatically determined log level can be written. Log message with a programmatically determined log level can be written. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td logLevel td the log level to use for this LogStream instance Rückgabewert th Typ th Beschreibung td LogStream td a new LogStream instance with the given log level"
+  },
+  {
+   "id": "SWS_LOG_00260",
+   "text": "function ~Logger [SWS_LOG_00260] Upstream: RS_LT_00003 , RS_LT_00046 ~ Logger (); Destructor . Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit not exception safe class mono Thread-Sicherheit thread-safe class mono"
+  }
+ ],
+ "module": "log",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "syntax": "class Logger final {...};"
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="8ad3f65aef92d13a8f8d052ed8fd9262fb9df67bf143aa6cc52e35eb2f61d7e2" data-trace-output="f9b92d1faba89fdc35b06f309189d69c19f95b26a1b59c5561a57b8cbfef9d65" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+
+&lt;h4&gt;Context&lt;/h4&gt;
+&lt;p&gt;The class &lt;code&gt;ara::log::Logger&lt;/code&gt; represents a logging context within an AUTOSAR Adaptive application process or process area. Such a context encapsulates central properties for logging: a context ID, an associated context ID description, and a configurable default log level. Log output within the system is differentiated and controlled via these contexts.&lt;/p&gt;
+&lt;p&gt;In the system architecture, &lt;code&gt;ara::log::Logger&lt;/code&gt; acts as an intermediary between three parties:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Application Process:&lt;/strong&gt; Uses instances of &lt;code&gt;ara::log::Logger&lt;/code&gt; to issue messages, dynamically query filter thresholds, or adjust them.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Logging framework:&lt;/strong&gt; Holds strict ownership ("strong ownership") of all logger instances, controls their creation via factory functions such as &lt;code&gt;ara::log::CreateLogger&lt;/code&gt;, and handles the housekeeping.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Logging backend:&lt;/strong&gt; Receives the actual log data; logger contexts are automatically registered with the backend during the initialization phase and deregistered during orderly process shutdown.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="diagram" id="diag-logger-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 219.41 232.80" style="max-width:293px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
+&lt;!-- Application --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Application&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M55.93,-204C55.93,-204 12,-204 12,-204 6,-204 0,-198 0,-192 0,-192 0,-180 0,-180 0,-174 6,-168 12,-168 12,-168 55.93,-168 55.93,-168 61.93,-168 67.93,-174 67.93,-180 67.93,-180 67.93,-192 67.93,-192 67.93,-198 61.93,-204 55.93,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="33.97" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Application&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Logger --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;Logger&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M100.97,-120C100.97,-120 70.97,-120 70.97,-120 64.97,-120 58.97,-114 58.97,-108 58.97,-108 58.97,-96 58.97,-96 58.97,-90 64.97,-84 70.97,-84 70.97,-84 100.97,-84 100.97,-84 106.97,-84 112.97,-90 112.97,-96 112.97,-96 112.97,-108 112.97,-108 112.97,-114 106.97,-120 100.97,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="85.97" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_Logger_48f21d.html" href="../classes/cl_ara_log_Logger_48f21d.html"&gt;Logger&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Application&amp;#45;&amp;gt;Logger --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Application-&amp;gt;Logger&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M44.99,-167.61C51.89,-156.74 60.91,-142.51 68.74,-130.17"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="71.66,-132.09 74.06,-121.77 65.75,-128.34 71.66,-132.09"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="82.38" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt API&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- LoggingBackend --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;LoggingBackend&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M119.85,-36C119.85,-36 52.09,-36 52.09,-36 46.09,-36 40.09,-30 40.09,-24 40.09,-24 40.09,-12 40.09,-12 40.09,-6 46.09,0 52.09,0 52.09,0 119.85,0 119.85,0 125.85,0 131.85,-6 131.85,-12 131.85,-12 131.85,-24 131.85,-24 131.85,-30 125.85,-36 119.85,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="85.97" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;LoggingBackend&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Logger&amp;#45;&amp;gt;LoggingBackend --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Logger-&amp;gt;LoggingBackend&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M85.97,-83.61C85.97,-73.17 85.97,-59.64 85.97,-47.66"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="89.47,-48.03 85.97,-38.03 82.47,-48.03 89.47,-48.03"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="122.76" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;registriert Kontext&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- LoggingFramework --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;LoggingFramework&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M177.96,-204C177.96,-204 97.97,-204 97.97,-204 91.97,-204 85.97,-198 85.97,-192 85.97,-192 85.97,-180 85.97,-180 85.97,-174 91.97,-168 97.97,-168 97.97,-168 177.96,-168 177.96,-168 183.96,-168 189.96,-174 189.96,-180 189.96,-180 189.96,-192 189.96,-192 189.96,-198 183.96,-204 177.96,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="137.97" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;LoggingFramework&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- LoggingFramework&amp;#45;&amp;gt;Logger --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;LoggingFramework-&amp;gt;Logger&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M126.94,-167.61C120.04,-156.74 111.02,-142.51 103.2,-130.17"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="106.18,-128.34 97.87,-121.77 100.27,-132.09 106.18,-128.34"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="152.84" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt und besitzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Context diagram: Embedding of the Logger class in interaction with the application, logging framework, and backend. Sources: &lt;a class="spec-record-ref" data-req="SWS_LOG_00259" href="../spec/record.html?id=SWS_LOG_00259"&gt;[SWS_LOG_00259]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Lifecycle&lt;/h4&gt;
+&lt;p&gt;The management of instances of &lt;code&gt;ara::log::Logger&lt;/code&gt; is subject to strict control by the framework to ensure seamless synchronization with the logging backend:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Creation and ownership:&lt;/strong&gt; The default constructor is explicitly deleted (&lt;code&gt;Logger() = delete&lt;/code&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00259" href="../spec/record.html?id=SWS_LOG_00259"&gt;[SWS_LOG_00259]&lt;/a&gt;). Direct instantiation by the application is prohibited. Creation takes place in a controlled manner via functions such as &lt;code&gt;ara::log::CreateLogger&lt;/code&gt;. Ownership remains with the logging framework.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Registration and cleanup:&lt;/strong&gt; A logger context is automatically registered with the logging backend upon its creation. When the process terminates, deregistration occurs automatically, relieving application developers of manual lifecycle management.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Destruction:&lt;/strong&gt; The destructor &lt;code&gt;~Logger()&lt;/code&gt; is specified (&lt;a class="spec-record-ref" data-req="SWS_LOG_00260" href="../spec/record.html?id=SWS_LOG_00260"&gt;[SWS_LOG_00260]&lt;/a&gt;). It is declared as thread-safe, but designated as not exception safe ("not exception safe") (&lt;a class="spec-record-ref" data-req="SWS_LOG_00260" href="../spec/record.html?id=SWS_LOG_00260"&gt;[SWS_LOG_00260]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Concurrency:&lt;/strong&gt; All methods for logging and threshold querying are specified as thread-safe (&lt;a class="spec-record-ref" data-req="SWS_LOG_00070" href="../spec/record.html?id=SWS_LOG_00070"&gt;[SWS_LOG_00070]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00255" href="../spec/record.html?id=SWS_LOG_00255"&gt;[SWS_LOG_00255]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;). Multiple threads can use the same logger instance in parallel.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;Usage Path&lt;/h4&gt;
+&lt;p&gt;The typical procedure for issuing log messages is divided into the following phases:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Checking or configuring the filter threshold:&lt;/strong&gt; The application can set the filter threshold of an instance at runtime via &lt;code&gt;SetThreshold(threshold)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00255" href="../spec/record.html?id=SWS_LOG_00255"&gt;[SWS_LOG_00255]&lt;/a&gt;). Prior to computationally intensive preparations of log data, &lt;code&gt;IsEnabled(logLevel)&lt;/code&gt; can be used to query whether the desired log level satisfies the configured reporting threshold (&lt;a class="spec-record-ref" data-req="SWS_LOG_00070" href="../spec/record.html?id=SWS_LOG_00070"&gt;[SWS_LOG_00070]&lt;/a&gt;). If the check yields &lt;code&gt;false&lt;/code&gt;, the preparation can be skipped.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Initiating stream-based logging:&lt;/strong&gt; For text logging, the class provides specific methods for each severity level:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;LogFatal()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LogError()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00065" href="../spec/record.html?id=SWS_LOG_00065"&gt;[SWS_LOG_00065]&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LogWarn()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00066" href="../spec/record.html?id=SWS_LOG_00066"&gt;[SWS_LOG_00066]&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LogInfo()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00067" href="../spec/record.html?id=SWS_LOG_00067"&gt;[SWS_LOG_00067]&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LogDebug()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00068" href="../spec/record.html?id=SWS_LOG_00068"&gt;[SWS_LOG_00068]&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LogVerbose()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00069" href="../spec/record.html?id=SWS_LOG_00069"&gt;[SWS_LOG_00069]&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;WithLevel(logLevel)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00131" href="../spec/record.html?id=SWS_LOG_00131"&gt;[SWS_LOG_00131]&lt;/a&gt;) for programmatically determining the urgency.&lt;/li&gt;
+&lt;/ul&gt;
+Each of these methods returns a &lt;code&gt;LogStream&lt;/code&gt; object that accepts arguments via the stream operator &lt;code&gt;&amp;lt;&amp;lt;&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Stream lifetime and output:&lt;/strong&gt; By default, the lifetime of the &lt;code&gt;LogStream&lt;/code&gt; object is limited to a single statement and ends with the semicolon after the last argument (&lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;). If required, the stream can be assigned to a variable in order to extend its lifetime across multiple statements (&lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Outputting modeled messages:&lt;/strong&gt; As an alternative to streaming, pre-modeled messages can be output via &lt;code&gt;Log(id, args...)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00204" href="../spec/record.html?id=SWS_LOG_00204"&gt;[SWS_LOG_00204]&lt;/a&gt;). If additional attributes are to be passed, the call is made via &lt;code&gt;LogWith(attrs, msgId, params...)&lt;/code&gt; with an attribute tuple (&lt;a class="spec-record-ref" data-req="SWS_LOG_00133" href="../spec/record.html?id=SWS_LOG_00133"&gt;[SWS_LOG_00133]&lt;/a&gt;).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="diagram" id="diag-logger-ablauf"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 391" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Aufrufabfolge einer gefilterten Stream-Logging-Operation&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="377" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="377" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="377" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Application&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_Logger_48f21d.html" href="../classes/cl_ara_log_Logger_48f21d.html"&gt;Logger&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_LogStream_2f1f1b.html" href="../classes/cl_ara_log_LogStream_2f1f1b.html"&gt;LogStream&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="184" width="610" height="173" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_Logger_48f21d.html#SWS_LOG_00070" href="../classes/cl_ara_log_Logger_48f21d.html#SWS_LOG_00070"&gt;IsEnabled&lt;/a&gt;(LogLevel::kInfo)&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;true&lt;/text&gt;&lt;line x1="345" y1="166" x2="135" y2="166" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 184 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="199" font-size="11" font-weight="bold" fill="#28251d"&gt;opt&lt;/text&gt;&lt;text x="96" y="199" font-size="11" font-style="italic" fill="#28251d"&gt;Loglevel aktiv&lt;/text&gt;&lt;text x="240.0" y="224" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_Logger_48f21d.html#SWS_LOG_00067" href="../classes/cl_ara_log_Logger_48f21d.html#SWS_LOG_00067"&gt;LogInfo&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="230" x2="345" y2="230" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="258" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_LogStream_2f1f1b.html" href="../classes/cl_ara_log_LogStream_2f1f1b.html"&gt;LogStream&lt;/a&gt;&lt;/text&gt;&lt;line x1="345" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="345.0" y="292" text-anchor="middle" font-size="11" fill="#28251d"&gt;operator&amp;lt;&amp;lt;("Statusbericht")&lt;/text&gt;&lt;line x1="135" y1="298" x2="555" y2="298" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 555 312 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="547" y="327" text-anchor="end" font-size="11" fill="#28251d"&gt;Flushing bei Statement-Ende&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequence diagram: Call sequence of a filtered stream logging operation. Sources: &lt;a class="spec-record-ref" data-req="SWS_LOG_00070" href="../spec/record.html?id=SWS_LOG_00070"&gt;[SWS_LOG_00070]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00067" href="../spec/record.html?id=SWS_LOG_00067"&gt;[SWS_LOG_00067]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Error Scenarios&lt;/h4&gt;
+&lt;p&gt;Error handling in &lt;code&gt;ara::log::Logger&lt;/code&gt; is predominantly based on static type checking at compile time and strict exception safety:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Mismatched arguments in modeled messages:&lt;/strong&gt; If the template function &lt;code&gt;Log(id, args...)&lt;/code&gt; is called with parameters that do not correspond exactly to the definition of the modeled message, the program is ill-formed ("ill-formed") (&lt;a class="spec-record-ref" data-req="SWS_LOG_00204" href="../spec/record.html?id=SWS_LOG_00204"&gt;[SWS_LOG_00204]&lt;/a&gt;). This leads to a compile-time error.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Invalid attributes with LogWith:&lt;/strong&gt; For &lt;code&gt;LogWith(attrs, msgId, params...)&lt;/code&gt;, the function is excluded from overload resolution via SFINAE if an element of the attribute tuple does not represent a valid attribute (&lt;a class="spec-record-ref" data-req="SWS_LOG_00133" href="../spec/record.html?id=SWS_LOG_00133"&gt;[SWS_LOG_00133]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Exception guarantees:&lt;/strong&gt; All logging and query functions (including &lt;code&gt;IsEnabled&lt;/code&gt;, &lt;code&gt;SetThreshold&lt;/code&gt;, all &lt;code&gt;Log*&lt;/code&gt; methods, &lt;code&gt;WithLevel&lt;/code&gt;, &lt;code&gt;Log&lt;/code&gt;, and &lt;code&gt;LogWith&lt;/code&gt;) are specified as exception safe ("exception safe") and declared with &lt;code&gt;noexcept&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00070" href="../spec/record.html?id=SWS_LOG_00070"&gt;[SWS_LOG_00070]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00255" href="../spec/record.html?id=SWS_LOG_00255"&gt;[SWS_LOG_00255]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00064" href="../spec/record.html?id=SWS_LOG_00064"&gt;[SWS_LOG_00064]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00131" href="../spec/record.html?id=SWS_LOG_00131"&gt;[SWS_LOG_00131]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00204" href="../spec/record.html?id=SWS_LOG_00204"&gt;[SWS_LOG_00204]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00133" href="../spec/record.html?id=SWS_LOG_00133"&gt;[SWS_LOG_00133]&lt;/a&gt;). An exception is the destructor &lt;code&gt;~Logger()&lt;/code&gt;, which is listed as not exception safe ("not exception safe") (&lt;a class="spec-record-ref" data-req="SWS_LOG_00260" href="../spec/record.html?id=SWS_LOG_00260"&gt;[SWS_LOG_00260]&lt;/a&gt;). Interpretation: This likely means that error states are not completely caught in the event of internal cleanup or deallocation errors during backend housekeeping, which is why deregistration should take place during regular process shutdown.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Kennzeichnung des Destruktors als „not exception safe“ – Begründung: Der Payload weist ~Logger() als not exception safe aus, ohne Fehlerursachen zu benennen; die Folgerung für das Backend-Housekeeping während des Shutdowns ist eine begründete Interpretation. --&gt;
+&lt;p class="ai-note"&gt;This guide was generated by an AI system based on the AUTOSAR specification for R25-11.&lt;/p&gt;
+
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8ad3f65aef92…</code></div>
+              <div><strong>Konstituierende Records:</strong> 13</div>
+              <div><strong>Gepinnte Inbound-Snippets:</strong> 0</div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">13</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">13 von 13 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (13 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Extrahierte &amp; Gepinnte Inbound-Snippets (0 Belege)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LOG_00070","k":"function","d":"LOG","t":"function IsEnabled [SWS_LOG_00070] Upstream: RS_LT_00003 , RS_LT_00045 bool IsEnabled ( LogLevel logLevel) const noexcept; Check current configured log reporting level. Applications may want to check the actual configured reporting log level of certain loggers before doing log data preparation that is runtime intensive. Check current configured log reporting level. Applications may want to check the actual configured reporting log level of certain loggers before doing log data preparation that is runtime intensive. Check current configured log reporting level. Applications may want to check the actual configured reporting log level of certain loggers before doing log data preparation that is runtime intensive. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td logLevel td The to be checked log level. Rückgabewert th Typ th Beschreibung td bool td True if desired log level satisfies the configured reporting level.","n":"IsEnabled"},{"i":"SWS_LOG_00204","k":"function","d":"LOG","t":"function Log [SWS_LOG_00204] Upstream: RS_LT_00003 template \u003ctypename MsgId, typename... Params> void Log (const MsgId &id, const Params &... args) noexcept; Log a modeled message. If this function is called with an argument list that does not match the modeled message, the program is ill-formed. Log a modeled message. If this function is called with an argument list that does not match the modeled message, the program is ill-formed. Log a modeled message. If this function is called with an argument list that does not match the modeled message, the program is ill-formed. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Template-Parameter th Parameter th Beschreibung td MsgIdArgs td the type of the id parameter the types of the args parameters Parameter (in) th Parameter th Beschreibung td id td an implementation-defined type identifying the message object td args td the arguments to add to the message Rückgabewert th Typ th Beschreibung td None td","n":"Log"},{"i":"SWS_LOG_00068","k":"function","d":"LOG","t":"function LogDebug [SWS_LOG_00068] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogDebug () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Debug severity.","n":"LogDebug"},{"i":"SWS_LOG_00065","k":"function","d":"LOG","t":"function LogError [SWS_LOG_00065] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogError () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Error severity.","n":"LogError"},{"i":"SWS_LOG_00064","k":"function","d":"LOG","t":"function LogFatal [SWS_LOG_00064] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogFatal () const noexcept; Creates a LogStream object. Returned object will accept arguments via the insert stream operator \"@c \u003c\u003c\". Creates a LogStream object. Returned object will accept arguments via the insert stream operator \"@c \u003c\u003c\". Creates a LogStream object. Returned object will accept arguments via the insert stream operator \"@c \u003c\u003c\". Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Fatal severity. Hinweise: In the normal usage scenario, the object’s life time of the created LogStream is scoped within one statement (ends with ; after last passed argument). If one wants to extend the LogStream object’s life time, the object might be assigned to a named variable. Refer to the LogStream class documentation for further details.","n":"LogFatal"},{"i":"SWS_LOG_00067","k":"function","d":"LOG","t":"function LogInfo [SWS_LOG_00067] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogInfo () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Info severity.","n":"LogInfo"},{"i":"SWS_LOG_00069","k":"function","d":"LOG","t":"function LogVerbose [SWS_LOG_00069] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogVerbose () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Verbose severity.","n":"LogVerbose"},{"i":"SWS_LOG_00066","k":"function","d":"LOG","t":"function LogWarn [SWS_LOG_00066] Upstream: RS_LT_00003 , RS_LT_00049 LogStream LogWarn () const noexcept; Same as Logger::LogFatal(). . Same as Logger::LogFatal(). Same as Logger::LogFatal(). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td LogStream td LogStream object of Warn severity.","n":"LogWarn"},{"i":"SWS_LOG_00133","k":"function","d":"LOG","t":"function LogWith [SWS_LOG_00133] Upstream: RS_LT_00003 template \u003ctypename... Attrs, typename MsgId, typename... Params> void LogWith (const std::tuple \u003c Attrs... > &attrs, const MsgId &msg Id, const Params &... params) noexcept; This function does not participate in overload resolution if any of Attrs... is not an \"Attr\" (TBD). This function does not participate in overload resolution if any of Attrs.. is not an \"Attr\" (TBD). This function does not participate in overload resolution if any of Attrs.. is not an \"Attr\" (TBD). Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Template-Parameter th Parameter th Beschreibung td AttrsMsgIdParams td the types of attrs the type of msgId the types of the params Parameter (in) th Parameter th Beschreibung td attrs td a std::tuple containing attributes of the message td msgId td an implementation-defined instance of type MsgId identifying the message object td params td the arguments to add to the message Rückgabewert th Typ th Beschreibung td None td","n":"LogWith"},{"i":"SWS_LOG_00259","k":"function","d":"LOG","t":"function Logger [SWS_LOG_00259] Upstream: RS_LT_00003 , RS_LT_00046 Logger ()=delete; Default destructor is deleted. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono","n":"Logger"},{"i":"SWS_LOG_00255","k":"function","d":"LOG","t":"function SetThreshold [SWS_LOG_00255] Upstream: RS_LT_00049 void SetThreshold ( LogLevel threshold) noexcept; Set log level threshold for this Logger instance. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td threshold td the new threshold Rückgabewert th Typ th Beschreibung td None td","n":"SetThreshold"},{"i":"SWS_LOG_00131","k":"function","d":"LOG","t":"function WithLevel [SWS_LOG_00131] Upstream: RS_LT_00003 , RS_LT_00049 LogStream WithLevel ( LogLevel logLevel) const noexcept; Log message with a programmatically determined log level can be written. Log message with a programmatically determined log level can be written. Log message with a programmatically determined log level can be written. Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td logLevel td the log level to use for this LogStream instance Rückgabewert th Typ th Beschreibung td LogStream td a new LogStream instance with the given log level","n":"WithLevel"},{"i":"SWS_LOG_00260","k":"function","d":"LOG","t":"function ~Logger [SWS_LOG_00260] Upstream: RS_LT_00003 , RS_LT_00046 ~ Logger (); Destructor . Header-Datei #include \"ara/log/logger.h\" class mono Scope class ara::log::Logger class mono Exception-Sicherheit not exception safe class mono Thread-Sicherheit thread-safe class mono","n":"~Logger"}],"inbound":[]}</script></dialog>
