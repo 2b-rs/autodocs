@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/can.html">Modul: can</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CAN_SECTION_8_3_6_CanIf_Transmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 92)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=90" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 83)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00943" class="swsref internal-spec-ref"><code>SWS_CANIF_00943</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_00009" class="swsref internal-spec-ref"><code>SWS_Det_00009</code></a></span>
         </div>
       </div>
 
@@ -116,11 +117,88 @@ request, if the controller mode referenced by ControllerId is different to CAN_C
 STARTED and the channel mode at least for the transmit path is not online or offline
 active.⌋
 [SWS_CANIF_00318] ⌈CanIf_Transmit() shall call Can_Write() with the hard-
-ware transmit handle corresponding to the</div></section>
+ware transmit handle corresponding to the provided TxPduId and a Can_PduType
+structure where:
+• swPduHandle is set to the CanTxPduId used in the corresponding CanIf_-
+TxConfirmation() call
+• length is set to the value provided as PduInfoPtr-&gt;SduLength, possibly
+reduced according to [SWS_CANIF_00894]
+• id is set to the CAN ID associated with the TxPduId
+• sdu is set to the pointer provided as PduInfoPtr-&gt;SduDataPtr
+⌋
+Note: PduInfoPtr is a pointer to a L-SDU user memory, CAN Identifier, L-SDU han-
+dle and Data Length (see [1, Specification of CAN Driver]).
+[SWS_CANIF_00243]
+Upstream requirements: SRS_Can_01141
+⌈CanIf shall set the two most significant bits (’IDentifier Extension flag’ (see [12, ISO
+11898-1:2015]) and ’CAN FD flag’) of the CanId (PduInfoPtr-&gt;id) before CanIf
+passes the predefined CanId to CanDrv at call of Can_Write() (see [1, Specification
+of CAN Driver], definition of Can_IdType [SWS_Can_00416]).
+The CanId format
+type of each CAN L-PDU can be configured by CanIfTxPduCanIdType, refer to
+CanIfTxPduCanIdType.⌋
+[SWS_CANIF_00957]
+Upstream requirements: SRS_Can_02003
+⌈CanIf_Transmit() shall call CanXL_Write() with the hardware transmit handle
+corresponding to the provided TxPduId and a CanXL_PduType structure where:
+• swPduHandle is set to the CanTxPduId used in the corresponding CanIf_-
+TxConfirmation() call
+• length is set to the value provided as PduInfoPtr-&gt;SduLength
+• sdu is set to the pointer provided as PduInfoPtr-&gt;SduDataPtr
+• XLParams is set to a pointer to a CanXL_Params structure containing the Prior-
+ityId, Vcid, SduType, AcceptanceField, and Sec (the Sec element is currently not
+supported and always set to 0)
+⌋
+[SWS_CANIF_00882] ⌈CanIf_Transmit() shall accept a NULL pointer as PduIn-
+foPtr-&gt;SduDataPtr, if the PDU is configured for triggered transmission: CanIfTx-
+PduTriggerTransmit = TRUE.⌋
+[SWS_CANIF_00162]
+Upstream requirements: SRS_Can_01162, SRS_Can_02003
+⌈If the call of Can_Write()/CanXL_Write() returns E_OK the transmit request ser-
+vice CanIf_Transmit() shall return E_OK.⌋
+Note: If the call of Can_Write()/CanXL_Write() returns E_NOT_OK, then the trans-
+mit request service CanIf_Transmit() shall return E_NOT_OK. If the transmit re-
+quest service CanIf_Transmit() returns E_NOT_OK, then the upper layer module is
+responsible to repeat the transmit request.
+[SWS_CANIF_00319]
+Upstream requirements: SRS_BSW_00323
+⌈If parameter TxPduId of CanIf_Transmit() has an invalid value, CanIf shall re-
+port development error code CANIF_E_INVALID_TXPDUID to the Det_ReportEr-
+ror service of the DET, when CanIf_Transmit() is called.⌋
+[SWS_CANIF_00320]
+Upstream requirements: SRS_BSW_00323
+⌈If parameter PduInfoPtr of CanIf_Transmit() has an invalid value, CanIf shall
+report development error code CANIF_E_PARAM_POINTER to the Det_ReportError
+service of the DET module, when CanIf_Transmit() is called.⌋
+[SWS_CANIF_00893]
+Upstream requirements: SRS_Can_01162, SRS_Can_02003
+⌈When CanIf_Transmit() is called with PduInfoPtr-&gt;SduLength exceeding the
+maximum length of the PDU referenced by TxPduId:
+• SduLength &gt; 8 if the Can_IdType indicates a classic CAN frame
+• SduLength &gt; 64 if the Can_IdType indicates a CAN FD frame
+• SduLength &gt; 2048 if the container CanIfTxPduCfg-&gt;CanIfTxPduXL-
+Params is existing which indicates a CAN XL frame
+CanIf shall report runtime error code CANIF_E_DATA_LENGTH_MISMATCH to the
+Det_ReportRuntimeError() service of the DET.⌋
+[SWS_CANIF_00940]
+Upstream requirements: SRS_Can_02003
+⌈When CanIf_Transmit() is called with PduInfoPtr-&gt;SduLength less than 1
+and the container CanIfTxPduCfg-&gt;CanIfTxPduXLParams is existing which indi-
+cates a CAN XL frame, and SDU Type is configured to a value different from 03h (tun-
+neled CAN 2.0/FD frame), CanIf shall report runtime error code CANIF_E_DATA_-
+LENGTH_MISMATCH to the Det_ReportRuntimeError() service of the DET.⌋
+Note: Besides static configured transmissions there are dynamic transmissions, too.
+Therefore, the valid data length is always passed by PduInfoPtr-&gt;SduLength.
+Furthermore, even the frame type might change via CanIf_SetDynamicTxId().
+[SWS_CANIF_00893] ensures that not matching transmit requests can be detected
+via DET.
+[SWS_CANIF_00894] ⌈When CanIf_Transmit() is called with PduInfoPtr-&gt;
+SduLength exceeding the length of the global PDU (see [ECUC_EcuC_00078]) ref-
+erenced by TxPduId and CanIfTxPduTruncation is enabled, CanIf shall transmit</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">CanIf_Transmit calling CanXL_Write</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Det_ReportError().</p>
       </section>
 
       <section class="snip-card">
@@ -129,11 +207,11 @@ ware transmit handle corresponding to the</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=90" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 92</td>
+              <td>Seite 83</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -141,15 +219,15 @@ ware transmit handle corresponding to the</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CANIF_00943" class="swsref internal-spec-ref"><code>SWS_CANIF_00943</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Det_00009" class="swsref internal-spec-ref"><code>SWS_Det_00009</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

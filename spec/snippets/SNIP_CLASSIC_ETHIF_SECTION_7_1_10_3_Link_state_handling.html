@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_1_10_3_Link_state_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetInterface.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthSwt_00038" class="swsref internal-spec-ref"><code>SWS_EthSwt_00038</code></a></span>
         </div>
@@ -90,7 +91,126 @@ Status:
 DRAFT
 Upstream requirements: SRS_Eth_00033
 ⌈EthIf shall supervise and store the link state based on the existing configuration:
-•</div></section>
+• EthIf shall supervise and store the link state per configured EthIfTransceiver
+• EthIf shall supervise and store the link state of all EthSwtPorts per configured
+EthIfSwitch
+• EthIf shall supervise and store the link state of all EthSwtPorts that are refer-
+enced by an EthIfSwitchPortGroup
+⌋
+Detected link state changes of supervised Ethernet hardware entities (e.g. PHYs and
+Ethernet switch ports) trigger several actions in the Ethernet Interface. The process-
+ing depends on the EthIfControllers configuration. As described in the introduc-
+tory text of chapter Chapter 7.1.10 “Handling of maintained Ethernet hardware” one
+EthIfController represents one VLAN, if EthIfVlanId is configured and set to
+value other than ’0’, otherwise an EthIfController represents a software controller
+for so-called "untagged" traffic. The Ethernet Interface need to distinguish between
+the link state of its supervised Ethernet hardware entities (e.g. PHYs and Ethernet
+switch ports) and the link state which is reported per EthIfController towards the
+affected upper layers. In some cases the sole link state of a single Ethernet hardware
+entity needs to be reported and in some cases an accumulated link state based on
+the link state of multiple Ethernet hardware entities needs to be reported to the upper
+layer. Please refer to chapter Chapter 7.1.10.3.1 “Link state accumulation of EthIf-
+SwitchPortGroup” for more details on the link state accumulation. The upper layer of
+the Ethernet Interface which are indicated regarding a link state change varies due to
+the configuration:
+• Ethernet State Manager (EthSM) is indicated via EthSM_TrcvLinkStateChg,
+if the EthIfController references an EthIfTransceiver or an EthIf-
+Switch or an EthIfSwitchPortGroup
+• Basic Software Manager (BswM) is indicated via BswM_EthIf_PortGrou-
+pLinkStateChg, for a EthIfSwitchPortGroup that is not referenced by any
+EthIfController
+• All configured users are indicated via their individual configured API (see &lt;User&gt;
+_TrcvLinkStateChg)
+• MACsec Key Agreement (MKA) is indicated via Mka_LinkStateChange, for a
+Ethernet hardware entity (e.g. Ethernet switch port or PHY) that is supervised
+and MACsec protected.
+Note:
+• The EthSM module uses the reported link state to control the data path of the
+Ethernet communication stack
+• The BswM uses the reported link state to feed configured BswM rules that could
+perform configured actions
+• The Mka uses the reported link state to process key agreement handling on a
+specific Ethernet hardware entity
+[SWS_EthIf_00697] Either use sole link state or accumulated to indicate a link
+state change towards EthSM, BswM and configured users
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00033
+⌈EthIf shall consider to use either the sole link state or the accumulated link state
+based on the following configurations to indicate a link state change to EthSM, BswM
+and configured users:
+• If an EthIfController references an EthIfTransceiver, then the sole link
+state of the corresponding Ethernet hardware entity (PHY) shall be used.
+• If an EthIfController references an EthIfSwitch, then the sole link state
+of the host port at the Ethernet switch that is connected to the corresponding
+Ethernet controller shall be used.
+• For all EthIfSwitchPortGroup either referenced by an EthIfController or
+not, the accumulated link state (see [SWS_EthIf_00259]) of the EthIfSwitch-
+PortGroup shall be used.
+⌋
+[SWS_EthIf_00682] Report of a link state change towards the EthSM and config-
+ured users for an EthIfController that acts independent of a MACsec opera-
+tional state
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00033, FO_RS_MACsec_00002
+⌈If EthIf detects a link state change either as sole link state or as accumulated link state
+and the following conditions are valid:
+• an affected EthIfController references no MkaPaeInstance,
+• this affected EthIfController references either an EthIfTransceiver or
+an EthIfSwitch or an EthIfSwitchPortGroup
+then EthIf shall store the link state for this EthIfController and report the link state
+change by calling the following APIs with the changed link state (either ETHTRCV_
+LINK_STATE_ACTIVE or ETHTRCV_LINK_STATE_DOWN ):
+• call EthSM_TrcvLinkStateChg with CtrlIdx set to the affected EthIfCon-
+troller and TransceiverLinkState set to changed link state
+• call &lt;User&gt;_TrcvLinkStateChg for all configured users with CtrlIdx set to
+the affected EthIfController and TransceiverLinkState set to changed
+link state
+⌋
+Link state changes that refer to MACsec protected Ethernet hardware entities (either
+PHY or Ethernet switch port) are always immediately reported to the key agreement
+module to support fast processing (e.g. fast start up for MACsec protected communi-
+cation).
+[SWS_EthIf_00683] Always use the sole link state of a MACsec protected Ether-
+net hardware entities to report a link state change towards Mka
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00033
+⌈EthIf shall always use the sole link state of an MACsec protected Ethernet hardware
+entity (either PHY or Ethernet switch port) to report a link state change towards Mka.⌋
+[SWS_EthIf_00684]Report of an detected link state change for MACsec protected
+Ethernet hardware entities towards Mka
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00033, FO_RS_MACsec_00002
+⌈If EthIf detects a link state change of an supervised Ethernet hardware entity (e.g.
+PHY or Ethernet switch port) where MACsec protection is enabled (e.g. EthTrcv-
+MacSecEnabled set to TRUE) and this Ethernet hardware entity is associated with a
+MkaPaeInstance that is identified by either the following configurations:
+• an EthIfController is referenced by an MkaPaeInstance and this EthIf-
+Controller references an EthIfTransceiver that corresponds to the PHY
+where the link state change was detected
+• an EthSwtPort is referenced by an MkaPaeInstance and this EthSwtPort
+corresponds to the Ethernet switch port where the link state change was detected
+then EthIf shall call Mka_LinkStateChange with MkaPaeIdx set to the referencing
+MkaPaeInstance and TransceiverLinkState set to the sole link state (either
+ETHTRCV_LINK_STATE_ACTIVE or ETHTRCV_LINK_STATE_DOWN)⌋
+The reporting of link state changes for an EthIfController towards EthSM, BswM
+and configured users which references a MkaPaeInstance are depend on the MAC-
+sec operational state of the MACsec protected Ethernet hardware entity (e.g. PHY
+or Ethernet switch port) where this EthIfController belongs to. All EthIfCon-
+troller that refer to the same MkaPaeInstance share this MACsec operation state
+(see [SWS_EthIf_00688] and [SWS_EthIf_00689]).
+[SWS_EthIf_00685] Report of a link state change towards the EthSM and con-
+figured users for an EthIfController that depends on a MACsec operational
+state and references an EthIfTransceiver
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00033, FO_RS_MACsec_00002
+⌈If the following conditions for an EthIfController are valid:
+• an affected EthIfController references a MkaPaeInstance,
+• this affected EthIfController references an EthIfTransceiver</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +223,7 @@ Upstream requirements: SRS_Eth_00033
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

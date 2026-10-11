@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_6_8_Application_of_Formulas_in_Variation_Points</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</strong> (Seite 255)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_TPS_GenericStructureTemplate.pdf#page=252" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</a></strong> (Seite 255)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01431" class="swsref"><code>TPS_SWCT_01431</code></a></span>
         </div>
@@ -97,7 +98,152 @@ reference("SW-SYSTEMCONST:/S/SY_ZYLZA")
 which is then accepted as correct SwSystemconstDependentFormula.
 ...
 &lt;VF&gt;
-&lt;SYS</div></section>
+&lt;SYSC-REF DEST="SW-SYSTEMCONST"&gt;/S/SY_ZYLZA&lt;/SYSC-REF&gt;
++ &lt;SYSC-REF DEST="SW-SYSTEMCONST"&gt;/S/SY_TURBO&lt;/SYSC-REF&gt;
+&lt;/VF&gt;
+...
+is transformed into:
+Generic Structure Template
+reference("SW-SYSTEMCONST:/S/SY_ZYLZA") + reference("SW-
+SYSTEMCONST:/S/SY_TURBO")
+...
+&lt;VF&gt;defined(&lt;SYSC-REF DEST="SW-SYSTEMCONST"&gt;/S/SY_ZYLZA&lt;/SYSC-
+REF&gt;)&lt;/VF&gt;
+...
+is transformed into:
+defined(reference("SW-SYSTEMCONST:/S/SY_ZYLZA"))
+...
+&lt;VF&gt;1 / &lt;SYSC-REF DEST="SW-SYSTEMCONST"&gt;/S/SY_ZYLZA&lt;/SYSC-REF&gt;&lt;/VF&gt;
+...
+is transformed into:
+1 / reference("SW-SYSTEMCONST:/S/SY_ZYLZA")
+&lt;VARIATION-POINT&gt;
+&lt;SW-SYSCOND&gt;
+defined(&lt;SYSC-REF DEST="SW-SYSTEMCONST"&gt;SY_COUNT&lt;SYSC-REF&gt;)
+&amp;amp;&amp;amp; &lt;SYSC-REF DEST="SW-SYSTEMCONST"&gt;SY_COUNT&lt;SYSC-REF&gt; &amp;lt; 10
+&lt;/SW-SYSCOND&gt;
+&lt;VARIATION-POINT&gt;
+Please note, that this example shows that markup characters ("&lt;" and "&amp;") need to
+be represented as XML entities when the formula is serialized as ARXML. The above
+formula is transformed into:
+defined(reference("SW-SYSTEMCONST:SY_COUNT")) &amp;&amp;
+reference("SW-SYSTEMCONST:SY_COUNT") &lt; 10
+Examples of correct expressions with references (syscString) are:
+First example: using conditionAccess processes the string "Condition1".
+&lt;VARIATION-POINT-PROXYS&gt;
+&lt;VARIATION-POINT-PROXY&gt;
+&lt;SHORT-NAME&gt;MyVariationProxy&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt;
+&lt;L-4 L="EN"&gt;My Variation Point Proxy&lt;/L-4&gt;
+&lt;/LONG-NAME&gt;
+&lt;CATEGORY&gt;CONDITION&lt;/CATEGORY&gt;
+&lt;CONDITION-ACCESS BINDING-TIME="PRE-COMPILE-TIME"&gt;&lt;SYSC-STRING-
+REF DEST="SW-SYSTEMCONST"&gt;/SwSystemconsts/MySysConst1_SY&lt;/SYSC-STRING-
+REF&gt;=="Condition1"&lt;/CONDITION-ACCESS&gt;
+&lt;/VARIATION-POINT-PROXY&gt;
+&lt;/VARIATION-POINT-PROXYS&gt;
+Generic Structure Template
+with the SwSystemconstValue based on numerical value:
+&lt;SW-SYSTEMCONST-VALUE&gt;
+&lt;SW-SYSTEMCONST-REF DEST="SW-SYSTEMCONST"&gt;/SwSystemconsts/MySysConst1_SY&lt;/SW-
+SYSTEMCONST-REF&gt;
+&lt;VALUE&gt;"Condition1"&lt;/VALUE&gt;
+&lt;/SW-SYSTEMCONST-VALUE&gt;
+is transformed into:
+reference("SW-SYSTEMCONST:/SwSystemconsts/MySysConst1_SY") == Condition1
+Hint:
+The
+RTE-Generator
+validates
+this
+expression
+to
+define
+Rte_VP_MyVariationPoint1 (TRUE). In case the string "Condition1" will be
+change to "Condition2" the RTE-Generator validates this expression to define
+Rte_VP_MyVariationPoint1 (FALSE).
+Second example: using conditionAccess processes the SwSystemconst that
+refers to a CompuMethod of category TEXTTABLE, see also [TPS_GST_00013]:
+&lt;VARIATION-POINT-PROXYS&gt;
+&lt;VARIATION-POINT-PROXY&gt;
+&lt;SHORT-NAME&gt;MyVariationProxy&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt;
+&lt;L-4 L="EN"&gt;My Variation Point Proxy&lt;/L-4&gt;
+&lt;/LONG-NAME&gt;
+&lt;CATEGORY&gt;CONDITION&lt;/CATEGORY&gt;
+&lt;CONDITION-ACCESS BINDING-TIME="PRE-COMPILE-TIME"&gt;&lt;SYSC-STRING-
+REF DEST="SW-SYSTEMCONST"&gt;/SwSystemconsts/MySysConst5_SY&lt;/SYSC-STRING-
+REF&gt;==Element1&lt;/CONDITION-ACCESS&gt;
+&lt;/VARIATION-POINT-PROXY&gt;
+&lt;/VARIATION-POINT-PROXYS&gt;
+with the SwSystemconst based on string
+&lt;SW-SYSTEMCONST&gt;
+&lt;SHORT-NAME&gt;MySysConst5_SY&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt;
+&lt;L-4 L="EN"&gt;This is my fifth system constant&lt;/L-4&gt;
+&lt;/LONG-NAME&gt;
+&lt;CATEGORY&gt;VALUE&lt;/CATEGORY&gt;
+&lt;SW-DATA-DEF-PROPS&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;SW-CALIBRATION-ACCESS&gt;NOT-ACCESSIBLE&lt;/SW-CALIBRATION-ACCESS&gt;
+&lt;COMPU-METHOD-REF DEST="COMPU-METHOD"&gt;/CompuMethods/MyTextTable&lt;/COMPU-
+METHOD-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/SW-DATA-DEF-PROPS&gt;
+&lt;/SW-SYSTEMCONST&gt;
+referencing the CompuMethod
+Generic Structure Template
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;MyTextTable&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt;
+&lt;L-4 L="EN"&gt;My Texttable computation method&lt;/L-4&gt;
+&lt;/LONG-NAME&gt;
+&lt;CATEGORY&gt;TEXTTABLE&lt;/CATEGORY&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;1.0&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;1.0&lt;/UPPER-LIMIT&gt;
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;Element1&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;
+is transformed into:
+reference("SW-SYSTEMCONST":/SwSystemconsts/MySysConst5_SY") == Element1
+The formula language is described in detail in Section 4.9. In this section, we con-
+centrate on the variant handling related classes that are derived from SwSystemcon-
+stDependentFormula, namely AttributeValueVariationPoint and Condi-
+tionByFormula:
+ConditionByFormula is aggregated by VariationPoint and decides whether
+the element to which the VariationPoint is attached actually exists.
+This
+is used in all patterns except the attribute value pattern.
+The return value of this formula is always interpreted as a boolean: 0 equals
+false, any other value is interpreted as true.
+AttributeValueVariationPoint is primarily used to provide values in the at-
+tribute value pattern (Section 7.4). Since the attribute value pattern is implicitly
+used to define the condition of a PostBuild variation point, it may also be used in
+every other pattern.
+AttributeValueVariationPoint
+further
+splits
+into
+eight
+subclasses,
+namely NumericalValueVariationPoint, FloatValueVariationPoint,
+IntegerValueVariationPoint,
+BooleanValueVariationPoint,
+TimeValueValueVariationPoint, PositiveIntegerValueVariation-
+Point and UnlimitedIntegerValueVariationPoint.
+These subclasses provide information on the expected return type of the formula
+(see Chapter 4.9.2.5, and correspond to the AUTOSAR primitive types Numeri-
+cal, Float, Integer, Boolean, PositiveInteger and UnlimitedInte-
+ger.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -110,7 +256,7 @@ which is then accepted as correct SwSystemconstDependentFormula.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_TPS_GenericStructureTemplate.pdf#page=252" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

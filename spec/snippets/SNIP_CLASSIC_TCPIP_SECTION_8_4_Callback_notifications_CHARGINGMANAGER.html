@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ChargingManager.pdf</strong> (Seite 47)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_ChargingManager.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ChargingManager.pdf</a></strong> (Seite 47)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TCPIP_00229" class="swsref internal-spec-ref"><code>SWS_TCPIP_00229</code></a></span>
         </div>
@@ -134,7 +135,136 @@ None
 Description
 Called by the lower layer after an I-PDU has been received or after the final I-PDU has been
 received in case of segmentation.
-Tags: atp.Status=dr</div></section>
+Tags: atp.Status=draft
+Available via
+ChrgM.h
+⌋(SRS_BSW_00310)
+[CP_SWS_ChrgM_00141]{DRAFT} Definition of callback function ChrgM_V2GTp
+SoConModeChg ⌈
+Service Name
+ChrgM_V2GTpSoConModeChg (draft)
+Syntax
+void ChrgM_V2GTpSoConModeChg (
+SoAd_SoConIdType SoConId,
+SoAd_SoConModeType Mode
+)
+Service ID [hex]
+0x21
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant for different SoConIds. Non reentrant for the same SoConId.
+▽
+△
+SoConId
+socket connection index specifying the socket connection with the
+mode change.
+Parameters (in)
+Mode
+new socket connection mode
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+The SoAd calls this API to inform the ChrgM about the status of the socket connection. Note:
+The parameter SoAdSocketSoConModeChgNotifUpperLayerRef of SoAdSocketConnection
+Group in container SoAdSocketConnectionGroup (see ECUC_SoAd_00161) of the
+CP-SWS-SocketAdaptor shall be configured.
+Tags: atp.Status=draft
+Available via
+ChrgM_SoAd.h
+⌋(CP_RS_ChrgM_00012, SRS_BSW_00310)
+[CP_SWS_ChrgM_00128]{DRAFT} Definition of callback function ChrgM_V2GTp
+StartOfReception ⌈
+Service Name
+ChrgM_V2GTpStartOfReception (draft)
+Syntax
+BufReq_ReturnType ChrgM_V2GTpStartOfReception (
+PduIdType id,
+const PduInfoType* info,
+PduLengthType TpSduLength,
+PduLengthType* bufferSizePtr
+)
+Service ID [hex]
+0x46
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+id
+Identification of the I-PDU.
+info
+Pointer to a PduInfoType structure containing the payload data
+(without protocol information) and payload length of the first
+frame or single frame of a transport protocol I-PDU reception, and
+the MetaData related to this PDU. If neither first/single frame data
+nor MetaData are available, this parameter is set to NULL_PTR.
+Parameters (in)
+TpSduLength
+Total length of the N-SDU to be received.
+Parameters (inout)
+None
+Parameters (out)
+bufferSizePtr
+Available receive buffer in the receiving module. This parameter
+will be used to compute the Block Size (BS) in the transport
+protocol module.
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Connection has been accepted. bufferSizePtr
+indicates the available receive buffer; reception is continued. If no
+buffer of the requested size is available, a receive buffer size of 0
+shall be indicated by bufferSizePtr.
+BUFREQ_E_NOT_OK: Connection has been rejected; reception is
+aborted. bufferSizePtr remains unchanged.
+BUFREQ_E_OVFL: No buffer of the required length can be
+provided; reception is aborted. bufferSizePtr remains unchanged.
+Description
+This function is called at the start of receiving an N-SDU. The N-SDU might be fragmented into
+multiple N-PDUs (FF with one or more following CFs) or might consist of a single N-PDU (SF).
+The service shall provide the currently available maximum buffer size when invoked with TpSdu
+Length equal to 0.
+Tags: atp.Status=draft
+Available via
+ChrgM.h
+⌋(SRS_BSW_00310)
+[CP_SWS_ChrgM_00143]{DRAFT} Definition of callback function ChrgM_V2GTp
+TxConfirmation ⌈
+Service Name
+ChrgM_V2GTpTxConfirmation (draft)
+Syntax
+void ChrgM_V2GTpTxConfirmation (
+PduIdType id,
+Std_ReturnType result
+)
+Service ID [hex]
+0x48
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+id
+Identification of the transmitted I-PDU.
+Parameters (in)
+result
+E_OK: The PDU was transmitted. E_NOT_OK: Transmission of
+the PDU failed.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+The lower layer calls this API of the ChrgM to inform the ChrgM about the status of the
+transmitted PDU.
+Tags: atp.Status=draft
+Available via
+ChrgM.h
+⌋(CP_RS_ChrgM_00012, SRS_BSW_00310)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -147,7 +277,7 @@ Tags: atp.Status=dr</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ChargingManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_ChargingManager.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ChargingManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

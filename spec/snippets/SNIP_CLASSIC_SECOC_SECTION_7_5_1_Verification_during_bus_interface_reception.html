@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SECOC_SECTION_7_5_1_Verification_during_bus_interface_reception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SecureOnboardCommunication.pdf</strong> (Seite 52)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SecureOnboardCommunication.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SecureOnboardCommunication.pdf</a></strong> (Seite 52)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00268" class="swsref internal-spec-ref"><code>SWS_SecOC_00268</code></a></span>
         </div>
@@ -99,7 +100,61 @@ SecOC module shall copy the I-PDU into the according buffer according to the
 minimum of received length and configured length of this I-PDU. The copied length
 shall then be used for all further reception processings.
 ⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
-Note: Copying only minimum of co</div></section>
+Note: Copying only minimum of configured and passed length ensures that buffer cannot be
+overwritten and that non-expected data (which was maybe added due to padding) is discarded. For
+reception from TP this restriction is not needed as TP ensures a valid length value passed. For
+dynamic length PDUs with a shorter length than configured only the length provided will be copied.
+Also for dynamic length PDUs TPS_SYST_02189 ensures that a reliable length information is
+available.
+Thereafter, the actual verification of anincoming Secured I-PDU is initiated during
+the next call of the scheduled main function. The SecOC module extracts the
+Authentic I-PDU, the Authentication Information from the Secured I-PDU. The SecOC
+module verifies the authenticity and freshness of the Authentic I-PDU according to
+SecOC_SWS_0040. If the verification is successful, the SecOC indicates the
+reception of the Authentic I-PDU by calling PduR_SecOC[If|Tp]RxIndication
+for the Authentic I-PDU. If the verification fails, the SecOC drops the PDU and does
+not call PduR_SecOC[If|Tp]RxIndication.
+[SWS_SecOC_00079]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer bus
+interface, the SecOC module shall verify the Authenticator according to the overall
+approach specified in SWS_SecOC_00040. The verification shall be processed in
+the scheduled main function.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+[SWS_SecOC_00080]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer bus
+interface and if the verification eventually succeeds, the SecOC module shall call
+PduR_SecOC[If|Tp]RxIndication referencing the Authentic I-PDU that is
+contained in the Secured I-PDU.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+[SWS_SecOC_00081]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer bus
+interface and if the verification fails and the SecOCIgnoreVerificationResult
+is
+configured
+to
+TRUE,
+the
+SecOC
+module
+shall
+call
+PduR_SecOC[If|Tp]RxIndication referencing the Authentic I-PDU that is
+contained in the Secured I-PDU.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+Note:
+If
+the
+verification
+eventually
+fails,
+the
+SecOC
+module
+does
+not
+call
+PduR_SecOC[If|Tp]RxIndication for the Authentic I-PDU that is contained in the Secured I-
+PDU.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -112,7 +167,7 @@ Note: Copying only minimum of co</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SecureOnboardCommunication.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SecureOnboardCommunication.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SecureOnboardCommunication.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

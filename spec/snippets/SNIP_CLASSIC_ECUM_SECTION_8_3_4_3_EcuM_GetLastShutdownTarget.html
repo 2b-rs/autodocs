@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_8_3_4_3_EcuM_GetLastShutdownTarget</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 120)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=120" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 120)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -115,11 +116,32 @@ Upstream requirements: SRS_ModeMgm_00023
 or power up occurred in the shutdownTarget parameter. EcuM_GetLastShutdownTar-
 get shall always return the same value until the next shutdown.⌋
 [SWS_EcuM_02336]
-Upstream</div></section>
+Upstream requirements: SRS_ModeMgm_00023
+⌈If the call of GetLastShutdownTarget() passes ECU_STATE_SLEEP in the parameter
+shutdownTarget, in the parameter shutdownMode it returns which of the configured
+sleep modes was actually chosen.
+If the call of GetLastShutdownTarget() passes ECU_STATE_RESET in the parameter
+shutdownTarget, in the parameter sleepMode it returns which of the configured reset
+modes was actually chosen.⌋
+[SWS_EcuM_02337]
+Upstream requirements: SRS_ModeMgm_00023, SRS_BSW_00350
+⌈If the pointer to the shutdownMode parameter is NULL, EcuM_GetLastShutdownTar-
+get shall simply ignore the shutdownMode parameter and return the last shutdown tar-
+get regardless of whether it was SLEEP or not. If EcuMDevErrorDetect is enabled,
+EcuM_GetLastShutdownTarget shall report the ECUM_E_PARAM_POINTER to Det.⌋
+[SWS_EcuM_02157]
+Upstream requirements: SRS_ModeMgm_00023
+⌈EcuM_GetLastShutdownTarget may return a shutdown target in a STARTUP phase
+that set late in a previous SHUTDOWN phase. If so, implementation specific limitations
+shall be clearly documented.⌋
+Rationale for [SWS_EcuM_02157]
+The EcuM_GetLastShutdownTarget function is intended primarily for use in the
+ECU STARTUP or RUN states. To simplify implementation, it is acceptable if the value
+is set in late shutdown phase for use during the next startup.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -128,7 +150,7 @@ Upstream</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=120" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

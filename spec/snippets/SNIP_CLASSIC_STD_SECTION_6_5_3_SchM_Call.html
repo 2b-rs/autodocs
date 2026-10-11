@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_6_5_3_SchM_Call</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 897)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=897" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 897)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_BSWMDT_04138" class="swsref"><code>TPS_BSWMDT_04138</code></a></span>
         </div>
@@ -119,7 +120,92 @@ Upstream requirements: SRS_Rte_00243
 association to a BswSynchronousServerCallPoint exists and
 the BswSynchronousServerCallPoint references a BswMod-
 uleClientServerEntry as calledEntry and this BswModule-
-ClientServerEntry is refere</div></section>
+ClientServerEntry is referenced by the BswModuleDescrip-
+tion as a requiredClientServerEntry.⌋
+[SWS_Rte_08735]
+Upstream requirements: SRS_Rte_00243
+⌈An asynchronous SchM_Call API shall be generated if a call-
+Point association to a BswAsynchronousServerCallPoint
+exists and the BswAsynchronousServerCallPoint references
+a BswModuleClientServerEntry as calledEntry and this
+BswModuleClientServerEntry is referenced by the BswMod-
+uleDescription as a requiredClientServerEntry.⌋
+A configuration that includes both synchronous and asynchronous
+Call Points is invalid.
+[SWS_Rte_CONSTR_09079] SchM_Call API may only be used
+by the BswModuleEntity that describe its usage ⌈The SchM_-
+Call API may only be used within the BswModuleEntity that refer-
+ences the corresponding BswSynchronousServerCallPoint re-
+spectively BswAsynchronousServerCallPoint using a call-
+Point association.⌋
+Description:
+Function to initiate Client-Server communication between BSW mod-
+ules. The SchM_Call API is used for both synchronous and asyn-
+chronous calls.
+When
+the
+BswModuleClientServerEntry
+is
+called
+the
+SchM
+shall
+invoke
+the
+referenced
+BswMod-
+uleEntry
+providing
+the
+C-function
+with
+the
+signature
+&lt;bpns&gt;[_&lt;vi&gt;_&lt;ai&gt;]_name(&lt;data_1&gt;...(&lt;data_n&gt;)
+on
+the partition of the task assigned to the respective BswOpera-
+tionInvokedEvent, or on the local partition if the BswOpera-
+tionInvokedEvent is not mapped to a task.
+[SWS_Rte_08736]
+Upstream requirements: SRS_Rte_00243
+⌈The OUT parameter returnValue shall only exist if the return-
+Type of BswModuleEntry is not void and the SchM_Call is syn-
+chronous.⌋
+[SWS_Rte_08737]
+Upstream requirements: SRS_Rte_00243
+⌈The datatype of the OUT parameter returnValue shall be equal
+to returnType of the called BswModuleEntry.⌋
+[SWS_Rte_08738]
+Upstream requirements: SRS_Rte_00243
+⌈The return value of the called BswModuleEntry shall be returned
+inside the OUT parameter returnValue.⌋
+[SWS_Rte_08739]
+Upstream requirements: SRS_Rte_00243
+⌈The SchM shall ensure that the BswModuleEntity implementing
+a server operation has completed the processing of a request before
+it begins processing the next request, if call serialization is required
+by the server operation, i.e the isReentrant attribute of the cor-
+responding BswModuleClientServerEntry which is referenced
+as providedClientServerEntry is set to false and more
+than one BswModuleClientServerEntry in the role required-
+ClientServerEntry references this server.
+If the SchM_Call
+crosses partition borders, the call is mapped to IOCSend_&lt;id&gt;()
+or uses trusted functions if [SWS_Rte_08903] applies.⌋
+The pointers to all parameters passed by reference must remain valid
+until the API call returns.
+Return Value:
+[SWS_Rte_08740] ⌈The return value shall be used to indicate infras-
+tructure errors detected by the RTE during execution of the SchM_
+Call call.⌋
+• [SWS_Rte_08741] ⌈SCHM_E_OK - The API call completed suc-
+cessfully.⌋
+• [SWS_Rte_08742] ⌈SCHM_E_LIMIT - There are multiple out-
+standing asynchronous calls of the same BswModuleEntry.
+The invocation shall be discarded, the buffers of the return pa-
+rameters shall not be modified.⌋
+• [SWS_Rte_04555] ⌈SCHM_E_TIMEOUT – if the call is ignored
+according to [SWS_Rte_04552]⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -132,7 +218,7 @@ ClientServerEntry is refere</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=897" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

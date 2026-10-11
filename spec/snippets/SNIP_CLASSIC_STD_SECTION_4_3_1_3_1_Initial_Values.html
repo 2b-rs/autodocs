@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_3_1_Initial_Values</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 289)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=289" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 289)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07046" class="swsref internal-spec-ref"><code>SWS_Rte_07046</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08311" class="swsref internal-spec-ref"><code>SWS_Rte_08311</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,53 @@ The above requirement ensures that RTE API calls return the initialized value un
 “real” value has been received, possibly via the communication service. The require-
 ment does not apply when “event” semantics are used since the implied state change
 when the event data is received will mean that the receiver will not start to process
-invalid data and would th</div></section>
+invalid data and would therefore never see the initialized value.
+Note: In general it is not mandatory for a user to provide an initial value for sender/re-
+ceiver communication, but some exceptions exist where users may force validation
+for the presence of initial values (see [SWS_Rte_07642], [SWS_Rte_08311] and
+[SWS_Rte_07681]).
+However, caution is required when omitting initial values. If no initial value is present,
+the relevant RTE API can only return undefined data before the first communication
+has occurred (see the specification of Rte_Read - 5.6.10 and Rte_DRead - 5.6.11).
+[SWS_Rte_04500]
+Upstream requirements: SRS_Rte_00107
+⌈An initial value cannot be specified when the implementation policy is set to ’queued’
+attribute is specified as true.⌋
+For senders, an initial value is not used directly by the RTE (since an AUTOSAR SW-C
+must supply a value using Rte_Send) however it may be needed to configure the com-
+munication service - for example, an un-initialised signal can be transmitted if multiple
+signals are mapped to a single frame and the communication service transmits the
+whole frame when any contained signal is sent by the application. Note that it is not
+the responsibility of the RTE generator to configure the communication service.
+It is permitted for an initial value to be specified for either the sender or receiver. In this
+case the same value is used for both sides of the communication.
+[SWS_Rte_04501]
+Upstream requirements: SRS_Rte_00108
+⌈If in context of one partition a sender specifies an initial value and the receiver does
+not (or vice versa) the same initial value is used for both sides of the communication.⌋
+Please note: In case [SWS_Rte_04501] combined with data conversion (section 4.3.7)
+applies the init value for the receiver needs to be converted from the sender’s repre-
+sentation.
+It is also permitted for both sender and receiver to specify an initial value. In this case
+it is defined that the receiver’s initial value is used by the RTE generator for both sides
+of the communication.
+[SWS_Rte_04502]
+Upstream requirements: SRS_Rte_00108
+⌈If in context of one partition both receiver and sender specify an initial value the spec-
+ification for the receiver takes priority.⌋
+Note that [SWS_Rte_04502] applies to plain sender/receiver communication only.
+For parameter communication different rules apply (see chapter 4.2.9.3.1, especially
+[SWS_Rte_07186]).
+[SWS_Rte_06215]
+Upstream requirements: SRS_Rte_00108
+⌈When a initial value is provided for a sender/receiver communication in which trans-
+formation is enabled, if no data has been received when the relevant reception API is
+called, the configured initial value shall be returned as defined and not passed through
+the configured transformer chain.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07046] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_08311] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +144,7 @@ invalid data and would th</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=289" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +156,7 @@ invalid data and would th</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07046" class="swsref internal-spec-ref"><code>SWS_Rte_07046</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_08311" class="swsref internal-spec-ref"><code>SWS_Rte_08311</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

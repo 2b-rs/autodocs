@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWMODULEDESCRIPTIONTEMPLATE_SECTION_13_2_2_3_Diagnostic_Communication_Needs</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>BSWModuleDescriptionTemplate.pdf</strong> (Seite 233)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_BSWModuleDescriptionTemplate.pdf#page=233" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWModuleDescriptionTemplate.pdf</a></strong> (Seite 233)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_BSWMDT_04121" class="swsref"><code>TPS_BSWMDT_04121</code></a></span>
         </div>
@@ -100,7 +101,261 @@ dataLength
 PositiveInteger
 0..1
 attr
-This</div></section>
+This attribute is applicable only if the ServiceNeed is
+aggregated within BswModuleDependency.
+This attribute represents the length of data (in bytes)
+provided for this particular PID signal.
+diagnosticValue
+Access
+DiagnosticValueAccess
+Enum
+0..1
+attr
+This attribute controls whether the data can be read and
+written or whether it is to be handled read-only.
+▽
+Basic Software Module Description Template
+△
+Class
+DiagnosticValueNeeds
+didNumber
+PositiveInteger
+0..1
+attr
+This represents a Data identifier for the diagnostic value.
+This allows to predefine the DID number if the responsible
+function developer has received a particular requirement
+from the OEM or from a standardization body.
+fixedLength
+Boolean
+0..1
+attr
+This attribute controls whether the data length of the data
+is fixed.
+processingStyle
+DiagnosticProcessing
+StyleEnum
+0..1
+attr
+This attribute controls whether interaction requires the
+software-component to react synchronously on a request
+or whether it processes the request in background but still
+the DCM has to issue the call again to eventually obtain
+the result of the request.
+Table 13.21: DiagnosticValueNeeds
+Enumeration
+DiagnosticValueAccessEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Defines the access of the configured diagnostic current values which will be used by the Dem or Dcm
+module.
+Literal
+Description
+readOnly
+The access to the data element is limited to read-only. This is typically used to read-out diagnostic
+information (e.g. current values).
+Tags:atp.EnumerationLiteralIndex=0
+readWrite
+The value of the diagnostic data element is classified as configurable (read and write access is
+possible).
+Tags:atp.EnumerationLiteralIndex=1
+writeOnly
+The access to the data element is limited to write-only. This supports the use case where the Dcm
+just writes data to the application software without the intention to read it back,
+Tags:atp.EnumerationLiteralIndex=2
+Table 13.22: DiagnosticValueAccessEnum
+Enumeration
+DiagnosticProcessingStyleEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the ability to define the processing style of diagnostic requests.
+Literal
+Description
+processingStyle
+Asynchronous
+The software-component processes the request in background but still the Dcm has to issue the call
+again to eventually obtain the result of the request.
+Tags:atp.EnumerationLiteralIndex=0
+processingStyle
+AsynchronousWith
+Error
+The software-component processes the request in background but still the Dcm has to issue the call
+again to eventually obtain the result of the request or handle error code.
+Tags:atp.EnumerationLiteralIndex=1
+processingStyle
+Synchronous
+The software-component is supposed to react synchronously on the request.
+Tags:atp.EnumerationLiteralIndex=2
+Table 13.23: DiagnosticProcessingStyleEnum
+The meta-class DiagnosticRoutineNeeds is used to define requirements to con-
+figure the Diagnostic Communication Manager Service. A Basic Software Mod-
+ule may provide BswModuleEntrys (for example, “start”, “stop”, and “RequestRe-
+sults”). The BswModuleEntrys correspond to the diagnostic service RoutineControl
+Basic Software Module Description Template
+for one routine identifier. The enumeration parameter DiagnosticRoutineType-
+Enum is used to define whether the diagnostic server or client is responsible for stop-
+ping the routine.
+Class
+DiagnosticRoutineNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Specifies the general needs on the configuration of the Diagnostic Communication Manager (Dcm) which
+are not related to a particular item (e.g. a PID). The main use case is the mapping of service ports to the
+Dcm which are not related to a particular item.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+diagRoutine
+Type
+DiagnosticRoutineType
+Enum
+0..1
+attr
+This denotes the type of diagnostic routine which is
+implemented by the referenced server port.
+ridNumber
+PositiveInteger
+0..1
+attr
+This represents a routine identifier for the diagnostic
+routine. This allows to predefine the RID number if the a
+function developer has received a particular requirement
+from the OEM or from a standardization body.
+Table 13.24: DiagnosticRoutineNeeds
+Enumeration
+DiagnosticRoutineTypeEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This enumerator specifies the different types of diagnostic routines.
+Literal
+Description
+asynchronous
+This indicates that the diagnostic server is not blocked while the diagnostic routine is running.
+Tags:atp.EnumerationLiteralIndex=0
+synchronous
+This indicates that the diagnostic routine blocks the diagnostic server in the ECU while the routine is
+running.
+Tags:atp.EnumerationLiteralIndex=1
+Table 13.25: DiagnosticRoutineTypeEnum
+The meta-class DiagnosticIoControlNeeds is used to define requirements to con-
+figure the Diagnostic Communication Manager Service.
+Class
+DiagnosticIoControlNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Specifies the general needs on the configuration of the Diagnostic Communication Manager (DCM)
+which are not related to a particular item (e.g. a PID). The main use case is the mapping of service ports
+to the Dcm which are not related to a particular item.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+currentValue
+DiagnosticValueNeeds
+0..1
+ref
+Reference to the DiagnosticValueNeeds indicating the
+access to the current value via signalBasedDiagnostics.
+didNumber
+PositiveInteger
+0..1
+attr
+This represents a Data identifier for the diagnostic value.
+This allows to predefine the DID number if the a function
+developer has received a particular requirement from the
+OEM or from a standardization body.
+▽
+Basic Software Module Description Template
+△
+Class
+DiagnosticIoControlNeeds
+freezeCurrent
+StateSupported
+Boolean
+0..1
+attr
+This attribute determines, if the referenced port supports
+temporary freezing of I/O value.
+resetToDefault
+Supported
+Boolean
+0..1
+attr
+This represents a flag for the existence of the ResetTo
+Default operation in the service interface.
+shortTerm
+Adjustment
+Supported
+Boolean
+0..1
+attr
+This attribute determines, if the referenced port supports
+temporarily setting of I/O value to a specific value
+provided by the diagnostic tester.
+Table 13.26: DiagnosticIoControlNeeds
+Class
+DiagnosticsCommunicationSecurityNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the needs of a software-component to verify the access to security level via
+diagnostic services.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 13.27: DiagnosticsCommunicationSecurityNeeds
+Class
+DiagnosticCommunicationManagerNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Specifies the general needs on the configuration of the Diagnostic Communication Manager (Dcm) which
+are not related to a particular item (e.g. a PID or DiagnosticRoutineNeeds). The main use case is the
+mapping of service ports to the Dcm which are not related to a particular item.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+serviceRequest
+CallbackType
+DiagnosticService
+RequestCallbackType
+Enum
+0..1
+attr
+This represents the ability to define whether the usage of
+PortInterface ServiceRequestNotification has the
+characteristics of being initiated by a manufacturer or by a
+supplier.
+Table 13.28: DiagnosticCommunicationManagerNeeds</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -113,7 +368,7 @@ This</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>BSWModuleDescriptionTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_BSWModuleDescriptionTemplate.pdf#page=233" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWModuleDescriptionTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

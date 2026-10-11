@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dcm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_18_Service_0x23_ReadMemoryByAddress</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 200)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=200" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 200)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01359" class="swsref internal-spec-ref"><code>SWS_Dcm_01359</code></a></span>
         </div>
@@ -87,11 +88,52 @@ belHigh parameters for each DcmDspReadMemoryRangeByLabelInfo container).
 If not, the Dcm module shall send NRC 0x31 (Request out of range).⌋
 [SWS_Dcm_00494] ⌈On reception of the UDS Service ReadMemoryByAddress
 (0x23), the Dcm shall check if the complete memory range (from ’memoryAddress’
-parameter to ’memoryAddress + memorySize -1’) can be readen in the current se</div></section>
+parameter to ’memoryAddress + memorySize -1’) can be readen in the current secu-
+rity level (see DcmDspReadMemoryRangeSecurityLevelRef). If security level is not
+correct, the Dcm module shall send NRC 0x33 (securityAccessDenied).⌋
+[SWS_Dcm_00826] ⌈On reception of the UDS Service ReadMemoryByAddress
+(0x23), the Dcm shall check if the complete memory range (from ’memoryAddress’
+parameter to ’memoryAddress + memorySize -1’) can be readen in the current mode
+condition (see DcmDspReadMemoryRangeModeRuleRef). If mode condition is not
+Manager
+correct, the Dcm module shall send calclulated negative response code of the refer-
+enced DcmModeRule.⌋
+[SWS_Dcm_00495] ⌈On reception of the UDS Service ReadMemoryByAddress
+(0x23), and after verification of the validity of the request (see [SWS_Dcm_00493]
+and [SWS_Dcm_00494]) the Dcm module shall call the callout Dcm_ReadMemory.⌋
+[SWS_Dcm_01053] ⌈On reception of the UDS Service ReadMemoryByAddress
+(0x23), if the request message contains different MemoryIdValue compare to the con-
+figured values in DcmDspMemoryIdInfo container, the Dcm shall send a NRC 0x31
+(RequestOutOfRange).⌋
+[SWS_Dcm_01158] ⌈The configured ranges of memory address (DcmDspReadMemo-
+ryRangeHigh and DcmDspReadMemoryRangeLow or DcmDspReadMemoryRange-
+ByLabelHigh and DcmDspReadMemoryRangeByLabelLow) shall not overlap each
+other.⌋
+[SWS_Dcm_01359] ⌈On reception of the UDS Service ReadMemoryByAddress
+(0x23), the Dcm shall check if the complete memory range (from ’memoryAddress’
+parameter to ’memoryAddress + memorySize -1’) can be read in the current session
+(see DcmDspReadMemoryRangeSessionLevelRef). If the session is not correct, the
+Dcm module shall send NRC 0x31 (RequestOutOfRange).⌋
+[SWS_Dcm_00644]
+⌈If
+the
+operation
+Dcm_ReadMemory
+returns
+DCM_READ_FAILED, the Dcm module shall send a negative response with NRC
+code equal to the parameter ErrorCode parameter value.⌋
+[SWS_Dcm_00839]
+Upstream requirements: RS_Diag_04249
+⌈If the call to Dcm_ReadMemory returns DCM_READ_FORCE_RCRRP, the Dcm shall
+invoke the transmit request for RCR-RP (NRC 0x78 transmission) and the Dcm shall
+not realize further invocation of the operation till RCR-RP is transmitted.⌋
+[SWS_Dcm_00840] ⌈After transmit confirmation of a RCR-RP transmitted on the con-
+text of [SWS_Dcm_00839], the Dcm calls, from Dcm_MainFunction (due to call con-
+text), Dcm_ReadMemory again with OpStatus = DCM_FORCE_RCRRP_OK.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">session check for ReadMemoryByAddress</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01359] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +142,7 @@ parameter to ’memoryAddress + memorySize -1’) can be readen in the current s
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=200" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -116,11 +158,11 @@ parameter to ’memoryAddress + memorySize -1’) can be readen in the current s
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

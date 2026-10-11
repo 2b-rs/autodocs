@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_8_4_1_2_EcuM_ValidateWakeupEvent</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 134)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=134" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 134)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04140" class="swsref internal-spec-ref"><code>SWS_EcuM_04140</code></a></span>
         </div>
@@ -118,11 +119,35 @@ sources parameter and state value ECUM_WKSTATUS_VALIDATED.⌋
 Upstream requirements: SRS_ModeMgm_00003
 ⌈EcuM_ValidateWakeupEvent shall invoke ComM_EcuM_WakeUpIndication for
 each wakeup event if the EcuMComMChannelRef parameter (see ECUC_Ecu
-M_00101</div></section>
+M_00101) in the EcuMWakeupSource configuration container for the corresponding
+wakeup source is configured.⌋
+[SWS_EcuM_02868]
+Upstream requirements: SRS_ModeMgm_00003, SRS_BSW_00350
+⌈If EcuMDevErrorDetect is enabled and the sources parameter contains an un-
+known (unconfigured) wakeup source, EcuM_ValidateWakeupEvent shall ignore
+the call and report the ECUM_E_UNKNOWN_WAKEUP_SOURCE to Det.⌋
+[SWS_EcuM_02345]
+Upstream requirements: SRS_ModeMgm_00003, SRS_BSW_00333
+⌈EcuM_ValidateWakeupEvent shall be callable from interrupt context and task con-
+text.⌋
+[SWS_EcuM_02790]
+Upstream requirements: SRS_ModeMgm_00003
+⌈EcuM_ValidateWakeupEvent shall return without effect for all sources except com-
+munication channels when called while the ECU Manager module is in the RUN state.⌋
+[SWS_EcuM_02791]
+Upstream requirements: SRS_ModeMgm_00003
+⌈EcuM_ValidateWakeupEvent shall have full effect in any ECU Phase for those
+sources that correspond to a communication channel (see [SWS_EcuM_02645]).⌋
+[SWS_EcuM_04140]
+Upstream requirements: SRS_ModeMgm_00003
+⌈EcuM_ValidateWakeupEvent shall invoke ComM_EcuM_PNCWakeUpIndication
+for each wakeup event and for every referenced PNC if at least one EcuMComMPN-
+CRef parameter (see ECUC_EcuM_00228) in the EcuMWakeupSource configuration
+container for the corresponding wakeup source is configured.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EcuM_ValidateWakeupEvent invokes ComM PNC indication</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_04140] im Text von SWS_ECUStateManager.</p>
       </section>
 
       <section class="snip-card">
@@ -131,7 +156,7 @@ M_00101</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=134" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -147,11 +172,11 @@ M_00101</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

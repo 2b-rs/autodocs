@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_2_3_Communication_Time_out</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 355)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=355" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 355)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_03764" class="swsref internal-spec-ref"><code>SWS_Rte_03764</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08310" class="swsref internal-spec-ref"><code>SWS_Rte_08310</code></a></span>
         </div>
       </div>
 
@@ -90,11 +91,105 @@ In asynchronous client-server communication the AsynchronousServerCall-
 ReturnsEvent associated with the AsynchronousServerCallPoint for an
 ClientServerOperation indicates that the server communication is finished or that
 a timeout occurred. The status information about the success of the server operation
-is available as the r</div></section>
+is available as the return value of the RTE API call generated to collect the result.
+[SWS_Rte_03765]
+Upstream requirements: SRS_Rte_00079
+⌈For each asynchronous invocation of an operation prototype only one Asyn-
+chronousServerCallReturnsEvent shall be passed to the client component by
+the RTE. The AsynchronousServerCallReturnsEvent shall indicate either that
+the transmission was successful or that the transmission was not successful.⌋
+[SWS_Rte_03766]
+Upstream requirements: SRS_Rte_00079
+⌈The status information about the success or failure of the asynchronous server invo-
+cation shall be available as the return value of the RTE API call to retrieve the result.⌋
+After a timeout was detected, no result shall be passed to the client.
+[SWS_Rte_03770]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00029
+⌈In case Rte_Call API returns RTE_E_LIMIT, RTE_E_TRANSFORMER_LIMIT,
+RTE_E_HARD_TRANSFORMER_ERROR,
+RTE_E_COM_STOPPED,
+RTE_E_TIMEOUT,
+RTE_E_UNCONNECTED, RTE_E_IN_EXCLUSIVE_AREA or RTE_E_SEG_FAULT, the
+RTE shall not modify the OUT and INOUT parameters.⌋
+[SWS_Rte_08310]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00029
+⌈In case Rte_Result API returns RTE_E_NO_DATA,RTE_E_HARD_TRANSFORMER_ERROR,
+RTE_E_COM_STOPPED,
+RTE_E_TIMEOUT,
+RTE_E_UNCONNECTED,
+RTE_E_IN_EXCLUSIVE_AREA or RTE_E_SEG_FAULT, the RTE shall not modify
+the OUT and INOUT parameters.⌋
+Since an asynchronous client can have only one outstanding server invocation at a
+time, the RTE has to monitor when the server can be safely invoked again.
+If
+a
+server
+is
+invoked
+asynchronously,
+no
+timeout
+occurs
+and
+an
+Asyn-
+chronousServerCallResultPoint exists then the RTE returns RTE_E_LIMIT for
+subsequent invocations of the Rte_Call API until the server’s result has been suc-
+cessfully passed to the client (See [SWS_Rte_01105]).
+If
+a
+server
+is
+invoked
+asynchronously,
+no
+timeout
+occurs
+and
+no
+Asyn-
+chronousServerCallResultPoint exists then the RTE returns RTE_E_LIMIT for
+subsequent invocations of the Rte_Call API until the server has finished to process
+the last request of the client (See [SWS_Rte_01105]).
+In intra-partition client-server communication, the RTE can determine whether the
+server runnable is still running or not.
+[SWS_Rte_03771]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00079
+⌈If a timeout was detected in asynchronous intra-partition client-server communication,
+the RTE shall ensure that the server is not invoked again by the same client until the
+server runnable has terminated.⌋
+In inter-ECU communication, the client RTE has no knowledge about the actual status
+of the server. The response of the server could have been lost because of a commu-
+nication error or because the server itself did not respond. Since the client-side RTE
+cannot distinguish the two cases, the client must be able to invoke the server again
+after a timeout expired. As partitions in one ECU are decoupled in a similar way like
+separate ECUs, client server communication should behave similar for inter-ECU and
+intra-partition communication.
+[SWS_Rte_03772]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00079
+⌈If a timeout was detected in asynchronous inter-ECU or inter-partition client-
+server communication, the RTE shall ensure that the server can be invoked again by
+the same client after the timeout notification was passed to the client.⌋
+Note that this might lead to client and server running out of sync, i.e. the response of
+the server belongs to the previous, timed-out invocation of the client. The application
+has to handle the synchronization of client and server after a timeout occurred.
+[SWS_Rte_03767]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00029
+⌈If the timeout value of the ServerCallPoint is 0, no timeout monitoring shall be
+performed.⌋
+[SWS_Rte_03768]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00029
+⌈If the canBeInvokedConcurrently attribute of the server runnable is set to TRUE,
+no timeout monitoring shall be performed if the RTE API call to invoke the server is
+implemented as a direct or trusted function call.⌋
+Note: In case of inter-ECU or interpartition client-server communication it is recom-
+mended to always specify a timeout&gt;0 when synchronous server calls are used. Oth-
+erwise in case of a full server queue the client would wait for the server response
+infinitely.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_03764] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_08310] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +198,7 @@ is available as the r</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=355" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,7 +210,7 @@ is available as the r</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_03764" class="swsref internal-spec-ref"><code>SWS_Rte_03764</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_08310" class="swsref internal-spec-ref"><code>SWS_Rte_08310</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

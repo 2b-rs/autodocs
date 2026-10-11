@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -102,7 +103,53 @@ create a corresponding RPort in its Service Component Description.
 3. RPorts typed by a ModeSwitchInterface.
 (a) BswMSwcModeNotification: For each container of this type the BSWM
 has to create a corresponding RPort in its Service Component Description.
-As it is typed by a ModeSwitchInterface the BSWM a</div></section>
+As it is typed by a ModeSwitchInterface the BSWM acts as a mode
+user of this ModeMachineInstance and is informed if the mode manager
+performs an rte_switch.
+4. RequiredModeDeclarationGroupPrototypes
+(a) BswMBswModeNotification: For each container of this type the BSWM
+has to create a corresponding RequiredModeDeclarationGroupPro-
+totype in the role RequiredModeDeclarationGroup in its Basic Soft-
+ware Module Description. The BSWM also acts as a mode user, but the
+ModeMachineInstance is maintained by the Schedule Manager.
+The
+BSWM therefore gets informed if the mode manager e.g. another Basic
+Software Module performs a SchM_Switch call.
+BswMActionListItems can be of the following kinds:
+1. C-APIs from other BSWM Modules, which are called directly during the execution
+of an ActionList.
+(a) BswMUserCall
+(b) BswMComMAllowCom
+(c) BswMComMModeSwitch
+(d) BswMDeadlineMonitoringControl
+(e) BswMLinScheduleSwitch
+(f) BswMNMControl
+(g) BswMPduGroupSwitch
+(h) BswMPduRouterControl
+(i) BswMResetSignalInitValues
+(j) BswMRteSwitch
+(k) BswMSchMSwitch
+(l) BswMTriggerIPduSend
+(m) BswMTriggerSlaveRTEStop
+(n) BswMTriggerStartUpPhase2
+Guide to Modemanagement
+V1.0.0.
+R4.0 Rev 3
+2. PPorts typed by a ModeSwitchInterface
+(a) BswMRteSwitch : For each container of this type the BSWM has to create a
+corresponding PPort in its Service Component Description.
+3. ProvidedModeDeclarationGroupPrototypes
+(a) BswMSchMSwitch: For each container of this type the BSWM has to cre-
+ate a corresponding ProvidedModeDeclarationGroupPrototype in
+the role ProvidedModeDeclarationGroup in its Basic Software Module
+Description. The BSWM also acts as a mode manager, but the ModeMa-
+chineInstance is maintained by the Schedule Manager.
+Listing 3.1: Conﬁguration of a ModeRequestSource in pseudo code
+request CanSMIndication Can1_indication {
+processing IMMEDIATE
+initialValue "CANSM_BSWM_NO_COMMUNICATION"
+source CanSM.CanStateManagerConfiguration.Can1StateManagerNetwork
+}</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

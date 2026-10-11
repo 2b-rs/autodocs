@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_6_Service_0x22_ReadDataByIdentifier</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 135)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=135" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 135)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01549" class="swsref internal-spec-ref"><code>SWS_Dcm_01549</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06062</span>
         </div>
       </div>
 
@@ -90,11 +91,114 @@ Upstream requirements: RS_Diag_04233
 for all requested DIDs inside the range 0xF200-0xF3FF if the content is based of DIDs
 or parts of DIDs that are authenticated and read the data identifiers only if:
 Manager
-• for those read DIDs a role is configured via DcmDspDidReadRoleRef an</div></section>
+• for those read DIDs a role is configured via DcmDspDidReadRoleRef and the
+verification according to [SWS_Dcm_01522] was successful or
+• the active white list on that connection has for each requested DID one entry with
+read access that matches those DIDs.
+⌋
+According to [SWS_Dcm_01537] the authentication checks are only executed if
+DcmDspAuthentication is configured. In case of a failed authentication the NRC han-
+dling is according to [SWS_Dcm_01544] and [SWS_Dcm_01551] applies.
+[SWS_Dcm_00438] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22)
+, for every requested DID the Dcm module shall check if the DID is supported (see
+configuration parameter DcmDspDid and DcmDspDidRange) If none of the requested
+DIDs is supported, the Dcm module shall send NRC 0x31 (Request out of range).⌋
+[SWS_Dcm_00651] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22)
+with DID in the range 0xF200 to 0xF3FF, the Dcm module shall check if the DID can be
+dynamically defined (the DcmDspDidInfo it references has the DcmDspDidDynami-
+callyDefined set to true). If yes, if this DID has not been dynamically defined yet by
+calls to the DynamicallyDefineDataIdentifier (0x2C) service, i.e. it has no data sources
+defined, the Dcm module shall send NRC 0x31 (Requestout of range)⌋
+[SWS_Dcm_00652] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22)
+with DID in the range 0xF200 to 0xF3FF, if verification has been successfully done (see
+[SWS_Dcm_00651]) and the dynamic DID has been defined with a DID source (see
+[SWS_Dcm_00646]), the Dcm module shall use the configuration of this DID source to
+read the data.⌋
+[SWS_Dcm_00864] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22)
+with DID in the range 0xF200 to 0xF3FF, if verification has been successfully done
+(see [SWS_Dcm_00651]) and the dynamic DID has been defined with a DID source
+(see [SWS_Dcm_00646]), the Dcm module shall do the session, security and mode
+dependencies checks for all source DIDs in case the configuration parameter DcmD-
+spDDDIDcheckPerSourceDID is set to TRUE.⌋
+[SWS_Dcm_00865] ⌈In case the configuration parameter DcmDspDDDIDcheckPer-
+SourceDID is set to FALSE, there is no session, security or mode dependencies check
+for the source DIDs.⌋
+Note: In case there is a need to validate the session or security dependencies always,
+the DDDID should be cleared by any security and session transitions.
+Manager
+[SWS_Dcm_00653] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22)
+with DID in the range 0xF200 to 0xF3FF, if verification has been successfully done (see
+[SWS_Dcm_00651]) and the dynamic DID has been defined with a memory address
+(see [SWS_Dcm_00646]), the Dcm module shall use the callout Dcm_ReadMemory to
+read the data.⌋
+[SWS_Dcm_00561] ⌈If a DID is set as unused (DcmDspDidUsed set to FALSE), the
+Dcm shall consider the DID as not supported (according to [SWS_Dcm_00438])⌋
+[SWS_Dcm_00433] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22),
+for every requested DID the Dcm module shall check if the DID has a Read access con-
+figured (see configuration parameter DcmDspDidRead in DcmDspDidInfo). If none
+of the DID has a Read access, the Dcm module shall send NRC 0x31 (Request out of
+range).⌋
+[SWS_Dcm_00434] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22),
+for every requested DID the Dcm module shall check if the DID can be read in the
+current session (see configuration parameter DcmDspDidReadSessionRef). If none
+of the DID can be renden in the current session, the Dcm module shall send a NRC
+0x31 (RequestOutOfRange).⌋
+[SWS_Dcm_00435] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22),
+for every requested DID the Dcm module shall check if the DID can be read in the cur-
+rent security level (see configuration parameter DcmDspDidReadSecurityLevel-
+Ref). If not, the Dcm module shall send NRC 0x33 (Security access denied).⌋
+[SWS_Dcm_00819] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22),
+for every requested DID the Dcm module shall check if the DID can be read in the
+current mode condition (according to the configuration parameter DcmDspDidRead-
+ModeRuleRef). If not, the Dcm module shall send the calculated negative response of
+the referenced DcmModeRule.⌋
+[SWS_Dcm_00439] ⌈On reception of the UDS Service ReadDataByIdentifier (0x22),
+for every requested DID outside the OBD range (F400-F8FF), the Dcm module shall
+request the application if the DID can be read by calling the configured func-
+tion (if parameter DcmDspDataUsePort set to USE_DATA_SYNCH_FNC or USE_-
+DATA_ASYNCH_FNC or USE_DATA_ASYNCH_FNC_ERROR or USE_DATA_SYNCH_-
+FNC_PROXY or USE_DATA_ASYNCH_FNC_PROXY; see configuration parameter DcmD-
+spDataConditionCheckReadFnc) on each data of the DID or call the associated
+ConditionCheckRead operation (if parameter DcmDspDataUsePort set to USE_-
+DATA_SYNCH_CLIENT_SERVER or USE_DATA_ASYNCH_CLIENT_SERVER or USE_-
+DATA_ASYNCH_CLIENT_SERVER_ERROR). If not (one function returns E_NOT_OK) ,
+Manager
+the Dcm module shall send a negative response with NRC set to value from the pa-
+rameter "ErrorCode" of DcmDspDataConditionCheckReadFnc function or Condi-
+tionCheckRead operation.⌋
+Note: This requirement exceeds the standard ConditionCheck behavior as described
+by ISO 14229-1 ”NRC handling for ReadDataByIdentifier service” , because it is not
+restricted to use NRC 0x22 in a negative response.
+[SWS_Dcm_00440] ⌈If the requested DID references other DID using DcmDsp-
+DidRef, the Dcm module shall process the verification and the reading of every ref-
+erenced DID and concatenate the response data without any gaps based on the se-
+quence in the configuration.⌋
+[SWS_Dcm_CONSTR_06023] DcmDspDidRef shall not reference the same DID
+reference twice ⌈DcmDspDid container shall not include the same DcmDspDidRef
+parameters more than once.⌋
+[SWS_Dcm_CONSTR_06057]Dependency for DcmDspDataEcuSignal ⌈DcmDsp-
+DataEcuSignal shall be only present if DcmDspDataUsePort is set to USE_ECU_-
+SIGNAL.⌋
+[SWS_Dcm_CONSTR_06058] Dependency for DcmDspDataEndianness ⌈In case
+DcmDspDataEndianness is not configured, the DcmDspDataDefaultEndianness
+shall be used instead.⌋
+[SWS_Dcm_CONSTR_06061] Dependency for DcmDspDataReadDataLengthFnc
+⌈DcmDspDataReadDataLengthFnc shall be only present if:
+• DcmDspDataUsePort is set to USE_DATA_SYNCH_FNC or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC_ERROR or
+• DcmDspDataUsePort is set to USE_DATA_SYNCH_FNC_PROXY or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC_PROXY
+⌋
+[SWS_Dcm_CONSTR_06062] Dependency for DcmDspDataReadFnc ⌈DcmDsp-
+DataReadFnc shall be only present if:
+• DcmDspDataUsePort is set to USE_DATA_SYNCH_FNC or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC_ERROR or</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01549] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06062] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +207,7 @@ Manager
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=135" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,7 +219,7 @@ Manager
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01549" class="swsref internal-spec-ref"><code>SWS_Dcm_01549</code></a></td>
+              <td>SWS_Dcm_CONSTR_06062</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

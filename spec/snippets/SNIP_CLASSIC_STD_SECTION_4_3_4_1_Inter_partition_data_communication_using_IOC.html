@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_4_1_Inter_partition_data_communication_using_IOC</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 372)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=372" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 372)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00671" class="swsref internal-spec-ref"><code>SWS_Os_00671</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08400" class="swsref internal-spec-ref"><code>SWS_Rte_08400</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,33 @@ munication objects have to be used. The IOC is configured and provides generated
 APIs for each IOC communication object. In case of N:1 communication, each sender
 has a separate API.
 The IOC API is not reentrant.
-[S</div></section>
+[SWS_Rte_02737] ⌈RTE shall prevent concurrent access to the same IOC API from
+different ExecutableEntity execution-instances.⌋
+The IOC will use the appropriate mechanism to communicate between the partitions,
+whether it requires communicating with another core, communicating with a partition
+with a different level of trust, or communicating with another memory partition.
+The IOC channels are configured in the OS Configuration. Their configurations has to
+be provided as inputs for the RTE generator when the external configuration switch
+strictConfigurationCheck [SWS_Rte_05148] is set to true, and can be pro-
+vided by the RTE Generator or RTE Configuration Editor when strictConfigura-
+tionCheck is set to false (see [SWS_Rte_05150]).
+The IOC APIs use:
+1. types declared by user on input to RTE (sender-receiver communication across
+OsApplication boudaries).
+2. types created by RTE to collect client-server operation arguments into single data
+structure.
+For the second item, RTE uses internal types that have to be described as Imple-
+mentationDataTypes (see [SWS_Rte_08400]).
+The signaling between partitions is not covered by the IOC. The callbacks of IOC are
+in interrupt context and are mainly intended for direct use by BSW. For the signaling
+between partitions, RTE can use the activation of tasks or setting of events, see section
+4.3.4.5.
+[SWS_Rte_02736] ⌈The RTE shall not execute ExecutableEntitys in the context
+of IOC callbacks.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">IOC communication objects for inter-partition</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_08400] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +123,7 @@ The IOC API is not reentrant.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=372" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -112,15 +135,15 @@ The IOC API is not reentrant.
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Os_00671" class="swsref internal-spec-ref"><code>SWS_Os_00671</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_08400" class="swsref internal-spec-ref"><code>SWS_Rte_08400</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

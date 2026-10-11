@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -99,7 +100,254 @@ Mul.
 Kind
 Note
 Speciﬁcation of BSW Module Description Template
-Attr</div></section>
+Attribute
+Datatype
+Mul.
+Kind
+Note
+dataLength
+PositiveInteger
+0..1
+attr
+This attribute is applicable only if the ServiceNeed
+is aggregated within BswModuleDependency.
+This attribute represents the length of data (in
+bytes) provided for this particular PID signal.
+diagnostic
+ValueAcce
+ss
+DiagnosticValue
+AccessEnum
+0..1
+attr
+This attribute controls whether the data can be
+read and written or whether it is to be handled
+read-only.
+didNumber
+PositiveInteger
+0..1
+attr
+This represents a Data identiﬁer for the diagnostic
+value. This allows to predeﬁne the DID number if
+the responsible function developer has received a
+particular requirement from the OEM or from a
+standardization body.
+fixedLengt
+h
+Boolean
+0..1
+attr
+This attribute controls whether the data length of
+the data is ﬁxed.
+processing
+Style
+DiagnosticProce
+ssingStyleEnum
+0..1
+attr
+This attribute controls whether interaction requires
+the software-component to react synchronously on
+a request or whether it processes the request in
+background but still the DCM has to issue the call
+again to eventually obtain the result of the request.
+Table 6.67: DiagnosticValueNeeds
+Enumeration
+DiagnosticValueAccessEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Deﬁnes the access of the conﬁgured diagnostic current values which will be used
+by the DEM or DCM module.
+Literal
+Description
+readOnly
+The access to the data element is limited to read-only. This is typically used to
+read-out diagnostic information (e.g. current values).
+readWrite
+The value of the diagnostic data element is classiﬁed as conﬁgurable (read and
+write access is possible).
+writeOnly
+The access to the data element is limited to write-only. This supports the use case
+where the Dcm just writes data to the application software without the intention to
+read it back,
+Table 6.68: DiagnosticValueAccessEnum
+Enumeration
+DiagnosticProcessingStyleEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Literal
+Description
+processing
+StyleAsyn-
+chronous
+The software-component processes the request in background but still the DCM
+has to issue the call again to eventually obtain the result of the request.
+processing
+StyleSyn-
+chronous
+The software-component is superposed to react synchronously on the request.
+Table 6.69: DiagnosticProcessingStyleEnum
+Speciﬁcation of BSW Module Description Template
+The meta-class DiagnosticRoutineNeeds is used to deﬁne requirements to con-
+ﬁgure the Diagnostic Communication Manager Service. A Basic Software Mod-
+ule may provide BswModuleEntrys (for example, “start”, “stop”, and “RequestRe-
+sults”). The BswModuleEntrys correspond to the diagnostic service RoutineControl
+for one routine identiﬁer. The enumeration parameter DiagnosticRoutineType-
+Enum is used to deﬁne whether the diagnostic server or client is responsible for stop-
+ping the routine.
+Class
+DiagnosticRoutineNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Speciﬁes the general needs on the conﬁguration of the Diagnostic Communication
+Manager (DCM) which are not related to a particular item (e.g. a PID). The main use
+case is the mapping of service ports to the DCM which are not related to a particular
+item.
+Base
+ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
+Referrable,Referrable,ServiceNeeds
+Attribute
+Datatype
+Mul.
+Kind
+Note
+diagRoutin
+eType
+DiagnosticRouti
+neTypeEnum
+1
+attr
+This denotes the type of diagnostic routine which
+is implemented by the referenced server port.
+ridNumber
+PositiveInteger
+0..1
+attr
+This represents a routine identiﬁer for the
+diagnostic routine. This allows to predeﬁne the
+RID number if the a function developer has
+received a particular requirement from the OEM or
+from a standardization body.
+Table 6.70: DiagnosticRoutineNeeds
+Enumeration
+DiagnosticRoutineTypeEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This enumerator speciﬁes the different types of diagnostic routines.
+Literal
+Description
+asynchronous
+This indicates that the diagnostic server is not blocked while the diagnostic routine
+is running.
+synchronous
+This indicates that the diagnostic routine blocks the diagnostic server in the ECU
+while the routine is running.
+Table 6.71: DiagnosticRoutineTypeEnum
+The meta-class DiagnosticIoControlNeeds is used to deﬁne requirements to con-
+ﬁgure the Diagnostic Communication Manager Service.
+Speciﬁcation of BSW Module Description Template
+Class
+DiagnosticIoControlNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Speciﬁes the general needs on the conﬁguration of the Diagnostic Communication
+Manager (DCM) which are not related to a particular item (e.g. a PID). The main use
+case is the mapping of service ports to the DCM which are not related to a particular
+item.
+Base
+ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
+Referrable,Referrable,ServiceNeeds
+Attribute
+Datatype
+Mul.
+Kind
+Note
+currentVal
+ue
+DiagnosticValue
+Needs
+0..1
+ref
+Reference to the DiagnosticValueNeeds indicating
+the access to the current value via
+signalBasedDiagnostics.
+didNumber
+PositiveInteger
+0..1
+attr
+This represents a Data identiﬁer for the diagnostic
+value. This allows to predeﬁne the DID number if
+the a function developer has received a particular
+requirement from the OEM or from a
+standardization body.
+freezeCurr
+entStateSu
+pported
+Boolean
+0..1
+attr
+This attribute determines, if the referenced port
+supports temporary freezing of I/O value.
+resetToDef
+aultSuppor
+ted
+Boolean
+0..1
+attr
+This represents a ﬂag for the existence of the
+ResetToDefault operation in the service interface.
+shortTerm
+Adjustment
+Supported
+Boolean
+0..1
+attr
+This attribute determines, if the referenced port
+supports temporarily setting of I/O value to a
+speciﬁc value provided by the diagnostic tester.
+Table 6.72: DiagnosticIoControlNeeds
+Class
+DiagnosticsCommunicationSecurityNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the needs of a software-component to verify the access to
+security level via diagnostic services.
+Base
+ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
+Referrable,Referrable,ServiceNeeds
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 6.73: DiagnosticsCommunicationSecurityNeeds
+Class
+DiagnosticCommunicationManagerNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Speciﬁes the general needs on the conﬁguration of the Diagnostic Communication
+Manager (DCM) which are not related to a particular item (e.g. a PID or
+DiagnosticRoutineNeeds). The main use case is the mapping of service ports to the
+DCM which are not related to a particular item.
+Base
+ARObject,DiagnosticCapabilityElement,Identiﬁable,Multilanguage
+Referrable,Referrable,ServiceNeeds
+Attribute
+Datatype
+Mul.
+Kind
+Note</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

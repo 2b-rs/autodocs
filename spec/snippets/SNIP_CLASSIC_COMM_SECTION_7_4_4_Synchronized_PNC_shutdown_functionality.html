@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_4_4_Synchronized_PNC_shutdown_functionality</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_NetworkManagementInterface.pdf</strong> (Seite 53)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_NetworkManagementInterface.pdf#page=54" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_NetworkManagementInterface.pdf</a></strong> (Seite 53)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_UdpNm_00488" class="swsref internal-spec-ref"><code>SWS_UdpNm_00488</code></a></span>
         </div>
@@ -87,7 +88,130 @@ by an ECU in the role of an intermediate PNC coordinator, the &lt;Bus&gt;Nms ext
 the PNC bit vector from the received PN shutdown message and forward the in-
 formation by calling the callback function Nm_ForwardSynchronizedPncShutdown.
 The callback function will immediately forward the indication to ComM by calling
-ComM_Nm_ForwardSynchronizedPncShutdown. ComM will immediately req</div></section>
+ComM_Nm_ForwardSynchronizedPncShutdown. ComM will immediately request
+a synchronized PNC shutdown of all actively PNC coordinated (coordinated by a PNC
+gateway) ComMChannels. The requests for a synchronized PNC shutdown are for-
+warded to Nm module per NM-channel and handled in the same way as described in
+the previous section.
+If a PNC leaf node receives a top-level PNC coordinator Nm frame, then it will handle
+the frame as a usual NM message (update the local PNC bit vector and reset PN
+reset time).
+[SWS_Nm_00533]
+Upstream requirements: RS_Nm_02517, RS_Nm_02571
+⌈If NmPartialNetworkSupportEnabled is set to TRUE, then PNC shutdown han-
+dling shall be considered as deactivated at initialization.⌋
+[SWS_Nm_00521]
+Upstream requirements: RS_Nm_02571
+⌈If function Nm_RequestSynchronizedPncShutdown is called,
+NmSynchro-
+nizedPncShutdownEnabled is set to TRUE and NmStandardBusType of the given
+NM-channel is set to a type other than NM_BUSNM_LOCALNM, the Nm module shall
+store the given PNC (PncId) per given NM-channel (NetworkHandle) as a pending
+request for a synchronized PNC shutdown.⌋
+[SWS_Nm_00305]
+Upstream requirements: RS_Nm_02548
+⌈If the reception of PN shutdown message via callback function Nm_ForwardSyn-
+chronizedPncShutdown is indicated, then NM shall stop the ERA related moni-
+toring of external PNC requests of the PNCs (see [SWS_Nm_00324])) which are
+indicated for an PNC shutdown (PNC bit set to ’1’) in the given PNC bit vec-
+tor, set the corresponding ERA bits to ’0’ in the ERA of the indicated NM-
+channel and forward the indication to ComM with the corresponding ComMChan-
+nel by calling ComM_Nm_ForwardSynchronizedPncShutdown(&lt;ComMChannel&gt;,
+&lt;PncBitVector&gt;).⌋
+Note:
+• The PNC bit vector of a received PN shutdown message shall be used to
+release the PNCs for a synchronized shutdown. Explicitly clear the affected ERA
+bits of the indication NM-channel, stop the ERA monitoring for the indicated PNCs
+of the indicated NM-channel and pass the indication for a synchronized PNC shut-
+down to the ComM module. The synchronized PNC shutdown has to be handled
+as fast as possible. Therefore, the ComM module is informed immediately.
+• Stopping
+the
+ERA
+related
+monitoring
+should
+not
+result
+in
+a
+call
+of
+ComM_UpdateERA. ComM ensure a proper handling of the ComM internal ERA bits
+within the context of ComM_Nm_ForwardSynchronizedPncShutdown.
+This
+should support an unambiguous handling of the PNC state machine for a syn-
+chronized PNC shutdown
+[SWS_Nm_00525]
+Upstream requirements: RS_Nm_02571
+⌈If NmPnShutdownMessageRetransmissionDuration is configured and Nm_Re-
+questSynchronizedPncShutdown is called (refer to [SWS_Nm_00523]), then the
+corresponding retransmission timer for PN shutdown messages shall be started with
+NmPnShutdownMessageRetransmissionDuration on all affected NM-channels.⌋
+[SWS_Nm_00523]
+Upstream requirements: RS_Nm_02571
+⌈If NmSynchronizedPncShutdownEnabled is set to TRUE, requests for syn-
+chronized PNC shutdown are pending and PNC shutdown handling has been de-
+actived, then Nm shall activate the PNC shutdown handling by calling &lt;Bus&gt;
+Nm_ActivateTxPnShutdownMsg.⌋
+[SWS_Nm_00524]
+Upstream requirements: RS_Nm_02571
+⌈If NmSynchronizedPncShutdownEnabled is set to TRUE, no requests for syn-
+chronized PNC shutdown are pending, PNC shutdown handling has been acti-
+vated, then Nm shall deactivate the PNC shutdown handling by calling &lt;Bus&gt;
+Nm_DeactivateTxPnShutdownMsg.⌋
+[SWS_Nm_00527]
+Upstream requirements: RS_Nm_02571
+⌈If NmSynchronizedPncShutdownEnabled is set to TRUE, PNC shutdown han-
+dling has been activated (refer to [SWS_Nm_00523]) and Nm_PncBitVectorTxCon-
+firmation is called with E_OK, then the Nm module shall consider those PNC IDs,
+stored as pending request for a synchronized PNC shutdown of the given NM-channel,
+as completed which were indicated by the given PNC bit vector (PNC bit set ’1’)
+and remove them from storage. Additionally, if NmPnShutdownMessageRetrans-
+missionDuration is configured, then the Nm module shall cancel the retransmission
+timer for PN shutdown messages of the affected NM-channel.⌋
+Note:
+• Nm has to ensure that new request for a synchronized PNC shutdown (indicated
+via Nm_RequestSynchronizedPncShutdown) are not lost, during an ongoing
+PNC shutdown process.
+• The &lt;Bus&gt;Nm has to handle the re-transmission of the NM-PDU as PN shut-
+down message as long as Nm_PncBitVectorTxConfirmation is called with
+E_NOT_OK or the re-transmission timer for PN shutdown messages is running.
+[SWS_Nm_00529]
+Upstream requirements: RS_Nm_02571
+⌈If NmSynchronizedPncShutdownEnabled is set to TRUE and the Nm module has
+stored PNC IDs as pending request for a synchronized PNC shutdown, then Nm shall
+remove those PNC IDs from storage which are either externally or internally requested
+again:
+• Nm shall check on reception of an PNC bit vector via call of Nm_-
+PncBitVectorRxIndication, if externally requested PNCs are received.
+• Nm shall check on update of an PNC bit vector via call of Nm_UpdateIRA, if
+internal PNC requests are available .
+⌋
+[SWS_Nm_00530]
+Upstream requirements: RS_Nm_02571
+⌈If NmSynchronizedPncShutdownEnabled is set to TRUE, NmPnShutdownMes-
+sageRetransmissionDuration is not configured, the corresponding &lt;Bus&gt;Nm
+module of this NM-channel has indicated transmission request via call of Nm_-
+PncBitVectorTxIndication and Nm_PncBitVectorTxConfirmation is called
+with result E_NOT_OK (transmission of the given PNC bit vector failed), then
+the Nm shall remove the PNC IDs stored as pending request for a synchro-
+nized PNC shutdown of the corresponding NM-channel and report the runtime error
+NM_E_TRANSMISSION_OF_PN_SHUTDOWN_MESSAGE_FAILED to DET.⌋
+[SWS_Nm_00532]
+Upstream requirements: RS_Nm_02571
+⌈If NmSynchronizedPncShutdownEnabled is set to TRUE and a retransmission
+timer for a PN shutdown message (see NmPnShutdownMessageRetransmission-
+Duration) expires, then Nm shall remove the pending request for a synchronized
+PNC shutdown of the corresponding NM-channel from the storage and report the run-
+time error NM_E_TRANSMISSION_OF_PN_SHUTDOWN_MESSAGE_FAILED to DET.⌋
+Note: If a retransmission timer for PN shutdown messages is configured and the NM
+message was not transmitted successfully (Nm_PncBitVectorTxConfirmation is
+called with result E_NOT_OK), then the duration of PNC shutdown process continue.
+In the worst case the PN shutdown process coincide with a post poned NM message
+transmitted with &lt;Bus&gt;NmMsgCycleTime. But in any case, if the capability to trans-
+mitted NM messages is not re-covered within the PN reset time (EIRA), the PNCs will
+shutdown not synchronized, which might lead to timeout errors on application level.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +224,7 @@ ComM_Nm_ForwardSynchronizedPncShutdown. ComM will immediately req</div></section
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_NetworkManagementInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_NetworkManagementInterface.pdf#page=54" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_NetworkManagementInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

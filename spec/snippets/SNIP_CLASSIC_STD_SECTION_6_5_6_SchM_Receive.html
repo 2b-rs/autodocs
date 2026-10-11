@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_6_5_6_SchM_Receive</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 904)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=903" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 904)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -103,11 +104,40 @@ Description:
 When a BSW module handles a BswDataReceivedEvent on a
 system with the BSW running on multiple partitions, it shall in-
 voke SchM_Receive_&lt;bsnp&gt;[_&lt;vi&gt;_&lt;ai&gt;]_&lt;name&gt;(&lt;data&gt;).
-For a sender-receiver connection crossing partition boundaries,</div></section>
+For a sender-receiver connection crossing partition boundaries, the
+SchM shall then read the data from a shared buffer, where it has been
+put by SchM_Send.
+The SchM_Receive API call includes the OUT parameter &lt;data&gt;
+to pass back the received data element.
+The pointers to the OUT parameters must remain valid until the API
+call returns.
+Return Value:
+The return value is used to indicate errors detected by the SchM dur-
+ing execution of the SchM_Receive or errors detected by the com-
+munication system.
+• [SWS_Rte_08757] ⌈SCHM_E_OK - data read successfully.⌋
+• [SWS_Rte_08758] ⌈SCHM_E_NO_DATA - no "events" (means
+queued data) were received and no other error occurred when
+the read was attempted.⌋
+[SWS_Rte_02313]
+Upstream requirements: SRS_Rte_00107,
+SRS_Rte_00110,
+SRS_-
+Rte_00094
+⌈SCHM_E_LOST_DATA - Indicates that some incoming data has
+been lost due to an overflow of the receive queue. This is not
+an error of the data returned in the parameters. This Overlayed
+Error can be combined with any other error.⌋
+[SWS_Rte_08756]
+Upstream requirements: SRS_Rte_00243
+⌈In case return value is SCHM_E_NO_DATA the OUT parameters shall
+remain unchanged.⌋
+The SCHM_E_NO_DATA return value is not considered to be an error
+but rather indicates correct operation of the API call.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -116,7 +146,7 @@ For a sender-receiver connection crossing partition boundaries,</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=903" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

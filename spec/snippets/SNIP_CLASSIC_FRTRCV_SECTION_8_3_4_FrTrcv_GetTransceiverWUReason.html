@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRTRCV_SECTION_8_3_4_FrTrcv_GetTransceiverWUReason</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayTransceiverDriver.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayTransceiverDriver.pdf#page=42" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayTransceiverDriver.pdf</a></strong> (Seite 42)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -123,11 +124,90 @@ transceiver
 access,
 the
 function
-FrTrcv_GetTransceiverWU</div></section>
+FrTrcv_GetTransceiverWUReason
+shall
+raise
+runtime
+error
+FRTRCV_E_FR_NO_CONTROL_TRCV (see also [SWS_FrTrcv_00237]).⌋
+Please be aware, that if more than one bus is available, each bus may report a different
+wake up reason. E.g. if an ECU has FlexRay, a wake up by FlexRay may occur and
+the incoming data may cause an internal wake up for another FlexRay bus.
+[SWS_FrTrcv_00453] ⌈The FlexRay Transceiver Driver shall report the wake up rea-
+son in the order defined by [SWS_FrTrcv_00074].Thus, FRTRCV_WU_BY_BUS is re-
+ported first in case of multiple concurrent events.⌋
+The FlexRay bus transceiver driver has a "per bus" view and does not vote the more
+important reason or sequence internally. The same may be true if e.g. one transceiver
+controls the power supply and the other is just powered or un-powered. Then one
+may be able to return "FRTRCV_WU_POWER_ON" whereas the other may state e.g.
+"FRTRCV_WU_RESET".
+It is up to the EcuM and the ComM, to decide what shall happen with that wake up
+information.
+[SWS_FrTrcv_00282]
+⌈If
+development
+error
+detection
+of
+the
+module
+FrTrcv
+is
+enabled:
+if
+the
+parameter
+FrTrcv_TrcvIdx
+is
+out
+of
+range,
+the
+func-
+tion
+FrTrcv_GetTransceiverWUReason
+shall
+raise
+the
+development
+error
+FRTRCV_E_FR_INVALID_TRCVIDX.⌋
+[SWS_FrTrcv_00283]
+⌈If
+development
+error
+detection
+of
+the
+module
+FrTrcv
+is
+enabled:
+if
+the
+transceiver
+has
+not
+been
+initialized,
+the
+func-
+tion
+FrTrcv_GetTransceiverWUReason
+shall
+raise
+the
+development
+error
+FRTRCV_E_UNINIT.⌋
+[SWS_FrTrcv_00398] ⌈When the caller provides a NULL pointer as a param-
+eter value to the API FrTrcv_GetTransceiverWUReason, the development error
+FRTRCV_E_PARAM_POINTER shall be reported to DET if development error detec-
+tion is enabled.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -136,7 +216,7 @@ FrTrcv_GetTransceiverWU</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayTransceiverDriver.pdf#page=42" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

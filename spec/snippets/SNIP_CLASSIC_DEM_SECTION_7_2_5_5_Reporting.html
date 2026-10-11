@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_2_5_5_Reporting</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWGeneral.pdf</strong> (Seite 56)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></strong> (Seite 56)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUC_02143" class="swsref"><code>TPS_ECUC_02143</code></a></span>
         </div>
@@ -91,7 +92,46 @@ Std_ReturnType Dem_SetEventStatus (
 Dem_EventIdType EventId,
 Dem_EventStatusType EventStatus
 )
-If an error event occurred EventStatus</div></section>
+If an error event occurred EventStatus shall be equal to: ’DEM_EVENT_STATUS_
+FAILED’.
+If an error event is not detected with sufficient precision and requires maturing by pre-
+debouncing EventStatus shall be equal to: ’DEM_EVENT_STATUS_PREFAILED’.
+If the BSW modules has explicitly detected that the error is not present EventStatus
+shall be equal to: ’DEM_EVENT_STATUS_PASSED’.
+If a failure free detection is not possible with sufficient precision and requires further
+maturing by pre-debouncing EventStatus shall be equal to: ’DEM_EVENT_STATUS_
+PREPASSED’.
+If a check is not possible (e.g., requires specific operating mode), no result shall be
+reported.⌋(SRS_BSW_00339)
+General Specification of Basic Software Modules
+Note:
+The return value of Dem_SetEventStatus shall be ignored by the BSW modules.
+The error state information could be reported either by a state change or when the
+state is checked (event or cyclic) depending upon the configuration of the error event.
+Checks are not required to be cyclic.
+Pre-de-bouncing is handled inside the Diagnostic event manager using AUTOSAR pre-
+defined generic signal de-bouncing algorithms.
+Note:
+The callback service &lt;Mip&gt;_DemInitMonitorFor&lt;EventName&gt; is principally spec-
+ified by the specification [SWS_Dem_00256] within Section 8.4.3.1.1 of the specifica-
+tion document for the module Diagnostic Event Manager (Dem) [16]. This document
+only specifies extensions which matter for the correct functionality of error monitors.
+[SWS_BSW_00206] ⌈Only event-based error monitors shall implement the callback
+service &lt;Mip&gt;_DemInitMonitorFor&lt;EventName&gt;.⌋()
+Note:
+The BSW module Dem calls an implemented callback service &lt;Mip&gt;_DemInitMon-
+itorFor&lt;EventName&gt; to trigger the re-initialization of an event-based error mon-
+itor depending on the EnableConditions or ControlDTCSettings.
+The re-
+initialization reason is passed by the parameter InitMonitorReason.
+[SWS_BSW_00207] ⌈On each trigger of the callback service &lt;Mip&gt;_DemInitMoni-
+torFor&lt;EventName&gt;, the particular BSW module shall re-initialize the monitor func-
+tionality and report a new error status to the BSW module Dem immediately, if the error
+status could be evaluated anytime, otherwise at the next opportunity.⌋()
+[SWS_BSW_00208] ⌈If a particular BSW module implements a callback service
+&lt;Mip&gt;_DemInitMonitorFor&lt;EventName&gt;, then the BSWMD shall specify a cor-
+responding ServiceNeeds.⌋()
+General Specification of Basic Software Modules</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +144,7 @@ If an error event occurred EventStatus</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

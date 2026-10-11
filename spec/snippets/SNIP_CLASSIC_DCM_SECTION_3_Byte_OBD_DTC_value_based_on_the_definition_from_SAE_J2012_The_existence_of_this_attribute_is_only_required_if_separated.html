@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_3_Byte_OBD_DTC_value_based_on_the_definition_from_SAE_J2012_The_existence_of_this_attribute_is_only_required_if_separated</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_DiagnosticExtractTemplate.pdf</strong> (Seite 577)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_TPS_DiagnosticExtractTemplate.pdf#page=451" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_DiagnosticExtractTemplate.pdf</a></strong> (Seite 577)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_01155" class="swsref"><code>TPS_DEXT_01155</code></a></span>
         </div>
@@ -101,7 +102,225 @@ Mapping Rule
 Mapping Type
 Applicable for DiagnosticAuthRoles refererenced by a DiagnosticMemoryDestination with
 DiagnosticMemoryDestination.memoryId having the same value as DcmDspReadDTCInformation
-UserDefinedFaultMemoryId. The value of DiagnosticAccessPermission i</div></section>
+UserDefinedFaultMemoryId. The value of DiagnosticAccessPermission is calculated based on the
+bits of all referenced DiagnosticAuthRole.bitPosition, where a value of 2ˆbitPosition is used for
+each DiagnosticAuthRole.bitPosition. The accumulated value represents a bitfield that has a bit set
+for each DiagnosticAuthRole.bitPosition.
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_01150]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp
+BSW Parameter
+BSW Type
+DcmDspRequestControl
+ECUC-PARAM-CONF-CONTAINER-DEF
+BSW Description
+▽
+Diagnostic Extract Template
+△
+This container contains the configuration (parameters) of the "Request control of on-board system, test or component" service
+(Service $08). The DCM will request the control using an R-Port requiring a PortInteface RequestControlServices_{Tid}. The
+R-Port is named RequestControlServices_{Tid} where {Tid} is the name of the container DcmDspRequestControl.
+Template Description
+This meta-class represents the ability to model an instance of the OBD mode 0x08 service.
+M2 Parameter
+DiagnosticExtract::Dcm::ObdService::Mode_0x08_RequestControlOfOnBoardDevice::
+DiagnosticRequestControlOfOnBoardDevice
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_00637]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRequestControl
+BSW Parameter
+BSW Type
+DcmDspRequestControlInBufferSize
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Number of bytes to be provided in the input buffer of the interface RequestControlServices_{Tid} for OBD Service $08
+Template Description
+This represents the specified data size for the request message. Unit: byte.
+M2 Parameter
+DiagnosticExtract::Dcm::ObdService::Mode_0x08_RequestControlOfOnBoardDevice::DiagnosticTestRoutineIdentifier.
+requestDataSize
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_00722]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRequestControl
+BSW Parameter
+BSW Type
+DcmDspRequestControlOutBufferSize
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Number of bytes to be provided in the output buffer of the interface RequestControlServices_{Tid} for OBD Service $08
+Template Description
+This represents the specified data size for the response message. Unit:byte.
+M2 Parameter
+DiagnosticExtract::Dcm::ObdService::Mode_0x08_RequestControlOfOnBoardDevice::DiagnosticTestRoutineIdentifier.
+responseDataSize
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_00723]
+Diagnostic Extract Template
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRequestControl
+BSW Parameter
+BSW Type
+DcmDspRequestControlTestId
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Test Id for Service $08
+Template Description
+This represents the numerical id of the DiagnosticTestIdentifier (see SAE J1979-DA).
+M2 Parameter
+DiagnosticExtract::Dcm::ObdService::Mode_0x08_RequestControlOfOnBoardDevice::DiagnosticTestRoutineIdentifier.id
+Mapping Rule
+Mapping Type
+The value shall be taken from DiagnosticRequestControlOfOnBoardDevice.testId.id if available.
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_00656]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp
+BSW Parameter
+BSW Type
+DcmDspRequestFileTransfer
+ECUC-PARAM-CONF-CONTAINER-DEF
+BSW Description
+This container contains the configuration for RequestFileTransfer. This container only exists if RequestFileTransfer is
+configured.
+Template Description
+This diagnostic service instance implements the UDS service 0x38.
+M2 Parameter
+DiagnosticExtract::Dcm::DiagnosticService::RequestFileTransfer::DiagnosticRequestFileTransfer
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_01034]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRoe
+BSW Parameter
+BSW Type
+DcmDspRoeMaxNumChangeOfDataIdentfierEvents
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Maximum number of events that can be simultaneously configured with SubFunction onChangeOfDataIdentifier.
+Template Description
+The maximum number of events that can be simultaneously configured with sub function onChangeOfDataIdentifier.
+M2 Parameter
+DiagnosticExtract::Dcm::DiagnosticService::ResponseOnEvent::DiagnosticResponseOnEventClass.
+maxNumChangeOfDataIdentfierEvents
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_01236]
+Diagnostic Extract Template
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRoe
+BSW Parameter
+BSW Type
+DcmDspRoeMaxNumComparisionOfValueEvents
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Maximum number of events that can be simultaneously configured with SubFunction onComparisionOfValues.
+Template Description
+The maximum number of events that can be simultaneously configured with sub function onComparisonOfValues.
+M2 Parameter
+DiagnosticExtract::Dcm::DiagnosticService::ResponseOnEvent::DiagnosticResponseOnEventClass.
+maxNumComparisionOfValueEvents
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_01237]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRoe
+BSW Parameter
+BSW Type
+DcmDspRoeMaxNumberOfStoredDTCStatusChanged
+Events
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Maximum number of changed DTC events that can be stored within one DcmDspRoeSchedulerRate interval.
+Template Description
+The maximum number of DTCs that can be stored as DTCs with change status within one ResponseOnEventSchedulerRate
+interval.
+M2 Parameter
+DiagnosticExtract::Dcm::DiagnosticService::ResponseOnEvent::DiagnosticResponseOnEventClass.
+maxNumberOfStoredDTCStatusChangedEvents
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dcm_01239]
+BSW Module
+BSW Context
+Dcm
+Dcm/DcmConfigSet/DcmDsp/DcmDspRoe
+BSW Parameter
+BSW Type
+DcmDspRoeMaxSupportedDIDLength
+ECUC-INTEGER-PARAM-DEF
+BSW Description
+Maximum DID response size in bytes allowed for a DID that is used for onComparisionOfValues or onChangeOfDataIdentifier.
+Template Description
+The maximum number of measurable data bytes allowed for each DID that is used for comparison or data change.
+M2 Parameter
+DiagnosticExtract::Dcm::DiagnosticService::ResponseOnEvent::DiagnosticResponseOnEventClass.
+maxSupportedDIDLength
+Mapping Rule
+Mapping Type
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -114,7 +333,7 @@ UserDefinedFaultMemoryId. The value of DiagnosticAccessPermission i</div></secti
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_DiagnosticExtractTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_TPS_DiagnosticExtractTemplate.pdf#page=451" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_DiagnosticExtractTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

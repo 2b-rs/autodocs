@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DIAGNOSTICEXTRACTTEMPLATE_SECTION_6_7_Diagnostic_Debouncing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>DiagnosticExtractTemplate.pdf</strong> (Seite 201)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_DiagnosticExtractTemplate.pdf#page=199" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">DiagnosticExtractTemplate.pdf</a></strong> (Seite 201)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_01048" class="swsref"><code>TPS_DEXT_01048</code></a></span>
         </div>
@@ -105,7 +106,288 @@ maxNumberOfEventEntries: PositiveInteger [0..1]
 +
 maxNumberOfRequestCorrectlyReceivedResponsePending: PositiveInteger
 +
-memoryEntryStorageTrigge</div></section>
+memoryEntryStorageTrigger: DiagnosticMemoryEntryStorageTriggerEnum
++
+occurrenceCounterProcessing: DiagnosticOccurrenceCounterProcessingEnum
++
+resetConfirmedBitOnOverflow: Boolean
++
+responseOnAllRequestSids: Boolean
++
+responseOnSecondDeclinedRequest: Boolean
++
+securityDelayTimeOnBoot: TimeValue
++
+statusBitHandlingTestFailedSinceLastClear: DiagnosticStatusBitHandlingTestFailedSinceLastClearEnum
++
+statusBitStorageTestFailed: Boolean
++
+typeOfDtcSupported: DiagnosticTypeOfDtcSupportedEnum
+DiagEventDebounceCounterBased
++
+counterBasedFdcThresholdStorageValue: Integer [0..1]
+«atpVariation»
++
+counterDecrementStepSize: Integer
++
+counterFailedThreshold: Integer
++
+counterIncrementStepSize: Integer
++
+counterJumpDown: Boolean
++
+counterJumpDownValue: Integer
++
+counterJumpUp: Boolean
++
+counterJumpUpValue: Integer
++
+counterPassedThreshold: Integer
+DiagEventDebounceTimeBased
+«atpVariation»
++
+timeBasedFdcThresholdStorageValue: TimeValue [0..1]
++
+timeFailedThreshold: TimeValue
++
+timePassedThreshold: TimeValue
+Identifiable
+DiagEventDebounceAlgorithm
+Referrable
+DiagnosticDebounceAlgorithmProps
++
+debounceCounterStorage: Boolean [0..1]
+«atpVariation»
++
+debounceBehavior: DiagnosticDebounceBehaviorEnum
++debounceAlgorithmProps
+0..*
++debounceAlgorithm
+1
+«atpSplitable»
++commonProperties
+0..1
+Figure 6.10: Details of DiagnosticDebounceAlgorithmProps
+[constr_1360] Usage of DiagEventDebounceMonitorInternal is not sup-
+ported in the context of DiagnosticDebounceAlgorithmProps ⌈The usage of
+the meta-class DiagEventDebounceMonitorInternal for the aggregation in the
+role DiagnosticDebounceAlgorithmProps.debounceAlgorithm is not permit-
+ted.⌋()
+For clarification with respect to [constr_1360], DiagEventDebounceMonitorIn-
+ternal is used in the context of formulating the DiagnosticEventNeeds, but its
+usage in the context of the DiagnosticExtract is not foreseen.
+Diagnostic Extract Template
+Class
+DiagnosticEventNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Specifies the abstract needs on the configuration of the Diagnostic Event Manager for one diagnostic
+event. Its shortName can be regarded as a symbol identifying the diagnostic event from the viewpoint of
+the component or module which owns this element.
+In case the diagnostic event specifies a production error, the shortName shall be the name of the
+production error.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+considerPto
+Status
+Boolean
+0..1
+attr
+PTO (Power Take Off) has an impact on the respective
+emission-related event (OBD). This information shall be
+provided by SW-C description in order to consider the
+PTO relevance e.g. for readiness (PID $01) computation.
+For events with dtcKind set to ’nonEmmissionRelatedDtc’
+this attribute is typically false.
+deferringFid
+FunctionInhibitionNeeds
+*
+ref
+This reference contains the link to a function identifier
+within the FiM which is used by the monitor before
+delivering a result.
+diagEvent
+Debounce
+Algorithm
+DiagEventDebounce
+Algorithm
+0..1
+aggr
+Specifies the abstract need on the Debounce Algorithm
+applied by the Diagnostic Event Manager.
+dtcKind
+DtcKindEnum
+0..1
+attr
+This attribute indicates the kind of the diagnostic monitor
+according to the SWS Diagnostic Event Manger.
+This attribute applies for the UDS diagnostics use case.
+inhibitingFid
+FunctionInhibitionNeeds
+0..1
+ref
+This represents the primary Function Inhibition Identifier
+used for inhibition of the diagnostic monitor. The FID
+might either inhibit the monitoring of a symptom or the
+reporting of detected faults.
+inhibiting
+SecondaryFid
+FunctionInhibitionNeeds
+*
+ref
+This represents the secondary Function Inhibition
+Identifier used for inhibition of the diagnostic monitor. Any
+of the FID inhibitions leads to an inhibition of the
+monitoring of a symptom or the reporting of detected
+faults.
+obdDtcNumber
+PositiveInteger
+0..1
+attr
+This represents a reasonable Diagnostic Trouble Code.
+This allows to predefine the Diagnostic Trouble Code, e.g.
+if the a function developer has received a particular
+requirement from the OEM or from a standardization
+body.
+This attribute applies for the OBD diagnostics use case.
+prestored
+Freezeframe
+StoredInNvm
+Boolean
+0..1
+attr
+If the Event uses a prestored freeze-frame (using the
+operations PrestoreFreezeFrame and ClearPrestored
+FreezeFrame of the service interface DiagnosticMonitor)
+this attribute indicates if the Event requires the data to be
+stored in non-volatile memory. TRUE = Dem shall store
+the prestored data in non-volatile memory, FALSE = Data
+can be lost at shutdown (not stored in Nvm).
+reportBehavior
+ReportBehaviorEnum
+0..1
+attr
+This switch indicates whether or not the BSW module is
+allowed to report the related Events before Dem_Init().
+udsDtcNumber
+PositiveInteger
+0..1
+attr
+This represents a reasonable Diagnostic Trouble Code.
+This allows to predefine the Diagnostic Trouble Code, e.g.
+if the a function developer has received a particular
+requirement from the OEM or from a standardization
+body.
+This attribute applies for the UDS diagnostics use case.
+▽
+Diagnostic Extract Template
+△
+Class
+DiagnosticEventNeeds
+usesMonitor
+Data
+Boolean
+0..1
+attr
+This attribute defines whether additional monitor data
+shall be added to the reporting of events.
+Table 6.32: DiagnosticEventNeeds
+Class
+DiagEventDebounceAlgorithm (abstract)
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This class represents the ability to specify the pre-debounce algorithm which is selected and/or required
+by the particular monitor.
+This class inherits from Identifiable in order to allow further documentation of the expected or
+implemented debouncing and to use the category for the identification of the expected / implemented
+debouncing.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Subclasses
+DiagEventDebounceCounterBased, DiagEventDebounceMonitorInternal, DiagEventDebounceTime
+Based
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 6.33: DiagEventDebounceAlgorithm
+Class
+DiagEventDebounceCounterBased
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the ability to indicate that the counter-based debounce algorithm shall be
+used by the DEM for this diagnostic monitor.
+This is related to set the ECUC choice container DemDebounceAlgorithmClass to DemDebounce
+CounterBased.
+Base
+ARObject, DiagEventDebounceAlgorithm, Identifiable, MultilanguageReferrable, Referrable
+Attribute
+Type
+Mult.
+Kind
+Note
+counterBased
+FdcThreshold
+StorageValue
+Integer
+0..1
+attr
+Threshold to allocate an event memory entry and to
+capture the Freeze Frame.
+counter
+DecrementStep
+Size
+Integer
+1
+attr
+This value shall be taken to decrement the internal
+debounce counter.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterFailed
+Threshold
+Integer
+1
+attr
+This value defines the event-specific limit that indicates
+the "failed" counter status.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counter
+IncrementStep
+Size
+Integer
+1
+attr
+This value shall be taken to increment the internal
+debounce counter.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterJump
+Down
+Boolean
+1
+attr
+This value activates or deactivates the counter
+jump-down behavior.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -118,7 +400,7 @@ memoryEntryStorageTrigge</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>DiagnosticExtractTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_DiagnosticExtractTemplate.pdf#page=199" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">DiagnosticExtractTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_2_2_3_Interaction_between_Dem_and_Function_Inhibition_Manager_FiM</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FunctionInhibitionManager.pdf</strong> (Seite 29)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FunctionInhibitionManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FunctionInhibitionManager.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Fim_00079" class="swsref internal-spec-ref"><code>SWS_Fim_00079</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Fim_00100" class="swsref internal-spec-ref"><code>SWS_Fim_00100</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,60 @@ fast reaction times the FiM has to provide FID information sufficiently fast to 
 gering limp-home functionality.
 The API FiM_DemTriggerOnMonitorStatus is only relevant if a status variable per
 FID is stored. In an alternative implementation when no status is stored and the per-
-mission</div></section>
+mission status is calculated every time when queried, the API FiM_DemTriggerOn-
+MonitorStatus is without effect.
+As an example of implementation, Figure 3 shows the calculation of a single Event
+Id-FID link.
+On the left hand side, the monitor status is reported by the Dem as
+Dem_EventStatusExtendedType. This status is compared to the mask configured for
+the EventId associated with the FID.
+An inhibition counter is assigned to each FID. The inhibition counter contains the num-
+ber of currently inhibiting EventIds.
+If the calculation is performed cyclically (monitor status is read through Dem_Get-
+MonitorStatus), the inhibition counter shall be incremented if the status and the
+mask match; otherwise, the inhibition counter is not updated. This is applicable for
+FiM_GetFunctionPermission (if the permission state has to be computed upon
+the query) and FiM_MainFunction APIs.
+In the trigger on monitor status change, the stored currently inhibiting EventIds (inhibi-
+tion counter) shall be used for the computation for the permission state. If there is an
+monitor status change reported by FiM_DemTriggerOnMonitorStatus, then the
+following shall be performed:
+a. If the change in status for the EventId results in a released state (mask does not
+match with the monitor status), then the inhibition counter has to be decremented.
+b. If the change in status for the EventId results in an inhibited state (mask matches
+with the monitor status), then the inhibition counter has to be incremented.
+If the inhibition counter is &gt; 0, then the FID permission state shall be set to FALSE,
+otherwise the FID permission state shall be set to TRUE.
+Figure 7.3: Calculation of permission state based on monitor status information
+[SWS_Fim_00012]
+Upstream requirements: SRS_Fim_04702
+⌈The FiM module shall calculate the inhibit status based on the actual status of the
+inhibit source and the calibrated mask which exists for each inhibit source (ref. 10.2.7).
+The FiM module shall inhibit the FID if the Monitor status is equal to the calibrated
+mask (=Defect, Tested, NotTested). The inhibition is deactivated if the mask of the
+event does not match anymore the calibrated value.⌋
+Optionally, the tested status can be used for inhibiting. Depending on the inhibition
+condition, the inhibition can be active if the event has status "Tested" or "NotTested". If
+no tested value is selected, the tested status is not relevant.
+The available combinations of status flags are assigned to a predefined value which
+has verbal representation like "Tested", "Not_Tested" or Last_Failed".
+[SWS_Fim_00098] ⌈The Function Inhibition Manager shall use the FID - DemCom-
+ponentId - inhibition configuration to determine the permission state for the configured
+FID.
+Upon changes of the FAILED status of a DemComponent, the function status shall be
+recalculated. Whenever the component status is FAILED (ComponentFailedStatus =
+TRUE), the FID is inhibited.⌋
+[SWS_Fim_00099] ⌈The FIM shall use the API Dem_GetComponentFailed to get
+the current FAILED status of a component.⌋
+[SWS_Fim_00100]
+Upstream requirements: SRS_Fim_04717
+⌈If the FIM is configured for being triggered on eventStatus (FiMCyclicEventEvalua-
+tion), the FIM shall accept the status changed information of a DemComponent by
+providing the function FiM_DemTriggerOnComponentStatus.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Specifies Dem_GetMonitorStatus usage</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Fim_00100] im Text von SWS_FunctionInhibitionManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,11 +152,11 @@ mission</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FunctionInhibitionManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FunctionInhibitionManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FunctionInhibitionManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 29</td>
+              <td>Seite 27</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -114,15 +164,15 @@ mission</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Fim_00079" class="swsref internal-spec-ref"><code>SWS_Fim_00079</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Fim_00100" class="swsref internal-spec-ref"><code>SWS_Fim_00100</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

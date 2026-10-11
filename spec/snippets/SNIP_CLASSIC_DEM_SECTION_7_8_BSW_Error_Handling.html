@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_8_BSW_Error_Handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 141)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=141" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 141)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01212" class="swsref internal-spec-ref"><code>SWS_Dem_01212</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01289" class="swsref internal-spec-ref"><code>SWS_Dem_01289</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,48 @@ in time when the Dem module is pre-initialized. Within Dem_Init, the queued even
 are processed.
 [SWS_Dem_01212] ⌈After Dem_PreInit, the Dem shall support debouncing by call-
 ing API Dem_SetEventStatus with EventStatus set to DEM_EVENT_STATUS_-
-PREPASSED or DEM_EVE</div></section>
+PREPASSED or DEM_EVENT_STATUS_PREFAILED.⌋(SRS_BSW_00339)
+The Fim can be run in trigger or polling mode. For the initialization sequence this mode
+is not important, the Dem always initializes the Fim.
+[SWS_Dem_01213] ⌈The Dem-internal debouncing (counters and timers) shall be ini-
+tialized by calling Dem_PreInit.⌋(RS_Diag_04068)
+[SWS_Dem_00167] ⌈The Dem module shall provide a buffer mechanism to queue
+events which are reported before Dem_Init via Dem_SetEventStatus as qual-
+ified as Passed or Failed or reaching the qualification (debouncing).
+Reporting
+of DEM_EVENT_STATUS_FDC_THRESHOLD_REACHED shall not be queued.⌋(SRS_-
+BSW_00339)
+[SWS_Dem_00207] ⌈The size of the queue of the function Dem_SetEventStatus
+which is used while Dem is not initialized is configurable by the configuration parameter
+DemBswErrorBufferSize.⌋(SRS_BSW_00339)
+[SWS_Dem_01079] ⌈The Dem shall determine the queue size depending on the num-
+ber of events that can be reported before Dem_Init, i.e., those events with unde-
+fined DemReportBehavior or DemReportBehavior = REPORT_BEFORE_INIT. In
+case DemBswErrorBufferSize is configured, it overwrites the calculated size of the
+queue.⌋(SRS_BSW_00339)
+Dem
+API
+Port
+Event Memory
+BSW (below RTE)
+Dem_SetEventStatus()
+SW-C (above RTE)
+Dem_SetEventStatus()
+Available during startup
+and normal operation
+Dem_Init()
+Dem_MainFunction()
+Buffer
+Available during
+normal operation
+Figure 7.42: Dem_SetEventStatus buffering behavior
+[SWS_Dem_01289] ⌈All events which are reported via Dem_SetEventStatus after
+Dem_PreInit and before Dem_Init shall not trigger any monitor status change call-
+back.⌋(SRS_BSW_00339)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01212] im Text von SWS_DiagnosticEventManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01289] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +140,7 @@ PREPASSED or DEM_EVE</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=141" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +152,7 @@ PREPASSED or DEM_EVE</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01212" class="swsref internal-spec-ref"><code>SWS_Dem_01212</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_01289" class="swsref internal-spec-ref"><code>SWS_Dem_01289</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_1_7_1_Ingress_queue</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetDriver.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></strong> (Seite 37)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00332" class="swsref internal-spec-ref"><code>SWS_Eth_00332</code></a></span>
+          <span>Ziel-Element: SWS_Eth_CONSTR_00008</span>
         </div>
       </div>
 
@@ -98,11 +99,120 @@ DRAFT
 Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
 ⌈If an Ethernet frame could not be identified as match to be enqueued in any config-
 ured EthCtrlConfigIngressQueue at the same Ethernet controller, then the Eth-
-ernet frame shall be dropped, and, if</div></section>
+ernet frame shall be dropped, and, if EthDevErrorDetect is set to TRUE, the Ether-
+net driver shall call Det_ReportError with the error code ETH_E_NO_MATCHING_
+INGRESS_QUEUE_IDENTIFIED.⌋
+Example: If a EthCtrlConfigIngressQueue has EthCtrlIngressQueueSort-
+ingVlanIdAssignment set to 0x0FF (12bit value), then all receiving Ethernet
+frames, where VLAN-ID is set to 0x0FF are enqueued in this EthCtrlConfigIn-
+gressQueue
+If multiple queues configured at the same EthCtrlConfigIngressQueue with dif-
+ferent EthCtrlConfigIngressQueueSortingTypes, then the Ethernet controller
+need an prioritization in which order the sorting type should be applied to identify
+a match.
+Therefore a sorting priority has to be configured EthCtrlConfigIn-
+gressQueueSortingPriority.
+If no match is found for an receiving Ethernet
+frame, the Ethernet frame will be dropped.
+Example
+Configuration:
+• EthCtrlConfigIngressQueue
+A
+has
+EthCtrlIngressQueueSort-
+ingVlanIdAssignment set to 0x0FF (12bit value)
+• EthCtrlConfigIngressQueue
+B
+has
+EthCtrlIngressQueue-
+SortingEtherTypeAssignment set to 0x22F0 (AVTP EtherType)
+• SortingPriorityEtherTypeAssignment has priority 0
+• SortingPriorityVlanIdAssignment has priority 1
+Expected runtime behavior:
+• An Ethernet frame with EtherType set to 0x22F0 is sorted in EthCtrlConfig-
+IngressQueue A
+• An Ethernet frame with EtherType set to 0x8100 and VLAN-ID set 0x0FF is sorted
+in EthCtrlConfigIngressQueue B
+• An Ethernet frame with EtherType set to 0x8100 and VLAN-ID set 0x001 is
+dropped
+[SWS_Eth_CONSTR_00005]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an EthCtrlConfigIngress of the same Ethernet controller have at least two
+EthCtrlConfigIngressQueues with different EthCtrlConfigIngressQueue-
+SortingTypes configured, then a EthCtrlConfigIngressQueueSortingPri-
+ority shall be configured where the configured EthCtrlConfigIngressQueue-
+SortingType are prioritized.⌋
+[SWS_Eth_CONSTR_00006]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An Ethernet Controller shall have at most one EthCtrlConfigIngressQueue with
+the same value of EthCtrlConfigIngressQueueSortingType configured⌋
+Note: Multiple EthCtrlConfigIngressQueue with the same value of EthCtrl-
+ConfigIngressQueueSortingType (e.g.
+two egress queues with sorting type
+EtherType configured to 0x22F0) are invalid.
+[SWS_Eth_00325]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an EthCtrlConfig have multiple EthCtrlConfigIngressQueues with differ-
+ent EthCtrlConfigIngressQueueSortingTypes configured, then the EthCtrl-
+ConfigIngressQueueSortingType with the highest priority EthCtrlConfigIn-
+gressQueueSortingPriority shall be applied to identify a match for this Ethernet
+frame. If no match could be identified, proceed in descending order with the next sort-
+ing EthCtrlConfigIngressQueueSortingType.⌋
+[SWS_Eth_CONSTR_00007]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An EthCtrlConfigIngressQueue with no EthCtrlConfigIngressQueue-
+SortingType configured,
+shall always have the lowest EthCtrlConfigIn-
+gressQueueSortingPriority.⌋
+[SWS_Eth_CONSTR_00008]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An EthCtrlConfig shall have at most one EthCtrlConfigIngressQueue with
+no EthCtrlConfigIngressQueueSortingTypes configured.⌋
+Note: A EthCtrlConfigIngressQueue with no EthCtrlConfigIngressQueue-
+SortingType configured, could be used as default ingress queue where all Ethernet
+frames are added which could not be sorted in other ingress queues.
+The Ethernet driver provide the possibility to configure the enqueueing behavior if an
+Ethernet controller is identified as matching Ethernet frame and all elements of the af-
+fected EthCtrlConfigIngressQueue are occupied. Either the Ethernet controller
+discard the Ethernet frame or the eldest available Ethernet frame in this EthCtrlCon-
+figIngressQueue, which is not processed for reception, is overwritten. For some
+use cases it may be beneficial to allow overwriting of existing Ethernet frames (e.g.
+audio streaming).
+[SWS_Eth_00334]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an Ethernet frame is identified to match an EthCtrlConfigIngressQueueSort-
+ingType of an EthCtrlConfigIngressQueue at an particular Ethernet controller,
+all elements of this EthCtrlConfigIngressQueue are occupied and EthCtrlCon-
+figIngressQueueOverwriteEnabled of this EthCtrlConfigIngressQueue is
+set to FALSE, then this Ethernet frame shall be discarded and a runtime error with error
+code ETH_E_INGRESS_QUEUE_OCCUPIED shall be reported.⌋
+[SWS_Eth_00335]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an Ethernet frame is identified to match an EthCtrlConfigIngressQueueSort-
+ingType of an EthCtrlConfigIngressQueue at an particular Ethernet controller,
+all elements of this EthCtrlConfigIngressQueue are occupied and EthCtrlCon-
+figIngressQueueOverwriteEnabled of this EthCtrlConfigIngressQueue is
+set to TRUE, then this Ethernet frame shall be enqueued by overwriting the EthCtrl-
+ConfigIngressQueue element where the eldest Ethernet frame reside which is not
+locked for reception.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Eth_00332] im Text von SWS_EthernetDriver.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Eth_CONSTR_00008] im Text von SWS_EthernetDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -111,7 +221,7 @@ ernet frame shall be dropped, and, if</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -123,7 +233,7 @@ ernet frame shall be dropped, and, if</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Eth_00332" class="swsref internal-spec-ref"><code>SWS_Eth_00332</code></a></td>
+              <td>SWS_Eth_CONSTR_00008</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

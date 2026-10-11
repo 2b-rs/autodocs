@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SOFTWARECOMPONENTTEMPLATE_SECTION_13_8_3_Diagnostic_Event_Needs</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SoftwareComponentTemplate.pdf</strong> (Seite 747)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=773" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></strong> (Seite 747)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01046" class="swsref"><code>TPS_SWCT_01046</code></a></span>
         </div>
@@ -113,7 +114,233 @@ M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
 Note
 This class identifies the capability to provide generic information about diagnostic capabilities
 Base
-ARObject, Identifiable, MultilanguageReferrable, Referr</div></section>
+ARObject, Identifiable, MultilanguageReferrable, Referrable, ServiceNeeds
+Subclasses
+DiagnosticCommunicationManagerNeeds, DiagnosticComponentNeeds, DiagnosticControlNeeds,
+DiagnosticEnableConditionNeeds, DiagnosticEventInfoNeeds, DiagnosticEventManagerNeeds,
+DiagnosticEventNeeds, DiagnosticIoControlNeeds, DiagnosticOperationCycleNeeds, DiagnosticRequest
+FileTransferNeeds, DiagnosticResponseOnEventNeeds, DiagnosticRoutineNeeds, DiagnosticStorage
+ConditionNeeds, DiagnosticUploadDownloadNeeds, DiagnosticValueNeeds, DiagnosticsCommunication
+SecurityNeeds, DtcStatusChangeNotificationNeeds, ObdControlServiceNeeds, ObdInfoServiceNeeds,
+ObdMonitorServiceNeeds, ObdPidServiceNeeds, ObdRatioDenominatorNeeds, ObdRatioServiceNeeds,
+WarningIndicatorRequestedBitNeeds
+Attribute
+Type
+Mult.
+Kind
+Note
+audience
+DiagnosticAudience
+Enum
+*
+attr
+This specifies the intended audience for the diagnostic
+object. Note that this is not only for the documentation but
+also subsequent audience specific implementation.
+diag
+Requirement
+DiagRequirementId
+String
+0..1
+attr
+This denotes the requirement identifier to which the object
+can be linked to.
+Note that with the implementation of a generic tracing
+concept in AUTOSAR this attribute might become
+obsolete.
+securityAccess
+Level
+PositiveInteger
+0..1
+attr
+This attribute denotes the level of security which is
+touched by the diagnostic object. The higher the level the
+more relevance for the security exists.
+This level shall be mapped to the security level in the
+ECU.
+Table 13.13: DiagnosticCapabilityElement
+Enumeration
+DiagnosticAudienceEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+The possible values of the intended audience for a diagnostic object.
+Literal
+Description
+aftermarket
+The object is for free aftermarket service organizations.
+Tags:atp.EnumerationLiteralIndex=1
+afterSales
+The object is relevant for the OEM after-sales organization.
+Tags:atp.EnumerationLiteralIndex=2
+development
+The object is relevant for engineering only.
+Tags:atp.EnumerationLiteralIndex=3
+manufacturing
+The object is relevant for manufacturing.
+Tags:atp.EnumerationLiteralIndex=4
+supplier
+The object is relevant for the ECU-supplier aftermarket organization.
+Tags:atp.EnumerationLiteralIndex=5
+Table 13.14: DiagnosticAudienceEnum
+The meta-classes DiagnosticEventNeeds is used to define requirements to config-
+ure the Diagnostic Event Manager Service. An SwcInternalBehavior may provide
+several DiagnosticEventNeeds elements where each defines all the requirements
+related to one diagnostic event (for the terms related to the AUTOSAR Diagnostic Event
+Manager see [39]).
+Software Component Template
+In addition, ObdPidServiceNeeds and ObdRatioServiceNeeds are required in
+order to specify the needs for OBD diagnostic service calls.
+[TPS_SWCT_01591] Existence of attribute DiagnosticEventNeeds.reportBe-
+havior ⌈The attribute DiagnosticEventNeeds.reportBehavior shall be ignored
+if it is specified in the context of a SwcServiceDependency.⌋(RS_SWCT_00170,
+RS_SWCT_03190)
+The rationale for the existence of [TPS_SWCT_01591] is that a software-component
+can never report errors to the Dem before the Dem is fully initialized.
+Enumeration
+DtcKindEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This enumeration defines the possible kinds of diagnostic monitors regarding the OBD relevance.
+Literal
+Description
+emissionRelatedDtc
+This indicates that the monitor reports a OBD-relevant malfunction.
+Tags:atp.EnumerationLiteralIndex=0
+nonEmmission
+RelatedDtc
+This indicates that the monitor reports a non-OBD-relevant malfunction.
+Tags:atp.EnumerationLiteralIndex=1
+Table 13.15: DtcKindEnum
+The diagEventDebounceAlgorithm attribute defines the kind of expected de-
+bouncing by the Diagnostic Event Manager or defines that the debouncing is imple-
+mented by the software component.
+The class DiagEventDebounceAlgorithm inherits from Identifiable in order
+to allow further documentation of the debouncing algorithm as well as non formalized
+description or non standardized description by the means of Sdg on expected configu-
+ration of the DiagEventDebounceAlgorithm in the Diagnostic Event Manager.
+[constr_1138] assignedPort and DiagEventDebounceMonitorInternal ⌈The
+existence of an assignedPort in combination with a DiagEventDebounceAlgo-
+rithm shall only be respected for the concrete subclass DiagEventDebounceMon-
+itorInternal.⌋()
+[constr_1139] assignedPort of DiagEventDebounceMonitorInternal shall
+refer to an RPortPrototype ⌈Concerning the debouncing, the software-component
+acts as a client and thus the assignedPort defined with respect to a DiagEventDe-
+bounceMonitorInternal may only refer to an RPortPrototype. The standard-
+ized value of the role identifier of the assignedPort shall be DiagFaultDetec-
+tionCounterPort.⌋()
+Software Component Template
+Class
+DiagnosticEventNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Specifies the abstract needs on the configuration of the Diagnostic Event Manager for one diagnostic
+event. Its shortName can be regarded as a symbol identifying the diagnostic event from the viewpoint of
+the component or module which owns this element.
+In case the diagnostic event specifies a production error, the shortName shall be the name of the
+production error.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+considerPto
+Status
+Boolean
+0..1
+attr
+PTO (Power Take Off) has an impact on the respective
+emission-related event (OBD). This information shall be
+provided by SW-C description in order to consider the
+PTO relevance e.g. for readiness (PID $01) computation.
+For events with dtcKind set to ’nonEmmissionRelatedDtc’
+this attribute is typically false.
+deferringFid
+FunctionInhibitionNeeds
+*
+ref
+This reference contains the link to a function identifier
+within the FiM which is used by the monitor before
+delivering a result.
+diagEvent
+Debounce
+Algorithm
+DiagEventDebounce
+Algorithm
+0..1
+aggr
+Specifies the abstract need on the Debounce Algorithm
+applied by the Diagnostic Event Manager.
+dtcKind
+DtcKindEnum
+0..1
+attr
+This attribute indicates the kind of the diagnostic monitor
+according to the SWS Diagnostic Event Manger.
+This attribute applies for the UDS diagnostics use case.
+inhibitingFid
+FunctionInhibitionNeeds
+0..1
+ref
+This represents the primary Function Inhibition Identifier
+used for inhibition of the diagnostic monitor. The FID
+might either inhibit the monitoring of a symptom or the
+reporting of detected faults.
+inhibiting
+SecondaryFid
+FunctionInhibitionNeeds
+*
+ref
+This represents the secondary Function Inhibition
+Identifier used for inhibition of the diagnostic monitor. Any
+of the FID inhibitions leads to an inhibition of the
+monitoring of a symptom or the reporting of detected
+faults.
+obdDtcNumber
+PositiveInteger
+0..1
+attr
+This represents a reasonable Diagnostic Trouble Code.
+This allows to predefine the Diagnostic Trouble Code, e.g.
+if the a function developer has received a particular
+requirement from the OEM or from a standardization
+body.
+This attribute applies for the OBD diagnostics use case.
+prestored
+Freezeframe
+StoredInNvm
+Boolean
+0..1
+attr
+If the Event uses a prestored freeze-frame (using the
+operations PrestoreFreezeFrame and ClearPrestored
+FreezeFrame of the service interface DiagnosticMonitor)
+this attribute indicates if the Event requires the data to be
+stored in non-volatile memory. TRUE = Dem shall store
+the prestored data in non-volatile memory, FALSE = Data
+can be lost at shutdown (not stored in Nvm).
+reportBehavior
+ReportBehaviorEnum
+0..1
+attr
+This switch indicates whether or not the BSW module is
+allowed to report the related Events before Dem_Init().
+udsDtcNumber
+PositiveInteger
+0..1
+attr
+This represents a reasonable Diagnostic Trouble Code.
+This allows to predefine the Diagnostic Trouble Code, e.g.
+if the a function developer has received a particular
+requirement from the OEM or from a standardization
+body.
+This attribute applies for the UDS diagnostics use case.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -126,7 +353,7 @@ ARObject, Identifiable, MultilanguageReferrable, Referr</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=773" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

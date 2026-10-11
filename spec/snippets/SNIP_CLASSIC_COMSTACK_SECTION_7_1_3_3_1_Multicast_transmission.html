@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_1_3_3_1_Multicast_transmission</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_PDURouter.pdf</strong> (Seite 41)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_PDURouter.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_PDURouter.pdf</a></strong> (Seite 41)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_PduR_00872" class="swsref internal-spec-ref"><code>SWS_PduR_00872</code></a></span>
         </div>
@@ -94,7 +95,30 @@ several destinations).
 cast TP transmission session for a destination which previously had already fetched
 more data than the upper layer buffer’s read index currently points to, PduR shall re-
 turn BUFREQ_E_BUSY.⌋()
-Implementation hi</div></section>
+Implementation hint: In this case for each destination PduR must remember how many
+bytes have been transmitted so far and also shall keep tracking.
+[SWS_PduR_00631] ⌈For a new multicast TP transmission session, the request of
+PduR_&lt;User:LoTp&gt;CopyTxData of the first destination shall be forwarded with
+Tp
+DataState
+set to TP_CONFPENDING.⌋(SRS_GTW_06029)
+[SWS_PduR_00632] ⌈For all subsequential calls of PduR_&lt;User:LoTp&gt;CopyTx-
+Data for the same multicast TP transmission session, PduR shall overwrite
+TpData
+State
+to TP_DATARETRY and adjust Tx TpData Cnt to request data to be trans-
+mitted from the upper layer source buffer from the previous transmission point related
+to that destination.⌋(SRS_GTW_06029)
+Note: Tx TpData Cnt is an "Offset from the current position." see Specification of
+Communication Stack Types [7].
+[SWS_PduR_00812] ⌈After all Transport Protocols have received their data the
+PDU Router module may confirm the data to the upper layer module.⌋(SRS_GTW_-
+06029)
+[SWS_PduR_00765] ⌈In case of multicast transmission, the PDU Router module shall
+call the upper layer module using &lt;Up&gt;_TpTxConfirmation after receiving the last
+PduR_&lt;User:LoTp&gt;TxConfirmation from the lower layer Transport Protocol mod-
+ules. The result parameter shall be E_OK if at least one PduR_&lt;User:LoTp&gt;Tx-
+Confirmation reported E_OK.⌋(SRS_GTW_06029, SRS_GTW_06125)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +131,7 @@ Implementation hi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_PDURouter.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_PDURouter.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_PDURouter.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -113,7 +114,155 @@ But here, the rules how the derived values are computed are not deﬁned. Differ
 representations can be used to specify such an informal computational rule. More
 details can be found in MSRSW. Although the MlFormula is informal there can be
 some programming language syntax and semantics interpreted.
-To derive Conﬁguration Para</div></section>
+To derive Conﬁguration Parameter values with the formal calculation formula one or
+several EcucQuerys can be deﬁned. An EcucQuery is Identifiable and aggre-
+gates one EcucQueryExpression. The EcucQueryExpression deﬁnes a query
+to the ECU Conﬁguration Value description and outputs the result as a numerical value.
+Four functions are currently supported by the EcucQueryExpression: count, value,
+deref and refvalue. Due the atpMixedString nature of the EcucQueryExpres-
+sion several function keywords mixed with several local and global references18 can
+be deﬁned within an EcucQueryExpression.
+Class
+EcucQuery
+Package
+M2::AUTOSARTemplates::ECUCParameterDefTemplate
+Note
+Deﬁnes a query to the ECUC Description.
+Base
+ARObject,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note
+ecucQuery
+Expression
+EcucQueryExpr
+ession
+1
+aggr
+This is the EcucQuery used in the calculation
+formula or the condition formula.
+Table 3.33: EcucQuery
+Class
+≪atpMixedString≫EcucQueryExpression
+Package
+M2::AUTOSARTemplates::ECUCParameterDefTemplate
+Note
+Deﬁnes a query expression to the ECUC Description and output the result as an
+numerical value. Due to the "mixedString" nature of the formula there can be several
+EcuQueryExpressions used.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+configElem
+entDefGlo
+bal
+EcucDefinitionEl
+ement
+0..1
+ref
+The EcucQueryExpression points to an
+EcucDeﬁnitionElement that is used to ﬁnd an
+element in the EcucDescription. In order to ﬁnd
+the right element in the EcucDescription a search
+is necessary. If the complete EcucDescription
+needs to be searched this global reference shall
+be used. Due to the "mixedString" nature of the
+EcucQueryExpression several references to
+EcucDeﬁntionElements can be used in one
+EcucQueryExpression.
+18configElementDefLocal, configElementDefGlobal
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+Attribute
+Datatype
+Mul.
+Kind
+Note
+configElem
+entDefLoc
+al
+EcucDefinitionEl
+ement
+0..1
+ref
+The EcucQueryExpression points to an
+EcucDeﬁnitionElement that is used to ﬁnd an
+element in the EcucDescription. In order to ﬁnd
+the right element in the EcucDescription a search
+is necessary. If the search is executed inside of
+the same module that contains the EcucQuery this
+local reference shall be used. Due to the
+"mixedString" nature of the EcucQueryExpression
+several references to EcucDeﬁntionElements can
+be used in one EcucQueryExpression.
+Table 3.34: EcucQueryExpression
+[ecuc_sws_6018] The refvalue function is provided with a EcucDefinitionEle-
+ment and delivers a set of elements from the ECU Conﬁguration Value description
+which share the definition role of the provided EcucDefinitionElement.
+[ecuc_sws_6019] The refvalue function shall result in an error if the EcucDefini-
+tionElement points to a not existing element in the ECU Conﬁguration Parameter
+Deﬁnition.
+[ecuc_sws_6020] The refvalue function shall return an empty set if the EcucDefi-
+nitionElement points to an existing element in the ECU Conﬁguration Parameter
+Deﬁnition but no element in the ECU Conﬁguration Value description has been found.
+[ecuc_sws_6021] The deref function takes two parameters
+1. result of another deref function or refvalue function, which is an element set
+2. reference to a member of the ﬁrst parameter
+and returns the member of the ﬁrst parameter that is denoted by the second parameter.
+[ecuc_sws_6022] In case the member of the ﬁrst parameter is a reference the deref
+function returns the referenced element as a set.
+[ecuc_sws_6023] The deref function shall result in an error if
+• the ﬁrst parameter is an empty set
+• the ﬁrst parameter is a set with more than 1 elements19
+• the ﬁrst parameter contains one element which is a value (e.g. 5)
+• second parameter points to a not existing element in the ECU Conﬁguration Pa-
+rameter Deﬁnition or to the AUTOSAR Schema.
+[ecuc_sws_6024] The value function takes the result of a deref function or refvalue
+function, which is an element set.
+19The deref function shall only be applied to element sets which are guaranteed to contain only up to
+1 element.
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+[ecuc_sws_6025] The value function returns the parameter’s value as numerical
+value.
+[ecuc_sws_6026] The value function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements20
+• the parameter’s single element does not have a value (e.g. is a container)
+[ecuc_sws_6057] The strValue function takes the result of a deref function or refvalue
+function, which is an element set.
+[ecuc_sws_6058] The strValue function returns the parameter’s value as string.
+[ecuc_sws_6059] The strValue function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements21
+• the parameter’s single element does not have a value (e.g. is a container)
+[ecuc_sws_6060] The valueAt function takes the result of a deref function or refvalue
+function, which is an element set and a zero-based position argument.
+[ecuc_sws_6061] The valueAt function returns the value of the parameter as numeri-
+cal value at the position according to the sorting criteria deﬁned in section x.x.x.
+[ecuc_sws_6062] The valueAt function function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements
+• the parameter’s single element does not have a value (e.g. is a container)
+• the position is larger than the count-1
+[ecuc_sws_6063] The strValueAt function takes the result of a deref function or ref-
+value function, which is an element set and a zero-based position argument.
+[ecuc_sws_6064] The strValueAt function returns the value of the parameter as string
+at the position according to the sorting criteria deﬁned in section x.x.x.
+[ecuc_sws_6065] The strValueAt function function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements
+• the parameter’s single element does not have a value (e.g. is a container)
+20The value function shall only be applied to element sets which are guaranteed to contain only up to
+1 element.
+21The strValue function shall only be applied to element sets which are guaranteed to contain only up
+to 1 element.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

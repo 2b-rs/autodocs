@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_8_3_9_Cryptographic_Primitives_and_Schemes</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoServiceManager.pdf</strong> (Seite 76)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></strong> (Seite 76)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -136,11 +137,175 @@ Csm_JobRandomSeed
 Syntax
 Std_ReturnType Csm_JobRandomSeed (
 uint32 jobId,
-const uint</div></section>
+const uint8* seedPtr,
+uint32 seedLength
+)
+Service ID [hex]
+0x7b
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+jobId
+Holds the identifier of the job using the CSM service.
+seedPtr
+Holds a pointer to the memory location which contains the data to
+feed the seed.
+Parameters (in)
+seedLength
+Contains the length of the seed in bytes.
+Parameters (inout)
+None
+Parameters (out)
+None
+▽
+△
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Provides a new seed for the specified key that is used for an associated random number
+generator.
+Available via
+Csm.h
+⌋
+[SWS_Csm_91029] Definition of API function Csm_JobKeyGenerate ⌈
+Service Name
+Csm_JobKeyGenerate
+Syntax
+Std_ReturnType Csm_JobKeyGenerate (
+uint32 jobId
+)
+Service ID [hex]
+0x7c
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+Parameters (in)
+jobId
+Holds the identifier of the job using the CSM service.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Generates new key material and stores it in the key identified by keyId.
+Available via
+Csm.h
+⌋
+[SWS_Csm_91030] Definition of API function Csm_JobKeyDerive ⌈
+Service Name
+Csm_JobKeyDerive
+Syntax
+Std_ReturnType Csm_JobKeyDerive (
+uint32 jobId,
+uint32 targetKeyId
+)
+Service ID [hex]
+0x7d
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+jobId
+Holds the identifier of the job using the CSM service.
+Parameters (in)
+targetKeyId
+Holds the identifier of the key which is used to store the derived
+key.
+Parameters (inout)
+None
+Parameters (out)
+None
+▽
+△
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_READ_FAIL: Request failed, not allowed to
+extract key element
+CRYPTO_E_KEY_WRITE_FAIL: Request failed, not allowed to
+write key element
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, key element
+sizes are not compatible
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Derives a new key by using the key elements in the given key identified by the keyId. The given
+key contains the key elements for the password and salt. The derived key is stored in the key
+element with the id 1 of the key identified by targetCryptoKeyId.
+Available via
+Csm.h
+⌋
+[SWS_Csm_91031] Definition of API function Csm_JobKeyExchangeCalcPubVal
+⌈
+Service Name
+Csm_JobKeyExchangeCalcPubVal
+Syntax
+Std_ReturnType Csm_JobKeyExchangeCalcPubVal (
+uint32 jobId,
+uint8* publicValuePtr,
+uint32* publicValueLengthPtr
+)
+Service ID [hex]
+0x7e
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+Parameters (in)
+jobId
+Holds the identifier of the job using the CSM service.
+Parameters (inout)
+publicValueLengthPtr
+Holds a pointer to the memory location in which the public value
+length information is stored. On calling this function, this
+parameter shall contain the size of the buffer provided by public
+ValuePtr. When the request has finished, the actual length of the
+returned value shall be stored.
+Parameters (out)
+publicValuePtr
+Contains the pointer to the data where the public value shall be
+stored.
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Calculates the public value of the current user for the key exchange and stores the public key in
+the memory location pointed by the public value pointer.
+Available via
+Csm.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -149,7 +314,7 @@ const uint</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoServiceManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

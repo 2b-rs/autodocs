@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_4_12_Manage_authentication_state</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 67)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 67)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91067" class="swsref internal-spec-ref"><code>SWS_Dcm_91067</code></a></span>
         </div>
@@ -88,7 +89,64 @@ Upon startup, the Dcm is in deauthenticated state or restores the persisted stat
 transition to authenticated state can only be done after the client successfully exe-
 cuted the authentication sequence. In some use cases as in production, a frequent
 power-on/power off sequence is performed. To keep the achieved authentication state
-over the power off, there is a ded</div></section>
+over the power off, there is a dedicated mode rule requesting the Dcm to persist the
+authenticated state.
+Manager
+[SWS_Dcm_01480] Initialization of authentication state ⌈If DcmDspAuthenti-
+cationPersistStateModeRuleRef is not configured or the mode rule referenced
+by DcmDspAuthenticationPersistStateModeRuleRef is evaluated to false, the
+Dcm shall initialize within Dcm_Init all authentication states to deauthenticated state.⌋
+(RS_Diag_04230)
+[SWS_Dcm_01481] Initialization of persisted authentication states ⌈If the mode
+rule referenced by DcmDspAuthenticationPersistStateModeRuleRef is eval-
+uated to true, the Dcm shall initialize the persisted authentication state including role
+and white list on each connection.⌋(RS_Diag_04230)
+Transitions between authenticated states are controlled by both DSL and DSP sub-
+modules. The DSL sub-module is in charge for fallback of authenticated state into
+deauthenticated state. The DSP sub-module is in charge for transition changes trig-
+gered from a client by diagnostic services.
+Figure 7.7: Authenticated state transitions without persistent states
+[SWS_Dcm_01482] Fallback to deauthenticated session on idle connection ⌈The
+Dcm shall make a transition from authenticated into deauthenticated state for a config-
+ured connection if the following conditions apply:
+• The Dcm was in default session when the last diagnostic response was send on
+that connection and
+• DcmDspAuthenticationDefaultSessionTimeOut is configured and no
+valid diagnostic request was received on that connection for DcmDspAuthenti-
+cationDefaultSessionTimeOut seconds after the last Dcm_TpTxConfir-
+mation on that connection.
+⌋(RS_Diag_04230)
+[SWS_Dcm_01483] Fallback to deauthenticated session on S3server timeout ⌈If
+the Dcm is in a non-default session and a S3server timeout occurs, the Dcm shall
+perform a transition from authenticated into deauthenticated state on the authentication
+state assigned to that connection which was in a non-default session.⌋(RS_Diag_-
+04230)
+Manager
+[SWS_Dcm_01484] Clearing persisted authentication state ⌈If the authentication
+state of a connection performs a transition to deauthenticated state, the Dcm shall
+clear all persisted authentication information on that connection.⌋(RS_Diag_04230)
+[SWS_Dcm_01485] Reaction of fallback into deauthenticated state ⌈Upon a tran-
+sition from authenticated into deauthenticated state, the Dcm shall discard the current
+role, white list and use the configured deauthentication role from DcmDspAuthenti-
+cationDeauthenticatedRoleRef.⌋(RS_Diag_04230)
+In some use cases, it is desirable that the application set the role instead of using
+a diagnostic service with its potentially time-consuming certificate parsing. The Dcm
+provides the API Dcm_SetDeauthenticatedRole to overwrite the configured deau-
+thentication role. The overwritten role is only valid in deauthenticated state will not be
+persisted and is overwritten by a role provided by certificates via service 0x29.
+[SWS_Dcm_01486] Default authentication role set from SWC ⌈If a connection is
+in deauthenticated state and the API Dcm_SetDeauthenticatedRole is called, the
+Dcm shall use the provided deauthenticatedRole as new role per deauthenticated state
+for this connection.⌋(RS_Diag_04230)
+[SWS_Dcm_01487] Setting deauthenticated role by SWC only in deauthenticated
+state ⌈The Dcm shall process a call of Dcm_SetDeauthenticatedRole only if the
+connection is in deauthenticated state.⌋(RS_Diag_04230)
+[SWS_Dcm_01488] Lifetime of deauthenticated role by SWC ⌈A deauthenticated
+role set by Dcm_SetDeauthenticatedRole is discarded when that connection per-
+forms a transition authenticated state.⌋(RS_Diag_04230)
+[SWS_Dcm_01489] No persistency for deauthenticated roles by SWC ⌈At startup
+the ECU shall always use the deauthentication state configured in DcmDspAuthen-
+ticationDeauthenticatedRoleRef.⌋(RS_Diag_04230)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +159,7 @@ over the power off, there is a ded</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

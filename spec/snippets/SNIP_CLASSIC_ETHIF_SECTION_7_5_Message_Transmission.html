@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: ethif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_5_Message_Transmission</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_V2XGeoNetworking.pdf</strong> (Seite 19)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_V2XGeoNetworking.pdf#page=19" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_V2XGeoNetworking.pdf</a></strong> (Seite 19)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WEth_10051" class="swsref internal-spec-ref"><code>SWS_WEth_10051</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WEth_20235" class="swsref internal-spec-ref"><code>SWS_WEth_20235</code></a></span>
         </div>
       </div>
 
@@ -96,11 +97,80 @@ set to 1.⌋
 Upstream requirements: SRS_V2X_00010
 ⌈The V2xGn module is not required to offload packets to another channel. Conse-
 quently, the channel offload bit of the TC (Traffic Class) field in the BTP frames to be
-sent should be set to 0. Val</div></section>
+sent should be set to 0. Value 1 will be ignored anyway.⌋
+[SWS_V2xGn_20263]
+Upstream requirements: SRS_V2X_00010
+⌈The V2xGn module shall only use the DCC profiles specified in [SWS_WEth_20235].
+Consequently, the DCC Profile ID bits of the TC (Traffic Class) field shall only use the
+DPID values defined in [SWS_WEth_20235].⌋
+[SWS_V2xGn_20264]
+Upstream requirements: SRS_V2X_00010
+⌈The V2xGn shall set the itsGnIsMobile bit of the Flags field to 1.⌋
+[SWS_V2xGn_20265]
+Upstream requirements: SRS_V2X_00010
+⌈The V2xGn shall set the Maximum Hop Limit (MHL) field to 10.⌋
+[SWS_V2xGn_20270]
+Upstream requirements: SRS_V2X_00010
+⌈All GeoNetworking frames sent by the V2xGn module shall use the EtherType value
+0x8947 as listed by the IEEE Registration Authority at [20].⌋
+[SWS_V2xGn_20401]
+Upstream requirements: SRS_V2X_00010
+⌈The GN Source Address shall be constructed as follows:
+• Set the field M (bit 0) to 0.
+• Set the field ST (bits 1 to 5) to the station type of the ITS-S. The station type in
+the GN source address shall be identical to the station type in CAMs/DENMs.
+• Set reserved bits 6 to 15 to 0.
+• Set the field MID (bits 16 to 63) to the value of the MAC address.
+⌋
+[SWS_V2xGn_00128] ⌈The V2xGn module shall call V2xM_GetGlobalTxParams()
+that delivers own channel CBR information set in the GeoNetworking header to be
+transmitted.⌋
+The transmission request towards the LSduR is performed with direct data provision.
+With direct data provision, the data for transmission is forwarded in one single call via
+the LSduR to the lower layer. The lower layer is responsible to transfer the data to a
+transmit buffer.
+[SWS_V2xGn_00137] Transmission request with direct data provision
+Status:
+DRAFT
+Upstream requirements: SRS_V2X_26011
+⌈If a transmission request need to be performed, then the V2xGn module shall call
+LSduR_V2XGnTransmit() with the following arguments:
+• TxPduId equal to the PDU id that is referenced by the used V2xGnTxPdu
+• PduInfoPtr.SduDataPtr equal to the data pointer
+• PduInfoPtr.SduLength equal to the data length
+• PduInfoPtr.MetaDataPtr equal to the pointer of the created MetaDataItem
+configured at the V2xGnTxPdu that corresponds to the given TxPduId.
+⌋
+[SWS_V2xGn_00138] Meta data handling while containing headers
+Status:
+DRAFT
+Upstream requirements: SRS_V2X_26011
+⌈If the V2xGn module provides headers necessary for the transmission through
+PduInfoPtr.MetaDataPtr then MetaDataItem shall be set in the following order:
+• ETHERNET_MAC_64 equal to the destination MAC address
+• LISTELEM_PTR equal to the pointer of the created instance of type ListElem-
+StructType in the following order:
+– create an instance of type ListElemStructType and set NextLis-
+tElemPtr to NULL_PTR
+– set DataPtr to address of the created header and DataLength to the
+length of the created header
+• PRIORITY_8 equal to the priority value used for this packet
+⌋
+[SWS_V2xGn_00139] Meta data handling while not containing headers
+Status:
+DRAFT
+Upstream requirements: SRS_V2X_26011
+⌈If the V2xGn module provides headers necessary for the transmission through
+PduInfoPtr.SduDataPtr then MetaDataItem shall be set in the following order:
+• ETHERNET_MAC_64 equal to the Physical destination address (MAC address in
+network byte order)
+• LISTELEM_PTR equal to NULL_PTR
+• PRIORITY_8 equal to the priority value used for this packet
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Wireless Ethernet transmission parameters API</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_WEth_20235] im Text von SWS_V2XGeoNetworking.</p>
       </section>
 
       <section class="snip-card">
@@ -109,7 +179,7 @@ sent should be set to 0. Val</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_V2XGeoNetworking.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_V2XGeoNetworking.pdf#page=19" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_V2XGeoNetworking.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -121,15 +191,15 @@ sent should be set to 0. Val</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_WEth_10051" class="swsref internal-spec-ref"><code>SWS_WEth_10051</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_WEth_20235" class="swsref internal-spec-ref"><code>SWS_WEth_20235</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

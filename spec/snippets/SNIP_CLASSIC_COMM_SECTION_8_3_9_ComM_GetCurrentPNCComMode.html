@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_8_3_9_ComM_GetCurrentPNCComMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 120)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=120" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 120)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -132,11 +133,45 @@ as ComMode .⌋
 Comment to [SWS_ComM_01022]: For multiple PNCs it is not possible to return a
 consistent communication mode since the PNCs could have different communication
 modes.
-[SWS_ComM_0</div></section>
+[SWS_ComM_01023]
+Upstream requirements: SRS_ModeMgm_09149
+⌈If
+no
+PNC
+is
+assigned
+to
+the
+affected
+user,
+the
+function
+ComM_GetCurrentPNCComMode shall return COMM_E_NO_PNC_ASSIGNED as
+ComMode.⌋
+[SWS_ComM_01024]
+Upstream requirements: SRS_ModeMgm_09149
+⌈If [SWS_ComM_01022] and [SWS_ComM_01023] do not apply, the function shall
+query for the current communication mode of the corresponding PNC statemachine
+the user is assigned to.
+If the corresponding PNC statemachine is in main state
+COMM_PNC_FULL_COMMUNICATION, then the function shall return COMM_FULL_COM-
+MUNICATION as ComMode.
+If the corresponding PNC statemachine is main state
+COMM_PNC_NO_COMMUNCATION, then the function shall return COMM_NO_COM-
+MUNICATION as ComMode.⌋
+Note: The service interface ComM_UserRequest provides the possibility among others
+to query for the current mode of a channel and to query for the current mode of a PNC.
+Since the service interface has ComM_ModeType as a return value type, the main state
+of the ComM PNC statemachine has to be mapped to the main state of the ComM
+channel statemachine
+[SWS_ComM_01025]
+Upstream requirements: SRS_ModeMgm_09090, SRS_ModeMgm_09246
+⌈Configuration of ComM_GetCurrentPNCComMode: Relationship between users and
+PNCs. A user is statically mapped to one or more PNCs.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -145,7 +180,7 @@ modes.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=120" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

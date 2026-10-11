@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DLT_SECTION_7_1_3_2_Generating_hook_functions</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticLogAndTrace.pdf</strong> (Seite 23)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticLogAndTrace.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticLogAndTrace.pdf</a></strong> (Seite 23)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dlt_00632" class="swsref internal-spec-ref"><code>SWS_Dlt_00632</code></a></span>
         </div>
@@ -90,7 +91,23 @@ case shall be set to DLT_TRACE_VFB.⌋
 [SWS_Dlt_00280] ⌈Because non-verbose mode is used, a unique Message ID as de-
 fined in [SWS_Dlt_00031] shall be used for each call to Dlt_SendTraceMessage.⌋
 Note: The description for the Message ID-payload shall be generated and provided.
-This description can be generated from the SW-C description file, wer</div></section>
+This description can be generated from the SW-C description file, were the interface is
+described.
+[SWS_Dlt_00281] ⌈In each hook function the trace status of the ContextId shall be
+checked, such that:
+/*
+Check the trace status of the ContextId before calling Dlt_SendTraceMessage
+"vfb_actual_trace_status_contextXY" holds the trace status for a specific ContextId
+*/
+if (vfb_actual_trace_status_contextXY) {
+&lt;internal_Dlt_SendTraceMessage&gt;(...);
+⌋
+[SWS_Dlt_00282] ⌈Dlt shall use for every VFB trace hook function an own DltSwc-
+ContextId and thus handle for every VFB trace DltSwcContextId a separate trace
+status. This can be done with a separate variable.⌋
+[SWS_Dlt_00283] ⌈A separate function shall be implemented to modify the trace sta-
+tus of VFB trace hook functions. This function shall be harmonized with the SW-C
+LogTraceSessionControl interface.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +120,7 @@ This description can be generated from the SW-C description file, wer</div></sec
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticLogAndTrace.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticLogAndTrace.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticLogAndTrace.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

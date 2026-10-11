@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_8_API_specification_CRYPTOGRAPHY</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_Cryptography.pdf</strong> (Seite 145)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=145" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_Cryptography.pdf</a></strong> (Seite 145)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CRYPT_20732" class="swsref internal-spec-ref"><code>SWS_CRYPT_20732</code></a></span>
         </div>
@@ -124,7 +125,42 @@ Header file:
 Scope:
 class ara::crypto::cryp::CryptoProvider
 Symbol:
-ImportPublicObjec</div></section>
+ImportPublicObject(IOInterface &amp;container, ReadOnlyMemRegion serialized, CryptoObjectType
+expectedObject=CryptoObjectType::kUndefined)
+Syntax:
+virtual ara::core::Result&lt; void &gt; ImportPublicObject (IOInterface
+&amp;container, ReadOnlyMemRegion serialized, CryptoObjectType expected
+Object=CryptoObjectType::kUndefined) noexcept=0;
+serialized
+the memory region that contains a securely serialized object that
+should be imported to the IOInterface
+Parameters (in):
+expectedObject
+the expected object type (default value CryptoObjectType::k
+Unknown means without check)
+Parameters (out):
+container
+the IOInterface for storing of the imported object
+Return value:
+ara::core::Result&lt; void &gt;
+–
+Exception Safety:
+noexcept
+Thread Safety:
+Thread-safe
+ara::crypto::CryptoErrc::k
+UnexpectedValue
+if the serialized contains incorrect data
+ara::crypto::CryptoErrc::k
+BadObjectType
+if (expectedObject != CryptoObjectType::kUnknown), but the actual
+object type differs from the expected one
+Errors:
+ara::crypto::CryptoErrc::k
+InsufficientCapacity
+if capacity of the container is not enough to save the de-serialized
+object
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -137,7 +173,7 @@ ImportPublicObjec</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_Cryptography.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=145" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_Cryptography.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

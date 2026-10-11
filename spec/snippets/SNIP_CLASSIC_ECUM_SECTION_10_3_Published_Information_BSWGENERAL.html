@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_10_3_Published_Information_BSWGENERAL</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWGeneral.pdf</strong> (Seite 91)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=91" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></strong> (Seite 91)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BSW_00256" class="swsref internal-spec-ref"><code>SWS_BSW_00256</code></a></span>
         </div>
@@ -92,7 +93,110 @@ Upstream requirements: SRS_BSW_00402, SRS_BSW_00003, SRS_BSW_00379, SRS_BSW_-
 00374, SRS_BSW_00318, SRS_BSW_00407
 ⌈
 Published information elements
-Information element</div></section>
+Information element
+Type / Range
+Information element description
+&lt;MIP&gt;_VENDOR_ID
+#define/uint16
+Vendor ID (vendorId) of the dedicated
+implementation of this module according to the
+AUTOSAR vendor list.
+&lt;MIP&gt;_MODULE_ID
+#define/uint16
+Module ID of this module, as defined in Appendix
+"List of Basic Software Modules".
+&lt;MIP&gt;_AR_RELEASE_MAJOR_VERSION
+#define/uint8
+Major version number of AUTOSAR release on
+which the appropriate implementation is based
+on.
+&lt;MIP&gt;_AR_RELEASE_MINOR_VERSION
+#define/uint8
+Minor version number of AUTOSAR release on
+which the appropriate implementation is based
+on.
+&lt;MIP&gt;_AR_RELEASE_REVISION_VERSION
+#define/uint8
+Revision version number of AUTOSAR release
+on which the appropriate implementation is
+based on.
+&lt;MIP&gt;_SW_MAJOR_VERSION
+#define/uint8
+Major version number of the vendor specific
+implementation of the module. The numbering is
+vendor specific.
+&lt;MIP&gt;_SW_MINOR_VERSION
+#define/uint8
+Minor version number of the vendor specific
+implementation of the module. The numbering is
+vendor specific.
+▽
+General Specification of Basic Software Modules
+△
+Published information elements
+&lt;MIP&gt;_SW_PATCH_VERSION
+#define/uint8
+Patch level version number of the vendor specific
+implementation of the module. The numbering is
+vendor specific.
+⌋
+[SWS_BSW_00161] Restriction to declaration of vendor identification
+Upstream requirements: SRS_BSW_00374
+⌈The vendor identification shall be declared only in the following way, without any cast,
+to allow verification in a pre-processor.
+#define &lt;MIP&gt;_VENDOR_ID &lt;vi&gt;
+Where &lt;vi&gt; is the corresponding Vendor Id, as required in [SWS_BSW_00059].⌋
+The following example shows the declaration of Published information for the CAN
+module implementation version 1.2.3 of vendor 43 developed according to AUTOSAR
+Release 4.0.3. The module ID is obtained from Appendix A “List of Basic Software
+Modules”.
+Example:
+1
+/* File: CanIf.h */
+2
+...
+3
+/* Published information */
+4
+#define CANIF_MODULE_ID 0x003Cu
+5
+#define CANIF_VENDOR_ID 0x002Bu
+6
+#define CANIF_AR_RELEASE_MAJOR_VERSION 0x04u
+7
+#define CANIF_AR_RELEASE_MINOR_VERSION 0x00u
+8
+#define CANIF_AR_RELEASE_REVISION_VERSION 0x03u
+9
+#define CANIF_SW_MAJOR_VERSION 0x01u
+10
+#define CANIF_SW_MINOR_VERSION 0x02u
+11
+#define CANIF_SW_PATCH_VERSION 0x03u
+Note that the Published information elements &lt;MIP&gt;_SW_MAJOR_VERSION, &lt;MIP&gt;_
+SW_MINOR_VERSION and &lt;MIP&gt;_SW_PATCH_VERSION are defined by software ven-
+dor.
+[SWS_BSW_00162] Convention for version numbers
+Upstream requirements: SRS_BSW_00321
+⌈The version numbers of successive BSW Module implementations shall be enumer-
+ated according to the following rules:
+• Increasing a more significant digit of a version number resets all less significant
+digits.
+• The &lt;MIP&gt;_SW_PATCH_VERSION is incremented if the module is still upwards
+and downwards compatible (e.g. bug fixed)
+General Specification of Basic Software Modules
+• The &lt;MIP&gt;_SW_MINOR_VERSION is incremented if the module is still downwards
+compatible (e.g. new functionality added)
+• The &lt;MIP&gt;_SW_MAJOR_VERSION is incremented if the module is not compatible
+any more (e.g. existing API changed)
+The digit &lt;MIP&gt;_SW_MAJOR_VERSION is more significant than &lt;MIP&gt;_SW_MINOR_
+VERSION, which is more significant than &lt;MIP&gt;_SW_PATCH_VERSION.⌋
+Example:
+Take an ADC module implementation with version 1.14.2. Then:
+• Versions 1.14.2 and 1.14.9 are exchangeable.
+• Version 1.14.2 may contain bugs which are corrected in 1.14.9
+• Version 1.14.2 can be used instead of 1.12.0, but not vice versa
+• Version 1.14.2 cannot be used instead of 1.15.4 or 2.0.0</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +209,7 @@ Information element</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=91" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

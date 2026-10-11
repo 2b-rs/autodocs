@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ADC_SECTION_8_3_17_Adc_PreparePowerState</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ADCDriver.pdf</strong> (Seite 78)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></strong> (Seite 78)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,25 @@ enter the target power state.
 The possibility to operate the periphery depends on the power state and the HW fea-
 tures. These properties should be known to the integrator and the decision whether to
 use the periphery or not is in his responsibility.⌋
-[SWS_Adc_0</div></section>
+[SWS_Adc_00495] ⌈In case the target power state is the same as the current one, no
+action is executed and the API returns immediately with an E_OK result.
+The responsibility of the preconditions is left to the environment.⌋
+[SWS_Adc_00496] ⌈In case development error reporting is activated:
+The API shall report the DET error ADC_E_UNINIT in case this API is called before
+having initialized the HW unit.⌋
+[SWS_Adc_00497] ⌈In case development error reporting is activated:
+The API shall report the DET error ADC_E_POWER_STATE_NOT_SUPPORTED in
+case this API is called with an unsupported power state is requested or the peripheral
+does not support low power states at all.⌋
+[SWS_Adc_00498] ⌈The API shall report a runtime error ADC_E_TRANSITION_
+NOT_POSSIBLE in case the requested power state cannot be directly reached from
+the current power state.
+All asynchronous operation, needed to reach the target power state, can be executed
+in background in the context of Adc_Main_PowerTransitionManager.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +140,7 @@ use the periphery or not is in his responsibility.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ADCDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_4_Integrator_Responsibility</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_ApplicationLevelErrorHandling.pdf</strong> (Seite 67)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_EXP_ApplicationLevelErrorHandling.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ApplicationLevelErrorHandling.pdf</a></strong> (Seite 67)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_91140" class="swsref internal-spec-ref"><code>SWS_Rte_91140</code></a></span>
         </div>
@@ -89,7 +90,22 @@ decision using Rte_PartitionTerminated_&lt;partition&gt;() or Rte_Par-
 titionRestarting_&lt;partition&gt;(). Return the proper code representing
 the decision.
 • PRO_IGNORE if nothing shall be done.
-• PRO_TERMINATEAPP</div></section>
+• PRO_TERMINATEAPPL_RESTART if the partition shall be restarted or termi-
+nated.
+• PRO_SHUTDOWN if the OS (and thus eventually the ECU) shall be shut down.
+7. Implement the necessary clean-up actions in the OSRestartTask of the parti-
+tion (there is one such task per partition) and configure the BSW accordingly.
+Remember that this task should be triggered both when terminating and when
+restarting a partition, and that the necessary clean-up actions are not necessar-
+ily the same for both activities. Thus, the OSRestartTask must be able to find out
+whether the partition shall be terminated or restarted in order to perform the cor-
+rect clean-up actions. The suggested way to do this is to implement the partition
+state machine described in Section 7.3.2.
+8. If there is a need for application-level coordination of error handling across mul-
+tiple partitions, implement an application-level error manager (ALEM) either as a
+dedicated SW-C or as part of another SW-C. Note that such an ALEM must not
+be in any of the partitions it is set to monitor. Use the TerminateApplication
+() API to control the termination and restart of partitions from an ALEM.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +118,7 @@ the decision.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_ApplicationLevelErrorHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_EXP_ApplicationLevelErrorHandling.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ApplicationLevelErrorHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

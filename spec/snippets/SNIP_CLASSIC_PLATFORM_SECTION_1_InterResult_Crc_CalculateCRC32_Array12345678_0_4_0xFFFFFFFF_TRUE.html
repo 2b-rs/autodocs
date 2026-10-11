@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_1_InterResult_Crc_CalculateCRC32_Array12345678_0_4_0xFFFFFFFF_TRUE</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CRCLibrary.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CRCLibrary.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CRCLibrary.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Crc_00032" class="swsref internal-spec-ref"><code>SWS_Crc_00032</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Crc_00044" class="swsref internal-spec-ref"><code>SWS_Crc_00044</code></a></span>
         </div>
       </div>
 
@@ -121,11 +122,128 @@ Crc.h
 Upstream requirements: SRS_LIBS_08525
 ⌈The function Crc_CalculateCRC8 shall perform a CRC8 calculation using polyno-
 mial 0x1D on Crc_Length data bytes, pointed to by Crc_DataPtr, with the starting
-value of Crc_Sta</div></section>
+value of Crc_StartValue8.⌋
+Note: If large data blocks have to be calculated (&gt;32 bytes, depending on performance
+of processor platform), the table based calculation method should be configured for the
+function Crc_CalculateCRC8 in order to decrease the calculation time.
+The function Crc_CalculateCRC8 requires specification of configuration parameters
+defined in Crc8Mode.
+8.3.1.2
+8-bit 0x2F polynomial CRC Calculation
+[SWS_Crc_00043] Definition of API function Crc_CalculateCRC8H2F
+Upstream requirements: SRS_LIBS_00005, SRS_LIBS_00009, SRS_LIBS_00011, SRS_LIBS_-
+08521
+⌈
+Service Name
+Crc_CalculateCRC8H2F
+Syntax
+uint8 Crc_CalculateCRC8H2F (
+const uint8* Crc_DataPtr,
+uint32 Crc_Length,
+uint8 Crc_StartValue8H2F,
+boolean Crc_IsFirstCall
+)
+Service ID [hex]
+0x05
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+Crc_DataPtr
+Pointer to start address of data block to be calculated.
+Crc_Length
+Length of data block to be calculated in bytes.
+Crc_StartValue8H2F
+Start value when the algorithm starts.
+Parameters (in)
+Crc_IsFirstCall
+TRUE: First call in a sequence or individual CRC calculation; start
+from initial value, ignore Crc_StartValue8H2F. FALSE:
+Subsequent call in a call sequence; Crc_StartValue8H2F is
+interpreted to be the return value of the previous function call.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+uint8
+8 bit result of CRC calculation.
+Description
+This service makes a CRC8 calculation with the Polynomial 0x2F on Crc_Length
+Available via
+Crc.h
+⌋
+[SWS_Crc_00044]
+Upstream requirements: SRS_LIBS_08525
+⌈The function Crc_CalculateCRC8H2F shall perform a CRC8 calculation with the
+polynomial 0x2F on Crc_Length data bytes, pointed to by Crc_DataPtr, with the
+starting value of Crc_StartValue8H2F.⌋
+Note: If large data blocks have to be calculated (&gt;32 bytes, depending on performance
+of processor platform), the table based calculation method should be configured for the
+function Crc_CalculateCRC8H2F in order to decrease the calculation time.
+The function Crc_CalculateCRC8H2F requires specification of configuration param-
+eters defined Crc8H2FMode.
+8.3.2
+16-bit CRC Calculation
+8.3.2.1
+16-bit CCITT-FALSE CRC16
+[SWS_Crc_00019] Definition of API function Crc_CalculateCRC16
+Upstream requirements: SRS_LIBS_00005, SRS_LIBS_00009, SRS_LIBS_00011, SRS_LIBS_-
+08521
+⌈
+Service Name
+Crc_CalculateCRC16
+Syntax
+uint16 Crc_CalculateCRC16 (
+const uint8* Crc_DataPtr,
+uint32 Crc_Length,
+uint16 Crc_StartValue16,
+boolean Crc_IsFirstCall
+)
+Service ID [hex]
+0x02
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+Crc_DataPtr
+Pointer to start address of data block to be calculated.
+Crc_Length
+Length of data block to be calculated in bytes.
+Crc_StartValue16
+Start value when the algorithm starts.
+Parameters (in)
+Crc_IsFirstCall
+TRUE: First call in a sequence or individual CRC calculation; start
+from initial value, ignore Crc_StartValue16. FALSE: Subsequent
+call in a call sequence; Crc_StartValue16 is interpreted to be the
+return value of the previous function call.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+uint16
+16 bit result of CRC calculation.
+Description
+This service makes a CRC16 calculation on Crc_Length data bytes.
+Available via
+Crc.h
+⌋
+[SWS_Crc_00015]
+Upstream requirements: SRS_LIBS_08525
+⌈The function Crc_CalculateCRC16 shall perform a CRC16 calculation using poly-
+nomial 0x1021 on Crc_Length data bytes, pointed to by Crc_DataPtr, with the
+starting value of Crc_StartValue16.⌋
+Note: If large data blocks have to be calculated (&gt;32 bytes, depending on performance
+of processor platform), the table based calculation method should be configured for the
+function Crc_CalculateCRC16 in order to decrease the calculation time.
+The function Crc_CalculateCRC16 requires specification of configuration parame-
+ters defined in Crc16Mode.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Crc_00032] im Text von SWS_CRCLibrary.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Crc_00044] im Text von SWS_CRCLibrary.</p>
       </section>
 
       <section class="snip-card">
@@ -134,7 +252,7 @@ value of Crc_Sta</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CRCLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CRCLibrary.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CRCLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -146,7 +264,7 @@ value of Crc_Sta</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Crc_00032" class="swsref internal-spec-ref"><code>SWS_Crc_00032</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Crc_00044" class="swsref internal-spec-ref"><code>SWS_Crc_00044</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

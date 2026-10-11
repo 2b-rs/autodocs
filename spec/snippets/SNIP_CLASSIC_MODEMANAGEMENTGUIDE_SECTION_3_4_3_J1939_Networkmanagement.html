@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -77,20 +78,62 @@ ClaimAddress parameter group (AC with null address as SA), or try to use another
 address.
 To support this use case the BswM is extended to accept state change indications from
 the J1939Nm via the API function BswM_J1939Nm_StateChangeNotification()
-(see also 3.2.2.2.15).
+(see also 3.2.2.2.16).
+Guide to Modemanagement
 Depending on the state indicated by the network management the BswM needs to
 switch ComIPduGroups of COM, PduRRoutingPathGroups of PduR, and general re-
 quest handling of the J1939Rm.
-The first two actions are realized via BswMPduGroupSwitch- and BswMPduRouter-
-Control -actions.
-The J1939 Request Manager shall be switched using the
-BswMJ1939Rm action.
+The
+ﬁrst
+two
+actions
+are
+realized
+via
+BswMPduGroupSwitch-
+and
+BswMPduRouterControl -actions. The J1939 Request Manager shall be switched
+using the BswMJ1939Rm action.
 COM is expected to have IPDU groups containing all locally received and transmitted
 I-PDUs for each network.
-The PduR shall be configured in the same way, having
+The PduR shall be conﬁgured in the same way, having
 RoutingPathGroups for all locally received and transmitted IPDUs for each channel,
 excluding the received I-PDU for the Request message forwarded to the J1939Rm.
-The BswM must then be configured to switch on and off the aforementioned</div></section>
+The BswM must then be conﬁgured to switch on and off the aforementioned IPDU
+groups and PduRRoutingPathGroups depending on the reported NM states, as well as
+general request handling of the J1939 Request Manager. The following rule shows the
+actions of the BswM depending on the NM states.
+Listing 3.21: Rule to implement network management according to J19392
+rule J1939_nm_normal_operation initially false {
+if ( J1939NmState == NM_STATE_NORMAL_OPERATION ) {
+actionlist J1939NormalOperationActions
+}
+}
+actions J1939NormalOperationActions on condition {
+PduGroupSwitch {
+init true
+enable ArMmExample.EcuC.MyCom.J1939IPDUS
+}
+PduRoute enable J1939_RoutingPath
+custom "J1939Rm_SetState(J1939RM_STATE_ONLINE)"
+custom "Xcp_SetTransmissionMode(CHANNEL1,XCP_TX_ON)"
+}
+rule J1939_nm_offline initially false {
+if ( J1939NmState != NM_STATE_NORMAL_OPERATION ) {
+actionlist J1939OfflineActions
+}
+}
+actions J1939OfflineActions on condition {
+PduGroupSwitch {
+disable ArMmExample.EcuC.MyCom.J1939IPDUS
+}
+PduRoute disable J1939_RoutingPath
+custom " J1939Rm_SetState(J1939RM_STATE_OFFLINE)"
+custom "Xcp_SetTransmissionMode(CHANNEL1,XCP_TX_OFF)"
+}
+2It is recommended to use the BswMJ1939Rm action instead of the custom calls. The custom calls
+are only used in this listing as they are not supported in the current ARText version.
+Guide to Modemanagement</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

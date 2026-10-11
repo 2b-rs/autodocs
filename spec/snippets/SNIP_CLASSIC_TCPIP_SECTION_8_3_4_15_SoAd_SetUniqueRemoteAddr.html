@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: tcpip</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_8_3_4_15_SoAd_SetUniqueRemoteAddr</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 76)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=75" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 75)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00673" class="swsref internal-spec-ref"><code>SWS_SoAd_00673</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00700" class="swsref internal-spec-ref"><code>SWS_SoAd_00700</code></a></span>
         </div>
       </div>
 
@@ -112,11 +113,38 @@ SoAd.h
 SoAd_SetUni-
 queRemoteAddr() shall check that the service SoAd_Init() was previously called.
 If the check fails, SoAd_SetUniqueRemoteAddr() shall raise the development error
-SOAD_E_UNINI</div></section>
+SOAD_E_UNINIT.⌋
+[SWS_SoAd_00673] ⌈If development error detection is enabled:
+SoAd_SetU-
+niqueRemoteAddr() shall check parameter SoConId for being valid.
+If the
+check fails, SoAd_SetUniqueRemoteAddr() shall raise the development error
+SOAD_E_INV_ARG⌋
+[SWS_SoAd_00675] ⌈The function SoAd_SetUniqueRemoteAddr() shall check if
+one of the socket connections of the socket connection group, identified by SoConId,
+is already configured with the address specified by RemoteAddrPtr. In this case, it shall
+return the socket connection index via AssignedSoConIdPtr and return E_OK.⌋
+[SWS_SoAd_00676] ⌈If no socket connection is already configured with the address
+specified by RemoteAddrPtr, SoAd_SetUniqueRemoteAddr() shall:
+1. choose an unused socket connection using the best match algorithm described
+in [SWS_SoAd_00680]
+2. set it to the remote address specified by RemoteAddrPtr
+3. set AssignedSoConIdPtr to the index of the chosen socket connection and
+4. return E_OK.
+A socket connection is "unused" if its actual remote address has an IP address wildcard
+and/or port wildcard.⌋
+[SWS_SoAd_00678] ⌈SoAd_SetUniqueRemoteAddr() shall reject the request and
+return E_NOT_OK if there are no unused socket connections within the socket connec-
+tion group identified by SoConId.⌋
+[SWS_SoAd_00700] ⌈SoAd_SetUniqueRemoteAddr() shall refuse the request if
+the domain set in RemoteAddrPtr does not match the TcpIp_DomainType of the
+local address related to the socket connection identified by SoConId and return
+E_NOT_OK. If development error detection is enabled, the service SoAd_SetUni-
+queRemoteAddr() shall also raise the development error SOAD_E_INV_ARG.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Checks uninitialized state for remote address</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00700] im Text von SWS_SocketAdaptor.</p>
       </section>
 
       <section class="snip-card">
@@ -125,11 +153,11 @@ SOAD_E_UNINI</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=75" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 76</td>
+              <td>Seite 75</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -137,15 +165,15 @@ SOAD_E_UNINI</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00673" class="swsref internal-spec-ref"><code>SWS_SoAd_00673</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00700" class="swsref internal-spec-ref"><code>SWS_SoAd_00700</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

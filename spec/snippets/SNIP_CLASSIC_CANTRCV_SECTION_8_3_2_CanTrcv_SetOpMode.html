@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANTRCV_SECTION_8_3_2_CanTrcv_SetOpMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANTransceiverDriver.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANTransceiverDriver.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransceiverDriver.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -146,11 +147,104 @@ user
 of
 the
 CanTrcv
-m</div></section>
+module
+may
+call
+the
+function
+CanTrcv_SetOpMode
+with
+OpMode
+=
+CANTRCV_TRCVMODE_SLEEP,
+CANTRCV_TRCVMODE_STANDBY
+or
+CANTRCV_TRCVMODE_NORMAL,
+if
+the Transceiver is in mode CANTRCV_TRCVMODE_STANDBY.
+This API is applicable to each transceiver with each value for parameter CanTrcv_
+SetOpMode, regardless of whether the transceiver hardware supports these modes or
+not. This is to simplify the view of the CanIf to the assigned bus.
+[SWS_CanTrcv_00105] ⌈If the requested mode is not supported by the underlying
+transceiver hardware, the function CanTrcv_SetOpMode shall return E_NOT_OK.⌋
+The number of supported busses is set up in the configuration phase.
+[SWS_CanTrcv_00186] ⌈If selective wakeup is supported by hardware: the flags POR
+and SYSERR of the transceiver status shall be checked by CanTrcv_SetOpMode
+API.⌋
+[SWS_CanTrcv_00187] ⌈If the POR flag is set, transceiver shall be re-initialized to run
+the transceiver’s configuration sequence.⌋
+[SWS_CanTrcv_00188] ⌈If the SYSERR flag is NOT set and the requested mode is
+CANTRCV_NORMAL, transceiver shall call the API CanIf_ConfirmPnAvailabil-
+ity for the corresponding abstract CanIf TransceiverId. CanIf_ConfirmPnAvail-
+ability informs CanNm (through CanIf and CanSm) that selective wakeup is en-
+abled.⌋
+[SWS_CanTrcv_00114] ⌈If there is no/incorrect communication to the Transceiver,
+the function CanTrcv_SetOpMode shall report runtime error code CANTRCV_E_NO_
+TRCV_CONTROL to the Default Error Tracer and return E_NOT_OK.⌋
+[SWS_CanTrcv_00120] ⌈If development error detection for the module CanTrcv is en-
+abled:
+If
+the
+function
+CanTrcv_SetOpMode
+is
+called
+with
+OpMode
+=
+CANTRCV_TRCVMODE_STANDBY,
+and
+the
+Transceiver
+is
+not
+in
+mode
+CANTRCV_TRCVMODE_NORMAL
+or
+CANTRCV_TRCVMODE_STANDBY,
+the
+function CanTrcv_SetOpMode shall raise the development error CANTRCV_E_
+TRCV_NOT_NORMAL otherwise (if DET is disabled) return E_NOT_OK.⌋
+[SWS_CanTrcv_00121] ⌈If development error detection for the module CanTrcv is en-
+abled:
+If
+the
+function
+CanTrcv_SetOpMode
+is
+called
+with
+OpMode
+=
+CANTRCV_TRCVMODE_SLEEP,
+and
+the
+Transceiver
+is
+not
+in
+mode
+CANTRCV_TRCVMODE_STANDBY or CANTRCV_TRCVMODE_SLEEP, the func-
+tion CanTrcv_SetOpMode shall raise the development error CANTRCV_E_TRCV_
+NOT_STANDBY otherwise (if DET is disabled) return E_NOT_OK.⌋
+[SWS_CanTrcv_00122] ⌈If development error detection for the module CanTrcv is en-
+abled:
+If called before the CanTrcv module has been initialized, the function CanTrcv_Se-
+tOpMode shall raise the development error CANTRCV_E_UNINIT otherwise (if DET is
+disabled) return E_NOT_OK.⌋
+[SWS_CanTrcv_00123] ⌈If development error detection for the module CanTrcv is en-
+abled: If called with an invalid Transceiver number, the function CanTrcv_SetOp-
+Mode shall raise the development error CANTRCV_E_INVALID_TRANSCEIVER other-
+wise (if DET is disabled) return E_NOT_OK.⌋
+[SWS_CanTrcv_00087] ⌈If development error detection for the module CanTrcv is en-
+abled: If called with an invalid OpMode, the function CanTrcv_SetOpMode shall raise
+the development error CANTRCV_E_PARAM_TRCV_OPMODE otherwise (if DET is dis-
+abled) return E_NOT_OK.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -159,7 +253,7 @@ m</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANTransceiverDriver.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

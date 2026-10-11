@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PWM_SECTION_8_3_9_Pwm_SetPowerState</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_PWMDriver.pdf</strong> (Seite 36)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_PWMDriver.pdf#page=36" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_PWMDriver.pdf</a></strong> (Seite 36)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -110,11 +111,56 @@ The API shall not execute preliminary, implicit power state changes (i.e. if a r
 power state is not reachable starting from the current one, no intermediate power state
 change shall be executed and the request shall be rejected).⌋
 [SWS_Pwm_00168] ⌈In case the target power state is the same as the current one,
-no act</div></section>
+no action is executed and the API returns immediately with an E_OK result.⌋
+[SWS_Pwm_00169] ⌈In case the normal Power State is requested, the API shall refer
+to the necessary parameters contained in the same containers used by Pwm_Init.
+No separate container or hard coded data shall be used for the normal (i.e. full) power
+mode, in order to avoid misalignments between initialization parameters used during
+the init phase and during a power state change.⌋
+[SWS_Pwm_00170] ⌈For the other power states, only power state transition specific
+reconfigurations shall be executed in the context of this API (i.e. the API cannot be
+used to apply a completely new configuration to the Pwm module).
+Any other re-
+configuration not strictly related to the power state transition shall not take place.⌋
+[SWS_Pwm_00171] ⌈The API shall refer to the configuration container related to the
+required Power State in order to derive some specific features of the state (e.g support
+of Power States).⌋
+In case development error reporting is activated:
+[SWS_Pwm_00172] ⌈The API shall report the development error PWM_E_UNINIT in
+case this API is called before having initialized the HW unit.⌋
+[SWS_Pwm_00173] ⌈The API shall report the runtime error PWM_E_NOT_DISEN-
+GAGED in case this API is called when one or more HW channels (where applicable)
+are in a state different than IDLE (or similar non-operational states) and/or there are
+still notification registered for the HW module channels.⌋
+[SWS_Pwm_00194] ⌈The API shall report the development error PWM_E_POWER_-
+STATE_NOT_SUPPORTED in case this API is called with an unsupported power state
+or the peripheral does not support low power states at all.⌋
+[SWS_Pwm_00195]
+⌈The
+API
+shall
+report
+the
+development
+error
+PWM_E_-
+TRANSITION_NOT_POSSIBLE in case the requested power state cannot be directly
+reached from the current power state.⌋
+[SWS_Pwm_00196]
+⌈The
+API
+shall
+report
+the
+development
+error
+PWM_E_-
+PERIPHERAL_NOT_PREPARED in case the HW unit has not been previously prepared
+for the target power state by use of the API Pwm_PreparePowerState.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +169,7 @@ no act</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_PWMDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_PWMDriver.pdf#page=36" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_PWMDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

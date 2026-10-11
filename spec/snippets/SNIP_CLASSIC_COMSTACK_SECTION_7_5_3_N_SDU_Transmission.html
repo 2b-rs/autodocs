@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comstack</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_5_3_N_SDU_Transmission</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SAEJ1939TransportLayer.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939TransportLayer.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939TransportLayer.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Tp_00199" class="swsref internal-spec-ref"><code>SWS_J1939Tp_00199</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Tp_00228" class="swsref internal-spec-ref"><code>SWS_J1939Tp_00228</code></a></span>
         </div>
       </div>
 
@@ -90,11 +91,46 @@ J1939Tp module shall initiate the transmission by sending:
 ⌋
 [SWS_J1939Tp_00046] ⌈For each TP.DT frame to be sent, the J1939Tp module
 shall previously call PduR_J1939TpCopyTxData() with the following parameters:
-• the Identifier of the corr</div></section>
+• the Identifier of the corresponding N-SDU,
+• PduInfoType structure with up to 7 bytes as SduLength,
+• the retry parameter, and
+• a pointer to a location where the upper layer stores its currently available data.
+⌋
+[SWS_J1939Tp_00228] ⌈When PduR_J1939TpCopyTxData() returns BUFREQ_-
+E_BUSY, the J1939Tp shall retry the call to PduR_J1939TpCopyTxData() until the
+data is available or a timeout occurs.⌋
+[SWS_J1939Tp_00218] ⌈If J1939TpTxRetrySupport is disabled, the parameter
+retry of PduR_J1939TpCopyTxData() shall always be set to the NULL_PTR.⌋
+[SWS_J1939Tp_00219] ⌈For BAM transmissions, the parameter retry of PduR_-
+J1939TpCopyTxData() shall always be set to the NULL_PTR.⌋
+[SWS_J1939Tp_00220] ⌈If J1939TpTxRetrySupport is enabled, a valid Retry-
+InfoType
+struct
+shall
+be
+provided
+via
+the
+parameter
+retry
+of
+PduR_-
+J1939TpCopyTxData() during CMDT transmissions.⌋
+See Chapter 7.5.4.2 for a description how the SAE J1939 Transport Layer mod-
+ule uses the RetryInfoType during CMDT transmission.
+[SWS_J1939Tp_00048] ⌈The J1939Tp module shall abort the transmission session
+like specified in [SWS_J1939Tp_00032] if any of the following conditions occur:
+• The upper Layer returns the PduR_J1939TpCopyTxData() function call with
+BUFREQ_E_NOT_OK or
+• the J1939Tp_CancelTransmit() function is called.
+In case of a CMDT connection, a CMDT Connection Abort shall be performed as
+described in [SWS_J1939Tp_00097], and the connection abort reason shall be set
+to 2 (System resources were needed for another task so this connection managed
+session was terminated).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Identifies N-PDUs and SA/DA via metadata</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_J1939Tp_00228] im Text von SWS_SAEJ1939TransportLayer.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +139,7 @@ shall previously call PduR_J1939TpCopyTxData() with the following parameters:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SAEJ1939TransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939TransportLayer.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939TransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,15 +151,15 @@ shall previously call PduR_J1939TpCopyTxData() with the following parameters:
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_J1939Tp_00199" class="swsref internal-spec-ref"><code>SWS_J1939Tp_00199</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_J1939Tp_00228" class="swsref internal-spec-ref"><code>SWS_J1939Tp_00228</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

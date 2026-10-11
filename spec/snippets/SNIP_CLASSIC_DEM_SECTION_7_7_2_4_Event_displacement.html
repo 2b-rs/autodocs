@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_2_4_Event_displacement</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 103)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=103" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 103)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_00406" class="swsref internal-spec-ref"><code>SWS_Dem_00406</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01395" class="swsref internal-spec-ref"><code>SWS_Dem_01395</code></a></span>
         </div>
       </div>
 
@@ -104,11 +105,90 @@ DemPrimaryMemory
 or
 DemUserDefined-
 Memory or DEM_DISPLACEMENT_PRIO_OCC), the Dem module shall perform the
-following sequence by combin</div></section>
+following sequence by combination of the different displacement criteria:
+1. Priority (refer [SWS_Dem_00403])
+2. Active/Passive status (configurable, only for DEM_DISPLACEMENT_FULL in Dem-
+PrimaryMemory or DemUserDefinedMemory) (refer [SWS_Dem_00404])
+3. Occurrence (refer [SWS_Dem_00405])
+⌋
+Note: Priority needs to have Fuel system/Misfire over the rest (US/EU5) and Class A
+before B1,B2, C (Euro VI).
+[SWS_Dem_00403]
+Upstream requirements: RS_Diag_04118
+⌈If displacement strategy is DEM_DISPLACEMENT_FULL or DEM_DISPLACEMENT_-
+PRIO_OCC (refer to DemPrimaryMemory or DemUserDefinedMemory), the Dem
+module shall displace lower prioritized events by higher prioritized events.⌋
+[SWS_Dem_00404]
+Upstream requirements: RS_Diag_04118
+⌈If displacement strategy is DEM_DISPLACEMENT_FULL(refer to DemPrimaryMem-
+ory or DemUserDefinedMemory), the Dem module shall displace passive events
+preferably.⌋
+For details see chapter 7.7.1.4.
+[SWS_Dem_00405]
+Upstream requirements: RS_Diag_04118
+⌈If displacement strategy is DEM_DISPLACEMENT_FULL or DEM_DISPLACEMENT_-
+PRIO_OCC (refer to DemPrimaryMemory or DemUserDefinedMemory), the Dem
+module shall displace older stored events in the chronological order prior to newer
+stored events (refer [SWS_Dem_00412] and [SWS_Dem_00787]).⌋
+[SWS_Dem_00407]
+Upstream requirements: RS_Diag_04118
+⌈If no event memory entry for displacement was identified, the Dem module shall
+discard the storage request.⌋
+[SWS_Dem_00692]
+Upstream requirements: RS_Diag_04118, RS_Diag_04071
+⌈If an event is reported and an event memory entry with the same priority ex-
+ists and the existing event is not tested in this operation cycle (TestNotComplet-
+edThisOperationCycle bit == 1), the Dem shall displace the existing event with the re-
+ported event.⌋
+[SWS_Dem_00693]
+Upstream requirements: RS_Diag_04178
+⌈During displacement, if an event is reported and an event memory entry with
+the same priority exists and the existing event is tested in this operation cycle
+(TestNotCompletedThisOperationCycle bit == 0), the Dem shall not displace the existing
+event with the reported event.⌋
+[SWS_Dem_00695]
+Upstream requirements: RS_Diag_04195
+⌈If the configuration parameter DemOBDEventDisplacement is set to TRUE all emis-
+sion related events with the following conditions shall not be considered during the dis-
+placement mechanism and shall not be displaced from error memory:
+Eventold is emission related
+AND
+(Eventold triggers MIL indicator
+OR (Eventold holds legislative Freeze Frame AND has equal or higher priority)
+OR Pending-DTC of Eventold==1)⌋
+[SWS_Dem_00696]
+Upstream requirements: RS_Diag_04195
+⌈If the configuration parameter DemOBDEventDisplacement is set to FALSE, no
+special rules of displacement are applied to emission related events. In this case emis-
+sion related events shall be displaced like every other event.⌋
+[SWS_Dem_00408]
+Upstream requirements: RS_Diag_04118
+⌈If the event memory entry for displacement was identified, the Dem module shall
+remove this event memory entry from the event memory.⌋
+Note: This removed event memory entry should now used for the pending storage
+trigger.
+[SWS_Dem_00409] Configurable reset of the confirmedDTC bit in case of dis-
+placement
+Upstream requirements: RS_Diag_04067, RS_Diag_04118
+⌈If an event memory entry was removed during displacement and the configura-
+tion parameter DemResetConfirmedBitOnOverflow is set to TRUE, the Dem mod-
+ule shall reset the UDS DTC status bit 3 to 0.⌋
+[SWS_Dem_01395] Configurable reset of the pendingDTC bit in case of displace-
+ment
+Upstream requirements: RS_Diag_04067, RS_Diag_04118
+⌈If an event memory entry was removed during displacement and the configura-
+tion parameter DemResetPendingBitOnOverflow is set to TRUE, the Dem module
+shall reset the UDS DTC status bit 2 to 0.⌋
+[SWS_Dem_01186]
+Upstream requirements: RS_Diag_04067, RS_Diag_04118
+⌈If an event memory entry was removed during displacement, the UDS status
+bit 5 shall be reset to 0 in case of DemStatusBitHandlingTestFailedSince-
+LastClear is set to DEM_STATUS_BIT_AGING_AND_DISPLACEMENT and DemRe-
+setConfirmedBitOnOverflow is set to true.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dem_00406] im Text von SWS_DiagnosticEventManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01395] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -117,7 +197,7 @@ following sequence by combin</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=103" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -129,7 +209,7 @@ following sequence by combin</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_00406" class="swsref internal-spec-ref"><code>SWS_Dem_00406</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_01395" class="swsref internal-spec-ref"><code>SWS_Dem_01395</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 65%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_08_Jan_2024</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_LayeredSoftwareArchitecture.pdf</strong> (Seite 154)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_LayeredSoftwareArchitecture.pdf#page=153" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_LayeredSoftwareArchitecture.pdf</a></strong> (Seite 154)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: SWS_CP_DIAG_00021</span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_01001" class="swsref internal-spec-ref"><code>SWS_Det_01001</code></a></span>
         </div>
       </div>
 
@@ -154,11 +155,130 @@ To calling BSW module
 (synchronuously via API
 return code or
 asynchronuously via
-notification callb</div></section>
+notification callback)
+Development
+Error
+Detect SW/integration
+issues early during
+development.
+During
+„Develop-
+ment“ only
+Module specific overall
+enabling/disabling of
+Detection + Reporting of
+development errors via pre-
+compile switch
+DevErrorDetect
+provides Callout for
+integration code in
+Det_ReportError
+Event based
+(set
+condition
+only)
+terminates
+DET
+(via Det_ReportError;
+integration code in Callout
+allows some preparation
+before ECU is reset)
+Runtime
+Error
+Detect errors during
+normal operation, e.g.
+systematic software
+faults, timing faults or
+hardware issues
+During all
+life cycles
+Always active
+provides Callout for
+integration code in
+Det_ReportRuntimeError
+Event based
+(set
+condition
+only)
+continues
+DET
+(via
+Det_ReportRuntimeError;
+integration code in Callout
+allows further reporting)
+Production
+Error
+Detect issues (and
+absense of issues)
+relevant e.g. for
+service/repair actions or
+system degradation
+During all
+life cycles
+&lt;Ma&gt;DemEventParameterRef
+s parameter allows to
+enable/disable the error
+Maturing/he
+aling
+(set/reset
+conditions)
+continues
+DEM
+(via Dem_SetEventStatus
+to the event memory)
+Integration and Runtime Aspects - Error Handling, Reporting and Diagnostic
+Error Classification Summary
+page id: nik02
+5acXjzUk
+R25-11
+AUTOSAR_CP_EXP_LayeredSoftwareArchitecture
+166
+Integration and Runtime Aspects - Error Handling, Reporting and Diagnostic
+Error Reporting via API
+Error reporting via API
+Informs the caller about failure of an operation by returning an error status.
+Basic return type
+Success: E_OK (value: 0)
+Failure: E_NOT_OK (value: 1)
+Specific return type
+If different errors have to be distinguished for production code, own return types have to be
+defined. Different errors shall only be used if the caller can really handle these. Specific
+development errors shall not be returned via the API. They can be reported to the Default
+Error Tracer (Det).
+Example: services of ADC driver
+Success: ADC_E_OK
+General error (service not accepted): ADC_E_NOT_OK
+ADC is busy with current conversion: ADC_E_BUSY
+page id: yaq12
+5acXjzUk
+R25-11
+AUTOSAR_CP_EXP_LayeredSoftwareArchitecture
+167
+Integration and Runtime Aspects - Error Handling, Reporting and Diagnostic
+Error Reporting – Introduction
+Error reporting  via Diagnostic Event Manager (Dem)
+For reporting production / series errors.
+Those errors have a defined reaction depending on the configuration of this ECU, e.g.:
+➢ Writing to error memory
+➢ Disabling of ECU functions (e.g. via Function Inhibition Manager)
+➢ Notification of SW-Cs
+The Diagnostic Event Manager is a standard AUTOSAR module which is always available in production code
+and whose functionality is specified within AUTOSAR.
+Error reporting  via Default Error Tracer (Det)
+For reporting development/runtime errors.
+The Default Error Tracer is mainly intended for handling errors during development time but also for handling
+systematic errors in production code. Within the Default Error Tracer many mechanisms are possible, e.g.:
+➢ Count errors
+➢ Write error information to ring buffer in RAM
+➢ Send error information via serial interface to external logger
+➢ Infinite Loop, Breakpoint
+The detection and reporting of development errors to the Default Error Tracer can be statically switched on/off
+per module (preprocessor switch or different object code builds of the module) but not for Runtime errors.
+page id: oiuzt</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Det runtime error reporting</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Det_ReportRuntimeError().</p>
       </section>
 
       <section class="snip-card">
@@ -167,7 +287,7 @@ notification callb</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_LayeredSoftwareArchitecture.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_LayeredSoftwareArchitecture.pdf#page=153" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_LayeredSoftwareArchitecture.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -179,15 +299,15 @@ notification callb</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>SWS_CP_DIAG_00021</td>
+              <td><a href="../../de/spec/record.html?id=SWS_Det_01001" class="swsref internal-spec-ref"><code>SWS_Det_01001</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.65</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

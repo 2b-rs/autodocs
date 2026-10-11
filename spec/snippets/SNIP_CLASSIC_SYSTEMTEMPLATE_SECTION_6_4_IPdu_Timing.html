@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_6_4_IPdu_Timing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SystemTemplate.pdf</strong> (Seite 274)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=271" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></strong> (Seite 274)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02024" class="swsref"><code>TPS_SYST_02024</code></a></span>
         </div>
@@ -137,7 +138,212 @@ ModeDeclaration
 value: PositiveInteger [0..1]
 ModeDrivenTransmissionModeCondition
 +modeDeclaration
-1..*«at</div></section>
+1..*«atpVariation»
++eventControlledTiming 0..1
++cyclicTiming 0..1
++iSignalInIPdu
+1
++iPduTimingSpecification
+0..1
+«atpVariation»
++modeDrivenTrueCondition
+0..*
++dataFilter 1
++initialMode
+1
++transmissionModeTrueTiming
+0..1
++modeDeclaration
+1..*
++iSignalToPduMapping
+0..*
+«atpVariation»
++iSignal
+0..1
++transmissionModeFalseTiming
+0..1
++transmissionModeCondition
+0..*
++modeDrivenFalseCondition
+0..*
++transmissionModeDeclaration
+0..1
+Figure 6.20: IPdu Timing
+[TPS_SYST_01075] Signal content evaluation via TransmissionModeCondi-
+tion ⌈The signal content can be evaluated as the transmission mode selector via
+the TransmissionModeConditions.⌋(RS_SYST_00037)
+[TPS_SYST_01076] Mode evaluation via modeDrivenTrueCondition or mod-
+eDrivenFalseCondition ⌈Mode conditions can be evaluated as the transmission
+mode selector via the modeDrivenTrueConditions or modeDrivenFalseCondi-
+tions.⌋(RS_SYST_00037)
+[constr_3045] Signal content evaluation vs. Mode evaluation ⌈The mode evalua-
+tion and the signal content evaluation shall not be used in the same IPdu. A mix of
+these two types is not allowed.⌋()
+To use the signal content evaluation a TransmissionModeCondition can be at-
+tached to each signal within an IPdu. Each TransmissionModeCondition con-
+tains a reference to a signal and to an assigned filter. The filter condition is used for
+System Template
+the selection of the transmission mode. If at least one condition in the signal content
+evaluation is true, Transmission Mode "TRUE" shall be used for this IPdu. In all other
+cases, the Transmission Mode "FALSE" shall be used. More details can be found in
+the COM Specification [21].
+[constr_3046] Consistency of TransmissionModeCondition.iSignalInIPdu
+⌈The ISignalToIPduMapping referenced by the TransmissionModeCondition
+in the role iSignalInIPdu shall belong to the same ISignalIPdu as the Trans-
+missionModeCondition.⌋()
+In the mode driven evaluation ModeDeclarations are evaluated. The transmis-
+sionModeFalseTiming is activated if all defined modeDrivenFalseConditions
+evaluate to true and the transmissionModeTrueTiming is activated if all defined
+modeDrivenTrueConditions evaluate to true. Each condition that is defined by
+ModeDrivenTransmissionModeCondition evaluates to true if one of the refer-
+enced ModeDeclarations is active.
+The TransmissionModeDeclaration element aggregates the Transmission-
+ModeTiming in two different roles: transmissionModeTrueTiming and trans-
+missionModeFalseTiming. The available COM Transmission Mode Timings can
+be described by the CyclicTiming and EventControlledTiming elements (see
+Table 6.66) that are aggregated by the TransmissionModeTiming class.
+[TPS_SYST_01077] Mapping of Com Transmission Modes to System Template
+elements ⌈The mapping of COM Transmission Modes to System Template elements
+is described in Table 6.66.⌋(RS_SYST_00037)
+COM
+Transmission
+Modes
+Description
+realization in System Template
+Periodic
+Transmissions occur indefinitely
+with a fixed period between them
+CyclicTiming
+Direct/n-times
+Event driven transmission with n-1
+repetitions
+EventControlledTiming
+Mixed
+Periodic
+transmission
+with
+direct/n-times
+transmissions
+in between
+EventControlledTiming
+and
+CyclicTiming
+None
+No transmission
+no timing assigned
+Table 6.66: COM Transmission Modes
+Class
+TransmissionModeDeclaration
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication::Timing
+▽
+System Template
+△
+Class
+TransmissionModeDeclaration
+Note
+AUTOSAR COM provides the possibility to define two different TRANSMISSION MODES (True and
+False) for each I-PDU.
+As TransmissionMode selector the signal content can be evaluated via transmissionModeCondition
+(implemented directly in the COM module) or mode conditions can be defined with the modeDrivenTrue
+Condition or modeDrivenFalseCondition (evaluated by BswM and invoking Com_SwitchIpduTxMode
+COM API). If modeDrivenTrueCondition and modeDrivenFalseCondition are defined they shall never
+evaluate to true both at the same time.
+The mixing of Transmission Mode Switch via API and signal value is not allowed.
+Base
+ARObject
+Attribute
+Type
+Mult.
+Kind
+Note
+modeDriven
+FalseCondition
+ModeDriven
+TransmissionMode
+Condition
+*
+aggr
+Defines the trigger for the Com_SwitchIpduTxMode
+Transmission Mode switch. Only if all defined modeDriven
+FalseConditions evaluate to true (AND associated) the
+transmissionModeFalseTiming shall be activated. mode
+DrivenTrueCondition and modeDrivenFalseCondition
+shall never evaluate to true both at the same time.
+modeDriven
+TrueCondition
+ModeDriven
+TransmissionMode
+Condition
+*
+aggr
+Defines the trigger for the Com_SwitchIpduTxMode
+Transmission Mode switch. Only if all defined modeDriven
+TrueConditions evaluate to true (AND associated) the
+transmissionModeTrueTiming shall be activated. mode
+DrivenTrueCondition and modeDrivenFalseCondition
+shall never evaluate to true both at the same time.
+transmission
+ModeCondition
+TransmissionMode
+Condition
+*
+aggr
+The Transmission Mode Selector evaluates the conditions
+for a subset of signals and decides which transmission
+mode should be used. In case only one transmission
+mode is used there is no need for the "TransmissionMode
+Condition" and its sub-structure. In case the transmission
+mode shall be switched using the COM-API "Com_Switch
+IpduTxMode" there is no need for the "TransmissionMode
+Condition" and its sub-structure.
+transmission
+ModeFalse
+Timing
+TransmissionMode
+Timing
+0..1
+aggr
+Timing Specification if the COM Transmission Mode is
+false. The Transmission Mode Selector is defined to be
+false, if all Conditions evaluate to false.
+transmission
+ModeTrue
+Timing
+TransmissionMode
+Timing
+0..1
+aggr
+Timing Specification if the COM Transmission Mode is
+true. The Transmission Mode Selector is defined to be
+true, if at least one Condition evaluates to true.
+Table 6.67: TransmissionModeDeclaration
+Class
+TransmissionModeCondition
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication::Timing
+Note
+Possibility to attach a condition to each signal within an I-PDU.
+If at least one condition evaluates to true, TRANSMISSION MODE True shall be used for this I-Pdu. In all
+other cases, the TRANSMISSION MODE FALSE shall be used.
+Base
+ARObject
+Attribute
+Type
+Mult.
+Kind
+Note
+dataFilter
+DataFilter
+1
+aggr
+Possibilities to define conditions
+iSignalInIPdu
+ISignalToIPduMapping
+1
+ref
+Reference to a signal to which a condition is attached.
+Table 6.68: TransmissionModeCondition</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -150,7 +356,7 @@ ModeDrivenTransmissionModeCondition
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=271" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

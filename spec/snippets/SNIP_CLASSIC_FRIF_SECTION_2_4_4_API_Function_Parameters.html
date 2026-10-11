@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_2_4_4_API_Function_Parameters</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TR_BSWUMLModelModelingGuide.pdf</strong> (Seite 20)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_TR_BSWUMLModelModelingGuide.pdf#page=20" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_BSWUMLModelModelingGuide.pdf</a></strong> (Seite 20)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05301" class="swsref internal-spec-ref"><code>SWS_FrIf_05301</code></a></span>
         </div>
@@ -88,11 +89,75 @@ type attribute shall be set to one of the values in, out, inout, return.⌋()
 provide a short description about its purpose.⌋()
 Note: EA provides a textfield called ‘Notes’ to take the parameters description.
 [TR_BSWMG_00023] API Function Return Parameter ⌈If the function’s return type
-is not equal to void,</div></section>
+is not equal to void, the return value shall be modeled like an operation parameter
+with the following exceptions: It shall be the first parameter in the list. Additionally, it
+shall be the only parameter to have its “Direction” set to “return”. The notes field shall
+concisely describe the possible return values.⌋()
+Modeling Guidelines of Basic Software EA UML
+Model
+Figure 2.5: Parameter example of a API function
+[TR_BSWMG_00922] API Function Return Value Links ⌈All possible return values
+for an API function’s return parameter that are described in the notes field of the pa-
+rameter shall be linked to the definition of the value.
+In particular, if the function’s return type is a simple type (see [TR_BSWMG_00066])
+the link shall be put as
+[ARDataTypeElement{&lt;AttributeName&gt;}{&lt;DataTypeName&gt;}].
+If it is an enumeration (see [TR_BSWMG_00072]) the link shall be put as
+[AREnumLiteral{&lt;LiteralName&gt;}{&lt;DataTypeName&gt;}].
+Note
+that
+&lt;DataTypeName&gt;
+shall
+be
+set
+to
+the
+anchor
+name
+(see
+[TR_BSWMG_00031]) of the datatype if one is defined.⌋()
+Example: The correct way to link the return values in the example of Figure 2.5 is to
+put this description into the notes field of the return parameter:
+[ARDataTypeElement{E_OK}{Std_ReturnType}]: Cancellation of request timeout was successful&lt;br/&gt;
+[ARDataTypeElement{E_NOT_OK}{Std_ReturnType}]: Cancellation of request timeout was not
+successful
+Note: If the return type has an extension (as defined in 2.4.8.3) then always the type
+in the model defining the current value has to be linked.
+Example: If an API function in the Csm module returns the Std_ReturnType then e.g.
+values E_OK and CRYPTO_E_BUSY may be returned as the latter value is defined
+in Csm_ReturnType, which is an extension to Std_ReturnType. In that case the links
+have to be set like this:
+[ARDataTypeElement{E_OK}{Std_ReturnType}]: ...&lt;br/&gt;
+[ARDataTypeElement{CRYPTO_E_BUSY}{Csm_ReturnType}]: ...
+Modeling Guidelines of Basic Software EA UML
+Model
+[TR_BSWMG_00129] Optional Parameters of API Functions ⌈The existence of a
+parameter may depend on the module configuration. In this case, the parameter shall
+have the stereotype ≪optional≫.⌋()
+[TR_BSWMG_00130] Multiplicity of API Function Parameters ⌈A parameter with a
+given type may occur several times, where the multiplicity is specified by configuration.
+In this case, the parameter shall have the stereotype ≪multiple≫.⌋()
+Hint: Don’t use the multiplicity button in the parameter edit mask to configure the mul-
+tiplicity.
+[TR_BSWMG_00131] Mutual Exclusive Variants of API Function Parameters ⌈A
+parameter may appear in different variants within the same position of the function
+signature, where one specific variant will be selected by configuration. In this case, the
+parameter shall be modeled several times in all its possible variants and each variant
+of the parameter shall have the stereotype ≪mutualexcl≫.⌋()
+Example: The parameter “buffer” of the Xfrm function “&lt;Mip&gt;_&lt;transformerId&gt;” can
+be configured either as “inout” or “out”. It therefore shall be modeled two times, one
+time with Direction “inout” and the second time with Direction “out”. Since Enterprise
+Architect requires parameter names to be unique, the first parameter variant may be
+named “buffer{inout}” and the second one “buffer{out}”.
+Hint: All variants of a mutual exclusive parameter shall have the same name; the name
+without the curly brackets (including the text) have to be the same.
+Figure 2.6: Mutual Exclusive Parameter example of a API function
+Modeling Guidelines of Basic Software EA UML
+Model</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von FrIf_ConfigType().</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +166,7 @@ is not equal to void,</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TR_BSWUMLModelModelingGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_TR_BSWUMLModelModelingGuide.pdf#page=20" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_BSWUMLModelModelingGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

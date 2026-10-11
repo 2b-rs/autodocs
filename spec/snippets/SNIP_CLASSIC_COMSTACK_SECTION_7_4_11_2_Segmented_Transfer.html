@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_4_11_2_Segmented_Transfer</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayARTransportLayer.pdf</strong> (Seite 51)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayARTransportLayer.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayARTransportLayer.pdf</a></strong> (Seite 51)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_PDUR_00813" class="swsref internal-spec-ref"><code>SWS_PDUR_00813</code></a></span>
         </div>
@@ -101,7 +102,60 @@ calling
 PduR_FrArTpTxConfirmation with E_NOT_OK.⌋
 [SWS_FrArTp_00114] ⌈At the receiver side, this principle works as follows:
 1. LSduR calls the service FrArTp_RxIndication.
-2. The FrArTp shall call PduR_FrArTp</div></section>
+2. The FrArTp shall call PduR_FrArTpStartOfReception to prepare reception.
+3. The FrArTp shall call PduR_FrArTpCopyRxData to forward FF and CF data.
+⌋
+[SWS_FrArTp_00115] ⌈The block size used during reception is constant. The value
+is configured via FrArTpMaxBs, and can be changed via the API FrArTp_ChangePa-
+rameter.⌋
+Layer
+[SWS_FrArTp_00294] ⌈If Retry is not enabled, and PduR_FrArTpStartOfReception
+returns an available buffer size that is too small for the FF-x, FrArTp shall abort the
+transfer and call PduR_FrArTpRxIndication with E_NOT_OK.⌋
+[SWS_FrArTp_00300] ⌈If Retry is enabled, and PduR_FrArTpStartOfReception re-
+turns an available buffer size that is too small for the first block, FrArTp shall call
+PduR_FrArTpCopyRxData with info.SduLength equal to 0 until the available buffer is
+large enough for the first block. The calls shall be repeated until FrArTpTimeBr ex-
+pires.⌋
+[SWS_FrArTp_00297] ⌈If PduR_FrArTpCopyRxData for the FF-x (Retry not enabled)
+or for the last CF of a block (independent of Retry configuration) returns an available
+buffer size that is not large enough for the next block, PduR_FrArTpCopyRxData shall
+be called repeatedly with info.SduLength equal to 0 until the available buffer is large
+enough. The calls shall be repeated until FrArTpTimeBr expires.⌋
+[SWS_FrArTp_00301]
+⌈When
+FrArTpTimeBr
+expires
+during
+calls
+to
+PduR_FrArTpCopyRxData with info.SduLength equal to 0,
+a WAIT frame (FC
+frame with FS = WT) shall be sent, and the retry phase shall start again, but at most
+FrArTpMaxWft times.⌋
+[SWS_FrArTp_00295]
+⌈If
+PduR_FrArTpCopyRxData
+returns
+BUFREQ_E_NOT_-
+OK,
+or
+when
+FrArTpMaxWft
+expired,
+the
+transfer
+shall
+be
+aborted
+and
+PduR_FrArTpRxIndication shall be called with E_NOT_OK.⌋
+[SWS_FrArTp_00117] ⌈In case of failing to copy the received data, the remaining CFs
+of the current block shall be discarded. When the failure occured in the last block,
+and acknowledgement is enabled, an AF with a negative acknowledgement and FS =
+OVFLW shall be sent back to the sender. Otherwise, an FC with FS = OVFLW shall be
+sent back, but only if the initial call to PduR_FrTpStartOfReception returned BUFREQ_-
+E_OVFL.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -114,7 +168,7 @@ PduR_FrArTpTxConfirmation with E_NOT_OK.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayARTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayARTransportLayer.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayARTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

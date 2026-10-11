@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -111,7 +112,143 @@ The return type of this function depends on the operand (e.g.
 0 or 1 if the
 referenced AutosarVariableInstance, AutosarOperationArgumentIn-
 stance or ISignal is of type boolean)
-• The function ARTE_occurs, which requires as operand a refere</div></section>
+• The function ARTE_occurs, which requires as operand a reference to the Tim-
+ingDescriptionEvent whose occurrence shall be evaluated. The return type
+of this function is boolean. It returns true if the referenced timing event occurs at
+the point in time the expression is evaluated.
+• The function ARTE_hasOccurred, which requires as operand a reference to the
+TimingDescriptionEvent whose occurrence shall be evaluated. The return
+type of this function is boolean. It returns true if the referenced timing event has
+been occurred AT LEAST ONCE before (or at the same time) the expression is
+evaluated.
+• The function ARTE_timeSinceLastOccurrence, which requires as operand a ref-
+erence to the TimingDescriptionEvent whose occurrence shall be evalu-
+ated. The return type of this function is ﬂoat. It returns the time difference be-
+tween a) the last occurrence of the referenced event and b) the point in time the
+expression is evaluated. The unit of time is seconds.
+• The function ARTE_angleSinceLastOccurrence, which requires as operand a ref-
+erence to the TimingDescriptionEvent whose occurrence shall be evalu-
+ated. The return type of this function is ﬂoat. It returns the angle difference of
+the crank shaft between a) the last occurrence of the referenced event and b) the
+point in time the expression is evaluated. The unit of angle is degree.
+The function ARTE_value is used for specifying the "Content Filter" as speciﬁed above,
+all the other functions are required for the "Complex Event Constructor".
+All operands required by the functions are references to model elements.
+Thus,
+TDEventOccurrenceExpressionFormula requires references to the respective
+elements of type TimingDescriptionEvent, AutosarVariableInstance, Au-
+tosarOperationArgumentInstance and ISignal. Due the atpMixedString na-
+ture of the TDEventOccurrenceExpressionFormula several references can be
+used within the occurrence expression.
+[constr_4500]
+Restricted
+usage
+of
+functions
+⌈
+The
+functions
+ARTE_occurs,
+ARTE_hasOccurred,
+ARTE_timeSinceLastOccurrence
+and
+ARTE_angleSinceLastOccurrence can only be used for occurrence expressions,
+which are applied to events of type TDEventComplex. ⌋
+The application of functions that require an event as operand only makes sense for oc-
+currence expressions that are applied to events of type TDEventComplex. A complex
+Speciﬁcation of Timing Extensions
+R4.0 Rev 3
+event describes its occurrence behavior by relating the occurrences of atomic events.
+This is possible via the functions occurs, hasOccurred, timeSinceLastOccurrence and
+angleSinceLastOccurrence.
+[constr_4501] Application rule for the occurrence expression ⌈If the occurrence
+expression is applied for an event of type TDEventComplex, the expression must
+ensure the following criteria: a complex event can only occur at the occurrence time of
+one of the referenced TimingDescriptionEvents (via the "event" reference). This
+can e.g. be reached if the expression is deﬁned as sum of products and each product
+uses the function ARTE_occurs exactly once. Occurrence expressions, which do not
+satisfy this criteria, are invalid. ⌋
+[constr_4502] Use references only as function operands ⌈The newly added ref-
+erences to model elements (e.g. the event reference targeting to TimingDescrip-
+tionEvent) do have speciﬁc semantics. The usage of this references within the ex-
+pression is ONLY allowed as operands of the functions mentioned above. ⌋
+In the following, an example is given that combines the functions mentioned above.
+The occurrence expression for a complex event EC shall be described. Figure 3.10
+shows the software architecture required for this example.
+Figure 3.10: The software architecture used by the Occurrence Expression Example
+The complex event EC occurs when the following conditions are fulﬁlled:
+Condition1 Either atomic event E1 or E2 must occur. In this example, E1 (or E2
+respectively) is an atomic event which occurs, when the VariableDataProto-
+type DE1 (or DE2 respectively) is received on PortProtype P1 of software
+component SWC1.
+Condition2 VariableDataPrototype DE3 must be greater then 3.
+Condition3 The VariableDataPrototypes DE1 and DE2 must be received at the
+same point in time (with a tolerance interval of 0.5 milliseconds). This is the
+case, when the atomic events E1 and E2 occur at the same point in time (with a
+tolerance interval 0.5 milliseconds).
+This complex event EC would be described via the occurrence expression as follows:
+//Condition 1
+(ARTE_occurs(event(/example/expression/E1))
+|| ARTE_occurs(event(/example/expression/E2)))
+//Condition 2
+&amp;&amp; ARTE_value(variable(/example/expression/EC/D3))&gt;3
+//Condition 3
+&amp;&amp; abs(ARTE_timeSinceLastOccurrence(event(/example/expression/E1)) -
+ARTE_timeSinceLastOccurrence(event(/example/expression/E2))) &lt;= 0.0005
+Speciﬁcation of Timing Extensions
+R4.0 Rev 3
+Due to Condition1, the complex event EC can only occur when one of the atomic events
+E1 or E2 occurs. Thus, the expression satisﬁes the semantics constraint deﬁned in
+[constr_4501].
+The corresponding AUTOSAR XML ﬁle extract for the complex event EC has the fol-
+lowing appearance:
+Listing 3.1: AUTOSAR XML representation of the occurrence expression for the complex
+event EC
+&lt;AR-PACKAGE&gt;
+&lt;SHORT-NAME&gt;example&lt;/SHORT-NAME&gt;
+&lt;ELEMENTS&gt;
+&lt;VFB-TIMING UUID="49213604-5497-36bc-9955-816308da10c8"&gt;
+&lt;SHORT-NAME&gt;expression&lt;/SHORT-NAME&gt;
+&lt;TIMING-DESCRIPTIONS&gt;
+&lt;TD-EVENT-VARIABLE-DATA-PROTOTYPE&gt;
+&lt;SHORT-NAME&gt;E1&lt;/SHORT-NAME&gt;
+...
+&lt;/TD-EVENT-VARIABLE-DATA-PROTOTYPE&gt;
+&lt;TD-EVENT-VARIABLE-DATA-PROTOTYPE&gt;
+&lt;SHORT-NAME&gt;E2&lt;/SHORT-NAME&gt;
+...
+&lt;/TD-EVENT-VARIABLE-DATA-PROTOTYPE&gt;
+&lt;TD-EVENT-COMPLEX UUID="fbc698cc-ebbd-3b22-a938-1caee6da50a4"&gt;
+&lt;SHORT-NAME&gt;EC&lt;/SHORT-NAME&gt;
+&lt;OCCURRENCE-EXPRESSION&gt;
+&lt;VARIABLES&gt;
+&lt;AUTOSAR-VARIABLE-INSTANCE&gt;
+&lt;SHORT-NAME&gt;D3&lt;/SHORT-NAME&gt;
+&lt;VARIABLE-INSTANCE-IREF&gt;...&lt;/VARIABLE-INSTANCE-IREF&gt;
+&lt;/AUTOSAR-VARIABLE-INSTANCE&gt;
+&lt;/VARIABLES&gt;
+&lt;FORMULA&gt;
+((ARTE_occurs(&lt;EVENT-REF DEST="TD-EVENT-VARIABLE-DATA-
+PROTOTYPE"&gt;/example/expression/E1&lt;/EVENT-REF&gt;)
+|| ARTE_occurs(&lt;EVENT-REF DEST="TD-EVENT-VARIABLE-DATA-
+PROTOTYPE"&gt;/example/expression/E2&lt;/EVENT-REF&gt;))
+&amp;&amp; ARTE_value(&lt;VARIABLE-REF DEST="AUTOSAR-VARIABLE-INSTANCE"&gt;
+/example/expression/EC/D3&lt;/VARIABLE-REF&gt;) &gt; 3
+&amp;&amp; abs(ARTE_timeSinceLastOccurrence(&lt;EVENT-REF DEST="TD-EVENT
+-VARIABLE-DATA-PROTOTYPE"&gt;/example/expression/E1&lt;/EVENT-
+REF&gt;)
+- ARTE_timeSinceLastOccurrence(&lt;EVENT-REF DEST="TD-EVENT-
+VARIABLE-DATA-PROTOTYPE"&gt;/example/expression/E2) &amp;lt;=
+0.0005
+&lt;/FORMULA&gt;
+&lt;/OCCURRENCE-EXPRESSION&gt;
+&lt;/TD-EVENT-COMPLEX&gt;
+&lt;/TIMING-DESCRIPTIONS&gt;
+&lt;COMPONENT-REF DEST="COMPOSITION-SW-COMPONENT-TYPE"&gt;/example/
+expression/SWC1&lt;/COMPONENT-REF&gt;
+&lt;/VFB-TIMING&gt;
+&lt;/ELEMENTS&gt;
+&lt;/AR-PACKAGE&gt;</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_8_4_4_DoIP_SoAdTpStartOfReception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticOverIP.pdf</strong> (Seite 78)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticOverIP.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticOverIP.pdf</a></strong> (Seite 78)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_DoIP_00037" class="swsref internal-spec-ref"><code>SWS_DoIP_00037</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_DoIP_00189" class="swsref internal-spec-ref"><code>SWS_DoIP_00189</code></a></span>
         </div>
       </div>
 
@@ -114,11 +115,42 @@ buffer of the requested size is available, a receive buffer size of 0
 shall be indicated by bufferSizePtr.
 BUFREQ_E_NOT_OK: Connection has been rejected; reception is
 aborted. bufferSizePtr remains unchanged.
-BUFREQ_E_OVFL: No buffer of the re</div></section>
+BUFREQ_E_OVFL: No buffer of the required length can be
+provided; reception is aborted. bufferSizePtr remains unchanged.
+Description
+This function is called at the start of receiving an N-SDU. The N-SDU might be fragmented into
+multiple N-PDUs (FF with one or more following CFs) or might consist of a single N-PDU (SF).
+The service shall provide the currently available maximum buffer size when invoked with TpSdu
+Length equal to 0.
+Available via
+DoIP.h
+⌋
+[SWS_DoIP_00186] ⌈If DoIPDevelopmentErrorDetect is enabled:
+DoIP_-
+SoAdTpStartOfReception() shall check that the service DoIP_Init() was pre-
+viously called. If the check fails, the function shall raise the development error DOIP_
+E_UNINIT.⌋
+[SWS_DoIP_00187] ⌈If DoIPDevelopmentErrorDetect is enabled:
+DoIP_-
+SoAdTpStartOfReception() shall check if the id matches a configured DoIP-
+SoAdTcpRxPduId. If the check fails, the function shall raise the development error
+DOIP_E_INVALID_PDU_SDU_ID.⌋
+[SWS_DoIP_00188] ⌈If DoIPDevelopmentErrorDetect is enabled:
+DoIP_-
+SoAdTpStartOfReception() shall check if the bufferSizePtr is not a NULL_
+PTR. If the check fails, the function shall raise the development error DOIP_E_PARAM_
+POINTER.⌋
+[SWS_DoIP_00189] ⌈If DoIPDevelopmentErrorDetect is enabled:
+DoIP_-
+SoAdTpStartOfReception() shall check if the TpSduLength is not 0. If TpSd-
+uLength is not 0, the function shall raise the development error DOIP_E_INVALID_
+PARAMETER.⌋
+Note: This is because SoAd will call the DoIP module only once with the TpSduLength
+set to 0 after the TCP connection has been established.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_DoIP_00037] im Text von SWS_DiagnosticOverIP.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_DoIP_00189] im Text von SWS_DiagnosticOverIP.</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +159,7 @@ BUFREQ_E_OVFL: No buffer of the re</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticOverIP.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticOverIP.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticOverIP.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -139,7 +171,7 @@ BUFREQ_E_OVFL: No buffer of the re</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_DoIP_00037" class="swsref internal-spec-ref"><code>SWS_DoIP_00037</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_DoIP_00189" class="swsref internal-spec-ref"><code>SWS_DoIP_00189</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

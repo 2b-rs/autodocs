@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -89,7 +90,212 @@ is used in all patterns except the attribute value pattern.
 The return value of this formula is always interpreted as a boolean: 0 equals
 false, any other value is interpreted as true.
 AttributeValueVariationPoint is primarily used to provide values in the at-
-tribute value pattern (Section 7.4). Since the attrib</div></section>
+tribute value pattern (Section 7.4). Since the attribute value pattern is implicitly
+used to deﬁne the condition of a PostBuild variation point, it may also be used in
+every other pattern.
+AttributeValueVariationPoint further splits into six subclasses, namely
+NumericalValueVariationPoint,
+FloatValueVariationPoint,
+In-
+tegerValueVariationPoint,
+BooleanValueVariationPoint,
+Pos-
+itiveIntegerValueVariationPoint
+and
+UnlimitedIntegerValue-
+VariationPoint.
+These subclasses provide information on the expected return type of the formula
+(see Chapter 4.7.2.2, and correspond to the AUTOSAR primitive types Numeri-
+cal, Float, Integer, Boolean, PositiveInteger and UnlimitedInte-
+ger.
+[constr_2516] Return type of an AttributeValueVariationPoint ⌈When
+such a formula is evaluated by a software tool, and the return value of the formula
+is shall be compatible to the type of the attribute in the pure meta-model. ⌋()
+Class
+≪atpMixedString≫SwSystemconstDependentFormula (abstract)
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling
+Note
+This class represents an expression depending on system constants.
+Base
+ARObject,FormulaExpression
+Attribute
+Datatype
+Mul.
+Kind
+Note
+sysc
+SwSystemconst
+1
+ref
+This refers to a system constant. The internal
+(coded) value of the system constant shall be
+used.
+Tags: xml.sequenceOffset=50
+syscString
+SwSystemconst
+1
+ref
+syscString indicates that the referenced system
+constant shall be evaluated as a string according
+to [TPS_SWCT_01431].
+Table 7.10: SwSystemconstDependentFormula
+Generic Structure Template
+Class
+≪atpMixedString≫ConditionByFormula
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling
+Note
+This class represents a condition which is computed based on system constants
+according to the speciﬁed expression. The expected result is considered as boolean
+value.
+The result of the expression is interpreted as a condition.
+• "0" represents "false";
+• a value other than zero is considered "true"
+Base
+ARObject,FormulaExpression,SwSystemconstDependentFormula
+Attribute
+Datatype
+Mul.
+Kind
+Note
+bindingTim
+e
+BindingTimeEn
+um
+1
+attr
+This attribute speciﬁes the point in time when
+condition may be evaluated at earliest. At this
+point in time all referenced system constants shall
+have a value.
+Tags: xml.attribute=true
+Table 7.11: ConditionByFormula
+Class
+≪atpMixedString≫AttributeValueVariationPoint (abstract)
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling::AttributeValueVariation
+Points
+Note
+This class represents the ability to derive the value of the Attribute from a system
+constant (by SwSystemconstDependentFormula). It also provides a bindingTime.
+Base
+ARObject,FormulaExpression,SwSystemconstDependentFormula
+Attribute
+Datatype
+Mul.
+Kind
+Note
+bindingTim
+e
+BindingTimeEn
+um
+0..1
+attr
+This is the binding time in which the attribute value
+needs to be bound.
+If this attribute is missing, the attribute is not a
+variation point. In particular this means that It
+needs to be a single value according to the type
+speciﬁed in the pure model. It is an error if it is still
+a formula.
+Tags: xml.attribute=true
+blueprintV
+alue
+String
+0..1
+attr
+This represents a description that documents how
+the value shall be deﬁned when deriving objects
+from the blueprint.
+Tags: xml.attribute=true
+sd
+String
+0..1
+attr
+This special data is provided to allow
+synchronization of Attribute value variation points
+with variant management systems. The usage is
+subject of agreement between the involved
+parties.
+Tags: xml.attribute=true
+Generic Structure Template
+shortLabel
+PrimitiveIdentifi
+er
+0..1
+attr
+This allows to identify the variation point. It is also
+intended to allow RTE support for CompileTime
+Variation points.
+Tags: xml.attribute=true
+Table 7.12: AttributeValueVariationPoint
+Class
+≪atpMixedString≫AbstractNumericalVariationPoint (abstract)
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling::AttributeValueVariation
+Points
+Note
+This is an abstract NumericalValueVariationPoint. It is introduced to support the case
+that additional attributes are required for particular purposes.
+Base
+ARObject,AttributeValueVariationPoint,FormulaExpression,SwSystemconst
+DependentFormula
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 7.13: AbstractNumericalVariationPoint
+Class
+≪atpMixedString≫BooleanValueVariationPoint
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling::AttributeValueVariation
+Points
+Note
+This class represents an attribute value variation point for Boolean attributes.
+Note that this class might be used in the extended meta-model on
+Base
+ARObject,AttributeValueVariationPoint,FormulaExpression,SwSystemconst
+DependentFormula
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 7.14: BooleanValueVariationPoint
+Class
+≪atpMixedString≫FloatValueVariationPoint
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling::AttributeValueVariation
+Points
+Note
+This class represents an attribute value variation point for Float attributes.
+Note that this class might be used in the extended meta-model only
+Base
+ARObject,AttributeValueVariationPoint,FormulaExpression,SwSystemconst
+DependentFormula
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 7.15: FloatValueVariationPoint</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_5_Assignment_of_mode_machine_instances_to_RTE_and_Basic_Software</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 431)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=431" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 431)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07535" class="swsref internal-spec-ref"><code>SWS_Rte_07535</code></a></span>
+          <span>Ziel-Element: SWS_Rte_CONSTR_09014</span>
         </div>
       </div>
 
@@ -91,11 +92,45 @@ uler.⌋
 In case of synchronized ModeDeclarationGroupPrototypes the correlating com-
 mon mode machine instance is initialized during the execution of the SchM_Init.
 At this point of time the scheduling of RunnableEntitys is not enabled due to the
-uninitialized RTE. Therefore</div></section>
+uninitialized RTE. Therefore situation occurs, that the RunnableEntitys being on-
+entry ExecutableEntitys are not called if the mode machine instance is ini-
+tialized. Further on the current mode of such mode machine instance might be
+still switched until the RTE gets initialized. Nevertheless the on-entry Runnables of the
+current active mode are executed.
+[SWS_Rte_07582]
+Upstream requirements: SRS_Rte_00214
+⌈For common mode machine instances the on-entry Runnable Entities of the cur-
+rent active mode are executed during the initialization of the RTE if the common mode
+machine instance is not in transition.⌋
+[SWS_Rte_07583]
+Upstream requirements: SRS_Rte_00214
+⌈A common mode machine instances is not allowed to enter transition phase dur-
+ing the RTE initialization if the common mode machine instances has on-entry
+Runnable Entities, on-transition Runnable Entities or on-exit Runnable Entities⌋
+Note: [SWS_Rte_07582] and [SWS_Rte_07583] shall ensure a deterministic behavior
+that the software components receiving a Mode Switch Request from a common mode
+machine instances are receiving the current active mode during RTE initialization.
+[SWS_Rte_07564]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00213, SRS_Rte_00214, SRS_Rte_00018
+⌈The RTE generator shall reject configurations where ModeSwitchPoint(s) ref-
+erencing a ModeDeclarationGroupPrototype in a mode switch port and
+a managedModeGroup association(s) to a providedModeGroup ModeDeclara-
+tionGroupPrototype are not defined mutual exclusively to one of two synchronized
+ModeDeclarationGroupPrototypes.⌋
+[SWS_Rte_CONSTR_09014]
+ModeSwitchPoint(s) and managedModeGroup(s)
+are mutually exclusive for synchronized ModeDeclarationGroupPrototypes ⌈Only
+one of two synchronized ModeDeclarationGroupPrototypes shall mutual exclusively be
+referenced by ModeSwitchPoint(s) or managedModeGroup association(s).⌋
+Note: [SWS_Rte_CONSTR_09014] shall ensure in the combination with the exis-
+tence conditions of the Rte_Switch, Rte_Mode, Rte_SwitchAck, SchM_Switch,
+SchM_Mode and SchM_SwitchAck that either the port based RTE API or the Ba-
+sic Software Scheduler API ([SWS_Rte_07201] and [SWS_Rte_07264]) offered to the
+implementation of the mode manager.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07535] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_CONSTR_09014] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -104,7 +139,7 @@ uninitialized RTE. Therefore</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=431" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -116,7 +151,7 @@ uninitialized RTE. Therefore</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07535" class="swsref internal-spec-ref"><code>SWS_Rte_07535</code></a></td>
+              <td>SWS_Rte_CONSTR_09014</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

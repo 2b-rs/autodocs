@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -86,7 +87,277 @@ rayElement in the context of the complex element is mapped to a SystemSignal.
 The VariableDataPrototype that is referenced by SenderReceiverToSignal-
 GroupMapping can be typed by an ApplicationDataType or by an Implemen-
 tationDataType. This type decides which reference is used within the Sender-
-RecRecordElementMapping and SenderRecA</div></section>
+RecRecordElementMapping and SenderRecArrayElementMapping.
+Complex VariableDataPrototypes may nest within other complex Variable-
+DataPrototypes. Each PrimitiveDataType of such nested complex Variable-
+DataPrototypes will be one SystemSignal in the System Description.
+The relationship between the SystemSignal and the VariableDataPrototype is
+provided in the SenderReceiverToSignalGroupMapping (see Figure 4.8).
+System Template
+R4.0 Rev 3
+DataMapping
+ARElement
+CoreCommunication::
+SystemSignalGroup
+SenderRecCompositeTypeMapping
+SenderRecArrayTypeMapping
+SenderRecRecordTypeMapping
+ARElement
+CoreCommunication::SystemSignal
++
+dynamicLength:  Boolean
+SenderRecRecordElementMapping
+SenderRecArrayElementMapping
+SenderReceiverToSignalGroupMapping
+IndexedArrayElement
++
+index:  Integer
+AutosarDataPrototype
+DataPrototypes::
+VariableDataPrototype
+Identifiable
+ImplementationDataTypes::ImplementationDataTypeElement
+ApplicationCompositeElementDataPrototype
+DataPrototypes::ApplicationRecordElement
+ApplicationCompositeElementDataPrototype
+DataPrototypes::ApplicationArrayElement
++
+arraySizeSemantics:  ArraySizeSemanticsEnum [0..1]
+«atpVariation»
++
+maxNumberOfElements:  PositiveInteger
++systemSignal
+0..1
++systemSignal
+*
++systemSignal
+0..1
++recordElementMapping *
++arrayElementMapping *
++signalGroup
+1
++typeMapping
+1
++applicationArrayElement
+0..1
++indexedArrayElement
+1
++complexTypeMapping
+0..1
+«instanceRef»
++dataElement
++implementationArrayElement
+0..1
++implementationRecordElement
+0..1
++applicationRecordElement
+0..1
++complexTypeMapping
+0..1
+Figure 4.8: Mapping of data elements with composite datatypes (SenderRecComposite-
+TypeMapping)
+[constr_3000]
+valid
+SenderRecCompositeTypeMappings
+⌈SenderReceiverToSignalGroupMapping.signalGroup.systemSignal
+shall
+point
+to
+each SystemSignal being mapped within the context of SenderReceiverToSig-
+nalGroupMapping. ⌋
+System Template
+R4.0 Rev 3
+Class
+SenderReceiverToSignalGroupMapping
+Package
+M2::AUTOSARTemplates::SystemTemplate::DataMapping
+Note
+Mapping of a sender receiver communication data element with a composite datatype
+to a signal group.
+Base
+ARObject,DataMapping
+Attribute
+Datatype
+Mul.
+Kind
+Note
+dataEleme
+nt
+VariableDataPr
+ototype
+1
+iref
+Reference to a data element with a composite
+datatype which is mapped to a signal group.
+signalGrou
+p
+SystemSignalGr
+oup
+1
+ref
+Reference to the signal group, which contain all
+primitive datatypes of the composite type
+typeMappi
+ng
+SenderRecCom
+positeTypeMap
+ping
+1
+aggr
+The CompositeTypeMapping maps the the
+ApplicationArrayElements and
+ApplicationRecordElements to Signals of the
+SignalGroup.
+Table 4.11: SenderReceiverToSignalGroupMapping
+Class
+SenderRecCompositeTypeMapping (abstract)
+Package
+M2::AUTOSARTemplates::SystemTemplate::DataMapping
+Note
+Two mappings exist for the composite data types: "ArrayTypeMapping" and
+"RecordTypeMapping". In both, a primitive datatype will be mapped to a system
+signal.
+But it is also possible to combine the arrays and the records, so that an "array" could
+be an element of a "record" and in the same manner a "record" could be an element
+of an "array". Nesting these data types is also possible.
+If an element of a composite data type is again a composite one, the
+"CompositeTypeMapping" element will be used one more time (aggregation between
+the ArrayElementMapping and CompositeTypeMapping or aggregation between the
+RecordElementMapping and CompositeTypeMapping).
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 4.12: SenderRecCompositeTypeMapping
+Class
+SenderRecArrayTypeMapping
+Package
+M2::AUTOSARTemplates::SystemTemplate::DataMapping
+Note
+If the ApplicationCompositeDataType is an Array, the "ArrayTypeMapping" will be
+used.
+Base
+ARObject,SenderRecCompositeTypeMapping
+Attribute
+Datatype
+Mul.
+Kind
+Note
+arrayElem
+entMappin
+g
+SenderRecArra
+yElementMappi
+ng
+*
+aggr
+Each ApplicationArrayElement must be mapped
+on a SystemSignal.
+Table 4.13: SenderRecArrayTypeMapping
+System Template
+R4.0 Rev 3
+Class
+SenderRecRecordTypeMapping
+Package
+M2::AUTOSARTemplates::SystemTemplate::DataMapping
+Note
+If the ApplicationCompositeDataType is a Record, the "RecordTypeMapping" will be
+used.
+Base
+ARObject,SenderRecCompositeTypeMapping
+Attribute
+Datatype
+Mul.
+Kind
+Note
+recordEle
+mentMappi
+ng
+SenderRecRec
+ordElementMap
+ping
+*
+aggr
+Each ApplicationRecordElement must be mapped
+on a SystemSignal.
+Table 4.14: SenderRecRecordTypeMapping
+Class
+SenderRecRecordElementMapping
+Package
+M2::AUTOSARTemplates::SystemTemplate::DataMapping
+Note
+Mapping of a primitive record element to a SystemSignal. If the
+VariableDataPrototype that is referenced by SenderReceiverToSignalGroupMapping
+is typed by an ApplicationDataType the reference applicationRecordElement shall be
+used. If the VariableDataPrototype is typed by the ImplementationDataType the
+reference implementationRecordElement shall be used. Either the
+implementationRecordElement or applicationRecordElement reference shall be
+used.
+If the element is composite, there will be no mapping to the SystemSignal (multiplicity
+0). In this case the RecordElementMapping element will aggregate the
+complexTypeMapping element. In that way also the composite datatypes can be
+mapped to SystemSignals.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+application
+RecordEle
+ment
+ApplicationReco
+rdElement
+0..1
+ref
+Reference to an ApplicationRecordElement in the
+context of the dataElement or in the context of a
+composite element. This reference shall only be
+used if the VariableDataPrototype that is
+referenced by the SenderReceiverToSignal-
+GroupMapping.dataElement is typed by an
+ApplicationDataType.
+complexTy
+peMapping
+SenderRecCom
+positeTypeMap
+ping
+0..1
+aggr
+This aggregation will be used if the element is
+composite.
+implement
+ationRecor
+dElement
+Implementation
+DataTypeEleme
+nt
+0..1
+ref
+Reference to an ImplementationRecordElement in
+the context of the dataElement or in the context of
+a composite element. This reference shall only be
+used if VariableDataPrototype that is referenced
+by the SenderReceiverToSignalGroupMap-
+ping.dataElement is typed by an
+ImplementationDataType.
+systemSig
+nal
+SystemSignal
+0..1
+ref
+Reference to the system signal used to carry the
+primitive ApplicationRecordElement.
+Table 4.15: SenderRecRecordElementMapping</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

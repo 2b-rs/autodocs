@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_8_3_Storage_of_Events_Dem_Sem_Sink</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IntrusionDetectionSystemManager.pdf</strong> (Seite 52)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></strong> (Seite 52)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_01603" class="swsref internal-spec-ref"><code>SWS_IdsM_01603</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_01607" class="swsref internal-spec-ref"><code>SWS_IdsM_01607</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,40 @@ sink indicates that the corresponding QSEv shall be stored in the Dem’s user d
 memory: Sem.⌋
 [SWS_IdsM_01603] Dem Event referenced by IdsM Event
 Upstream requirements: RS_Ids_00400, RS_Ids_00620
-⌈IdsMEvent shall have a mapping to DemEven</div></section>
+⌈IdsMEvent shall have a mapping to DemEventParameter via configuration param-
+eter IdsMDemEventReference. Every IdsMEvent that is intended to be sinked to
+the Dem / Sem shall have a valid IdsMDemEventReference not necessarily unique.⌋
+[SWS_IdsM_01604] Dem API
+Upstream requirements: RS_Ids_00400, RS_Ids_00620
+⌈If IdsMSinkDem for an IdsMEvent is set to true, then IdsM shall report to Dem by
+calling API Dem_SetEventStatus with arguments EventId as the DemEventId of the
+referenced DemEventParameter over IdsMDemEventReference and EventStatus
+as DEM_EVENT_STATUS_FAILED.⌋
+Note: IdsM shall use AR standardized symbolic name for the DemEventId.
+[SWS_IdsM_01605] Dem Callback With Freeze Frame
+Upstream requirements: RS_Ids_00400, RS_Ids_00620
+⌈IdsM shall provide complete IDS Message with its mandatory and optional fields as
+freeze frame data of the reported Dem event via a callback function IdsM_DemRead-
+QSEv.⌋
+Manager
+[SWS_IdsM_01606] API Call Sequence
+Upstream requirements: RS_Ids_00400, RS_Ids_00620
+⌈IdsM shall call Dem_SetEventStatus at most once before IdsM_DemReadQSEv
+has been called by Dem to fetch the freeze frame data. This is necessary for Dem to
+fetch the correct QSEv as the freeze frame record.⌋
+Note:
+Since the storage of the qualified security events in Dem is asyn-
+chronous and can span over multiple main function cycles, the IdsMQualifiedEvent
+Buffers can be used to queue the subsequently qualified events.
+[SWS_IdsM_01607] Finish Call Sequence
+Upstream requirements: RS_Ids_00400, RS_Ids_00620
+⌈Once Dem has fetched the freeze frame data, IdsM shall call Dem_SetEventStatus
+with EventStatus as DEM_EVENT_STATUS_PASSED.⌋
+(Refer to: 9.1 Sequence Diagram IdsM DEM.)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_IdsM_01603] im Text von SWS_IntrusionDetectionSystemManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_IdsM_01607] im Text von SWS_IntrusionDetectionSystemManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +132,7 @@ Upstream requirements: RS_Ids_00400, RS_Ids_00620
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IntrusionDetectionSystemManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +144,7 @@ Upstream requirements: RS_Ids_00400, RS_Ids_00620
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_IdsM_01603" class="swsref internal-spec-ref"><code>SWS_IdsM_01603</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_IdsM_01607" class="swsref internal-spec-ref"><code>SWS_IdsM_01607</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

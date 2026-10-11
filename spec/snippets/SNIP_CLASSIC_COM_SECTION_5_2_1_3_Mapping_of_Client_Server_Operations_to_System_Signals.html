@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_5_2_1_3_Mapping_of_Client_Server_Operations_to_System_Signals</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SystemTemplate.pdf</strong> (Seite 274)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=274" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></strong> (Seite 274)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01149" class="swsref"><code>TPS_SYST_01149</code></a></span>
         </div>
@@ -88,7 +89,149 @@ Code as described by [PRS_SOMEIP_00030] in [18]. This is the reason why the
 ApplicationErrors are not considered in the ClientServerToSignalMapping.
 In DDS, the ApplicationError is transmitted over the network through the er-
 ror_code field, as specified in [FO_PRS_DDS_00303] in [19], and is mapped to the
-returnValue field of the DDS Transformer Infrastructure H</div></section>
+returnValue field of the DDS Transformer Infrastructure Header (see [CP_SWS_
+DdsXf_00751] in [20], and [CP_SWS_Dds_00930], [CP_SWS_Dds_00931] in [21]).
+[TPS_SYST_01150] Mapping of returnSignal and callSignal to COM Signal
+⌈In the ECU Configuration of the AUTOSAR COM module the returnSignal and the
+callSignal are expected to be mapped to COM Signals with the ComSignalType
+UINT8_N or UINT8_DYN.⌋
+The ClientServerToSignalMapping can only map transformed data to System-
+Signals because it contains no information how data shall be serialized, it only ref-
+erences the primitive SystemSignal which shall contain the serialized data. How to
+define the necessary information which serialization algorithm shall be applied can be
+found in chapter 7. The implementation of this algorithm is provided via a BSW module.
+DataMapping
+ClientServerToSignalMapping
+ARElement
+SystemSignal
++
+dynamicLength: Boolean [0..1]
+AtpStructureElement
+Identifiable
+ClientServerOperation
++
+diagArgIntegrity: Boolean [0..1]
++returnSignal
+0..1
+«instanceRef»
++clientServerOperation
+0..1
++callSignal
+0..1
+Figure 5.25: Mapping of a ClientServerOperation to a callSignal and a returnSignal
+System Template
+Class
+ClientServerToSignalMapping
+Note
+This element maps the ClientServerOperation to call- and return-SystemSignals.
+Base
+ARObject, DataMapping
+Aggregated by
+SystemMapping.dataMapping
+Attribute
+Type
+Mult.
+Kind
+Note
+callSignal
+SystemSignal
+0..1
+ref
+Reference to the callSignal to which the IN and INOUT
+ArgumentDataPrototypes are mapped.
+clientServer
+Operation
+ClientServerOperation
+0..1
+iref
+Reference to a ClientServerOperation, which is mapped
+to a call SystemSignal and a return SystemSignal.
+InstanceRef implemented by: OperationInSystem
+InstanceRef
+returnSignal
+SystemSignal
+0..1
+ref
+Reference to the returnSignal to which the OUT and
+INOUT ArgumentDataPrototypes are mapped.
+Table 5.31: ClientServerToSignalMapping
+[constr_5473] Existence of ClientServerToSignalMapping.callSignal
+Imposition time: CP: IT_EcuExt
+⌈For each ClientServerToSignalMapping, the reference to SystemSignal in
+the role callSignal shall exist.⌋
+[constr_5474] Existence of ClientServerToSignalMapping.clientServer-
+Operation
+Imposition time: CP: IT_EcuExt
+⌈For each ClientServerToSignalMapping, the reference to ClientServerOp-
+eration in the role clientServerOperation shall exist.⌋
+[constr_3111] returnSignal in ClientServerToSignalMapping is mandatory
+Imposition time: CP: IT_EcuExt
+⌈A ClientServerToSignalMapping shall always have a returnSignal defined.⌋
+[constr_3215]
+TransformationTechnology.version and Transformation-
+Technology.protocol settings for request and response of a client/server com-
+munication on the same TransformationTechnology
+Imposition time: CP: IT_SysDesc
+⌈TransformationTechnology.version
+and
+TransformationTechnology.
+protocol shall be identical for ISignals that are derived from the same
+ClientServerOperation and TransformationTechnology. This means that
+all ISignals that refer to ClientServerToSignalMapping.callSignal or to
+ClientServerToSignalMapping.returnSignal of the same ClientServer-
+ToSignalMapping and TransformationTechnology shall have the same
+TransformationTechnology.protocol
+and
+TransformationTechnology.
+version defined.⌋
+System Template
+The ClientServerToSignalMapping (as any other DataMapping) defines the
+mapping on the level of SystemSignals (see also section 5.2). For the communi-
+cation on actual PhysicalChannels (could be actual VLAN or dedicated Ether-
+netCluster) an ISignal and a corresponding ISignalTriggering needs to be
+defined (see section 6.1).
+SystemSignal Call
+SystemSignal Return
+VLAN 2
+(PhysicalChannel)
+CallISignal_VLAN1
+CallISignal_VLAN2
+ISignalTriggering
+IST_CallVLAN2
+ISignalTriggering
+IST_CallVLAN1
+VLAN 1
+(PhysicalChannel)
+ClientServerToSignalMapping
+callSignal
+returnSignal
+ReturnISignal_VLAN1
+ReturnISignal_VLAN2
+ISignalTriggering
+IST_ReturnVLAN2
+ISignalTriggering
+IST_ReturnVLAN1
+Figure 5.26: Scenario in which a SOME/IP Service with a ClientServerOperation is of-
+fered on several VLANs
+In the example in figure 5.26 a server offers his service on two VLANs (could be ac-
+tual VLAN or dedicated EthernetCluster). When a call arrives at the server from
+VLAN1 it will be propagated in the “CallISignal_VLAN1” to the RTE. The RTE takes
+the call message and de-serializes the payload and calls the Server. The result of the
+server is serialized and needs to be put into a return ISignal. But from just look-
+ing at the available ISignals for the return it is not possible to determine whether
+the result message has to be put into the result ISignal “ReturnISignal_VLAN1” or
+“ReturnISignal_VLAN2”.
+Thus the RTE needs to determine to which PhysicalChannel the call ISignal be-
+longs and choose the return ISignal which is defined on the same PhysicalChan-
+nel.
+The ISignalTriggering defines on which PhysicalChannel an ISig-
+nal is transported, thus by determining which ISignalTriggering refers to the
+ISignal (in the call example ISignal: “CallISignal_VLAN1”, ISignalTriggering:
+“IST_CallVLAN1” ) it is clear that the PhysicalChannel “VLAN 1” is the source of
+the call and thus the return message needs to go to an ISignal which is transported
+on that PhysicalChannel.
+If a Server offers a service on several PhysicalChannels then there are some con-
+straints to be respected in order for the RTE and Com to work together properly:</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +244,7 @@ returnValue field of the DDS Transformer Infrastructure H</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=274" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

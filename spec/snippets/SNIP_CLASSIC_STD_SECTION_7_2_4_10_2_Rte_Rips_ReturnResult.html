@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_2_4_10_2_Rte_Rips_ReturnResult</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 989)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=989" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 989)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00021" class="swsref internal-spec-ref"><code>SWS_Std_00021</code></a></span>
         </div>
@@ -113,11 +114,69 @@ Upstream requirements: SRS_Rte_00306, SRS_Rte_00304, SRS_Rte_00312
 ⌈The associated RTE Implementation Plug-In shall provide the Rte_-
 Rips_ReturnResult Service for each operation instance in an AbstractRe-
 quiredPortPrototype of a Atomic Software Component if
-• for the related operation an AsynchronousServerCallRes</div></section>
+• for the related operation an AsynchronousServerCallResultPoint ex-
+ists AND
+• for the related Client Server Communication Graph the RTE Imple-
+mentation Plug-In support is enabled
+⌋
+[SWS_Rte_70071]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00304, SRS_Rte_00312
+⌈The optional OUT parameter transformerError of the Rte_Rips_ReturnRe-
+sult service shall be generated according to [SWS_Rte_08567].⌋
+The return value is used to indicate errors detected by the RTE Implementation
+Plug-In during execution of the Rte_Rips_ReturnResult service call or errors
+detected by the communication system:
+• [SWS_Rte_70072]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_OK – The API call completed successfully and the invoked server did not
+return an error.⌋
+• [SWS_Rte_70073]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_TRANSFORMER_LIMIT – The RTE Implementation Plug-In is not
+able to allocate the buffer needed to transform the data.⌋
+• [SWS_Rte_70074]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_HARD_TRANSFORMER_ERROR – The return value of one transformer in
+the transformer chain represented a hard transformer error.⌋
+• [SWS_Rte_70075]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_SOFT_TRANSFORMER_ERROR – The return value of at least one trans-
+former in the transformer chain was a soft error and no hard error occurred in the
+transformer chain.⌋
+• [SWS_Rte_70076]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_COM_STOPPED – the RTE Implementation Plug-In could not per-
+form the operation because the communication service is currently not available.⌋
+• [SWS_Rte_70119]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_COM_BUSY – the RTE Implementation Plug-In could not perform
+the operation because the query for the result is rejected due to a currently on-
+going reception. No result data can be provided.⌋
+• [SWS_Rte_72006]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_NO_DATA – (non-blocking read) The server’s result is not available but
+no other error occurred within the API call or the server was not called since
+Rte_Start. The buffers for the IN/OUT and OUT parameters shall not be mod-
+ified.⌋
+• [SWS_Rte_72007]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_TIMEOUT – The server’s result is not available within the specified time-
+out but no other error occurred within the API call. The buffers for the IN/OUT
+and OUT parameters shall not be modified.⌋
+• [SWS_Rte_72008]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈Application Errors – The error code of the server shall only be returned, if none
+of the above infrastructure errors or indications have occurred.⌋
+[SWS_Rte_80072]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00304, SRS_Rte_00312
+⌈The RTE shall call Rte_Rips_ReturnResult at the position and instead of the
+RTE’s regular transformer invocation for transformation of the server results, if for
+the related Client Server Communication Graph the RTE Implementation
+Plug-In support is enabled.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerError().</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +185,7 @@ quiredPortPrototype of a Atomic Software Component if
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=989" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_24_1_Transmit_requests_by_using_multiple_CAN_Drivers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 71)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 71)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -113,11 +114,61 @@ Can_Write(Std_ReturnType, Can_HwHandleType,
 const Can_PduType*)
 CanIf_Transmit(Std_ReturnType, PduIdType, const PduInfoType*)
 CanIf_Transmit()
-Figure 7.10: Transm</div></section>
+Figure 7.10: Transmission request with multiple CAN Drivers - simplified
+Operations called
+Description
+CanIf_Transmit
+(PduId_1,
+PduInfoPtr_1)
+Upper layer initiates a transmit request. The PduId is used for
+tracing the requested CAN Controller and then to serving the
+Hardware Unit.
+The number of the Hardware Unit is relevant for the dispatch
+as it is used as index for the array with pointer to functions. At first
+the number of the PDU channel group will be extracted from the
+PduId_1. Each PDU channel group refers to a CAN channel and
+thus as well the Hardware Unit Number and the CAN Controller
+Number.
+The Hardware Unit Number points on an instance of CanDrv and
+therefore refers all API services configured for the used
+Hardware Unit(s). One of these services is the requested
+transmit service.
+Can_Write (Hth,
+PduInfoPtr)
+Request for transmission to the corresponding CAN_Driver
+serving i.e. CAN Controller #0 within the "A" Hardware Unit.
+Hardware request
+All L-PDU data will be set in the Hardware of i.e. CAN
+Controller #0 within Hardware Unit "A" and the transmit
+request enabled.
+CanIf_Transmit
+(PduId_2,
+PduInfoPtr_2)
+Upper layer initiates Transmit Request. The PduId leads to
+another CAN Controller and then to another Hardware
+Unit.
+The number of the Hardware Unit is relevant for the dispatch
+as it is used as index for the array with pointer to functions. At first
+the number of the PDU channel group will be extracted from the
+PduId_2. Each PDU channel group refers to a CAN channel and
+thus as well to the Hardware Unit Number and to the CAN
+Controller Number.
+The Hardware Unit Number points on an instance of CanDrv and
+therefore refers all API services configured for the used
+Hardware Unit(s). One of these services is the requested
+transmit service.
+Can_Write (Hth,
+PduInfoPtr_2)
+Request for transmission to the corresponding CAN_Driver
+serving i.e. CAN Controller #1 within the "B" Hardware Unit.
+Hardware request
+All L-PDU data will be set in the Hardware of i.e. CAN
+Controller #1 within Hardware Unit "B" and the transmit
+request enabled.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +177,7 @@ Figure 7.10: Transm</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

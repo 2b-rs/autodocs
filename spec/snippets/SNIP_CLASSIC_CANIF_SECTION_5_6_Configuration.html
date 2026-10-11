@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_5_6_Configuration</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 22)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=22" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 22)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00469" class="swsref internal-spec-ref"><code>SWS_CANIF_00469</code></a></span>
         </div>
@@ -88,7 +89,30 @@ L-PDUs to be received in the corresponding hardware object to conduct a search
 algorithm (see Chapter 7.20 “Software receive filter”, see CanIfHrhSoftware-
 Filter, CanIfHrhCanCtrlIdRef, CanIfHrhIdSymRef)
 CanIf needs information about all used upper communication service layers and L-
-SDUs to be dispatched. The following information has to be set up at con</div></section>
+SDUs to be dispatched. The following information has to be set up at configuration time
+for integration of CanIf inside the AUTOSAR COM stack:
+• Transmitting upper layer module and transmit I-PDU for each transmit L-SDU.
+=&gt; Used for dispatching of transmit confirmation services
+(see CanIfTxPduId).
+• Receiving upper layer module and receive I-PDU for each receive L-SDU.
+=&gt; Used for L-SDU dispatching during receive indication
+(see CanIfRxPduId).
+The CanIf needs the description of the controller and the own ECU, which is connected
+to one or multiple CAN networks. The following information is therefore retrieved from
+the CAN communication matrix, part of the AUTOSAR system configuration (see
+CanIfTxPduCfg, CanIfRxPduCfg):
+• All L-PDUs received on each physical channel of this ECU.
+=&gt; Used for software filtering and receive L-SDU dispatch
+• All L-SDUs that shall be transmitted by each physical channel on this ECU.
+=&gt; Used for the transmit request and Transmit L-PDU dispatch
+• Properties of these L-PDUs (ID, Data Length).
+=&gt; Used for software filtering, receive indication services, Data Length Check
+• Transmitter for each transmitted L-SDU (i.e. PduR, CanNm, CanTp).
+=&gt; Used for the transmit confirmation services
+• Receiver for each receive L-SDU (i.e. PduR, CanNm, CanTp)
+=&gt; Used for the L-PDU dispatch
+• Symbolic L-PDU/L-SDU name.
+=&gt; Used for the representation of Rx/Tx data buffer addresses</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +125,7 @@ SDUs to be dispatched. The following information has to be set up at con</div></
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=22" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

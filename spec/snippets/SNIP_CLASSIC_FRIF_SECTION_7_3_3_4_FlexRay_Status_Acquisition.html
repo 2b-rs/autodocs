@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_7_3_3_4_FlexRay_Status_Acquisition</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BusMirroring.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_BusMirroring.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BusMirroring.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mirror_01025" class="swsref internal-spec-ref"><code>SWS_Mirror_01025</code></a></span>
         </div>
@@ -89,7 +90,23 @@ the previously reported states. It the states differ in Bit 1 (vSS!SyntaxError),
 date the reported FlexRay source bus state accordingly.⌋
 The callback Mirror_ReportFlexRayChannelStatus reports a clusterId and
 the API FrIf_GetState expects a FrIf_ClstIdx, but a network ID is required to
-report the</div></section>
+report the status to the output bus. The translation of the one to the other can be de-
+termined at generation time by following the references from the FrIfClstIdx to the
+MirrorNetworkId through the ECU configuration via MirrorComMNetworkHan-
+dleRef.
+[SWS_Mirror_00042]
+Upstream requirements: SRS_Mirror_00008, SRS_Mirror_00009
+⌈The Bus Mirroring module shall poll the status of each active FlexRay source bus by
+cyclically calling FrIf_GetState from the Mirror_MainFunction. If the returned
+FrIf_StatePtr is FRIF_STATE_ONLINE, the reported FlexRay source bus state
+shall be set to online, otherwise to offline. If the bus is online, the Bus Mirroring mod-
+ule shall also call FrIf_GetPOCStatus for each controller connected to the FlexRay
+cluster. If the returned Fr_POCStateType is FR_POCSTATE_NORMAL_ACTIVE for
+all controllers, the reported source bus state shall be synchronous and normal ac-
+tive; if Fr_POCStateType is FR_POCSTATE_NORMAL_PASSIVE for at least one con-
+troller, the reported source bus state shall be synchronous but not normal active; if
+Fr_POCStateType is in any other state for at least one controller, the reported source
+bus state shall be neither synchronous nor normal active.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +119,7 @@ report the</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BusMirroring.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_BusMirroring.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BusMirroring.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

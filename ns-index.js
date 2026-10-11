@@ -22,7 +22,7 @@
 (function () {
   "use strict";
   var SVGNS = "http://www.w3.org/2000/svg";
-  var ORDER_KEY = "nsx-fold-order", BY_KEY = "nsx-group-by", W_KEY = "nsx-aside-w", TDOCK_KEY = "nsx-titledock";
+  var ORDER_KEY = "nsx-fold-order", BY_KEY = "nsx-group-by", W_KEY = "nsx-aside-w", TDOCK_KEY = "nsx-titledock", TOPDOCK_KEY = "nsx-topdock";
   var ICON_DOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7M5 6.5l3 3 3-3M2.5 13h11"/></svg>';
   var ICON_CLOSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
 
@@ -167,6 +167,14 @@
       mainH1.parentNode.insertBefore(cluCards, mainH1);
     }
 
+    // ---- Seitenspannende Dropzone über die volle Breite (Themenkarte & Guides)
+    var topDock = document.querySelector(".nsx-topdock");
+    if (!topDock && root) {
+      topDock = document.createElement("div");
+      topDock.className = "nsx-topdock";
+      root.parentNode.insertBefore(topDock, root);
+    }
+
     // ---- Titelleiste des Namespace bleibt oben stehen
     var title = document.querySelector("main > h1");
     function pinH() { return title ? title.offsetHeight : 0; }
@@ -181,17 +189,34 @@
     // ---- Dokumentationsabschnitte: Inhalt erscheint nur noch in der Detailansicht
     document.querySelectorAll("details.nsx-doc").forEach(function (d) { d.hidden = true; });
 
-    // ---- User Guide und Implementer's Guide der Seite als erste Folds der Mitte (Dokumentreihenfolge)
-    var guideFold = null, seenKinds = {};
+    // Schlüssel der Titelleiste: „guide“/„impl“ bleiben dem ersten Fold der Art (der
+    // Übersicht am nächsten). Weitere Guides (z. B. Cluster Guide neben User Guide)
+    // bekommen einen eigenen andockbaren Schlüssel; ein gemerktes „guide“ springt
+    // dadurch nicht auf einen anderen Fold.
+    function titleKeyKind(k) {
+      var m = /^(guide|impl)(?:-[A-Za-z0-9_-]+)?$|^(map|uml)$/.exec(k || "");
+      return m ? (m[1] || m[2]) : "";
+    }
+    var usedFoldKeys = {};
+    function allocFoldKey(el, kind) {
+      if (!usedFoldKeys[kind]) { usedFoldKeys[kind] = true; return kind; }
+      var slug = (el.getAttribute("id") || "").replace(/[^A-Za-z0-9_-]/g, "");
+      var base = slug ? kind + "-" + slug : kind;
+      var key = slug ? base : kind + "-2", n = 2;
+      while (usedFoldKeys[key]) { n += 1; key = base + "-" + n; }
+      usedFoldKeys[key] = true;
+      return key;
+    }
+    // ---- User Guide, Cluster Guide und Implementer's Guide als erste Folds der Mitte
+    var guideFold = null;
     for (var p = root.previousElementSibling, prevP; p; p = prevP) {
       prevP = p.previousElementSibling;   // vor dem Umhängen merken
       if (p.tagName === "DETAILS" && p.classList.contains("fold") && !p.classList.contains("nsx-doc") && p.querySelector(".ai")) {
         var gkind = p.classList.contains("impl-fold") ? "impl" : "guide";
-        if (seenKinds[gkind]) continue;
-        seenKinds[gkind] = true;
+        var key = allocFoldKey(p, gkind);
         p.classList.add("nsx-fold");
-        p.setAttribute("data-fold", gkind);
-        if (gkind === "guide" || !guideFold) guideFold = p;
+        p.setAttribute("data-fold", key);
+        if (key === "guide" || (key === "impl" && !guideFold)) guideFold = p;
         var sm = p.querySelector("summary");
         if (sm && !sm.querySelector(".nsx-grip")) {
           var gr = document.createElement("span");
@@ -221,7 +246,10 @@
     // diagramm einer Klassenseite): je Überschrift ein Fold der Mitte hinter den Guides
     (function () {
       var kids = [], cur = null, n = 0;
-      var at = Array.prototype.filter.call(folds.children, function (x) { return !/^(guide|impl)$/.test(x.getAttribute("data-fold") || ""); })[0] || null;
+      var at = Array.prototype.filter.call(folds.children, function (x) {
+        var k = titleKeyKind(x.getAttribute("data-fold") || "");
+        return k !== "guide" && k !== "impl";
+      })[0] || null;
       for (var q = root.previousElementSibling; q; q = q.previousElementSibling) kids.unshift(q);
       kids.forEach(function (k) {
         if (k.matches("h2.sect")) {
@@ -254,11 +282,19 @@
     });
 
     // ---- Reihenfolge der Folds
-    function foldList() { return Array.prototype.filter.call(folds.children, function (x) { return x.matches("details[data-fold]"); }); }
+    function foldList() {
+      var list = Array.prototype.filter.call(folds.children, function (x) { return x.matches("details[data-fold]"); });
+      if (topDock) {
+        Array.prototype.forEach.call(topDock.children, function (x) {
+          if (x.matches("details[data-fold]") && list.indexOf(x) < 0) list.push(x);
+        });
+      }
+      return list;
+    }
     function applyOrder() {
       var order = (load(ORDER_KEY) || "").split(",").filter(Boolean);
       if (!order.length) return;
-      var fl = foldList();
+      var fl = Array.prototype.filter.call(folds.children, function (x) { return x.matches("details[data-fold]"); });
       fl.slice().sort(function (a, b) {
         var ia = order.indexOf(a.getAttribute("data-fold")), ib = order.indexOf(b.getAttribute("data-fold"));
         if (ia < 0) ia = 99 + fl.indexOf(a);
@@ -269,8 +305,9 @@
     function saveOrder() { save(ORDER_KEY, foldList().map(function (f) { return f.getAttribute("data-fold"); }).join(",")); }
     applyOrder();
     var dragging = null;
-    folds.querySelectorAll(".nsx-grip").forEach(function (g) {
-      var gl = (canTitleDock(g.closest("details")) ? labels.gripdock : labels.grip) || "";
+    function bindGrip(g) {
+      var d = g.closest("details");
+      var gl = (canTopDock(d) || canTitleDock(d) ? labels.gripdock : labels.grip) || "";
       g.setAttribute("title", gl);
       g.setAttribute("aria-label", gl);
       g.addEventListener("click", function (ev) { ev.preventDefault(); ev.stopPropagation(); });
@@ -278,7 +315,12 @@
       g.addEventListener("keydown", function (ev) {
         if (ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
         ev.preventDefault();
-        var f = g.closest("details"), fl = foldList().filter(function (x) { return !x.classList.contains("nsx-tdocked"); }), i = fl.indexOf(f);
+        var f = g.closest("details");
+        if (f.classList.contains("nsx-topdocked")) {
+          if (ev.key === "ArrowDown") undockTop(f);
+          return;
+        }
+        var fl = foldList().filter(function (x) { return !x.classList.contains("nsx-tdocked"); }), i = fl.indexOf(f);
         if (ev.key === "ArrowUp" && i === 0 && canTitleDock(f)) { dockTitle(f); return; }
         if (ev.key === "ArrowUp" && i > 0) folds.insertBefore(f, fl[i - 1]);
         else if (ev.key === "ArrowDown" && i < fl.length - 1) folds.insertBefore(fl[i + 1], f);
@@ -286,19 +328,24 @@
         g.focus();
         saveOrder();
       });
-    });
-    folds.addEventListener("dragstart", function (ev) {
+    }
+    folds.querySelectorAll(".nsx-grip").forEach(bindGrip);
+    function onDragStart(ev) {
       var f = ev.target.closest && ev.target.closest("details[data-fold]");
       if (!f || !f.draggable) return;
       dragging = f;
-      f._fromTitle = false;
+      f._fromTitle = f.classList.contains("nsx-tdocked");
+      f._fromTop = f.classList.contains("nsx-topdocked");
       f._dropped = false;
       f.classList.add("nsx-dragging");
       root.classList.add("nsx-dnd");
+      if (canTopDock(f) && topDock) topDock.classList.add("nsx-drop-zone");
       if (canTitleDock(f)) title.classList.add("nsx-drop-zone");
       ev.dataTransfer.effectAllowed = "move";
       try { ev.dataTransfer.setData("text/plain", f.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
-    });
+    }
+    folds.addEventListener("dragstart", onDragStart);
+    if (topDock) topDock.addEventListener("dragstart", onDragStart);
     // Ablagefläche ist die ganze mittlere Spalte, nicht nur die Folds: Ist die Mitte leer
     // (alles angedockt, nichts ausgewählt), war sie nur so hoch wie der Hinweis, und ein
     // Reiter, der darunter losgelassen wurde, dockte wieder an (Aufnahme 12:24)
@@ -324,7 +371,17 @@
       if (ev.clientY < vis[0].getBoundingClientRect().top) folds.insertBefore(dragging, vis[0]);
       else if (ev.clientY > vis[vis.length - 1].getBoundingClientRect().bottom) folds.insertBefore(dragging, vis[vis.length - 1].nextSibling);
     });
-    dropZone.addEventListener("drop", function (ev) { if (dragging) { ev.preventDefault(); dragging._dropped = true; } });
+    dropZone.addEventListener("drop", function (ev) {
+      if (!dragging) return;
+      ev.preventDefault();
+      var at = { x: ev.clientX, y: ev.clientY };
+      if (dropZoneAt(at) === "top" && canTopDock(dragging)) {
+        dragging._dropped = true;
+        dockTop(dragging);
+      } else {
+        dragging._dropped = true;
+      }
+    });
     // Ablage nicht allein am drop-Ereignis festmachen: Manche Browser (Aufnahme 13:02, Safari)
     // liefern es nicht zuverlässig, der Fold flog dann kommentarlos zurück. Maßgeblich ist die
     // letzte Zeigerposition während des Zugs: Titelleiste (mit 16 px Toleranz) oder mittlere
@@ -335,6 +392,7 @@
     function dropZoneAt(p) {
       if (!p) return null;
       if (title && inRect(p, title.getBoundingClientRect(), 16)) return "title";
+      if (topDock && inRect(p, topDock.getBoundingClientRect(), 24)) return "top";
       var z = dropZone.getBoundingClientRect();
       if (p.x >= z.left && p.x <= z.right && p.y >= z.top) return "center";
       return null;
@@ -357,17 +415,25 @@
     document.addEventListener("dragend", function () {
       if (!dragging) return;
       root.classList.remove("nsx-dnd");
+      if (topDock) topDock.classList.remove("nsx-drop-zone", "nsx-drop-over");
       if (title) title.classList.remove("nsx-drop-zone", "nsx-drop-over");
       var at = lastDrag, zone = dropZoneAt(at);
       lastDrag = null;
       if (!dragging._dropped) {
-        if (zone === "title" && !dragging._fromTitle && canTitleDock(dragging)) {
+        if (zone === "top" && canTopDock(dragging)) {
+          dragging._dropped = true;
+          dockTop(dragging);
+        } else if (zone === "title" && !dragging._fromTitle && canTitleDock(dragging)) {
           dragging._dropped = true;
           dockTitle(dragging);
         } else if (zone === "center") {
           dragging._dropped = true;
           if (dragging._fromTitle && dragging.classList.contains("nsx-tdocked")) undockTitle(dragging, undefined, true);
-        } else if (!zone && (dragging._fromTitle || canTitleDock(dragging))) showDropHint(at);
+          if (dragging.classList.contains("nsx-topdocked")) undockTop(dragging);
+        } else if (!zone && (dragging._fromTitle || dragging.classList.contains("nsx-topdocked") || canTitleDock(dragging) || canTopDock(dragging))) showDropHint(at);
+      }
+      if (dragging._fromTop && zone === "center") {
+        undockTop(dragging);
       }
       // Aus der Titelleiste gezogen: in der Mitte abgelegt → endgültig gelöst,
       // sonst (abgebrochen, auf der Leiste losgelassen) bleibt der Reiter angedockt
@@ -386,7 +452,12 @@
       saveOrder();
       if (selected) drawArrows(selected);
     });
-    document.addEventListener("pointerup", function () { foldList().forEach(function (f) { if (f !== dragging) f.draggable = false; }); });
+    document.addEventListener("pointerup", function () {
+      foldList().forEach(function (f) { if (f !== dragging) f.draggable = false; });
+      if (topDock) {
+        topDock.querySelectorAll("details.nsx-fold").forEach(function (f) { if (f !== dragging) f.draggable = false; });
+      }
+    });
 
     function isClassRow(r) { return r.getAttribute("data-kind") === "class"; }
     // Einträge mit eigener Seite (Klassen, Service-Interfaces): Detailansicht lädt die ganze Seite
@@ -436,7 +507,7 @@
     // Knopf im Panel, Pfeil-ab am Reiter) löst ihn wieder. Tastatur: Pfeil-auf am
     // Griff des obersten Folds dockt an.
     var tdock = null, popFold = null;
-    function canTitleDock(f) { return !!(title && f && /^(guide|impl|map|uml)$/.test(f.getAttribute("data-fold") || "")); }
+    function canTitleDock(f) { return !!(title && f && titleKeyKind(f.getAttribute("data-fold"))); }
     function foldLabel(f) {
       var h = f.querySelector("summary > h2");
       if (!h) return f.getAttribute("data-fold");
@@ -550,11 +621,105 @@
       saveOrder();
       if (selected) drawArrows(selected);
     }
+    // ---- Seitenspannendes Andocken oberhalb der Überschrift (Themenkarte & Cluster-Guide)
+    var topDockKey = TOPDOCK_KEY + (isCls ? "-cls" : "");
+    function canTopDock(f) {
+      if (!f) return false;
+      var k = f.getAttribute("data-fold") || "";
+      var kind = titleKeyKind(k);
+      return kind === "map" || (kind === "guide" && k !== "guide");
+    }
+    function saveTopDock() {
+      if (!topDock) return;
+      var keys = Array.prototype.map.call(topDock.querySelectorAll(":scope > details[data-fold]"), function (f) {
+        return f.getAttribute("data-fold");
+      }).filter(Boolean);
+      save(topDockKey, keys.join(","));
+    }
+    function dockTop(f) {
+      if (!f || !canTopDock(f) || !topDock) return;
+      if (f.classList.contains("nsx-tdocked")) undockTitle(f);
+      f.classList.add("nsx-topdocked");
+      f.classList.remove("nsx-tdocked", "nsx-pop", "nsx-pop-shift");
+      ["top", "left", "width"].forEach(function (k) { f.style[k] = ""; });
+      f.open = true;
+      if (f.parentNode !== topDock) {
+        f._origNext = f.nextSibling;
+        topDock.appendChild(f);
+      }
+      var sm = f.querySelector("summary");
+      if (sm && !sm.querySelector(".nsx-backbtn")) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "nsx-hbtn nsx-backbtn";
+        btn.setAttribute("aria-label", labels.tback || "In die Mitte zurück");
+        btn.title = labels.tback || "In die Mitte zurück";
+        btn.innerHTML = ICON_CLOSE;
+        btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          undockTop(f);
+        });
+        sm.appendChild(btn);
+      }
+      saveTopDock();
+      updateEmpty();
+      if (selected) drawArrows(selected);
+    }
+    function undockTop(f) {
+      if (!f || !f.classList.contains("nsx-topdocked")) return;
+      f.classList.remove("nsx-topdocked");
+      var restoreTarget = (f._origNext && f._origNext.parentNode === folds) ? f._origNext : folds.firstChild;
+      folds.insertBefore(f, restoreTarget);
+      applyOrder();
+      saveTopDock();
+      updateEmpty();
+      if (selected) drawArrows(selected);
+    }
+    function applyTopDock() {
+      if (!topDock) return;
+      var saved = (load(topDockKey) || "").split(",").filter(Boolean);
+      if (!saved.length) return;
+      saved.forEach(function (k) {
+        var f = foldByKey(k);
+        if (f && canTopDock(f)) dockTop(f);
+      });
+    }
+    if (topDock) {
+      topDock.addEventListener("dragover", function (ev) {
+        if (!dragging || !canTopDock(dragging)) return;
+        ev.preventDefault();
+        try { ev.dataTransfer.dropEffect = "move"; } catch (e) {}
+        topDock.classList.add("nsx-drop-over");
+      });
+      topDock.addEventListener("dragleave", function (ev) {
+        if (!topDock.contains(ev.relatedTarget)) topDock.classList.remove("nsx-drop-over");
+      });
+      topDock.addEventListener("drop", function (ev) {
+        if (!dragging || !canTopDock(dragging)) return;
+        ev.preventDefault();
+        dragging._dropped = true;
+        dockTop(dragging);
+      });
+      topDock.addEventListener("click", function (ev) {
+        var back = ev.target.closest(".nsx-backbtn");
+        if (back) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          var f = back.closest("details[data-fold]");
+          if (f) undockTop(f);
+        }
+      });
+    }
     // Ist die Mitte leer (alles angedockt, nichts ausgewählt), steht dort der Hinweis
     var emptyHint = detBody && detBody.querySelector(".nsx-hint");
     if (emptyHint) folds.setAttribute("data-empty", emptyHint.textContent.trim());
     function updateEmpty() { folds.classList.toggle("nsx-empty", !foldList().some(function (f) { return !f.hidden && !f.classList.contains("nsx-tdocked"); })); }
-    function foldByKey(k) { return folds.querySelector('details[data-fold="' + k + '"]'); }
+    function foldByKey(k) {
+      return (folds && folds.querySelector('details[data-fold="' + k + '"]')) ||
+             (topDock && topDock.querySelector('details[data-fold="' + k + '"]')) ||
+             document.querySelector('details.nsx-fold[data-fold="' + k + '"]');
+    }
     if (tdock) {
       tdock.addEventListener("click", function (ev) {
         var b = ev.target.closest(".nsx-tab");
@@ -1662,7 +1827,10 @@
         ev.preventDefault();
         var hf = hb.closest("details");
         if (hb.classList.contains("nsx-closebtn")) deselect();
-        else if (hb.classList.contains("nsx-backbtn")) undockTitle(hf, folds.firstChild);
+        else if (hb.classList.contains("nsx-backbtn")) {
+          if (hf && hf.classList.contains("nsx-topdocked")) undockTop(hf);
+          else undockTitle(hf, folds.firstChild);
+        }
         return;
       }
       var by = t.closest(".nsx-by button");
@@ -1790,6 +1958,7 @@
     var td = (load(tdockKey) || "").split(",").filter(function (k) { return k && foldByKey(k); });
     tdDefault.forEach(function (k) { if (td.indexOf(k) < 0) td.push(k); });
     td.forEach(function (k) { dockTitle(foldByKey(k)); });
+    applyTopDock();
 
     // Klick auf eine leere Fläche löst die Auswahl; der Inspektor folgt dann wieder
     // dem Mauszeiger. Lesebereiche (Detailansicht, Guide-Text, Inspektor) und
@@ -1808,7 +1977,7 @@
       var t = ev.target;
       if (ev.button !== 0 || !t.closest || !root.contains(t) && !(title && title.contains(t))) return;
       if (t.closest("a, button, summary, input, select, textarea, label, [role=button], [tabindex], [data-jump], .nsx-chip, .nsx-oi, " +
-        ".nsx-detbody, .nsx-rel, details[data-fold=guide] > :not(summary), .nsx-tdock, .nsx-og")) return;
+        ".nsx-detbody, .nsx-rel, details[data-fold=guide] > :not(summary), details[data-fold^=\"guide-\"] > :not(summary), .nsx-tdock, .nsx-og")) return;
       if (window.getSelection && String(getSelection())) return;
       release();
     });

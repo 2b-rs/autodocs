@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_8_7_3_3_SocketOwner_functions</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TcpIp.pdf</strong> (Seite 118)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=118" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></strong> (Seite 118)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TcpIp_00221" class="swsref internal-spec-ref"><code>SWS_TcpIp_00221</code></a></span>
         </div>
@@ -115,7 +116,160 @@ Description
 The TCP/IP stack calls this primitive after the reception of data on a socket. The socket
 identifier along with configuration information determines which module is to be called.
 Available via
-SoAd.h if</div></section>
+SoAd.h if the respective TcpIpSocketOwnerUpperLayerType is SOAD, otherwise TcpIpSocket
+OwnerHeaderFileName
+⌋
+8.7.3.3.2
+&lt;Up_TcpIpEvent&gt;
+[SWS_TCPIP_00224] Definition of configurable interface &lt;Up_TcpIpEvent&gt;
+Upstream requirements: SRS_Eth_00103
+⌈
+Service Name
+&lt;Up_TcpIpEvent&gt;
+Syntax
+void &lt;Up_TcpIpEvent&gt; (
+TcpIp_SocketIdType SocketId,
+TcpIp_EventType Event
+)
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+SocketId
+Socket identifier of the related local socket resource.
+Parameters (in)
+Event
+This parameter contains a description of the event just
+encountered.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+▽
+△
+Description
+This service gets called if the stack encounters a condition described by the values in Event.
+Available via
+SoAd.h if the respective TcpIpSocketOwnerUpperLayerType is SOAD, otherwise TcpIpSocket
+OwnerHeaderFileName
+⌋
+8.7.3.3.3
+&lt;Up_TxConfirmation&gt;
+[SWS_TCPIP_00225] Definition of configurable interface &lt;Up_TxConfirmation&gt;
+Upstream requirements: SRS_Eth_00103
+⌈
+Service Name
+&lt;Up_TxConfirmation&gt;
+Syntax
+void &lt;Up_TxConfirmation&gt; (
+TcpIp_SocketIdType SocketId,
+uint16 Length
+)
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant for different SocketIds. Non reentrant for the same SocketId.
+SocketId
+Socket identifier of the related local socket resource.
+Parameters (in)
+Length
+Number of transmitted data bytes.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+The TCP/IP stack calls this function after the data has been acknowledged by the peer for TCP.
+Caveats: The upper layer might not be able to determine exactly which data bytes have been
+confirmed.
+Available via
+SoAd.h if the respective TcpIpSocketOwnerUpperLayerType is SOAD, otherwise TcpIpSocket
+OwnerHeaderFileName
+⌋
+8.7.3.3.4
+&lt;Up_TcpAccepted&gt;
+[SWS_TCPIP_00226] Definition of configurable interface &lt;Up_TcpAccepted&gt;
+Upstream requirements: SRS_Eth_00103
+⌈
+Service Name
+&lt;Up_TcpAccepted&gt;
+Syntax
+Std_ReturnType &lt;Up_TcpAccepted&gt; (
+TcpIp_SocketIdType SocketId,
+TcpIp_SocketIdType SocketIdConnected,
+const TcpIp_SockAddrType* RemoteAddrPtr
+)
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+▽
+△
+SocketId
+Socket identifier of the related local socket resource which has
+been used at TcpIp_Bind()
+SocketIdConnected
+Socket identifier of the local socket resource used for the
+established connection.
+Parameters (in)
+RemoteAddrPtr
+IP address and port of the remote host.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+Result of operation
+E_OK upper layer accepts the established connection
+E_NOT_OK upper layer refuses the established connection, TcpIp
+stack shall close the connection.
+Description
+This service gets called if the stack put a socket into the listen mode before (as server) and a
+peer connected to it (as client). In detail: The TCP/IP stack calls this function after a socket was
+set into the listen state with TcpIp_TcpListen() and a TCP connection is requested by the peer.
+Available via
+SoAd.h if the respective TcpIpSocketOwnerUpperLayerType is SOAD, otherwise TcpIpSocket
+OwnerHeaderFileName
+⌋
+8.7.3.3.5
+&lt;Up_TcpConnected&gt;
+[SWS_TCPIP_00227] Definition of configurable interface &lt;Up_TcpConnected&gt;
+Upstream requirements: SRS_Eth_00103
+⌈
+Service Name
+&lt;Up_TcpConnected&gt;
+Syntax
+void &lt;Up_TcpConnected&gt; (
+TcpIp_SocketIdType SocketId
+)
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+Parameters (in)
+SocketId
+Socket identifier of the related local socket resource.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+This service gets called if the stack initiated a TCP connection before (as client) and the peer
+(the server) acknowledged the connection set up. In detail: The TCP/IP stack calls this function
+after a socket was requested to connect with TcpIp_TcpConnect() and a TCP connection is
+confirmed by the peer. The parameter value of SocketId equals the SocketId value of the
+preceeding TcpIp_TcpConnect() call.
+Available via
+SoAd.h if the respective TcpIpSocketOwnerUpperLayerType is SOAD, otherwise TcpIpSocket
+OwnerHeaderFileName
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -128,7 +282,7 @@ SoAd.h if</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TcpIp.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=118" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

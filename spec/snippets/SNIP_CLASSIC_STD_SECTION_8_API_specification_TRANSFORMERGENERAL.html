@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_API_specification_TRANSFORMERGENERAL</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ASWS_TransformerGeneral.pdf</strong> (Seite 40)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_ASWS_TransformerGeneral.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ASWS_TransformerGeneral.pdf</a></strong> (Seite 40)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00105" class="swsref internal-spec-ref"><code>SWS_Xfrm_00105</code></a></span>
         </div>
@@ -105,7 +106,40 @@ hand over a NULL pointer to the transformer.
 Parameters (in)
 inputBufferLength
 This argument holds the length of the transformer’s input data (in
-the inputBuffer argument). If executeDespite</div></section>
+the inputBuffer argument). If executeDespiteDataUnavailability is
+set to true and the RTE cannot provide data as input to the
+transformer, the length will be equal to 0.
+Parameters (inout)
+buffer
+This argument is only an INOUT argument for transformers which
+are not configured for out-of-place transformation. It is the buffer
+where the input data are placed by the RTE and which is filled by
+the transformer with its output. If executeDespiteData
+Unavailability is set to true and the RTE cannot provide data as
+input to the transformer, it will hand over a NULL pointer to the
+transformer.
+csTransactionHandle
+Optional pointer to the transaction handle for the C/S method call.
+- Used to tunnel the relevant information from the request to the
+response at the server side via the RTE. This argument only
+exists if the corresponding XfrmImplementationMapping has a
+XfrmCSTansactionHandleImplementationDataTypeRef which
+references an ImplementationDataType.
+buffer
+This argument is only an OUT argument for transformers
+configured for out-of-place transformation. It is the buffer
+allocated by the RTE, where the transformed data has to be
+stored by the transformer.
+Parameters (out)
+bufferLength
+Here, the transformer informs the Rte how large the output data
+really were. It is possible that the length of the output is shorter
+than the maximum buffer size allocated.
+Return value
+uint8
+0x00 (E_OK): Transformation successful
+0x01 - 0xff: Specific errors
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -118,7 +152,7 @@ the inputBuffer argument). If executeDespite</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ASWS_TransformerGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_ASWS_TransformerGeneral.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ASWS_TransformerGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

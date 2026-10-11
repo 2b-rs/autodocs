@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: ecum</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_1_Introduction_and_functional_overview</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_HWTestManager.pdf</strong> (Seite 6)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_HWTestManager.pdf#page=5" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_HWTestManager.pdf</a></strong> (Seite 6)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_BRF_01408" class="swsref"><code>RS_BRF_01408</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_02811" class="swsref internal-spec-ref"><code>SWS_EcuM_02811</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,63 @@ from an AR standardized module HTMSS. The MSTP wrapper can be implemented
 manually or can be generated/configured using AUTOSAR methodology/process.
 The HTMSS module pre-integration requirements are:
   It shall be possible to run Microcontroller Specific Test Package (MSTP)
-startup and shutdown tests on the device under</div></section>
+startup and shutdown tests on the device under development
+ The test results/status are available to the HTMSS module access
+up and shutdown
+ It shall be possible to configure the MSTP start up and shutdown tests via
+HTMSS module
+The role of HTMSS module in different phases of the standard AUTOSAR software
+execution platform is depicted below.
+Note: The HTMSS concept may be considered for integration in AUTOSAR
+architecture to achieve safety goals for a safety relevant ECU, but it is NOT
+mandatory always.
+Figure 2 HTMSS phases overview
+Note: The HTMSS phases described below are for explaining the functionalities of
+HTMSS module in a typical AUTOSAR ECU software execution environment. These
+phases shall NOT be referred to the phases defined in EcuM.
+ HTMSS Phase 1:
+Before  AUTOSAR OS – This phase is delimited by the MCU reset to
+the call to StartOS() function. During this state there a wide range of
+possibilities for execution of various types of tests. The MCU periphery
+and AUTOSAR is not initialized at first, this provides potential
+opportunity for executing destructive tests, MCU built-in tests, fault
+injection tests etc. That phase is also used to evaluate the results
+obtained by tests during shutdown phase, through the reset logic.
+During AUTOSAR HW/SW Initialization by EcuM_Init(), it is possible to
+execute further diagnostic tests within the AUTOSAR context. Rather
+non-destructive tests can be executed within EcuM.
+The HTMSS will be fully available at the end of Phase 2, since it
+requires integral parts of AUTOSAR to be executed as a System
+Service.
+HTMSS Phase 2:
+AUTOSAR OS and SW-C initialization – the phase is delimited by the
+start of AUTOSAR OS using the function call StartOS() until the
+up and shutdown
+complete AUTOSAR is initialized including application software
+components.
+During this phase, the diagnostic test results can be provided by
+HTMSS and consumed by Safety SW-C for further decisions.
+HTMSS Phase 3:
+AUTOSAR executing safety function – During this phase, the system
+has started the intended functionality and safety function is part of it.
+The phase is suitable for monitoring mechanisms accommodation as
+well as some built-in diagnostic mechanisms, which could be single or
+latent fault contributors – ECC fault detection mechanisms, ADC
+operational capabilities etc. The HTMSS concept does not support
+Runtime Tests yet (which is a different set of tests), therefore HTMSS
+can only provide test results from the previously executed Startup and
+Shutdown tests during Phase 3.
+HTMSS Phase 4:
+AUTOSAR shutdown. This phase offers a possibility to execute tests,
+which are not preferable to be executed at any other phase (for
+example the execution time is too long) and which are able to
+communicate their results over an MCU reset. The results can be
+evaluated during a subsequent MCU startup.
+up and shutdown</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Hardware test management integration at service layer</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EcuM_Init().</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +155,7 @@ startup and shutdown tests on the device under</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_HWTestManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_HWTestManager.pdf#page=5" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_HWTestManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,15 +167,15 @@ startup and shutdown tests on the device under</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=RS_BRF_01408" class="swsref"><code>RS_BRF_01408</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_02811" class="swsref internal-spec-ref"><code>SWS_EcuM_02811</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

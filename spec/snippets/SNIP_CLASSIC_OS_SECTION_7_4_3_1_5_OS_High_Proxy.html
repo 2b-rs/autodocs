@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_4_3_1_5_OS_High_Proxy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SoftwareClusterConnection.pdf</strong> (Seite 144)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=144" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></strong> (Seite 144)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_02230" class="swsref internal-spec-ref"><code>SWS_SwCluC_02230</code></a></span>
+          <span>Ziel-Element: SWS_SwCluC_CONSTR_02283</span>
         </div>
       </div>
 
@@ -102,11 +103,112 @@ Task returns without effect.⌋
 [SWS_SwCluC_02214]
 Upstream requirements: SRS_SwCluC_00214
 ⌈In an Application Software Cluster, the Os High Proxy shall provide a ’
-ChainTask’ API which is implemented as macro and mu</div></section>
+ChainTask’ API which is implemented as macro and must contain a return state-
+ment.⌋
+Please note: The OS Task chaining can only be handled in the OS implementation in
+the Host Software Cluster.
+[SWS_SwCluC_CONSTR_02282] Constraint for ChainTask
+Upstream requirements: SRS_SwCluC_00214
+⌈In an Application Software Cluster, the ’ChainTask’ API shall only be called
+at the end of the function body of an ’OS Task’.⌋
+[SWS_SwCluC_02215]
+Upstream requirements: SRS_SwCluC_00214
+⌈In an Application Software Cluster, the Os High Proxy shall provide a ’
+TerminateTask’ API which is implemented as a macro and must contain a return
+statement.⌋
+Please note: The real OS Task termination can only be handled in the OS implemen-
+tation in the Host Software Cluster.
+[SWS_SwCluC_CONSTR_02283] Constraint for TerminateTask
+Upstream requirements: SRS_SwCluC_00214
+⌈In an Application Software Cluster, the ’TerminateTask’ API shall only be
+called at the end of the function body of an ’OS Task’.⌋
+Rationale:
+When developing an Application Software Cluster, the Os High Proxy has
+no ability to call to the ’real’ Os to activate or terminate tasks based on calls to ’Chain-
+Task’, ’ActivateTask’ or ’TerminateTask’. However, this does not mean that calls
+to these functions cannot exist within application cluster code. It simply means that a
+SwCluC module implementation must contain ’stub’ representations of these functions
+module
+in an Os High Proxy which have no effect when called within an application cluster
+which has not been integrated in the final system which includes a Host Software
+Cluster.
+However, given that application clusters will eventually be integrated together with a
+host cluster, code in an application cluster must follow some rules to ensure that their
+usage of task management APIs do not clash with the intended use case of cyclic
+execution in cluster based configurations.
+Note:
+Where
+constraints
+[SWS_SwCluC_CONSTR_02282]
+and
+[SWS_SwCluC_CONSTR_02283] restrict the usage of ChainTask and Termi-
+nateTask in an Application Software Cluster, no such constraint exists to
+restrict the usage of ’ActivateTask’.
+In a clustered software architecture, the dynamic behavior of the ECU is controlled by
+the Host Software Cluster. Hence, the Host Software Cluster is in charge
+to control the activation of OS Tasks.
+Nevertheless, use cases may exist to sporadically activate OS Tasks on demand of an
+Application Software Cluster. For this reason, the ActivateTask API is offered
+by the Os High Proxy which is fully functional in case of [SWS_SwCluC_02213].
+In opposite to ’TerminateTask’ and ’ChainTask’ the ’ActivateTask’ API usage
+is not bound to the task body. The usage of ’ActivateTask’ APIs in Application
+Software Cluster needs to be carefully aligned with the overall dynamic scheduling
+concept of the ECU!.
+[SWS_SwCluC_02216]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os High Proxy shall provide default handles for resources, in case a connec-
+tion to the host system could not be established successfully between Application
+Software Cluster and the Host Software Cluster. The default implementa-
+tion shall be a neutral behavior, with the return value E_OK, to support "standard status"
+from OS.⌋
+See the section 7.4.3.1.6 ’Os Low Proxy’, for an explanation of how a missing connec-
+tion is handled in the Host Software Cluster.
+[SWS_SwCluC_02217]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os High Proxy shall have a service resource SwCluCOsProxyOsTask, for
+each OsTask required in the Application Software Cluster. For this resource,
+an entry in the Binary Manifest shall be created, to be able to link the task to its
+OsLowProxy implementation in the Host Software Cluster. Since the content of
+the OsTask is created by the RTE, this API shall be used and registered as service
+resource. It is recommended that this resource is marked with the mandatory flag (
+SwCluCBManifIsMandatory).⌋
+module
+[SWS_SwCluC_02218]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os High Proxy shall contain a required service resource SwCluCOsProx-
+yOsTaskDispatcher. The Proxy-OsTask shall be called in that context. For this re-
+source, an entry in the Binary Manifest shall be created, to be able to link it to the
+OsLowProxy dispatcher in the Host Software Cluster. It is recommended that
+this resource is marked with the mandatory flag ( SwCluCBManifIsMandatory).⌋
+[SWS_SwCluC_02219]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os High Proxy shall contain a required service resource SwCluCOsProxy-
+FunctionDispatcher. This function dispatcher is used to call functions in context
+of the Host Software Cluster. For this resource, an entry in the Binary Mani-
+fest shall be created, to be able to link it to the OsLowProxy dispatcher in the Host
+Software Cluster.⌋
+For example, to call an Application Software Cluster local Bsw-Module Init
+function, in dedicated context of the Host Software Cluster.
+[SWS_SwCluC_02220]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os High Proxy shall contain a required service resource SwCluCOsProx-
+yOsBaseSocket. This collects all hooks needed to be linked to the Host Soft-
+ware Cluster. It also contains Application Software Cluster local Os spe-
+cific functions for StartOs, initialize and shutdown. It should also cover the local IOC,
+if present. It is recommended that this resource is marked with the mandatory flag (
+SwCluCBManifIsMandatory).⌋
+Please note: This is highly vendor specific.
+[SWS_SwCluC_02221]
+Upstream requirements: SRS_SwCluC_00214
+⌈Since an Application Software Cluster can contain several OS Applica-
+tions, the Os High Proxy shall be able to provide a local IOC implementation for
+the cluster internal communication paths between OS Applications. The link to the
+Host Software Cluster shall be established as part of the SwCluCOsProxyOs-
+BaseSocket service resource.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_02230] im Text von SWS_SoftwareClusterConnection.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_CONSTR_02283] im Text von SWS_SoftwareClusterConnection.</p>
       </section>
 
       <section class="snip-card">
@@ -115,7 +217,7 @@ ChainTask’ API which is implemented as macro and mu</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SoftwareClusterConnection.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=144" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -127,7 +229,7 @@ ChainTask’ API which is implemented as macro and mu</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_02230" class="swsref internal-spec-ref"><code>SWS_SwCluC_02230</code></a></td>
+              <td>SWS_SwCluC_CONSTR_02283</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

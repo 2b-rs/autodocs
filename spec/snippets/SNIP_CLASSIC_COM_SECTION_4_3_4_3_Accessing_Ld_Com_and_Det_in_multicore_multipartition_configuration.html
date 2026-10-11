@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_3_4_3_Accessing_Ld_Com_and_Det_in_multicore_multipartition_configuration</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 343)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=342" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 343)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08903" class="swsref internal-spec-ref"><code>SWS_Rte_08903</code></a></span>
         </div>
@@ -88,7 +89,45 @@ to this data are in different partitions on different cores.
 The RTE has to transmit the data to the COM instance’s partition. It can use
 the IOC to do so. There it has to pass the data to COM using the COM APIs.
 One option is to call the COM APIs on each data production. In cases where the
-data produc</div></section>
+data production rate is bursty or higher than the COM TX frequency, this leads
+to high resource consumption. To reduce the load the COM instance offers to
+configure a transmission preparation callback (Rte_COMCbkTxPrep_mn), which
+it calls just before it starts signal evaluation and handing over the data to PduR.
+The RTE can call the COM APIs from there if new data is available.
+2. The data producer and the COM instance responsible for the signal related
+to this data are in different partitions on the same core.
+The RTE can use the same mechanisms as above. It could also a trusted
+function call (see section 4.3.4.6) to call the COM APIs.
+3. The data producer and the COM instance responsible for the signal related
+to this data are in the same partition.
+The RTE can call the COM APIs directly. But RTE can also use the COM APIs
+in the context of the Rte_COMCbk notification callback depending on the RTE
+implementation.
+The following scenarios are possible for inter-ECU communication in receiving direc-
+tion:
+1. The data consumer and the COM instance responsible for the signal related
+to this data are in different partitions on different cores.
+The RTE can be informed via the notification callback (Rte_COMCbk) about the
+reception of the signal or signal group.
+This callback is called by the COM
+instance responsible for this signal or signal group.
+If ComIPduSignalPro-
+cessing is configured to DEFERRED, the notification callback is called by the
+related ComMainFunctionRx (see [SWS_Com_00301]). If ComIPduSignal-
+Processing is configured to IMMEDIATE the notification callback is called by the
+related Com_RxIndication from COM instance’s partition (see [SWS_Com_-
+00300]). The RTE can call the COM APIs to receive the signal data directly in the
+callback. It can then use the IOC to pass the data into the consumer’s partition.
+2. The data consumer and the COM instance responsible for the signal related
+to this data are in different partitions on the same core.
+The RTE can use the same mechanism as above. It could also use a trusted
+function call (see section 4.3.4.6) to call the COM APIs from arbitrary posi-
+tions in the data consumer’s partition.
+3. The data consumer and the COM instance responsible for the signal related
+to this data are in the same partition.
+The RTE can call the COM APIs directly from arbitrary positions in the data con-
+sumer’s partition. But it can also use the COM notification callback (Rte_COM-
+Cbk) for runtime optimization.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +140,7 @@ data produc</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=342" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

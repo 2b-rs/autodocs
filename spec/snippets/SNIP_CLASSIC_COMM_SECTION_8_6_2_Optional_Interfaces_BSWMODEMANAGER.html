@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_8_6_2_Optional_Interfaces_BSWMODEMANAGER</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWModeManager.pdf</strong> (Seite 93)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_BSWModeManager.pdf#page=92" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWModeManager.pdf</a></strong> (Seite 93)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Com_91004" class="swsref internal-spec-ref"><code>SWS_Com_91004</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00769" class="swsref internal-spec-ref"><code>SWS_Os_00769</code></a></span>
         </div>
       </div>
 
@@ -108,11 +109,196 @@ Id to Mode. In case the transmission mode changes,
 the new mode shall immediately be effective (see
 SWS_Com_00239). In case the requested
 transmission mode was already active for this
-I-PDU, the</div></section>
+I-PDU, the call will have no effect.
+ComM_GetCurrentComMode
+ComM.h
+Function to query the current Communication Mode.
+ComM shall use the corresponding interfaces of the
+Bus State Managers to get the current
+Communication Mode of the network. (Call to Bus
+State Manager API: &lt;Bus&gt;SM _GetCurrentCom
+Mode(...))
+ComM_GetInhibitionStatus
+ComM.h
+Returns the inhibition status of a ComM channel.
+ComM_GetMaxComMode
+ComM.h
+Function to query the maximum allowed
+Communication Mode of the corresponding user.
+ComM_GetRequestedComMode
+ComM.h
+Function to query the currently requested
+Communication Mode of the corresponding user.
+ComM_GetStatus
+ComM.h
+Returns the initialization status of the AUTOSAR
+Communication Manager. After a call to ComM_De
+Init() ComM should have status COMM_UNINIT, and
+a new call to ComM_Init needed to make sure Com
+M restart internal state machines to defailt values.
+ComM_GetVersionInfo
+ComM.h
+This function returns the version information of this
+module
+▽
+△
+API Function
+Header File
+Description
+ComM_LimitChannelToNoComMode
+ComM.h
+Changes the inhibition status for the channel for
+changing from COMM_NO_COMMUNICATION to a
+higher Communication Mode. (See also ComM_
+LimitECUToNoComMode, same functionality but for
+all channels)
+ComM_LimitECUToNoComMode
+ComM.h
+Changes the inhibition status for the ECU (=all
+channels) for changing from COMM_NO_
+COMMUNICATION to a higher Communication
+Mode. (See also ComM_LimitChannelToNoCom
+Mode, same functionality but for a specific channels)
+ComM_PreventWakeUp
+ComM.h
+Changes the inhibition status COMM_NO_WAKEUP
+for the corresponding channel.
+ComM_ReadInhibitCounter
+ComM.h
+This function returns the amount of rejected
+COMM_FULL_COMMUNICATION user requests.
+ComM_RequestComMode
+ComM.h
+Requesting of a Communication Mode by a user.
+Note:
+The following modes are no vaild user requests,
+since they are used as internal modes:
+• COMM_SILENT_COMMUNICATION (this mode
+is used for synchronization at shutdown)
+• COMM_FULL_COMMUNICATION_WITH_
+WAKEUP_REQUEST (this mode is used
+internally within the ComM channel statemachine
+to trigger the lower layers to request a wakeup on
+the network if the used hardware support such a
+feature. (e.g. Ethernet hardware which is
+compatible with OA TC10).
+The following modes are valid user requests:
+• COMM_NO_COMMUNICATION
+• COMM_FULL_COMMUNICATION. The
+communication request could also be released
+due to a ComM communication inhibition
+ComM_ResetInhibitCounter
+ComM.h
+This function resets the Inhibited COMM_FULL_
+COMMUNICATION request Counter.
+ComM_SetECUGroupClassification
+ComM.h
+Changes the ECU Group Classification status (see
+chapter 10.2.2)
+ControlIdle
+Os.h
+This API allows the caller to select the idle mode
+action which is performed during idle time of the OS
+(e.g. if no Task/ISR is active). It can be used to
+implement energy savings. The real idle modes are
+hardware dependent and not standardized. The
+default idle mode on each core is IDLE_NO_HALT.
+Det_ReportError
+Det.h
+Service to report development errors.
+EcuM_AL_DriverInitBswM_&lt;x&gt;
+EcuM.h
+This callback shall provide BSW module
+initializations to be called by the BSW Mode
+Manager.
+EcuM_GoDownHaltPoll
+EcuM.h
+Instructs the ECU State Manager module to go into
+a sleep mode, Reset or OFF depending on the
+previously selected shutdown target.
+EcuM_SetState
+EcuM.h
+Function called by BswM to notify about State
+Switch.
+EthIf_StartAllPorts
+EthIf.h
+Request to set all configured and affected EthSwt
+Ports to ETH_MODE_ACTIVE
+▽
+△
+API Function
+Header File
+Description
+EthIf_SwitchPortGroupRequestMode
+EthIf.h
+Request a mode for the EthIfSwtPortGroup. The call
+shall be forwarded to EthSwt by calling EthSwt_Set
+SwitchPortMode for all EthSwtPorts referenced by
+the port group.
+FrSM_AllSlots
+FrSM.h
+This API function can be used to leave the KeySlot
+OnlyMode.
+FrSM_SetEcuPassive
+FrSM.h
+This API function can be used to set all FlexRay
+clusters of the ECU to a receive only mode.
+Fw_SetFirewallState (draft)
+Fw.h
+This function is invoked by the BswM to indicate
+ECU state changes.
+Tags: atp.Status=draft
+IdsM_BswM_StateChanged
+IdsM_BswM.h
+This callback function is invoked by the BswM to
+indicate ECU state changes.
+J1939Dcm_SetState
+J1939Dcm.h
+Changes the communication state of J1939Dcm to
+offline or online.
+J1939Rm_SetState
+J1939Rm.h
+Changes the communication state of J1939Rm to
+offline (only Request for AC supported) or online.
+LinSM_ScheduleRequest
+LinSM.h
+The upper layer requests a schedule table to be
+changed on one LIN network.
+Nm_DisableCommunication
+Nm.h
+Disables the NM PDU transmission ability. For that
+purpose &lt;Bus&gt;Nm_DisableCommunication shall be
+called in case NmBusType is not set to NM_
+BUSNM_LOCALNM (e.g. CanNm_Disable
+Communication function is called if channel is
+configured as CAN).
+Nm_EnableCommunication
+Nm.h
+Enables the NM PDU transmission ability. For that
+purpose &lt;Bus&gt;Nm_EnableCommunication shall be
+called in case NmBusType is not set to NM_
+BUSNM_LOCALNM. (e.g. CanNm_Enable
+Communication function is called if channel is
+configured as CAN).
+Sd_ServiceGroupStart
+Sd.h
+Starts a preconfigured SdServiceGroup. For
+example, OfferService entries will be sent out after
+the call of Sd_ServiceGroupStart() for all Server
+Servives of a SdServiceGroup, which are not
+requested yet.
+Sd_ServiceGroupStop
+Sd.h
+Stops a preconfigured SdServiceGroup. For
+example, StopOfferService entries will be sent out
+after the call of Sd_ServiceGroupStop() for all
+ServerServices of a SdServiceGroup, which are not
+requested by another SdServiceGroup.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von ControlIdle().</p>
       </section>
 
       <section class="snip-card">
@@ -121,7 +307,7 @@ I-PDU, the</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWModeManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_BSWModeManager.pdf#page=92" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWModeManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -133,7 +319,7 @@ I-PDU, the</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Com_91004" class="swsref internal-spec-ref"><code>SWS_Com_91004</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00769" class="swsref internal-spec-ref"><code>SWS_Os_00769</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -141,7 +327,7 @@ I-PDU, the</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

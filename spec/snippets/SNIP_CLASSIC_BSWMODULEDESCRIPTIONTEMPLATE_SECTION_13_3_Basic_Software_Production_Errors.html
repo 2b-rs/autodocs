@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWMODULEDESCRIPTIONTEMPLATE_SECTION_13_3_Basic_Software_Production_Errors</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>BSWModuleDescriptionTemplate.pdf</strong> (Seite 260)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_BSWModuleDescriptionTemplate.pdf#page=260" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWModuleDescriptionTemplate.pdf</a></strong> (Seite 260)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01864" class="swsref"><code>TPS_SWCT_01864</code></a></span>
         </div>
@@ -119,7 +120,290 @@ FunctionInhibitionNeeds
 *
 ref
 This represents the secondary Function Inhibition
-Identi</div></section>
+Identifier used for inhibition of the diagnostic monitor. Any
+of the FID inhibitions leads to an inhibition of the
+monitoring of a symptom or the reporting of detected
+faults.
+prestored
+Freezeframe
+StoredInNvm
+Boolean
+0..1
+attr
+If the Event uses a prestored freeze-frame (using the
+operations PrestoreFreezeFrame and ClearPrestored
+FreezeFrame of the service interface DiagnosticMonitor)
+this attribute indicates if the Event requires the data to be
+stored in non-volatile memory. TRUE = Dem shall store
+the prestored data in non-volatile memory, FALSE = Data
+can be lost at shutdown (not stored in Nvm).
+usesMonitor
+Data
+Boolean
+0..1
+attr
+This attribute defines whether additional monitor data
+shall be added to the reporting of events.
+Table 13.31: DiagnosticEventNeeds
+Basic Software Module Description Template
+Class
+DiagEventDebounceAlgorithm (abstract)
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This class represents the ability to specify the pre-debounce algorithm which is selected and/or required
+by the particular monitor.
+This class inherits from Identifiable in order to allow further documentation of the expected or
+implemented debouncing and to use the category for the identification of the expected / implemented
+debouncing.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Subclasses
+DiagEventDebounceCounterBased, DiagEventDebounceMonitorInternal, DiagEventDebounceTime
+Based
+Aggregated by
+DiagnosticDebounceAlgorithmProps.debounceAlgorithm, DiagnosticEventNeeds.diagEventDebounce
+Algorithm
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 13.32: DiagEventDebounceAlgorithm
+Class
+DiagEventDebounceCounterBased
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the ability to indicate that the counter-based debounce algorithm shall be
+used by the DEM for this diagnostic monitor.
+This is related to set the ECUC choice container DemDebounceAlgorithmClass to DemDebounce
+CounterBased.
+Base
+ARObject, DiagEventDebounceAlgorithm, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+DiagnosticDebounceAlgorithmProps.debounceAlgorithm, DiagnosticEventNeeds.diagEventDebounce
+Algorithm
+Attribute
+Type
+Mult.
+Kind
+Note
+counterBased
+FdcThreshold
+StorageValue
+Integer
+0..1
+attr
+Threshold to allocate an event memory entry and to
+capture the Freeze Frame.
+counter
+DecrementStep
+Size
+Integer
+0..1
+attr
+This value shall be taken to decrement the internal
+debounce counter.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterFailed
+Threshold
+Integer
+0..1
+attr
+This value defines the event-specific limit that indicates
+the "failed" counter status.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counter
+IncrementStep
+Size
+Integer
+0..1
+attr
+This value shall be taken to increment the internal
+debounce counter.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterJump
+Down
+Boolean
+0..1
+attr
+This value activates or deactivates the counter
+jump-down behavior.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterJump
+DownValue
+Integer
+0..1
+attr
+This value represents the initial value of the internal
+debounce counter if the counting direction changes from
+incrementing to decrementing.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+▽
+Basic Software Module Description Template
+△
+Class
+DiagEventDebounceCounterBased
+counterJumpUp
+Boolean
+0..1
+attr
+This value activates or deactivates the counter jump-up
+behavior.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterJumpUp
+Value
+Integer
+0..1
+attr
+This value represents the initial value of the internal
+debounce counter if the counting direction changes from
+decrementing to incrementing.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+counterPassed
+Threshold
+Integer
+0..1
+attr
+This value defines the event-specific limit that indicates
+the "passed" counter status.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+Table 13.33: DiagEventDebounceCounterBased
+Class
+DiagEventDebounceTimeBased
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the ability to indicate that the time-based pre-debounce algorithm shall be
+used by the Dem for this diagnostic monitor.
+This is related to set the EcuC choice container DemDebounceAlgorithmClass to DemDebounceTime
+Base.
+Base
+ARObject, DiagEventDebounceAlgorithm, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+DiagnosticDebounceAlgorithmProps.debounceAlgorithm, DiagnosticEventNeeds.diagEventDebounce
+Algorithm
+Attribute
+Type
+Mult.
+Kind
+Note
+timeBasedFdc
+Threshold
+StorageValue
+TimeValue
+0..1
+attr
+Threshold to allocate an event memory entry and to
+capture the Freeze Frame.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+timeFailed
+Threshold
+TimeValue
+0..1
+attr
+This value represents the event-specific delay indicating
+the "failed" status.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+timePassed
+Threshold
+TimeValue
+0..1
+attr
+This value represents the event-specific delay indicating
+the "passed" status.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+Table 13.34: DiagEventDebounceTimeBased
+Class
+DiagEventDebounceMonitorInternal
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+"This meta-class represents the ability to indicate that no Dem pre-debounce algorithm shall be used for
+this diagnostic monitor. The SWC might implement an internal debouncing algorithm and report qualified
+(debounced) results to the Dem/DM.
+Base
+ARObject, DiagEventDebounceAlgorithm, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+DiagnosticDebounceAlgorithmProps.debounceAlgorithm, DiagnosticEventNeeds.diagEventDebounce
+Algorithm
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 13.35: DiagEventDebounceMonitorInternal
+Basic Software Module Description Template
+[TPS_BSWMDT_04110] Declaration of production errors ⌈If a BSW module re-
+ports diagnostic events to the module DEM (= Diagnostic Event Manager ,see [24]),
+its BswInternalBehavior shall contain for each kind of diagnostic event one Ser-
+viceDependency element in the role serviceDependency.
+This diagnostic event is further characterized by the element ServiceDependency.
+serviceNeeds which shall be an instance of meta-class DiagnosticEventNeeds.
+If the diagnostic event describes a production error, its DiagnosticEventNeeds.
+category attribute shall have one of the following values:
+• PRODUCTION_ERROR if it represents a production error.
+• EXTENDED_PRODUCTION_ERROR if it represents an extended production er-
+ror.
+Its DiagnosticEventNeeds.shortName shall be equal to the error symbol defined
+in the AUTOSAR SWS of the respective module if the production error is standardized.⌋
+(RS_BSWMD_00045, RS_BSWMD_00069)
+For further information on production error reporting refer to [27].
+Production errors and extended production errors are reported to the DEM via the C-
+function Dem_SetEventStatus(). This scenario shall be specified in the following
+way:
+[TPS_BSWMDT_04111]
+BswServiceDependency
+refers
+to
+Dem_SetEventStatus() ⌈A BswModuleEntry representing the signature of
+the C-function Dem_SetEventStatus() shall be specified. According to the rules
+[TPS_BSWMDT_04008] and [TPS_BSWMDT_04016] defined earlier in this docu-
+ment, its shortName shall have the value Dem_SetEventStatus and the package
+location in XML shall be:
+AUTOSAR_Dem/BswModuleEntrys/
+Each BswServiceDependency representing a production error in a BSDWMD shall
+refer to this BswModuleEntry via an aggregated assignedEntryRole which has
+its role attribute set to the value ReportErrorStatus.⌋(RS_BSWMD_00045, RS_-
+BSWMD_00069)
+Note that in order to model the complete picture, the module in question should also
+have a BswModuleDescription.bswModuleDependency.expectedEntry2 refer-
+ring to
+AUTOSAR_Dem/BswModuleEntrys/Dem_SetEventStatus
+and
+one
+more
+BswModuleCallPoints
+representing
+the
+calls
+into
+Dem_SetEventStatus().
+This additional information is not mandatory to con-
+figure the DEM, but it can be used for documentation and call tree or timing analysis.
+2This shall be modeled differently, if the call crosses partition boundaries, see 5.6.2</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -132,7 +416,7 @@ Identi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>BSWModuleDescriptionTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_BSWModuleDescriptionTemplate.pdf#page=260" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWModuleDescriptionTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

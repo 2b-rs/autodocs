@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_3_3_Service_01_Request_Current_Powertrain_Diagnostic_Data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 216)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=216" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 216)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_00243" class="swsref internal-spec-ref"><code>SWS_Dcm_00243</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06069</span>
         </div>
       </div>
 
@@ -90,11 +91,82 @@ Manager
 • List of data (DcmDspPidData) for the PID with the following configuration for
 every data
 – The length of the data associated with the PID (see configuration parameter
-DcmDsp</div></section>
+DcmDspPidDataByteSize)
+– The position of the data in the PID (see configuration parameter DcmDsp-
+PidByteOffset)
+– The reference to the supported information container (see configuration pa-
+rameter DcmDspPidDataSupportInfo)
+– The Xxx_ReadData() function that the Dcm must call to obtain the current
+value of the data or the name of the port that the Dcm uses to obtain the
+current value through the RTE from a SW-C (see configuration parameters
+DcmDspPidDataReadFnc and DcmDspPidDataUsePort)
+[SWS_Dcm_00407] ⌈On reception of an OBD Service $01 request with only "avail-
+ability PIDs" as parameter, the Dcm shall respond with the corresponding supported
+(=configured) PIDs encoded according to the OBD standard.⌋
+To obtain the value for a PID, the Dcm uses the configured Xxx_ReadData() functions
+for every data of the PID. To provide OBD Service $01, the Dcm relies on external
+functions that allow it to obtain the value of the PIDs. There is one such function per
+data of every PID that is needed by the DCM.
+When using a Xxx_ReadData() function, the Dcm provides a buffer of the correct length,
+which is filled by the function with the data PID value.
+[SWS_Dcm_00408] ⌈On reception of an OBD Service $01 request with only PIDs that
+are not "availability PIDs", the Dcm shall obtain the current value of these PIDs by
+invoking the configured Xxx_ReadData() functions for every data of the PID and shall
+return these values as response to Service $01.⌋
+The entity providing the actual implementation of the Xxx_ReadData() function for a
+specific signal of a PID might be a SW-C or another basic software module. The origin
+of the function is not known to the Dcm but is part of the Dcm configuration. Some
+PIDs are provided by the DEM. These PIDs are also explicitly configured in the Dcm
+configuration and it is the responsibility of a correct Dcm configuration to make the
+Xxx_ReadData() function point to the correct function provided by the DEM.
+[SWS_Dcm_CONSTR_06069] Dependency for DcmDspPidDataReadFnc ⌈DcmD-
+spPidDataReadFnc shall be only present if DcmDspPidDataUsePort is set to
+USE_DATA_SYNCH_FNC.⌋
+For certain PIDs, the Dem provides the function to obtain the PID value. Which PIDs
+come from the Dem are part of the Dcm configuration.
+Note: For PIDs where Dem provides the function, DcmDspPidDataUsePort for that
+PID should be set to USE_DATA_SYNCH_FNC and DcmDspPidDataReadFnc shall
+Manager
+point to the function Dem_DcmReadDataOfPID&lt;NN&gt; where &lt;NN&gt; represents the Id
+of the PID.
+The data byte A of the PIDs contain the support status of the subsequent data bytes.
+Since not all data values might be available due to the particular vehicle configuration
+(e.g. there is only a Nox-sensor 1 available in the vehicle in the example above), the
+PID response contains in this data byte A the information about the support status of
+the following data values. Note, that the PIDs always contain the same number of bytes
+- even if not all values are really available.
+[SWS_Dcm_00621] ⌈If a PID contains support information (presence of DcmDsp-
+PidDataSupportInfo container) the Dcm shall add the support information in the
+diagnostic response.⌋
+[SWS_Dcm_00622] ⌈If a PID contains support information (presence of DcmDspPid-
+DataSupportInfo container) the Dcm shall calculate the support information value
+according to the available data for this PID: for every DcmDspPidData container ex-
+isting for this PID, the associated support information bits, referenced in DcmDspPid-
+DataSupportInfo, shall be set to one⌋
+The response to the OBD-tester needs to be composed out of the available data values.
+Data bytes that are not provided by an SW-C need to be replaced with fill-byte to obtain
+a complete PID contents.
+[SWS_Dcm_00623] ⌈When responding to OBD Service $01, the Dcm shall put fill-bytes
+between DcmDspPidData in the PID whenever content bytes are missing in order to
+fit to the PID size (see configuration parameter DcmDspPidSize).⌋
+[SWS_Dcm_00944] ⌈The Dcm shall set the fill bytes to 0x00.⌋
+Note: If other fill-bytes than 0x00 are needed by legistlation, the application has to
+provide the value of the fill-byte.
+[SWS_Dcm_00718] ⌈To serialize the required AUTOSAR data types (signed- and
+unsigned integer) into the response message of OBD Service $01 responses
+the target endianness configured in DcmDspPidDataEndianness shall be con-
+sidered for DcmDspPidData elements having DcmDspPidDataUsePort set to
+USE_DATA_SENDER_RECEIVER or USE_DATA_SENDER_RECEIVER_AS_SERVICE.
+In case DcmDspPidDataEndianness is not present, the DcmDspDataDefault-
+Endianness shall be used instead.⌋
+[SWS_Dcm_CONSTR_06068] Dependency for DcmDspPidDataEndianness ⌈In
+case DcmDspPidDataEndianness is not present, the DcmDspDataDefaultEndi-
+anness shall be used instead.⌋
+Manager</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_00243] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06069] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +175,7 @@ DcmDsp</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=216" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,7 +187,7 @@ DcmDsp</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_00243" class="swsref internal-spec-ref"><code>SWS_Dcm_00243</code></a></td>
+              <td>SWS_Dcm_CONSTR_06069</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

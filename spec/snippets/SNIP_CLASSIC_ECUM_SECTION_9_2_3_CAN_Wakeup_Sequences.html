@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_9_2_3_CAN_Wakeup_Sequences</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 168)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=163" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 168)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_91006" class="swsref internal-spec-ref"><code>SWS_EcuM_91006</code></a></span>
         </div>
@@ -88,7 +89,576 @@ check if any device (CAN communication controller or transceiver) is configured 
 the value of "WakeupSource". If this is the case, the device is checked for wake up via
 the corresponding device driver module. If the device detected a wake up, the device
 driver informs EcuM via EcuM_SetWakeupEvent(sources). The parameter "sources"
-is set to the configured value at the device. T</div></section>
+is set to the configured value at the device. Thus it is set to the value CanIf_Check
+Wakeup() was called with.
+Multiple devices might be configured with the same wake up source value. But if de-
+vices are connected to different bus medium and they are wake-able, it makes sense
+to configure them with different wake up sources.
+The following CAN Wake-up Sequences are partly optional, because there is no spec-
+ification for the "Integration Code". Thus it is implementation specific if e.g. during Ecu
+M_CheckWakeup() the CanIf is called to check the wake up source.
+«Peripheral»
+ETH Hardware
+(PHY)
+«Peripheral»
+CanController
+«module»
+CanTrcv
+«module»
+Can
+«module»
+CanIf
+«module»
+Icu
+«module»
+Mcu
+Integration
+Code
+«module»
+EcuM
+«module»
+Os
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+!
+
+HALT
+"#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$
+
+
+
+
+
+%
+
+
+
+
+
+
+
+
+
+
+&amp;
+
+ 
+
+
+
+
+
+$
+
+
+
+
+
+
+&amp;
+
+
+
+
+
+
+
+
+%
+
+$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GOSLEEP
+SLEEP
+WAKEUP I
+WAKEUP
+VALIDATION
+EnableAllInterrupts()
+Return from interrupt()
+EcuM_SetWakeupEvent(EcuM_WakeupSourceType)
+EnableAllInterrupts()
+EcuM_EnableWakeupSources(EcuM_WakeupSourceType)
+CanIf_SetTrcvWakeupMode(uint8,
+CanTrcv_TrcvWakeupModeType)
+CanIf_CheckWakeup(EcuM_WakeupSourceType): Std_ReturnType
+EcuM_CheckWakup(EcuM_WakeupSourceType)
+Wakeup interrupt()
+Icu_DisableWakeup(Icu_ChannelType)
+Mcu_SetMode
+(Mcu_ModeType)
+DisableAllInterrupts()
+Icu_EnableWakeup(Icu_ChannelType)
+CanTrcv_SetWakeupMode(uint8,
+CanTrcv_TrcvWakeupModeType)
+CanTrcv_CheckWakeup(uint8): Std_ReturnType
+ReleaseResource(uint8)
+CanTrcv_SetWakeupMode(uint8, CanTrcv_TrcvWakeupModeType)
+EcuM_CheckWakeupHook(EcuM_WakeupSourceType)
+CanIf_SetTrcvWakeupMode(uint8,
+CanTrcv_TrcvWakeupModeType)
+activate
+PLL()
+Mcu_SetMode(Mcu_ModeType)
+EcuM_DisableWakeupSources(EcuM_WakeupSourceType)
+DisableAllInterrupts()
+GetResource(uint8)
+Mcu_SetMode()
+Figure 9.4: CAN transceiver wake up by interrupt
+Figure 9.4 shows the CAN transceiver wakeup via interrupt. The interrupt is usually
+handled by the ICU Driver as described in Chapter 9.2.2.
+A CAN controller wakeup by interrupt works similar to the GPT wakeup. Here the
+interrupt handler and the CheckWakeup functionality are both encapsulated in the CAN
+Driver module, as shown in Figure 9.5 .
+«Peripheral»
+CanController
+«module»
+CanTrcv
+«module»
+Icu
+Integration
+Code
+«module»
+CanIf
+«module»
+Can
+«module»
+Mcu
+«module»
+EcuM
+«module»
+Os
+«Peripheral»
+ETH Hardware
+(PHY)
+HALT
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GOSLEEP
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+SLEEP
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+
+
+
+
+
+
+
+$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%
+
+
+&amp;
+
+WAKEUP I
+WAKEUP
+VALIDATION
+%
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$
+
+
+
+
+
+EcuM_SetWakeupEvent(EcuM_WakeupSourceType)
+EcuM_DisableWakeupSources(EcuM_WakeupSourceType)
+Wakeup
+interrupt()
+Mcu_SetMode()
+Mcu_SetMode(Mcu_ModeType)
+CanIf_CheckWakeup(Std_ReturnType, EcuM_WakeupSourceType)
+EcuM_EnableWakeupSources(EcuM_WakeupSourceType)
+EcuM_CheckWakup(EcuM_WakeupSourceType)
+Return from
+interrupt()
+Can_CheckWakeup(Std_ReturnType, uint8)
+EcuM_CheckWakeupHook(EcuM_WakeupSourceType)
+Mcu_SetMode
+(Mcu_ModeType)
+EnableAllInterrupts()
+DisableAllInterrupts()
+GetResource(uint8)
+ReleaseResource(uint8)
+Activate PLL()
+DisableAllInterrupts()
+Figure 9.5: CAN controller wake up by interrupt
+Wake up by polling is possible both for CAN transceiver and controller. The ECU State
+Manager module will regularly check the CAN Interface module, which in turn asks
+either the CAN Driver module or the CAN Transceiver Driver module depending on the
+wake up source parameter passed to the CAN Interface module, as shown in Figure
+9.6 .</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +671,7 @@ is set to the configured value at the device. T</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=163" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

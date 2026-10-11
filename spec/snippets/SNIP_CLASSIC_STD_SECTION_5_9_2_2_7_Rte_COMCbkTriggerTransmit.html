@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_9_2_2_7_Rte_COMCbkTriggerTransmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 825)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=825" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 825)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -110,11 +111,48 @@ Description
 This callback is generated when there is a write access configured for the data item associated
 to the large data path (IF) PDU to be transmitted. Within this callback, the RTE shall check
 whether the available data fits into the buffer size reported by PduInfoPtr-&gt;SduLength. If it fits, it
-shall copy its data into the buffer provided by PduInfoPtr-&gt;SduDataPtr and</div></section>
+shall copy its data into the buffer provided by PduInfoPtr-&gt;SduDataPtr and update the length of
+the actual copied data in PduInfoPtr-&gt;SduLength. If not, it returns E_NOT_OK without
+changing PduInfoPtr.
+In the prototype, &lt;Partition&gt; is the shortName of the EcucPartition referenced from the
+RteComUserEcucPartitionRef parameter (see [ECUC_Rte_09212]) of the RteComUser
+for which the Callback is being generated.
+Tags: atp.Status=draft
+Available via
+Rte_Com.h
+⌋
+It is configured in ComUserModuleCnf :
+via
+the
+ComUserCallbackName
+(See
+[ECUC_Com_10036])
+parameter
+where
+the
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_TX_TRIGGER_TRANSMIT
+[SWS_Rte_01409]
+Upstream requirements: SRS_Rte_00246
+⌈The Rte_COMCbkTriggerTransmit notification callback shall return E_OK when
+SDU has been copied.
+In this case PduInfoPtr-&gt;SduLength shall indicate the
+number of copied bytes.⌋
+[SWS_Rte_01410]
+Upstream requirements: SRS_Rte_00246
+⌈The Rte_COMCbkTriggerTransmit notification callback shall return E_NOT_OK
+when No SDU data has been copied.⌋
+In case of failure, PduInfoPtr must not be used since it may contain a NULL pointer
+or point to invalid data.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +161,7 @@ shall copy its data into the buffer provided by PduInfoPtr-&gt;SduDataPtr and</d
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=825" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

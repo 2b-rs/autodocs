@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVDATAHANDLING_SECTION_4_1_4_5_Resistant_to_changed_software</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>NVDataHandling.pdf</strong> (Seite 15)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_NVDataHandling.pdf#page=15" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">NVDataHandling.pdf</a></strong> (Seite 15)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00674" class="swsref internal-spec-ref"><code>SWS_NvM_00674</code></a></span>
         </div>
@@ -94,7 +95,42 @@ Block was added, the identifier of many other blocks might implicitly be changed
 could lead to wrong data read from the NV memory.
 For such situations, it is possible to configure the NvM module so that it will not try to
 initialize RAM Blocks with data from NV memory. This has to be done by setting the
-value</div></section>
+value of the configuration parameter NvMDynamicConfiguration to TRUE. A change of
+the NVRAM configuration has to be indicated to the NvM module by modifying the
+configuration parameter NvmCompiledConfigID by the integrator. The NvM module
+stores this value in NV memory, using a separate NVRAM Block. With every execution
+of the start-up process (NvM_ReadAll) the NvM module compares the value stored in
+NV memory with the value of the configuration parameter NvmCompiledConfigID. In
+case both values are different the value in the NV memory will be overwritten by the
+one from the configuration with the next shutdown process (NvM_WriteAll).
+In such a situation, there are two different possibilities how the NvM module will
+initialize the NVRAM Blocks during the processing of NvM_ReadAll, based on the
+value of the corresponding configuration parameter NvMResistantToChangedSw.
+ If the data of the respective NV block shall be ignored and instead default data
+(if configured via either the parameter NvMRomBlockDataAddress or the
+parameter NvMInitBlockCallback) shall be loaded, independent of the validity of
+an assigned RAM block, the value of the configuration parameter
+NvMResistantToChangedSw has to be set to FALSE.
+ For the NVRAM Blocks, that need to have the RAM Block to be initialized with
+the data from NV memory, even in case of a configuration change, the
+NV Data Handling Guideline
+configuration parameter NvMResistantToChangedSw has to be set to TRUE.
+The behavior will be the same as when no configuration change occurs.
+For blocks having NvMResistantToChangedSw set to TRUE the integrator has to
+ensure that the following configuration parameters must not be changed for the rest
+of the ECU’s lifetime, because otherwise it will not be possible to successfully
+retrieve the data from NV memory:
+ NvMResistantToChangedSw (must not be changed from TRUE to FALSE)
+ ShortName
+ NvMBlockUseCrc
+ NvmBlockCrcType (if NvMBlockUseCrc is set to TRUE)
+ NvMStaticBlockIDCheck
+ NvmNvramDeviceId
+ NvmBlockManagementType
+ NvmNvBlockLength
+ NvmNvBlockBaseNumber
+Note: Additional constraints may apply depending on the implementation of the used
+modules NvM, Fee and Ea. Please refer to the respective user manuals.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +143,7 @@ value</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>NVDataHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_NVDataHandling.pdf#page=15" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">NVDataHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

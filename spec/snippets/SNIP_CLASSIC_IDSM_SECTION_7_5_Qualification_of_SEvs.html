@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_IDSM_SECTION_7_5_Qualification_of_SEvs</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IntrusionDetectionSystemManager.pdf</strong> (Seite 31)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></strong> (Seite 31)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_91000" class="swsref internal-spec-ref"><code>SWS_IdsM_91000</code></a></span>
         </div>
@@ -91,11 +92,61 @@ for the filter (e.g. counter).
 are not met by dropping it.⌋
 [SWS_IdsM_00905] ⌈Otherwise, if a filter does not drop a SEv, the filter shall forward
 the currently processed SEv to the next filter in the chain.⌋
-[SWS_IdsM_00906] Sampling and Agg</div></section>
+[SWS_IdsM_00906] Sampling and Aggregation
+Upstream requirements: RS_Ids_00330, RS_Ids_00340
+⌈A filter shall be able to modify the SEvs counter according to their algorithm, if they
+are of type sampling or aggregation.⌋
+[SWS_IdsM_00907] ⌈If no filter in the configured filter chain dropped the SEv, it is con-
+sidered a qualified security event (QSEv) and shall be stored in the Qualified
+Event Buffer (IdsMQualifiedEventBuffers).⌋
+Note: The form in which the QSEv is buffered in IdsMQualifiedEventBuffers is up to the
+implementation, e.g. the QSEv could be packed according to [SWS_IdsM_01200] and
+buffered in IdsMQualifiedEventBuffers.
+[SWS_IdsM_00908] ⌈IdsM shall have a configurable number of qualified event buffers
+(IdsMNumberOfQualifiedEventBuffers).⌋
+[SWS_IdsM_00909] Internal Security Event No Qualified Event Buffer Available
+Upstream requirements: RS_Ids_00820
+⌈In case no appropriate qualified event buffers are found, the IdsM internal SEv SEV_
+IDSM_NO_QUALIFIED_EVENT_BUFFER_AVAILABLE shall be triggered in case it has
+been configured.⌋
+[SWS_IdsM_00910] ⌈The QSEv in the qualified event buffer shall be forwarded to the
+corresponding sink depending on the IdsMEvent configuration.⌋
+Manager
+Note: Requirements in chapter 7.8 of SEvs shall be respected while forwarding to the
+sinks.
+[SWS_IdsM_00911] Replace Last Severe QSEv ⌈Where IdsMEventDisplace-
+mentStrategy is IDSM_BUFFER_DISPLACEMENT_SEVERITY_BASED, when a new
+QSEv is generated and no suitable IdsMQualifiedEventBuffers is found and the severity
+of the new QSEv is higher than the severity of at least one QSEv already in the buffer,
+IdsM shall replace the least severe QSEv already in the buffer with the new QSEv.
+Note: In case where multiple events in the IdsMQualifiedEventBuffers have the same
+least severity, it is left to the implementer which QSEv to discard.
+Example: Where the IdsMQualifiedEventBuffers is 5 and all the buffers are full, when
+a new qualified security event is generated, IdsM shall drop the least severe
+event amongst all the 6 events.
+Rationale: Dropping a qualified security event is inevitable when all the IdsM
+QualifiedEventBuffers are full. In this case, dropping the least severe event minimizes
+the values of the security information lost.
+Note: IdsM internal SEv SEV_IDSM_NO_QUALIFIED_EVENT_BUFFER_AVAILABLE
+could be set to a higher severity to prevent a snowball effect.⌋
+[SWS_IdsM_00912]
+Drop lower sever QSEv ⌈Where IdsMEventDisplace-
+mentStrategy is IDSM_BUFFER_DISPLACEMENT_SEVERITY_BASED, when a new
+QSEv is generated and no suitable IdsMQualifiedEventBuffers is found and the severity
+of the new QSEv is lower than or equal to the severity value of the least severe QSEv
+already in the buffer, IdsM shall drop the newly generated QSEv.⌋
+[SWS_IdsM_00913]
+Drop latest received SEv ⌈Where IdsMEventDisplace-
+mentStrategy is IDSM_BUFFER_DISPLACEMENT_DROP_LATEST, when a new
+QSEv is generated and no suitable IdsMQualifiedEventBuffers is found, IdsM shall
+drop the newly generated QSEv.⌋
+[SWS_IdsM_00914] SEv count overflow ⌈Filter algorithms shall not cause the SEv
+count to overflow. If the maximum value is reached, the value shall not be incremented
+any further.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von IdsM_MainFunction().</p>
       </section>
 
       <section class="snip-card">
@@ -104,7 +155,7 @@ the currently processed SEv to the next filter in the chain.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IntrusionDetectionSystemManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

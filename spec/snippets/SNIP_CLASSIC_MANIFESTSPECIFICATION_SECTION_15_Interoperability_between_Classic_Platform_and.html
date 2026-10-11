@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MANIFESTSPECIFICATION_SECTION_15_Interoperability_between_Classic_Platform_and</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ManifestSpecification.pdf</strong> (Seite 775)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=775" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></strong> (Seite 775)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02017" class="swsref"><code>TPS_SYST_02017</code></a></span>
         </div>
@@ -113,7 +114,54 @@ and the packing into the SignalIPdu. The byte ordering
 "Little Endian" (MostSignificantByteLast), "Big Endian"
 (MostSignificantByteFirst) and "Opaque" can be selected.
 For opaque data endianness conversion shall be
-configured to Opaque. The value of t</div></section>
+configured to Opaque. The value of this attribute impacts
+the absolute position of the signal into the SignalIPdu
+(see the startPosition attribute description).
+For an ISignalGroup the packingByteOrder is irrelevant
+and shall be ignored.
+startPosition
+UnlimitedInteger
+0..1
+attr
+This parameter is necessary to describe the bitposition of
+a signal within an SignalIPdu. It denotes the least
+significant bit for "Little Endian" and the most significant
+bit for "Big Endian" packed signals within the IPdu (see
+the description of the packingByteOrder attribute). In
+AUTOSAR the bit counting is always set to "sawtooth"
+and the bit order is set to "Decreasing". The bit counting
+in byte 0 starts with bit 0 (least significant bit). The most
+significant bit in byte 0 is bit 7.
+Please note that the way the bytes will be actually sent on
+the bus does not impact this representation: they will
+always be seen by the software as a byte array.
+If a mapping for the ISignalGroup is defined, this attribute
+is irrelevant and shall be ignored.
+transferProperty
+TransferPropertyEnum
+0..1
+attr
+Defines how the referenced ISignal contributes to the
+send triggering of the ISignalIPdu.
+update
+IndicationBit
+Position
+UnlimitedInteger
+0..1
+attr
+The UpdateIndicationBit indicates to the receivers that the
+signal (or the signal group) was updated by the sender.
+Length is always one bit. The UpdateIndicationBitPosition
+attribute describes the position of the update bit within the
+SignalIPdu. For Signals of a ISignalGroup this attribute is
+irrelevant and shall be ignored.
+Note that the exact bit position of the updateIndicationBit
+Position is linked to the value of the attribute packingByte
+Order because the method of finding the bit position is
+different for the values mostSignificantByteFirst and most
+SignificantByteLast. This means that if the value of
+▽
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -126,7 +174,7 @@ configured to Opaque. The value of t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=775" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

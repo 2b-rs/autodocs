@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PWM_SECTION_9_2_Setting_ADC_and_PWM_in_a_low_consumption_power_state_as_a</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IOHardwareAbstraction.pdf</strong> (Seite 57)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IOHardwareAbstraction.pdf#page=57" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IOHardwareAbstraction.pdf</a></strong> (Seite 57)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Pwm_00198" class="swsref internal-spec-ref"><code>SWS_Pwm_00198</code></a></span>
         </div>
@@ -421,7 +422,133 @@ PeriodicTask()
 OnEntryRunnable_LowPowerModeA()
 IoHwAb_Pwm_NotifyReadyForPowerStateLowPowerModeA()
 Figure 9.2: Asynchronous power state setting
-The sequence diagram in figure 9.2 refers to a power s</div></section>
+The sequence diagram in figure 9.2 refers to a power state transition, where the periph-
+erals are configured for asynchronous power state transitions. After having received
+a request to prepare a power state, the peripheral’s driver issues a notification to the
+caller (in this case IoHwAbs) to inform it of being ready to transition to the new power
+state.
+In the following sequence diagram a synchronous transition is shown (the peripheral is
+immediately ready to transition, as soon as the preparation APIs return):
+«module»
+BswM
+«module»
+Rte
+«module»
+IoHwAb
+«module»
+Adc
+«module»
+Pwm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+RTE/SchMSwitch()
+UpdateModePorts()
+RTE/SchMSwitch(LowPowerModeA_Transition_End)
+IoHwAb_PreparePowerState_LowPowerModeA()
+OnEntryRunnable_LowPowerModeA()
+Pwm_SetPowerState()
+Pwm_GetCurrentPowerState()
+Adc_SetPowerState()
+Adc_PreparePowerState(PwrSts_1)
+IoHwAbs_EnterPowerStateLowPowerModeA()
+Adc_GetCurrentPowerState()
+Pwm_PreparePowerState(PwrSrs_3)
+Figure 9.3: Synchronous power state setting</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -434,7 +561,7 @@ The sequence diagram in figure 9.2 refers to a power s</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IOHardwareAbstraction.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IOHardwareAbstraction.pdf#page=57" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IOHardwareAbstraction.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

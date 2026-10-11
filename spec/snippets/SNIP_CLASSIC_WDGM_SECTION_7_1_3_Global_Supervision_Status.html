@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 34)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 34)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_91005" class="swsref internal-spec-ref"><code>SWS_WdgM_91005</code></a></span>
         </div>
@@ -127,7 +128,92 @@ amount of time measured in multiples of the Supervision Cycle, named Expired Sup
 vision Tolerance (see configuration parameter WdgMExpiredSupervisionCycle-
 Tol [ECUC_WdgM_00329]).
 The Expired Supervision Tolerance is implemented within the state machine of the
-Global Supervision Status. The defined state machine is in the stat</div></section>
+Global Supervision Status. The defined state machine is in the state WDGM_GLOBAL_
+STATUS_EXPIRED while the blocking is postponed.
+[SWS_WdgM_00214]
+Upstream requirements: SRS_ModeMgm_09112
+⌈The function WdgM_MainFunction shall calculate the Global Supervision Status in
+every Main Function Period. The function shall compute the Global Supervision Status
+after computation of every Local Supervision Status.⌋
+The cyclic update of Global Supervision Status is necessary to trigger the timely tran-
+sition from WDGM_GLOBAL_STATUS_EXPIRED to WDGM_GLOBAL_STATUS_STOPPED.
+{DRAFT} Note that, in case of clustered software architecture, multiple WdgM_Main-
+Function instances may exist. In this case, Global Supervision Status can be updated
+every call of any WdgM_MainFunction instance.
+Following rules shall be used to calculate the Global Supervision Status:
+[SWS_WdgM_00285]
+Upstream requirements: SRS_BSW_00101
+⌈If the function WdgM_Init [SWS_WdgM_00151] was successfully called then the
+function shall change the Global Supervision Status to WDGM_GLOBAL_STATUS_-
+OK. And the Expired Cycle Counter shall be set to zero (0). (see Transition (13) in
+[SWS_WdgM_91005]).⌋
+[SWS_WdgM_00286] ⌈If the Global Supervision Status was either WDGM_GLOBAL_
+STATUS_OK or WDGM_GLOBAL_STATUS_FAILED or WDGM_GLOBAL_STATUS_EX-
+PIRED
+or
+WDGM_GLOBAL_STATUS_STOPPED
+and
+the
+function
+WdgM_DeInit
+[SWS_WdgM_00261] is successfully called, then the function shall change the Global
+Supervision Status to WDGM_GLOBAL_STATUS_DEACTIVATED (see Transitions (14),
+(15), (16) and (17) in [SWS_WdgM_91005]).⌋
+It has to be considered carefully that a deactivation of WdgM when it is in states
+WDGM_GLOBAL_STATUS_EXPIRED or WDGM_GLOBAL_STATUS_STOPPED can hinder
+error reporting or error reaction.
+[SWS_WdgM_00078]
+Upstream requirements: SRS_ModeMgm_09112
+⌈If the Global Supervision Status was WDGM_GLOBAL_STATUS_OK and the Local Su-
+pervision Status of all Supervised Entities are either WDGM_LOCAL_STATUS_OK or
+WDGM_LOCAL_STATUS_DEACTIVATED then the function WdgM_MainFunction shall
+keep the Global Supervision Status WDGM_GLOBAL_STATUS_OK (see Transition (1) in
+[SWS_WdgM_91005]).⌋
+[SWS_WdgM_00076]
+Upstream requirements: SRS_ModeMgm_09112
+⌈If the Global Supervision Status was WDGM_GLOBAL_STATUS_OK, the Local Supervi-
+sion Status of at least one Supervised Entity is WDGM_LOCAL_STATUS_FAILED, and
+no Supervised Entity is in Local Supervision Status WDGM_LOCAL_STATUS_EXPIRED,
+then the function WdgM_MainFunction shall change the Global Supervision Status
+to WDGM_GLOBAL_STATUS_FAILED (see Transition (2) in [SWS_WdgM_91005]).⌋
+The Watchdog Manager module supports a feature to delay the error reaction (switch-
+ing to WDGM_LOCAL_STATUS_EXPIRED) for a configurable amount of time. This could
+be used to allow clean-up activities before a watchdog reset, e.g. writing the error
+cause, writing NVRAM data.
+[SWS_WdgM_00215]
+Upstream requirements: SRS_ModeMgm_09163
+⌈If the Global Supervision Status was WDGM_GLOBAL_STATUS_OK, the Local Supervi-
+sion Status of at least one Supervised Entity is WDGM_LOCAL_STATUS_EXPIRED, and
+the Expired Supervision Tolerance is configured to a value larger than zero (see config-
+uration parameter WdgMExpiredSupervisionCycleTol [ECUC_WdgM_00329]),
+then function WdgM_MainFunction shall change the Global Supervision Status to
+WDGM_GLOBAL_STATUS_EXPIRED. And increment the Expired Cycle Counter. (see
+Transition (3) in [SWS_WdgM_91005]).⌋
+[SWS_WdgM_00216] ⌈If the Global Supervision Status was WDGM_GLOBAL_-
+STATUS_OK, the Local Supervision Status of at least one Supervised Entity is
+WDGM_LOCAL_STATUS_EXPIRED, and the Expired Supervision Tolerance is config-
+ured to zero (see configuration parameter WdgMExpiredSupervisionCycleTol
+[ECUC_WdgM_00329]), then the function WdgM_MainFunction shall change the
+Global Supervision Status to WDGM_GLOBAL_STATUS_STOPPED (see Transition (4) in
+[SWS_WdgM_91005]).⌋
+[SWS_WdgM_00217] ⌈If the Global Supervision Status was WDGM_GLOBAL_-
+STATUS_FAILED, the Local Supervision Status of at least one Supervised Entity is
+WDGM_LOCAL_STATUS_FAILED, and no Supervised Entity is in Local Supervision Sta-
+tus WDGM_LOCAL_STATUS_EXPIRED, then function WdgM_MainFunction shall re-
+main in Global Supervision Status WDGM_GLOBAL_STATUS_FAILED. (see Transition
+(5) in [SWS_WdgM_91005])⌋
+[SWS_WdgM_00218] ⌈If the Global Supervision Status was WDGM_GLOBAL_-
+STATUS_FAILED and the Local Supervision Status of all Supervised Entities is ei-
+ther WDGM_LOCAL_STATUS_OK or WDGM_LOCAL_STATUS_DEACTIVATED then func-
+tion WdgM_MainFunction shall change the Global Supervision Status to WDGM_-
+GLOBAL_STATUS_OK (see Transition (6) in [SWS_WdgM_91005]).⌋
+[SWS_WdgM_00077]
+Upstream requirements: SRS_ModeMgm_09112, SRS_ModeMgm_09163
+⌈If the Global Supervision Status was WDGM_GLOBAL_STATUS_FAILED, the Lo-
+cal Supervision Status of at least one Supervised Entity is WDGM_LOCAL_-
+STATUS_EXPIRED, and the Expired Supervision Tolerance is configured to a value
+larger than zero (see configuration parameter WdgMExpiredSupervisionCycle-
+Tol [ECUC_WdgM_00329]), then function WdgM_MainFunction shall change the</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -140,7 +226,7 @@ Global Supervision Status. The defined state machine is in the stat</div></secti
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

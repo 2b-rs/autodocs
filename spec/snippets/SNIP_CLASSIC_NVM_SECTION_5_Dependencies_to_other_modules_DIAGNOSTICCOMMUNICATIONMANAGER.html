@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_5_Dependencies_to_other_modules_DIAGNOSTICCOMMUNICATIONMANAGER</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00455" class="swsref internal-spec-ref"><code>SWS_NvM_00455</code></a></span>
         </div>
@@ -179,11 +180,38 @@ Figure 5.1: Interaction of the Dcm with other modules
 all information related to fault memory such that the Dcm module is able to re-
 spond to tester requests by reading data from the fault memory.
 • Protocol Data Unit Router (PduR module): The PduR module provides functions
-to transmit and</div></section>
+to transmit and receive diagnostic data. Proper operation of the Dcm module
+presumes that the PduR interface supports all service primitives defined for the
+Service Access Point (SAP) between diagnostic application layer and underlying
+transport layer (see ISO14229-1 [1], chapter 5 Application layer services).
+Manager
+• Communication Manager (ComM): The ComM module provides functions such
+that the Dcm module can indicate the states ”active” and ”inactive” for diagnostic
+communication. The Dcm module provides functionality to handle the commu-
+nication requirements ”Full-/ Silent-/ No-Communication”. Additionally, the Dcm
+module provides the functionality to enable and disable Diagnostic Communica-
+tion if requested by the ComM module.
+• SW-C and RTE: The Dcm module has the capability to analyze the received di-
+agnostic request data stream and handles all functionalities related to diagnostic
+communication such as protocol handling and timing. Based on the analysis of
+the request data stream the Dcm module assembles the response data stream
+and delegates routines or IO-Control executions to SW-Cs .If any of the data el-
+ements or functional states cannot be provided by the Dcm module itself the Dcm
+requests data or functional states from SW-Cs via port-interfaces or from other
+BSW modules through direct function-calls.
+• BswM: The Dcm notifies the BswM that the application was updated if the initial-
+ization of the Dcm is the consequence of a jump from the bootloader . The Dcm
+also indicates to the BswM a communication mode change.
+• Crypto Service Manager (Csm): The crypto service module provides a wide
+range of cryptographic algorithms. The Csm is used for authentication calcu-
+lation.
+• Key Manager (KeyM): The key manager module provides support for certificate
+handling and APIs to realize authenticated diagnostics via certificates.
+Manager</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_WriteBlock().</p>
       </section>
 
       <section class="snip-card">
@@ -192,7 +220,7 @@ to transmit and</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

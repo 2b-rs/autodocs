@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_5_4_2_IocSend_IocWrite</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 219)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=218" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 219)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -110,11 +111,144 @@ Receiver is slower than sender). This error produces an IOC_E_
 LOST_DATA Overlayed Error on the receiver side at the next data
 reception.
 IOC_E_LENGTH: The &lt;numberOfBytesIN&gt; exceeds either the
-internal buffer or is equal</div></section>
+internal buffer or is equal zero, so no data is send.
+Description
+Performs an "explicit" sender-receiver transmission of data elements with "event" semantic for a
+unidirectional 1:1 or N:1 communication between OS-Applications located on the same or on
+different cores.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 or N:1 communication.
+&lt;SenderId&gt; is used only in N:1 communication. Together with &lt;IocId&gt;, it uniquely identifies the
+sender. It is separated from &lt;IocId&gt; with an underscore. In case of 1:1 communication, it shall
+be omitted.
+Available via
+Ioc.h
+⌋
+[SWS_Os_91003] Definition of API function IocWrite_&lt;IocId&gt;[_&lt;SenderId&gt;]
+Upstream requirements: SRS_Os_80020
+⌈
+Service Name
+IocWrite_&lt;IocId&gt;[_&lt;SenderId&gt;]
+Syntax
+Std_ReturnType IocWrite_&lt;IocId&gt;[_&lt;SenderId&gt;] (
+&lt;Data&gt; IN,
+[uint16 numberOfBytesIN]
+)
+Service ID [hex]
+0x1f
+Sync/Async
+Asynchronous
+Reentrancy
+This function is generated individually for each sender. The individual function is not reentrant
+(if called from different runnable entities that belong to the same sender), but different functions
+can be called in parallel.
+IN
+Data value to be sent over a communication identified by the &lt;Ioc
+Id&gt;. The parameter will be passed by value for primitive data
+elements and by reference for all other types.
+Example: Std_ReturnType IocWrite_RTE_25 (const uint32 UI_
+Value); Std_ReturnType IocWrite_RTE_42 (const TASKParams3
+*pStr_Value);
+Parameters (in)
+numberOfBytesIN
+(optional) number of bytes to be send
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+IOC_E_OK: The data has been passed successfully to the
+communication service.
+IOC_E_LENGTH: The &lt;numberOfBytesIN&gt; exceeds either the
+internal buffer or is equal zero, so no data is send.
+Description
+Performs an "explicit" sender-receiver transmission of data elements with "data" semantic for a
+unidirectional 1:1 or N:1 communication between OS-Applications located on the same or on
+different cores.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 or N:1 communication.
+&lt;SenderId&gt; is used only in N:1 communication. Together with &lt;IocId&gt;, it uniquely identifies the
+sender. It is separated from &lt;IocId&gt; with an underscore. In case of 1:1 communication, it shall
+be omitted.
+&lt;numberOfBytesIN&gt; specifies the size of the data to be transmitted (in bytes).
+Available via
+Ioc.h
+⌋
+General:
+[SWS_Os_00719]
+Upstream requirements: SRS_Os_80020
+⌈IocSend/IocWrite is asynchronous in that way it shall not have to wait for the re-
+ception of the data on the receiving side to return from execution.⌋
+[SWS_Os_00720]
+Upstream requirements: SRS_Os_80020
+⌈The IocSend/IocWrite function shall not return until the data given in parameter
+have been completely physically sent over the communication medium.
+For example in case of communication over shared RAM, an IocSend/IocWrite shall
+return when all data have been copied in the target shared RAM.⌋
+[SWS_Os_00721]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" (queued) semantic, the IocSend function shall guarantee the order
+of delivery. In case of senders from different cores, the order in which messages are
+received will be determined by the implementation.⌋
+[SWS_Os_00722]
+Upstream requirements: SRS_Os_80020
+⌈The IocSend/IocWrite function shall support mechanism to guarantee data-
+Integrity during transmission.
+The IocSend/IocWrite function shall solve the crossing of the protection boundaries
+of OS-Applications. It has to be generated in case of intra-core and inter-core commu-
+nication.⌋
+[SWS_Os_00820]
+Upstream requirements: SRS_Os_80020
+⌈The IocSend/IocWrite resp. IocSendGroup/IocWriteGroup function shall be
+wrapped with the memory allocation keywords mechanism
+1
+2
+#define OS_START_SEC_&lt;sadm&gt;
+3
+#include "Os_MemMap.h"
+4
+5
+&lt;IocSend, IocSendGroup, IocWrite, IocWriteGroup &gt;
+6
+7
+#define OS_STOP_SEC_&lt;sadm&gt;
+8
+#include "Os_MemMap.h"
+where &lt;sadm&gt; is the shortName of the SwAddrMethod referenced by the OsMemo-
+ryMappingCodeLocationRef of the sending OsApplication configured in OsIoc-
+SendingOsApplicationRef of the respective OsIocCommunication channel.
+⌋
+Parameters:
+[SWS_Os_00723]
+Upstream requirements: SRS_Os_80020
+⌈The IN &lt;Data&gt; parameter of the IocSend/IocWrite function shall be passed
+by value for primitive data types, as an pointer to the array base type for arrays and by
+reference for all other types.⌋
+[SWS_Os_00724]
+Upstream requirements: SRS_Os_80020
+⌈For data passed as an pointer to the array base type or by reference, the IocSend/
+IocWrite function shall guarantee upon return that the parameter is safe for re-use.⌋
+Returned values:
+[SWS_Os_00725]
+Upstream requirements: SRS_Os_80020
+⌈The IocSend/IocWrite function shall return IOC_E_OK if the data was passed suc-
+cessfully to the communication service.⌋
+[SWS_Os_00726]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic the IocSend function shall return IOC_E_LIMIT if an
+IOC internal transmission buffer became full (Case: Receiver is slower than sender or/
+and configured internal IOC buffer size is too small).
+If this error occurs the IOC internal buffer could not be filled with the parameter. In that
+case this error shall produce an IOC_E_LOST_DATAOverlayed Error on the receiver
+side at the next data reception (s. SWS_Os_00745).⌋
+Internal structures:
+[SWS_Os_00727]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic the IOC shall configure its internal transmission buffer size
+with the value of the attribute OsIocBufferLength.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +257,7 @@ internal buffer or is equal</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=218" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

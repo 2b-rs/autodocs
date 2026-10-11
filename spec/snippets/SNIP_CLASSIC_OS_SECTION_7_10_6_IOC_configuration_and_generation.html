@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_10_6_IOC_configuration_and_generation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 128)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=128" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 128)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_05147" class="swsref internal-spec-ref"><code>SWS_Rte_05147</code></a></span>
         </div>
@@ -91,7 +92,34 @@ eration specifying:
 • Whether communication is queued or unqueued (last is best)
 • In case of queued communication: Length of the queue
 For details see chapter 10.3
-For eac</div></section>
+For each inter-OS-Application communication, the RTE generator creates one or more
+calls to an IOC function to send or receive data, and adds a corresponding description
+block to the IOC Configuration Description.
+In ECUs or Software Clusters with only one OS-Application, the IOC Configuration
+Description can be omitted.
+[SWS_Os_00824]
+Upstream requirements: SRS_Os_80020
+⌈All the data allocated by the OS for the IOC communication shall be wrapped with the
+memory allocation keywords mechanism
+1
+#define OS_&lt;IE&gt;_START_SEC_&lt;sadm&gt;
+2
+#include "Os_MemMap.h"
+3
+4
+&lt;IOC buffers&gt;
+5
+6
+#define OS_&lt;IE&gt;_STOP_SEC_&lt;sadm&gt;
+7
+#include "Os_MemMap.h"
+where &lt;IE&gt; is the shortName of the sending OsApplication configured in Os-
+IocSendingOsApplicationRef of the respective OsIocCommunication chan-
+nel, and &lt;sadm&gt; is the shortName of the referred swAddrMethod, if configured in
+OsMemoryMappingCodeLocationRef of the respective OsIocDataProperties
+within the OsIocCommunication channel.
+If the OsMemoryMappingCodeLoca-
+tionRef is not defined the OS is permitted to select an appropriate swAddrMethod.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +132,7 @@ For eac</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=128" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

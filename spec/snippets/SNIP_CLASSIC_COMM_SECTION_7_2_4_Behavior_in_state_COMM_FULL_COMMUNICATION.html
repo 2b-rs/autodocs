@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_4_Behavior_in_state_COMM_FULL_COMMUNICATION</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 72)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 72)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_01057" class="swsref internal-spec-ref"><code>SWS_ComM_01057</code></a></span>
         </div>
@@ -113,11 +114,58 @@ to
 FALSE
 or
 not
-a</div></section>
+available,
+then
+&lt;Bus&gt;SM_RequestComMode(network:=&lt;channel
+state
+machine’s
+network&gt;,
+mode:= COMM_FULL_COMMUNICATION) shall be called
+⌋
+Rationale for [SWS_ComM_00069]: The COMM_FULL_COMMUNICATION or COMM_-
+FULL_COMMUNICATION_WITH_WAKEUP_REQUEST mode permits sending and receiv-
+ing of bus communication PDUs for the corresponding channels.
+[SWS_ComM_01057] Handling if COMM_FULL_COMMUNICATION_WITH_WAKEUP_
+REQUEST is called for a ComMChannel that has ComMWakeupSleepRequestEn-
+abled set to TRUE
+Upstream requirements: SRS_ModeMgm_09268
+⌈Every time a ComM channel is requested with COMM_FULL_COMMUNICATION_-
+WITH_WAKEUP_REQUEST and ComMWakeupSleepRequestEnabled of the ComM
+channel is set to TRUE, ComM shall request the corresponding network of the ComM
+channel by calling
+&lt;Bus&gt;SM_RequestComMode(network:=&lt;channel state machine’s net-
+work&gt;, mode:= COMM_FULL_COMMUNICATION_WITH_WAKEUP_REQUEST), even
+if the ComM channel is already in state COMM_FULL_COMMUNICATION.⌋
+Note: The re-trigger of the &lt;Bus&gt;SM state machine is used to trigger a wake-up on
+the network, if the used hardware is supporting such a functionality (e.g. Ethernet
+hardware compliant to OA TC10 (see [2]))
+[SWS_ComM_00637]
+Upstream requirements: SRS_ModeMgm_09083
+⌈In state COMM_FULL_COMMUNICATION and the Network Manager module indicates
+ComM_Nm_BusSleepMode() ([SWS_ComM_00392]), the ComM channel state ma-
+chine shall switch to state COMM_NO_COMMUNICATION.⌋
+Rationale for [SWS_ComM_00637]: A user may request to keep the bus awake "too
+late" (NM is not able to send a vote to keep the bus awake because the cluster already
+agreed to shutdown).
+[SWS_ComM_01018] Handling upon indication of ComM_&lt;Bus&gt;SM_BusSleep-
+Mode for ComMChannels with ComMNmVariant=SLAVE_ACTIVE | SLAVE_PASSIVE
+Upstream requirements: SRS_ModeMgm_09266, SRS_ModeMgm_09267
+⌈In state COMM_FULL_COMMUNICATION and configuration parameter ComMNmVari-
+ant=SLAVE_ACTIVE | SLAVE_PASSIVE and the Bus State Manager module indicates
+ComM_&lt;Bus&gt;SM_BusSleepMode, the ComM channel state machine shall switch to
+state COMM_NO_COMMUNICATION.⌋
+[SWS_ComM_00826] ⌈In COMM_FULL_COMMUNICATION and configuration parame-
+ter ComMNmVariant=FULL|PASSIVE ([ECUC_ComM_00568]) and the Network Man-
+ager module indicates ComM_Nm_PrepareBusSleepMode() ([SWS_ComM_00391]),
+the ComM state machine shall switch to state COMM_SILENT_COMMUNICATION.⌋
+Rationale for [SWS_ComM_00826]: ComM_Nm_PrepareBusSleepMode() cannot be
+received before an active request is released via Nm_NetworkRelease(), and a PAS-
+SIVE channel cannot be woken up by an active wake-up, therefore it is safe to assume
+that the transition is always valid.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Calling BusSM with wakeup request mode</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_ComM_01057] im Text von SWS_COMManager.</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +174,7 @@ a</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -142,11 +190,11 @@ a</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

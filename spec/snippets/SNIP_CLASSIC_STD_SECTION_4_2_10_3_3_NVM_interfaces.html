@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_10_3_3_NVM_interfaces</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 283)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=279" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 283)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_02503" class="swsref"><code>TPS_SWCT_02503</code></a></span>
         </div>
@@ -92,7 +93,582 @@ SW-C users of this NvBlockSwComponentType.
 • NvMAdmin
 This interface is used to order some administrative operations to the NVM. The
 NvBlockSwComponentType provides a server port intended to be used by the
-SW-C users of this NvBlockSwComponent</div></section>
+SW-C users of this NvBlockSwComponentType.
+For the implementation of NvBlockSwComponentTypes that have NvM service ports
+the RTE has to call the API of NvM. In order to access NvM API the NvM.h file has to
+be included (see [SWS_Rte_08063]).
+Note: no restrictions have been added to the NVM interfaces. However, some op-
+erations of the NVM might require cooperation between the different users of the
+NvBlockSwComponentType. For example, a ReadBlock operation will overwrite the
+RAM Block, which might affect multiple SW-Cs.
+NvBlockSwComponentType
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+SwComponentType
+AtpBlueprintable
+AtpPrototype
+PortPrototype
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+PortInterface
++
+serviceKind: ServiceProviderEnum [0..1]
+«atpVariation»
++
+isService: Boolean [0..1]
+RoleBasedPortAssignment
++
+role: Identifier [0..1]
+AtpStructureElement
+Identifiable
+NvBlockDescriptor
++
+supportDirtyFlag: Boolean [0..1]
+ClientServerInterface
+AtpStructureElement
+Identifiable
+ClientServerOperation
++
+diagArgIntegrity: Boolean [0..1]
+InternalBehavior
+SwcInternalBehavior
+AtpStructureElement
+ExecutableEntity
+RunnableEntity
+OperationInvokedEvent
+AbstractEvent
+AtpStructureElement
+RTEEvent
+AtomicSwComponentType
+PortDefinedArgumentValue
+PortAPIOption
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!
+
+
+
+
+
+
+
+"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+!
+
+ 
+
+
+$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
++portPrototype
+0..1
+«instanceRef»
++operation
+0..1
+«atpVariation,atpSplitable»
++nvBlockDescriptor
+0..*
+«atpIdentityContributor»
++port
+0..1
+«atpVariation,atpSplitable»
++internalBehavior
+0..1
+«atpVariation,atpSplitable»
++operation 0..*
+«atpVariation,atpSplitable»
++portAPIOption
+0..*
+«atpVariation,atpSplitable»
++runnable
+0..*
+«atpVariation,atpSplitable»
++clientServerPort
+0..*
++portArgValue
+0..*
+{ordered}
+«atpVariation,atpSplitable»
++port
+0..*
+«atpVariation,atpSplitable»
++event
+0..*
++startOnEvent
+0..1
+Figure 4.38: SwcInternalBehavior of NvBlockSwComponentTypes
+NvBlockSwComponentType
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+SwComponentType
+AtpBlueprintable
+AtpPrototype
+PortPrototype
+PPortPrototype
+RPortPrototype
+ClientServerInterface
+AtpStructureElement
+Identifiable
+ClientServerOperation
+ 
+ 
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+ 
+
+
+
+
+AtomicSwComponentType
+AbstractProvidedPortPrototype
+AbstractRequiredPortPrototype
+PRPortPrototype
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RoleBasedPortAssignment
++
+role: Identifier [0..1]
+AtpStructureElement
+Identifiable
+NvBlockDescriptor
++
+supportDirtyFlag: Boolean [0..1]
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+PortInterface
++
+serviceKind: ServiceProviderEnum [0..1]
+«atpVariation»
++
+isService: Boolean [0..1]
+«isOfType»
++providedInterface
+0..1
+{redefines atpType}
+«isOfType»
++providedRequiredInterface
+0..1
+{redefines atpType}
++portPrototype
+0..1
+«atpVariation,atpSplitable»
++operation
+0..*
+«isOfType»
++requiredInterface
+0..1
+{redefines atpType}
+«atpVariation,atpSplitable»
++clientServerPort
+0..*
+«atpVariation,atpSplitable»
++nvBlockDescriptor
+0..*
+«atpVariation,atpSplitable»
++port
+0..*
+Figure 4.39: NVM notifications
+The requests received from the SW-C side are forwarded by the NvBlockSwCompo-
+nentType’s runnables to the NVM module, using the NVM C API indicated by the
+RoleBasedPortAssignment. See figure 4.38.
+Notifications received from the NVM are forwarded to all the SW-C connected to the no-
+tification interfaces of the NvBlockSwComponentType with a RoleBasedPortAs-
+signment of the corresponding type. See figure 4.39.
+[SWS_Rte_07398]
+Upstream requirements: SRS_Rte_00177
+⌈The RTE Generator shall implement runnables for each connected server port of a
+NvBlockSwComponentType.⌋
+[SWS_Rte_07399]
+Upstream requirements: SRS_Rte_00177
+⌈The NvBlockSwComponentType’s runnables used as servers connected to the SW-
+C shall forward the request to the NVM by calling the associated NVM API.⌋
+[SWS_Rte_04535]
+Upstream requirements: SRS_Rte_00177
+⌈The return values of NvM APIs NvM_WriteBlock and NvM_SetRAMBlockStatus
+(See
+requirements
+[SWS_Rte_08080],
+[SWS_Rte_08081],
+[SWS_Rte_08082],
+[SWS_Rte_08083], [SWS_Rte_08084], [SWS_Rte_08085]) called by the RTE shall
+be ignored.⌋
+[SWS_Rte_08064]
+Upstream requirements: SRS_Rte_00177
+⌈The symbol attribute of RunnableEntitys triggered by an OperationInvokedE-
+vent of NvBlockSwComponentTypes shall be used by the RTE generator to identify
+the to be called NvM API function (see [constr_1234] in software component template
+[2]).⌋
+The NvBlockSwComponentType may define PortDefinedArgumentValues to
+provide the BlockId value in case the NvBlockSwComponentType defines server
+ports for the call of NvM services. Till R4.2 this was the only possibility to provide
+the BlockId value. But these values are not mandatory any longer and are super-
+seded by the configuration of RteNvRamAllocation, see [SWS_Rte_06211] and
+[SWS_Rte_06212].
+[SWS_Rte_06211]
+Upstream requirements: SRS_Rte_00177
+⌈The RTE generator shall determine the appropriate BlockId value for the invocation
+of NvM API functions from the NvMNvramBlockIdentifier parameter of the NvM-
+BlockDescriptor which is mapped via RteNvRamAllocation.RteNvmBlockRef
+to the according NvBlockDescriptor.⌋
+Please note: Thereby the relationship of an invocation to a specific NvBlockDe-
+scriptor can be determined by following ways:
+• NvBlockDescriptor.timingEvent for the cyclic invocation
+• NvBlockDescriptor.clientServerPort where attribute role has the value
+NvMService or NvMAdmin. In this case all OperationInvokedEvents ref-
+erencing an operation in such a PPortPrototype are belonging to the
+NvBlockDescriptor.
+• VariableDataPrototype
+instances
+in
+AbstractProvidedPortPrototype
+mapped to the NvBlockDescriptor.ramBlock via an NvBlockDataMap-
+ping. In this case all DataReceivedEvents referencing those Variable-
+DataPrototype instances are belonging to the NvBlockDescriptor.
+• NvBlockDescriptor.modeSwitchEventTriggeredActivity for the mode
+switch based invocation.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +681,7 @@ SW-C users of this NvBlockSwComponent</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=279" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

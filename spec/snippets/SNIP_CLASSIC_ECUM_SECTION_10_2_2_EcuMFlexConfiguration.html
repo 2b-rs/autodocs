@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: ecum</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_10_2_2_EcuMFlexConfiguration</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 219)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=218" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 219)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_03017" class="swsref internal-spec-ref"><code>SWS_EcuM_03017</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_91002" class="swsref internal-spec-ref"><code>SWS_EcuM_91002</code></a></span>
         </div>
       </div>
 
@@ -136,11 +137,126 @@ upperMultiplicity = *
 requiresSymbolicNameValue = true
 EcucPartition:
 EcucParamConfContainerDef
-lowerMultipli</div></section>
+lowerMultiplicity = 0
+upperMultiplicity = *
+EcuMPartitionRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = *
++parameter
++subContainer
++subContainer
++reference
++reference
++destination
++reference
++reference
++subContainer
++parameter
++parameter
++subContainer
++destination
++destination
++subContainer
++subContainer
++destination
++parameter
++reference
++destination
+Figure 10.11: EcuMFlexConfiguration configuration overview
+[ECUC_EcuM_00167] Definition of EcucParamConfContainerDef EcuMFlexCon-
+figuration ⌈
+Container Name
+EcuMFlexConfiguration
+Parent Container
+EcuMConfiguration
+Description
+This container contains the configuration (parameters) of the EcuMFlex.
+Only applicable if EcuMFlex is implemented.
+Multiplicity
+0..1
+Post-Build Variant Multiplicity
+false
+Pre-compile time
+X
+All Variants
+Link time
+–
+Multiplicity Configuration Class
+Post-build time
+–
+Configuration Parameters
+Included Parameters
+Parameter Name
+Multiplicity
+ECUC ID
+EcuMNormalMcuModeRef
+1
+[ECUC_EcuM_00204]
+EcuMPartitionRef
+0..*
+[ECUC_EcuM_00217]
+Included Containers
+Container Name
+Multiplicity
+Dependency
+EcuMAlarmClock
+0..*
+These containers describe the configured alarm clocks.
+The name of these conatiners allows giving a symbolic name to
+one alarm clock.
+EcuMDriverInitListBswM
+0..*
+This container holds a list of modules to be initialized by the Bsw
+M.
+EcuMFlexUserConfig
+1..256
+These containers describe the identifiers that are needed to refer
+to a software component or another appropriate entity in the
+system which uses the EcuMFlex Interfaces.
+EcuMGoDownAllowedUsers
+0..1
+This container describes the collection of allowed users which
+are allowed to call the EcuM_GoDownHaltPoll API (only applies
+in the case that the previously set shutdown target is TARGET_
+RESET or TARGET_OFF).
+EcuMResetMode
+1..256
+These containers describe the configured reset modes. The
+name of these containers allows one of the following symbolic
+names to be given to the different reset modes:
+• ECUM_RESET_MCU
+• ECUM_RESET_WDG
+• ECUM_RESET_IO.
+EcuMSetClockAllowedUsers
+0..1
+This container describes the collection of allowed users which
+are allowed to call the EcuM_SetClock API.
+EcuMShutdownCause
+1..256
+These containers describe the configured shut down or reset
+causes. The name of these containers allows to give one of the
+following symbolic names to the different shut down causes:
+• ECUM_CAUSE_ECU_STATE - ECU state machine entered a
+state for shutdown,
+• ECUM_CAUSE_WDGM - WdgM detected failure,
+• ECUM_CAUSE_DCM - Dcm requests shutdown (split into
+UDS services?),
+• and values from configuration.
+⌋
+[ECUC_EcuM_00204] Definition of EcucReferenceDef EcuMNormalMcuModeRef
+⌈
+Parameter Name
+EcuMNormalMcuModeRef
+Parent Container
+EcuMFlexConfiguration
+Description
+This parameter is a reference to the normal MCU mode to be restored after a sleep.
+Multiplicity</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">AlarmClock user port mapping</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EcuM_GoDownHaltPoll().</p>
       </section>
 
       <section class="snip-card">
@@ -149,7 +265,7 @@ lowerMultipli</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=218" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -161,15 +277,15 @@ lowerMultipli</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_03017" class="swsref internal-spec-ref"><code>SWS_EcuM_03017</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_91002" class="swsref internal-spec-ref"><code>SWS_EcuM_91002</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

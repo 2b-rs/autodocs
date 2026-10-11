@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FR_SECTION_8_4_13_Fr_ReceiveRxLPdu</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayDriver.pdf</strong> (Seite 56)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></strong> (Seite 56)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -121,11 +122,204 @@ Receives data from the FlexRay network.
 Available via
 Fr.h
 ⌋
-CC precondition for the functio</div></section>
+CC precondition for the function Fr_ReceiveRxLPdu(): None.
+[SWS_Fr_00233] ⌈The function Fr_ReceiveRxLPdu() shall perform the following
+tasks on FlexRay CC Fr_CtrIdx:
+1. Figure out the physical resource (e.g., a buffer, a receive-FIFO) mapped to the
+reception of the FlexRay frame as identified by Fr_LpduIdx.
+2. Figure out whether a new FlexRay frame instance has been received within the
+receive resource as figured in bullet 1. If the receive resource is a FIFO, then
+consume the first element out of the FIFO.
+3. If FrExtendedLPduReporting is enabled and Fr_SlotAssignment is not a
+NULL pointer and a new FlexRay frame has been accepted, copy cycle and slot
+ID of the frame to Fr_SlotAssignment.
+4. If
+a
+new
+FlexRay
+frame
+has
+been
+accepted,
+then
+copy
+the
+received
+payload
+data
+to
+address
+Fr_LsduPtr,
+store
+the
+number
+of
+bytes
+copied
+to
+Fr_LsduLengthPtr
+and
+store
+the
+status
+FR_RECEIVED
+to
+Fr_RxLPduStatusPtr. If a FIFO is used as received resource and the FIFO
+is not empty, then store the status FR_RECEIVED_MORE_DATA_AVAILABLE to
+Fr_RxLPduStatusPtr.
+5. If no new frame has been accepted, then do not copy any payload data to
+Fr_LsduPtr, write 0 to the parameter Fr_LsduLengthPtr and store the sta-
+tus FR_NOT_RECEIVED to Fr_RxLPduStatusPtr.
+6. Return E_OK.
+⌋
+[SWS_Fr_00441]
+Upstream requirements: SRS_Fr_05024
+⌈If a receive resource is shared between more than 1 LPdus (using reconfiguration
+mechanism of Fr_PrepareLPdu()), then the function Fr_ReceiveRxLPdu() must
+ensure that the receive resource is correctly configured to match the properties of
+Fr_LpduIdx. This means that if a receive operation (Fr_ReceiveRxLPdu()) is called
+for a particular Fr_LPduIdx and the LPdu shares a single buffer with another LPdu,
+then it shall check that at the time of service invocation the buffer is configured accord-
+ing to the Lpdu to be processed.
+The function Fr_ReceiveRxLPdu() shall return E_NOT_OK and abort the function ex-
+ecution if a wrong buffer configuration is detected.⌋
+[SWS_Fr_00234] ⌈The function Fr_ReceiveRxLPdu() shall ensure that the payload
+data is copied to Fr_LSduPtr in the same byte order as it was received on the FlexRay
+bus. (first byte = lowest address, last byte = highest address).⌋
+[SWS_Fr_00604] ⌈If stringent check is disabled by configuration parameter (Fr-
+RxStringentCheck is false), then received data is accepted if the SlotStatus
+shows a valid frame (vSS!ValidFrame). Otherwise FR_NOT_RECEIVED is written to
+Fr_RxLPduStatusPtr and 0 is written to Fr_LSduLengthPtr.⌋
+[SWS_Fr_00603] ⌈If stringent check is enabled by configuration parameter (Fr-
+RxStringentCheck is true), then received data is accepted only if the SlotStatus
+shows a valid frame (vSS!ValidFrame) and there was no single SlotStatus error bit set
+(vSS!SyntaxError, vSS!ContentError, vSS!Bviolation). Otherwise FR_NOT_RECEIVED
+is written to Fr_RxLPduStatusPtr and 0 is written to Fr_LsduLengthPtr.⌋
+[SWS_Fr_00236]
+⌈The
+function
+Fr_ReceiveRxLPdu()
+shall
+ensure
+that
+FR_RECEIVED is returned only for non-Nullframes.⌋
+[SWS_Fr_00237] ⌈The function Fr_ReceiveRxLPdu() shall ensure that the function
+returns FR_RECEIVED only once per received frame.⌋
+[SWS_Fr_00645] ⌈If stringent length check is enabled by configuration parameter (
+FrRxStringentLengthCheck is true), then received data is accepted only if the
+received payload length exactly matches the expected payload length as provided by
+configuration parameter FrIfLSduLength. Otherwise FR_NOT_RECEIVED is written
+to Fr_RxLPduStatusPtr and 0 is written to Fr_LSduLengthPtr .⌋
+[SWS_Fr_00239] ⌈The function Fr_ReceiveRxLPdu() shall ensure that the number
+of payload bytes copied to Fr_LsduPtr, and therefore the payload length stored to
+Fr_LSduLengthPtr are limited both by the received payload length as well as by the
+configuration parameter FrIfLSduLength configured in the FrIf.
+This enables
+• the partly reception of large FlexRay frames (e.g., enables local resource opti-
+mizations, support for transparent frame extensions).
+• the reception of short FlexRay frames.
+(e.g., frames with dynamic payload
+length).
+⌋
+[SWS_Fr_00232]
+⌈If
+the
+function
+Fr_ReceiveRxLPdu()
+is
+able
+to
+and
+detects
+a
+hardware
+error
+while
+performing
+the
+requested
+functionality,
+then
+it
+shall
+call
+Dem_SetEventStatus()
+(FR_E_CTRL_TESTRESULT,
+DEM_EVENT_STATUS_FAILED) and return E_NOT_OK.⌋
+[SWS_Fr_00605]
+⌈If
+the
+optional
+configuration
+parameter
+FrIfDemFT-
+SlotStatusRef
+exists
+and
+a
+single
+slot
+status
+error
+bit
+(vSS!SyntaxError,
+vSS!ContentError, vSS!Bviolation) is set, then the slot status information shall
+be
+reported
+to
+DEM
+as
+Dem_SetEventStatus()
+(FR_E_LPDU_SLOTSTATUS,
+DEM_EVENT_STATUS_FAILED).⌋
+[SWS_Fr_00627]
+⌈If
+the
+optional
+configuration
+parameter
+FrIfDemFTSlot-
+StatusRef
+exists
+and
+no
+single
+slot
+status
+error
+bit
+(vSS!SyntaxError,
+vSS!ContentError, vSS!Bviolation) is set, then the slot status information shall
+be
+reported
+to
+DEM
+as
+Dem_SetEventStatus()
+(FR_E_LPDU_SLOTSTATUS,
+DEM_EVENT_STATUS_PASSED).⌋
+[SWS_Fr_00628] ⌈Dem_SetEventStatus() shall only be called if the optional con-
+figuration parameter FrIfDemFTSlotStatusRef exists.⌋
+[SWS_Fr_00226] ⌈If development error detection for the Fr module is enabled, and
+if the function Fr_ReceiveRxLPdu() is called before the successful initialization
+of Fr, then the function Fr_ReceiveRxLPdu() shall raise the development error
+FR_E_INIT_FAILED.⌋
+[SWS_Fr_00227] ⌈If development error detection for the Fr module is enabled, then the
+function Fr_ReceiveRxLPdu() shall check the validity of the parameter Fr_CtrlIdx.
+If Fr_CtrlIdx is invalid, then the function Fr_ReceiveRxLPdu() shall raise the de-
+velopment error FR_E_INV_CTRL_IDX.⌋
+[SWS_Fr_00228] ⌈If development error detection for the Fr module is enabled, then the
+function Fr_ReceiveRxLPdu() shall check the validity of the parameter Fr_LpduIdx.
+If Fr_LpduIdx is invalid, then the function Fr_ReceiveRxLPdu() shall raise the de-
+velopment error FR_E_INV_LPDU_IDX.⌋
+[SWS_Fr_00229] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_ReceiveRxLPdu() shall check whether the parameter Fr_LsduPtr
+is a NULL pointer (NULL_PTR). If Fr_LsduPtr is a NULL pointer, then the function
+Fr_ReceiveRxLPdu() shall raise the development error FR_E_PARAM_POINTER.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -134,7 +328,7 @@ CC precondition for the functio</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

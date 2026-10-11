@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: nvm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_7_2_6_1_Writing_keys_to_NVM</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoDriver.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Crypto_00243" class="swsref internal-spec-ref"><code>SWS_Crypto_00243</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00455" class="swsref internal-spec-ref"><code>SWS_NvM_00455</code></a></span>
         </div>
       </div>
 
@@ -91,11 +92,91 @@ SRS_CryptoStack_00118,
 SRS_-
 CryptoStack_00120
 ⌈On KEYSETVALID operation, writing the data block to NVM will be initiated by a call
-of the crypto driver to NvM_SetRamB</div></section>
+of the crypto driver to NvM_SetRamBlockStatus(). This is the typical operation when
+the configuration CryptoNvBlock/CryptoNvBlockProcessing is set to DEFERRED.
+If CryptoNvBlock/CryptoNvBlockProcessing is set to IMMEDIATE, the Crypto Driver
+will, besides the call to NvM_SetRamBlockStatus(), also call NvM_WriteBlock() im-
+mediately afterwards. This will trigger an immediate write of the NV RAM Block to
+non-volatile memory.⌋
+Note:
+For proper operation it is recommended to set the parameter NvMBlockUseSetRam-
+BlockStatus and NvMSelectBlockForReadAll of the NVM to TRUE. The value NvMS-
+electBlockForWriteAll shall be set to TRUE if CryptoNvBlockProcessing is set to DE-
+FERRED.
+[SWS_Crypto_00244]
+Upstream requirements: SRS_CryptoStack_00008
+⌈If
+a
+call
+to
+an
+NVM
+service
+(NvM_SetRamBlockStatus()
+or
+NvM_WriteBlock())
+returns
+with
+E_NOT_OK,
+or
+when
+the
+callback
+function
+Crypto_&lt;vi&gt;_&lt;ai&gt;_NvBlock_Callback_&lt;NvBlock&gt;
+(see
+[SWS_Crypto_91026])
+in-
+dicates with Nvm_RequestResultType that the block write operation has failed, the
+runtime error CRYPTO_E_RE_NVM_ACCESS_FAILED shall be reported to the
+DET. In addition, the service call shall be requested again on the next execution of
+Crypto_MainFunction.
+The number of retries can be limited by the parameter
+CryptoNvBlock/CryptoNvBlockFailedRetries.⌋
+[SWS_Crypto_00245]
+Upstream requirements: SRS_CryptoStack_00008
+⌈If
+a
+key
+is
+currently
+updated
+in
+NV
+RAM
+Block
+and
+has
+not
+yet
+been
+written
+by
+NVM,
+then
+this
+shall
+be
+reflected
+in
+the
+key
+status
+with
+CRYPTO_KEYSTATUS_UPDATE_IN_PROGRESS through the Crypto_KeyGet-
+Status interface.⌋
+[SWS_Crypto_00246]
+Upstream requirements: SRS_CryptoStack_00008, SRS_CryptoStack_00118
+⌈For each configured CryptoNvBlock the Crypto driver shall provide a separate set of
+Crypto_&lt;vi&gt;_&lt;ai&gt;_NvBlock_xxx_&lt;NvBlock&gt;() functions (xxx refers to Init, ReadFrom,
+WriteTo and Callback) (see chapter Callback notification). The short name of the Cryp-
+toNvBlock container replaces the tag &lt;NvBlock&gt;. The tags &lt;vi&gt; and &lt;ai&gt; are replaced
+as described in [SWS_Crypto_00012]. These functions shall be set as callbacks in the
+respective fields of the NvmBlockDescriptor.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Crypto_00243] im Text von SWS_CryptoDriver.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_WriteBlock().</p>
       </section>
 
       <section class="snip-card">
@@ -104,11 +185,11 @@ of the crypto driver to NvM_SetRamB</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 37</td>
+              <td>Seite 38</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -116,7 +197,7 @@ of the crypto driver to NvM_SetRamB</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Crypto_00243" class="swsref internal-spec-ref"><code>SWS_Crypto_00243</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_NvM_00455" class="swsref internal-spec-ref"><code>SWS_NvM_00455</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -124,7 +205,7 @@ of the crypto driver to NvM_SetRamB</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

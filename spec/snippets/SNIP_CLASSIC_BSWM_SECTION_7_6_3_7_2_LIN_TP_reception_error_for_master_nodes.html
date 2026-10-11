@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_6_3_7_2_LIN_TP_reception_error_for_master_nodes</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINInterface.pdf</strong> (Seite 71)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></strong> (Seite 71)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_LinIf_00655" class="swsref internal-spec-ref"><code>SWS_LinIf_00655</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_LinIf_00877" class="swsref internal-spec-ref"><code>SWS_LinIf_00877</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,81 @@ applicative schedule by calling the function BswM_LinTp_RequestMode with the pa-
 rameter LINTP_APPLICATIVE_SCHEDULE when it detects the error that is specified
 in [SWS_LinIf_00613] (see [SWS_LinIf_00646]).⌋
 [SWS_LinIf_00080] ⌈The LIN Interface shall start a new LIN TP reception if it is re-
-ceiving a FF or a SF when another LIN TP reception</div></section>
+ceiving a FF or a SF when another LIN TP reception is ongoing. The old message
+shall be considered as lost.⌋
+In the situation where the LIN Interface (master) has encountered a permanent error
+(either by upper layer signaling permanent error or the bus indicated an erroneous
+frame) the slave continues to transmit the rest of the frames when the master transmits
+a SRF header. The slave cannot know when the master has encountered a problem.
+The slave continues to transmit responses to the SRF headers. This means that no
+error-recovery is supported.
+[SWS_LinIf_00664] ⌈The LIN Interface shall provide the N_Cr timeout observation
+(configuration parameter LinTpNcr) in order to switch a schedule table from diagnos-
+tic schedule to applicative schedule in case the reception for SRF is not successful.⌋
+[SWS_LinIf_00665] ⌈The LIN Interface shall start the N_Cr timer after receiving LIN
+driver status as LIN_RX_OK for SRF (FF or CF except last CF) by calling the function
+Lin_GetStatus and stop after receiving LIN driver status as LIN_RX_OK for SRF
+(next CF) by calling the function Lin_GetStatus.⌋
+[SWS_LinIf_00666]
+Upstream requirements: SRS_Lin_01564
+⌈In case of N_Cr timeout occurrence the LIN Interface shall abort the reception and
+request a schedule table change to the applicative schedule by calling the function
+BswM_LinTp_RequestMode with the parameter LINTP_APPLICATIVE_SCHEDULE
+(see [SWS_LinIf_00646]).
+After successful completion or failure (e.g., since some
+other schedule table change is currently going on) of the schedule table switch, the
+LIN Interface shall notify the upper layer by calling the function PduR_LinTpRxIndi-
+cation with the result E_NOT_OK.⌋
+[SWS_LinIf_00617]
+Upstream requirements: SRS_Lin_01593
+⌈The LIN Interface shall provide the P2 timeout observation (configuration parame-
+ter LinTpP2Timing) in order to switch a schedule table from diagnostic schedule to
+applicative schedule in case the reception for SRF is not successful.⌋
+[SWS_LinIf_00618] ⌈The LIN Interface shall start the P2 timer after invocation of the
+function Lin_SendFrame for last MRF (SF or CF) and stop after receiving LIN driver
+status as LIN_RX_OK for SRF (SF or FF) by calling the function Lin_GetStatus.
+Note that the P2 timeout monitoring shall be started only in LIN TP diagnostic mode.⌋
+[SWS_LinIf_00619]
+Upstream requirements: SRS_Lin_01564
+⌈In case of P2 timeout occurrence after a reception has been successfully started (i.e.,
+call to PduR_LinTpStartOfReception() has been called and returned BUFREQ_
+OK), the LIN Interface shall abort the reception and request a schedule table change
+to the applicative schedule by calling the function BswM_LinTp_RequestMode()
+with the parameter LINTP_APPLICATIVE_SCHEDULE (see [SWS_LinIf_00646]). Af-
+ter successful completion or failure (e.g., since some other schedule table change is
+currently going on) of the schedule table switch, the LIN Interface shall notify the upper
+layer by calling the function PduR_LinTpRxIndication() with the result E_NOT_
+OK.⌋
+[SWS_LinIf_00877]
+Upstream requirements: SRS_Lin_01564
+⌈In case of P2 timeout occurrence before a reception has been successfully
+started (i.e., call to PduR_LinTpStartOfReception() did not take place or re-
+turned something different from BUFREQ_OK), the LIN Interface shall request a
+schedule table change to the applicative schedule by calling the function BswM_-
+LinTp_RequestMode() with the parameter LINTP_APPLICATIVE_SCHEDULE (see
+[SWS_LinIf_00646]).⌋
+[SWS_LinIf_00621]
+Upstream requirements: SRS_Lin_01593
+⌈The LIN Interface shall provide UDS Response Pending handling. Therefore:
+1. TP response PDUs containing an UDS response pending service are received
+and forwarded to the PDU Router as any other response PDUs.
+2. After reception of a response pending frame the P2 timeout timer is reloaded with
+the timeout time P2*max (configuration parameter LinTpP2Max).
+⌋
+[SWS_LinIf_00623]
+Upstream requirements: SRS_Lin_01593, SRS_Lin_01564
+⌈If more UDS response pending frames have been received than allowed (configu-
+ration parameter LinTpMaxNumberOfRespPendingFrames), the LIN Interface shall
+abort the reception and request a schedule table change to the applicative sched-
+ule by calling the function BswM_LinTp_RequestMode with the parameter LINTP_
+APPLICATIVE_SCHEDULE (see [SWS_LinIf_00646]). After successful completion or
+failure (e.g., since some other schedule table change is currently going on) of the
+schedule table switch, the LIN Interface shall notify the upper layer by calling the func-
+tion PduR_LinTpRxIndication with the result E_NOT_OK.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_LinIf_00655] im Text von SWS_LINInterface.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_LinIf_00877] im Text von SWS_LINInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +171,7 @@ ceiving a FF or a SF when another LIN TP reception</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -112,7 +183,7 @@ ceiving a FF or a SF when another LIN TP reception</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_LinIf_00655" class="swsref internal-spec-ref"><code>SWS_LinIf_00655</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_LinIf_00877" class="swsref internal-spec-ref"><code>SWS_LinIf_00877</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

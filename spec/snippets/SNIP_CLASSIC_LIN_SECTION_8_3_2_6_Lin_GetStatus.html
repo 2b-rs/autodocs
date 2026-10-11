@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/lin.html">Modul: lin</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 90%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LIN_SECTION_8_3_2_6_Lin_GetStatus</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINDriver.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINDriver.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINDriver.pdf</a></strong> (Seite 47)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Lin_00289" class="swsref internal-spec-ref"><code>SWS_Lin_00289</code></a></span>
         </div>
@@ -116,11 +117,69 @@ LIN_RX_ERROR: Erroneous response reception such as:
 LIN_RX_NO_RESPONSE: No response byte has been received so
 far
 LIN_OPERATIONAL: Normal operation; the related LIN channel
-is woke</div></section>
+is woken up from the LIN_CH_SLEEP and no data has been sent.
+LIN_CH_SLEEP: Sleep state operation; in this state wake-up
+detection from slave nodes is enabled.
+Description
+Gets the status of the LIN driver.
+Only used for LIN master nodes.
+Available via
+Lin.h
+⌋
+[SWS_Lin_00091] ⌈The function Lin_GetStatus shall return the current transmission,
+reception or operation status of the LIN driver.⌋
+[SWS_Lin_00200]
+⌈The
+return
+states
+LIN_TX_OK,
+LIN_TX_BUSY,
+LIN_TX_HEADER_ERROR,
+LIN_TX_ERROR,
+LIN_RX_OK,
+LIN_RX_BUSY,
+LIN_RX_ERROR , LIN_RX_NO_RESPONSE and LIN_OPERATIONAL are sub-
+states of the channel state LIN_CH_OPERATIONAL.⌋
+[SWS_Lin_00092]
+⌈If
+a
+SDU
+has
+been
+successfully
+received,
+the
+function
+Lin_GetStatus shall store the SDU in a shadow buffer or memory mapped LIN Hard-
+ware receive buffer referenced by Lin_SduPtr. The buffer will only be valid and must
+be read until the next Lin_SendFrame function call.⌋
+[SWS_Lin_00238] ⌈The function Lin_GetStatus shall return LIN_TX_OK, when
+• A Master Response Type frame is send and LIN header as well as LIN response
+of the frame are transmitted successfully or
+• A Slave to Slave Response Type frame is send and the LIN header of the frame
+is transmitted successfully.
+⌋
+[SWS_Lin_00141] ⌈If development error detection for the LIN module is enabled: if
+the function Lin_GetStatus is called before the LIN module was initialized, the function
+Lin_GetStatus shall raise the development error LIN_E_UNINIT otherwise (if DET is
+disabled) return LIN_NOT_OK.⌋
+[SWS_Lin_00143] ⌈If development error detection for the LIN module is enabled: if the
+channel parameter is invalid or the channel is inactive, the function Lin_GetStatus shall
+raise the development error LIN_E_INVALID_CHANNEL otherwise (if DET is disabled)
+return LIN_NOT_OK.⌋
+[SWS_Lin_00144] ⌈If development error detection for the LIN module is enabled: the
+function Lin_GetStatus shall check the parameter Lin_SduPtr for not being a NULL
+pointer. If Lin_SduPtr is a NULL pointer, the function Lin_GetStatus shall raise the
+development error LIN_E_PARAM_POINTER otherwise (if DET is disabled) return
+LIN_NOT_OK.⌋
+[SWS_Lin_00289] ⌈The function Lin_GetStatus is only available if the Lin module is
+configured as LIN master node on at least one channel. In a pure LIN slave config-
+uration, this function is not available. This depends on the configuration parameters
+LinNodeType.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">constrains Lin_GetStatus availability to master nodes</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Lin_00289] im Text von SWS_LINDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -129,11 +188,11 @@ is woke</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINDriver.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 48</td>
+              <td>Seite 47</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -145,11 +204,11 @@ is woke</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.90</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

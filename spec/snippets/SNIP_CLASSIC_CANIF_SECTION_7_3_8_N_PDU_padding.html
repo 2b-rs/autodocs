@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_3_8_N_PDU_padding</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANTransportLayer.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></strong> (Seite 42)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTp_00352" class="swsref internal-spec-ref"><code>SWS_CanTp_00352</code></a></span>
         </div>
@@ -88,7 +89,52 @@ equal to CANTP_ON, then CanTp receives by means of CanTp_RxIndication() call
 an SF Rx N-PDU belonging to that N-SDU, with a length smaller than eight bytes (i.e.
 PduInfoPtr.SduLength &lt; 8), CanTp shall reject the reception. The runtime error code
 CANTP_E_PADDING shall be reported to the Default Error Tracer.⌋(SRS_Can_01073)
-[S</div></section>
+[SWS_CanTp_00346] ⌈If frames with a payload &lt;= 8 (either CAN 2.0 frames or small
+CAN FD frames) are used for a Rx N-SDU and CanTpRxPaddingActivation is
+equal to CANTP_ON, and CanTp receives by means of CanTp_RxIndication() call
+a last CF Rx N-PDU belonging to that N-SDU, with a length smaller than eight bytes
+(i.e. PduInfoPtr. SduLength != 8), CanTp shall abort the ongoing reception by call-
+ing PduR_CanTpRxIndication() with the result E_NOT_OK. The runtime error code
+CANTP_E_PADDING shall be reported to the Default Error Tracer.⌋(SRS_Can_01073)
+[SWS_CanTp_00347] ⌈If CanTpRxPaddingActivation is equal to CANTP_ON for
+an Rx N-SDU, the CanTp module shall transmit FC N-PDUs with a length of eight
+bytes. Unused bytes in N-PDU shall be updated with CANTP_PADDING_BYTE (see
+CanTpPaddingByte).⌋()
+[SWS_CanTp_00348] ⌈If frames with a payload &lt;= 8 (either CAN 2.0 frames or small
+CAN FD frames) are used for a Tx N-SDU and if CanTpTxPaddingActivation is
+equal to CANTP_ON, CanTp shall transmit by means of CanIf_Transmit() call, SF
+Tx N-PDU or last CF Tx N-PDU that belongs to that Tx N-SDU with the length of eight
+bytes(i.e. PduInfoPtr.SduLength = 8). Unused bytes in N-PDU shall be updated with
+CANTP_PADDING_BYTE (see CanTpPaddingByte).⌋(SRS_Can_01073)
+[SWS_CanTp_00349] ⌈If CanTpTxPaddingActivation is equal to CANTP_ON for
+a Tx N-SDU, and if a FC N-PDU is received for that Tx N-SDU on a ongoing trans-
+mission, by means of CanTp_RxIndication() call, and the length of this FC is
+smaller than eight bytes (i.e. PduInfoPtr.SduLength &lt;8) the CanTp module shall abort
+the transmission session by calling PduR_CanTpTxConfirmation() with the result
+E_NOT_OK. The runtime error code CANTP_E_PADDING shall be reported to the De-
+fault Error Tracer.⌋()
+[SWS_CanTp_00351]
+⌈If
+the
+data
+length
+which
+shall
+be
+transmitted
+via
+CanIf_Transmit() does not match possible DLC values (0..8, 12, 16, 20, 24, 32,
+48, or 64), CanTp shall use the next higher valid DLC for transmission with initialization
+of unused bytes to the value of CANTP_PADDING_BYTE (see CanTpPaddingByte).⌋
+(SRS_Can_01073)
+Rationale: The ISO 11898-1:2015 [9] DLC values from 9 to 15 are assigned to non-
+linear discrete values for CAN frame payload length up to 64 byte. To prevent the
+transmission of uninitialized data the padding of CAN frame data is mandatory for DLC
+values greater than eight when the length of the N_PDU size to be transmitted is not
+equal to one of the discrete length values defined in the [9] DLC table. For DLC values
+from 9 to 15 only the mandatory padding should be used.
+The following picture represents an ISO frame:
+Figure 7.9: ISO frame construction</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +147,7 @@ CANTP_E_PADDING shall be reported to the Default Error Tracer.⌋(SRS_Can_01073)
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

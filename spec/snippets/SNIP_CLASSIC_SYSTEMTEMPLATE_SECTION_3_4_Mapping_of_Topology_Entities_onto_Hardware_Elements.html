@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_3_4_Mapping_of_Topology_Entities_onto_Hardware_Elements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SystemTemplate.pdf</strong> (Seite 166)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=165" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></strong> (Seite 166)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01019" class="swsref"><code>TPS_SYST_01019</code></a></span>
         </div>
@@ -91,7 +92,88 @@ ECUMapping
 FibexElement
 EcuInstance
 +
-comConfigurationGwTimeBase: Tim</div></section>
+comConfigurationGwTimeBase: TimeValue [0..1]
++
+comConfigurationRxTimeBase: TimeValue [0..1]
++
+comConfigurationTxTimeBase: TimeValue [0..1]
++
+comEnableMDTForCyclicTransmission: Boolean [0..1]
++
+ethSwitchPortGroupDerivation: Boolean [0..1]
++
+pncNmRequest: Boolean [0..1]
++
+pncPrepareSleepTimer: TimeValue [0..1]
++
+pncSynchronousWakeup: Boolean [0..1]
++
+pnResetTime: TimeValue [0..1]
++
+sleepModeSupported: Boolean
++
+v2xSupported: V2xSupportEnum [0..1]
++
+wakeUpOverBusSupported: Boolean
+Identifiable
+«atpVariation»
+CommunicationController
++
+wakeUpByControllerSupported: Boolean [0..1]
+CommunicationControllerMapping
+HwDescriptionEntity
+Identifiable
+HwPinGroup
+Identifiable
+CommunicationConnector
++
+createEcuWakeupSource: Boolean [0..1]
++
+dynamicPncToChannelMappingEnabled: Boolean [0..1]
++
+pncFilterArrayMask: PositiveInteger [0..*] {ordered}
++
+pncGatewayType: PncGatewayTypeEnum [0..1]
+HwPortMapping
+ARElement
+HwDescriptionEntity
+HwElement
++ecuInstance
+1
++ecu
+1
++hwCommunicationPort
+1
++commController
+1
+«atpVariation,atpSplitable»
++hwPinGroup
+0..*
++hwCommunicationController
+1
++communicationController
+1
++connector *
+«atpVariation,atpSplitable»
++hwPortMapping 1..*
++commController
+1..*
+«atpVariation,atpSplitable»
++communicationConnector
+1
++commControllerMapping 1..*
+Figure 3.30: Mapping of topology description elements in the System Template onto
+hardware elements defined in the ECU Resource Template (ECUResourceMapping)
+[constr_3006] valid EcuMapping ⌈The referenced hwCommunicationController
+and hwCommunicationPort shall be part of the referenced ecu.
+ECUMapping.ecu.nestedElement contains
+ECUMapping.commControllerMap-
+ping.hwCommunicationController
+3HwPinGroup which is of category Communication Port
+4HwElement which is of category Communication Controller
+System Template
+ECUMapping.ecu.nestedElement contains ECUMapping.hwPortMapping.hwCom-
+municationPort⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +186,7 @@ comConfigurationGwTimeBase: Tim</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=165" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

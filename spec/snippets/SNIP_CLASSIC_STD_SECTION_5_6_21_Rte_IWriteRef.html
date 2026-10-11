@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_21_Rte_IWriteRef</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 751)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=751" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 751)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00029" class="swsref internal-spec-ref"><code>SWS_Std_00029</code></a></span>
         </div>
@@ -104,11 +105,55 @@ can be used by the runnable to directly update the correspond-
 ing data elements.
 This is especially useful for data elements
 of Structure Implementation Data Type or Array Imple-
-mentation</div></section>
+mentation Data Type. The API function is guaranteed to be have
+constant execution time and therefore can also be used within cate-
+gory 1A runnable entities.
+No error information is required for the user. To provide the required
+write-back semantics the RTE only makes written values available to
+other entities after the writing runnable entity has terminated.
+[SWS_Rte_CONSTR_09026] Rte_IWriteRef may not return val-
+ues written in previous executions ⌈The reference returned by
+Rte_IWriteRef shall not be used by the runnables for reading the
+value previously written.⌋
+The
+rationale
+for
+[SWS_Rte_CONSTR_09026]
+is
+that
+Rte_-
+IWriteRef has a write semantic.
+Also, in case of an un-
+connected port, the written data shall be discarded (similarly to
+[SWS_Rte_01347]), and implementations may return a reference
+to the same buffer for all Rte_IWriteRef of unconnected provide
+ports.
+The optional IN parameter forwardedCode contains the trans-
+former code which shall be forwarded to the E2E transformer. See
+[SWS_Rte_04572].
+The optional IN parameter metaDataPtr contains a pointer to
+the meta data byte array which is to be forwarded to COM. See
+[SWS_Rte_03620].
+Return Value:
+The Rte_IWriteRef return value provide access to the data write
+buffer of the VariableDataPrototype.
+[SWS_Rte_05511]
+Upstream requirements: SRS_Rte_00051
+⌈Rte_IWriteRef returns a reference to the corresponding Vari-
+ableDataPrototype.⌋
+The return reference type of Rte_IWriteRef is dependent on
+the ImplementationDataType of the VariableDataProto-
+type and is a pointer to the location where the value can be ac-
+cessed. Thus the component does not need to use type casting to
+convert access to the VariableDataPrototype data.
+For details of the &lt;return reference&gt; definition see section
+5.2.6.7.
+Notes:
+None.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerForwardCode().</p>
       </section>
 
       <section class="snip-card">
@@ -117,7 +162,7 @@ mentation</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=751" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

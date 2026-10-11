@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -89,7 +90,48 @@ Therefore, if one needs to ﬁnd all SystemSignals implementing a particular Ass
 blyConnector, this requires a model query which compares the ProvidedPort end
 of the connector chain with the PortPrototype providing the VariableDataPro-
 totype.
-In the following sections, each reference to a VariableDat</div></section>
+In the following sections, each reference to a VariableDataPrototype or Argu-
+mentDataPrototype is of type Instance Reference [1]. This means it not only ref-
+erences the actual VariableDataPrototype, but additionally contains contextual
+references to the PortPrototype and the hierarchy of SwComponentPrototypes
+forming the individual instance context of the VariableDataPrototype. Therefore
+the above mentioned query requires a comparison of the full instance reference paths
+of the connector end and the PortPrototype context of the VariableDataProto-
+type to be mapped to the signal.
+The following rules are valid for the mapping of Variable Data Prototypes and Client
+Server Operations on SystemSignals:
+1) For each SystemSignal in a complete System Description exactly one data map-
+ping shall be deﬁned (P-Port or R-Port). Preference: P-Port
+In a complete System Description, it is sufﬁcient to refer to the VariableDataPro-
+totype in the ProvidePort or the RequirePort to deﬁne the mapping of the com-
+munication between a provider and its receivers. This is possible since the connectors
+implicitly deﬁne which RequirePorts are connected to which ProvidePort. In case
+the System Description doesn’t use a complete Software Component Description (VFB
+View) the data mapping needs not to be deﬁned. This supports the inclusion of legacy
+signals.
+2) In the System Extract/ECU Extract the missing data mappings on the complemen-
+tary Sender/Receiver side needs to be supplemented.
+In a System extract and ECU extract of the system description, where only the relevant
+parts of the SW compositions are deﬁned, it is necessary to utilize the information
+from the complementary Port, if the corresponding Port is located on another ECU
+and thus is not part of the extract. This is described in more detail in chapter 8.2 and
+chapter 9.2.3. Therefore a data mapping can be provided on ProvidePorts and on
+RequirePorts.
+3) Data mappings can be performed on compositions and on atomic SWCs.
+4) During the creation of the ECU Extract (ﬂattening) the existing data mappings on
+compositions needs to be transfered to the atomic SWCs.
+System Template
+R4.0 Rev 3
+In the OEM/Supplier Collaboration Scenario the outer shell of a Software Composi-
+tion (an empty composition) is deﬁned by an OEM and is delivered to a supplier. The
+Supplier adds the substructure to the Composition by adding atomic SwComponent-
+Prototypes and SwConnectors. But the supplier must respect the predeﬁned data
+mapping on the Software Composition. The OEM/Supplier Collaboration Scenario is
+described in chapter 8.1.
+5) If a SW Composition is reﬁned by the Supplier the mapped data elements of the
+composition shall not be mapped a second time in the internal substructure. In a
+subsequent ECU extract step according to rule 4) the mappings will be transferred
+to the inner components.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_11_5_Sequence_diagrams_of_Sender_Receiver_communication</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 338)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=332" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 338)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02058" class="swsref"><code>TPS_SYST_02058</code></a></span>
         </div>
@@ -120,7 +121,144 @@ buffer allocated for
 data item a.
 (7) The received data item is
 copied to the COM buffer for
-data item a and the notification</div></section>
+data item a and the notification
+callback provided by RTE is
+invoked.
+(2) The buffer for data
+item a is copied to the
+receiver's OUT
+parameter.
+(6) The data element is
+transformed to an array
+and transferred to the
+COM stack
+(9) The received data in
+the buffer are re-
+transformed. The result is
+copied to the receiver's
+OUT buffer parameter.
+(5) the provided data is
+converted. Only if data
+conversion applies
+(optional)
+(10) The received data is
+converted. Only if data
+conversion applies
+(optional)
+(4) The data value
+provided by the sender
+is copied to the RTE
+allocated buffer.
+Rte_Read_p_a
+()
+Rte_Read_p_a
+()
+E_OK
+()
+Com_ReceiveSignal
+()
+Rte_Write_p_a
+()
+Xfrm_&lt;name&gt;
+()
+RTE_E_OK
+()
+Xfrm_Inv_&lt;name&gt;
+()
+E_OK
+()
+RTE_E_OK
+()
+Com_SendSignal
+()
+RTE_E_OK
+()
+Rte_COMCbk(ComUserCbkHandleId)
+Figure 4.40: Sender Receiver communication with data semantics and dataReceive-
+PointByArgument as reception mechanism
+Figure 4.41 shows a sequence diagram of how Sender Receiver communication for
+event transmission and non-blocking reception may be implemented by RTE. The se-
+quence diagram shows the Rte_Receive API behavior when the queue is empty.
+In case the COM Based Transformer [23] is used the sequence in figure
+4.41 is the same,
+but Com_SendSignalGroupArray() is used instead of
+Com_SendSignal() and Com_ReceiveSignalGroupArray() is used instead of
+Com_ReceiveSignal().
+Sender
+Application
+Sender's RTE
+Sender's COM
+Netwok Receiver's
+COM
+Receiver's RTE
+Receiver
+application
+Sender's RTE
+Receiver's RTE
+(2) The RTE - queue for event
+p_e is empty =&gt;
+RTE_E_NO_DATA is returned to
+Receiver application.
+Inter-ECU communication
+Explicit Sender-Receiver communication:
+Port name = p
+Data element name = e
+VariableDataPrototype with a queued swImplPolicy (Event distribution)
+The sender VariableDataPrototype is referenced by a VariableAccess in role dataSendPoint
+The receiver VariableDataPrototype is referenced by a VariableAccess in role dataReceivePointByArgument
+No WaitPoint is referencing the DataReceivedEvent that references the VariableDataPrototype (non-blocking
+reception)
+(10) The received
+event item a is
+stored in the
+receiver's OUT
+parameter
+(1) The RTE -
+queue for event
+p_e is initialized
+(flushed).
+(7) RTE receives the event
+item e from COM and
+puts it into the RTE -
+queue for event e.
+(6) The receiver's COM
+invokes the callback
+function provided by RTE.
+(8) RTE fetches an event
+from the event e queue,
+retransforms and copies it
+to the Receiver's OUT
+parameter.
+(4) the provided data is
+converted. Only if data
+conversion applies
+(optional)
+(9) The received data is
+converted. Only if data
+conversion applies
+(optional)
+(3) The data value
+provided by the sender
+is copied to the RTE
+allocated queue.
+(5) The queue entry is
+transformed to an array and
+transferred to the COM stack
+Rte_Send_p_e()
+Xfrm_Inv_&lt;name&gt;()
+E_OK()
+Com_ReceiveSignal()
+Com_SendSignal()
+Rte_Receive_p_e()
+Xfrm_&lt;name&gt;()
+RTE_E_OK()
+Rte_Receive_p_e()
+RTE_E_NO_DATA()
+Rte_COMCbk(ComUserCbkHandleId)
+RTE_E_OK()
+E_OK()
+Figure 4.41: Sender Receiver communication with event semantics and dataReceive-
+PointByArgument as reception mechanism</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -133,7 +271,7 @@ data item a and the notification</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=332" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

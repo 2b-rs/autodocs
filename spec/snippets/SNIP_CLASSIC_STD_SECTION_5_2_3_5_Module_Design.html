@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
+          <span class="badge-role">Rolle: constitutive</span>
           <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_2_3_5_Module_Design</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_SRS_BSWGeneral.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_SRS_BSWGeneral.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_BSWGeneral.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BSW_00105" class="swsref internal-spec-ref"><code>SWS_BSW_00105</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -120,11 +121,130 @@ Avoid bugs during maintenance
 Use Case:
 A module contains 4 code segments which are equal. During maintenance of
 the module 3 of them have been updated, 1 has been forgotten  BUG.
-Dependencies:</div></section>
+Dependencies:
+--
+Supporting Material:
+--
+⌋(RS_BRF_02072,RS_BRF_02112,RS_BRF_02032)
+[SRS_BSW_00312] Shared code shall be reentrant
+⌈
+Type:
+Valid
+Description:
+All AUTOSAR Basic Software Modules implementing shared code shall
+ensure reentrancy if code is exposed to preemptive or parallel environments.
+For multi-core systems, reentrancy shall be ensured for unrestricted
+concurrent execution of that service on several cores (concurrency safety).
+Rationale:
+Shared code eases functional composition, reusability, code size reduction
+and maintainability. As a drawback, shared code shall be implemented
+reentrant if it is used in preemptive environments or on multiple partitions in
+parallel. Please note that an implementation that is reentrant on single core
+systems might not be concurrency safe when used in a Multi-Core
+environment.
+Use Case:
+A subroutine or function is reentrant if a single copy of the routine can be
+called from several task contexts simultaneously without conflict. Use the
+following reentrancy techniques:
+-
+Avoid use of static and/or global variables
+-
+Guard static and/or global variables using blocking mechanisms
+-
+Use dynamic stack variables
+Dependencies:
+--
+Supporting Material:
+--
+⌋()
+[SRS_BSW_00006] The source code of software modules above the
+µC Abstraction Layer (MCAL) shall not be processor and compiler
+dependent.
+⌈
+Type:
+Valid
+Description:
+Those software modules have to be developed once and shall be compilable
+for all processor platforms without any changes. Any necessary processor or
+compiler specific instructions (e.g. memory locators, pragmas, use of atomic
+bit manipulations etc.) have to be exported to macros and include files.
+Rationale:
+Minimize number of variants and development effort
+Use Case:
+NVRAM Manager, Network Management, …
+Dependencies:
+--
+Supporting Material:
+--
+⌋(RS_BRF_01000)
+[SRS_BSW_00439] Enable BSW modules to handle interrupts
+⌈
+Type:
+Valid
+Description:
+Autosar shall allow BSW modules to define and handle Interrupts.
+Rationale:
+--
+Use Case:
+In the case where the entire driver is delivered as source this isn’t a problem.
+In the case where the MCAL BSW module is delivered as object code, the
+interrupt handler could be written as a pair of small stubs (a cat1 stub and a
+cat2 stub) that are delivered as source, compiled as necessary, and simply call
+the main handler.
+Dependencies:
+--
+Supporting Material:
+--
+⌋()
+[SRS_BSW_00448] Module SWS shall not contain requirements from
+Other Modules
+⌈
+Type:
+Valid
+Description:
+It shall not be allowed for a module SWS to add requirements from Other
+Modules
+•  If a requirement is missing, then raise an Rfc, possibly resulting in
+a valid requirement within the module.
+• For this validrequirement give reference of the document where original
+requirement resides.
+Rationale:
+Increase consistency between SWS documents, ease change management
+of documents.
+Use Case:
+CAN Driver SWS using requirements from MCU Driver SRS.
+In this case there shall be a validCAN requirement in SRS which refers to
+the particular requirement in  MCU Driver SRS
+Dependencies:
+--
+Supporting Material:
+--
+⌋()
+[SRS_BSW_00449]  BSW Service APIs used by Autosar Application
+Software shall return a Std_ReturnType
+⌈
+Type:
+Valid
+Description:
+Every BSW Service API called by application software via RTE shall return a
+Std_ReturnType, return value.
+Refer to the Port Interface Section of the respective module, to
+confirm if the APIs are accessed by the RTE.
+Rationale:
+RTE call of BSW service always expect a return value of Std_ReturnType
+Use Case:
+RTE always expects return type of Std_ReturnType for the BSW Service API
+Call, any other return type or void shall cause incompatibility between the
+RTE and BSW.
+Dependencies:
+--
+Supporting Material:
+--
+⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Restrict exported information in headers</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -133,7 +253,7 @@ Dependencies:</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_SRS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_SRS_BSWGeneral.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -145,11 +265,11 @@ Dependencies:</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_BSW_00105" class="swsref internal-spec-ref"><code>SWS_BSW_00105</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>

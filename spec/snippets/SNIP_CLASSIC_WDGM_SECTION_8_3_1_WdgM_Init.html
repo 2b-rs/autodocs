@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_8_3_1_WdgM_Init</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 74)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 73)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00151" class="swsref internal-spec-ref"><code>SWS_WdgM_00151</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00390" class="swsref internal-spec-ref"><code>SWS_WdgM_00390</code></a></span>
         </div>
       </div>
 
@@ -113,11 +114,46 @@ Note: If a call to WdgIf_SetMode service fails during WdgM_Init, then the MCU
 Reset API is called directly (only if configured, see [SWS_WdgM_00133]) and the
 Watchdog Manager module will be in state initialized afterwards with Global Super-
 vision Status = WDGM_GLOBAL_STATUS_STOPPED (see [SWS_WdgM_00139]). This
-will cause a reset, either when the first</div></section>
+will cause a reset, either when the first watchdog expires (if an immediate reset of the
+Watchdog Manager module is not configured) or immediately (if an immediate reset is
+configured).
+[SWS_WdgM_00030]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00452, SRS_ModeMgm_09109
+⌈If the WdgMOffModeEnabled [ECUC_WdgM_00340] switch is not enabled, and the
+initial mode provided by the configuration (ConfigPtr) will disable the watchdog (
+WDGIF_OFF_MODE) then the function WdgM_Init shall return with E_NOT_OK without
+any action, and the function WdgM_Init shall report runtime error code WDGM_E_-
+DISABLE_NOT_ALLOWED to the Default Error Tracer.⌋
+There are optional checks that are executed if and only if WdgMDevErrorDetect is
+enabled.
+[SWS_WdgM_00389]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00350
+⌈If the configuration parameter WdgMDevErrorDetect [ECUC_WdgM_00301] is en-
+abled: The function WdgM_Init shall report the error to default error tracer with er-
+ror code WDGM_E_UNINIT, without any further effect, if the Watchdog Manager is in
+WDGM_GLOBAL_STATUS_DEACTIVATED.⌋
+[SWS_WdgM_00390]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00350
+⌈If the configuration parameter WdgMDevErrorDetect [ECUC_WdgM_00301] is dis-
+abled: The function WdgM_Init shall return without any effect if the Watchdog Man-
+ager is not in WDGM_GLOBAL_STATUS_DEACTIVATED.⌋
+[SWS_WdgM_00010]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00350
+⌈If the WdgMDevErrorDetect [ECUC_WdgM_00301] switch is enabled and the con-
+figuration variant is VARIANT-POST-BUILD, the function WdgM_Init shall check the
+contents of the given configuration set for being within the allowed boundaries. If the
+function WdgM_Init detects an error, then it shall not execute the initialization of the
+Watchdog Manager module and it shall report the error code WDGM_E_PARAM_CONFIG
+to the Det_ReportError service of the Default Error Tracer.⌋
+[SWS_WdgM_00370]
+Upstream requirements: SRS_BSW_00101
+⌈The function WdgM_Init shall clear from the non-initialized RAM the double-inverse
+value storing the SEID that first reached the EXIRED state.⌋
+See Section 8.3.10 for more information.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_WdgM_00390] im Text von SWS_WatchdogManager.</p>
       </section>
 
       <section class="snip-card">
@@ -126,11 +162,11 @@ will cause a reset, either when the first</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 74</td>
+              <td>Seite 73</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -138,7 +174,7 @@ will cause a reset, either when the first</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00151" class="swsref internal-spec-ref"><code>SWS_WdgM_00151</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00390" class="swsref internal-spec-ref"><code>SWS_WdgM_00390</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

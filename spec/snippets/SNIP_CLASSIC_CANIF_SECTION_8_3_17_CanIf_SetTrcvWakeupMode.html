@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_8_3_17_CanIf_SetTrcvWakeupMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 99)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=99" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 99)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -117,11 +118,47 @@ Info: The parameters of the function CanTrcv_SetWakeupMode() are of type:
 • TrcvWakeupMode: CanTrcv_TrcvWakeupModeType (see [2, Specification of
 CAN Transceiver Driver])
 • Transceiver: uint8 (Transceiver to which API call has to be applied)
-(see [2, Specification of CAN</div></section>
+(see [2, Specification of CAN Transceiver Driver])
+Note: The following three paragraphs are already described in the Specification of
+CanTrcv (see [2]).
+They describe the behavior of a CanTrcv in the respective
+transceiver wake-up mode, which is requested in parameter TrcvWakeupMode.
+CANIF_TRCV_WU_ENABLE:
+If the CanTrcv has a stored wake-up event pending for the addressed CanNetwork,
+the notification is executed within or immediately after the function CanTrcv_SetTr-
+cvWakeupMode() (depending on the implementation).
+CANIF_TRCV_WU_DISABLE:
+No notifications for wake-up events for the addressed CanNetwork are passed
+through the CanTrcv. The transceiver device and the underlying communication driver
+has to buffer detected wake-up events and raise the event(s), when the wake-up noti-
+fication is enabled again.
+CANIF_TRCV_WU_CLEAR:
+If notification of wake-up events is disabled (see description of mode CANIF_TRCV_
+WU_DISABLE), detected wake-up events are buffered. Calling CanIf_SetTrcvWake-
+upMode() with parameter CANIF_TRCV_WU_CLEAR clears these bufferd events.
+Clearing of wake-up events has to be used, when the wake-up notification is disabled
+to clear all stored wake-up events under control of the higher layers of the CanTrcv.
+[SWS_CANIF_00535]
+Upstream requirements: SRS_BSW_00323
+⌈If parameter TransceiverId of CanIf_SetTrcvWakeupMode() has an invalid
+value, the CanIf shall report development error code CANIF_E_PARAM_TRCV to the
+Det_ReportError service of the DET module, when CanIf_SetTrcvWakeupMode
+() is called.⌋
+[SWS_CANIF_00536]
+Upstream requirements: SRS_BSW_00323
+⌈If parameter TrcvWakeupMode of CanIf_SetTrcvWakeupMode() has an invalid
+value, the CanIf shall report development error code CANIF_E_PARAM_TRCVWAKE-
+UPMODE to the Det_ReportError service of the DET module, when CanIf_SetTr-
+cvWakeupMode() is called.⌋
+[SWS_CANIF_00373] ⌈Configuration of CanIf_SetTrcvWakeupMode(): The num-
+ber of supported transceiver types for each network is set up in the configuration phase
+(see CanIfTrcvCfg and CanIfTrcvDrvCfg). If no transceiver is used, this function
+may be omitted. Therefore, if no transceiver is configured in LT or PB class the API
+shall return with E_NOT_OK.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -130,7 +167,7 @@ CAN Transceiver Driver])
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=99" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

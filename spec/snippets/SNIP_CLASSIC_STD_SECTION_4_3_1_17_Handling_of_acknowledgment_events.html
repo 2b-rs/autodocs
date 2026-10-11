@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_17_Handling_of_acknowledgment_events</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 345)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=345" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 345)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08043" class="swsref internal-spec-ref"><code>SWS_Rte_08043</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08045" class="swsref internal-spec-ref"><code>SWS_Rte_08045</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,86 @@ shall be RTE_E_TRANSMIT_ACK and can be collected with Rte_IFeedback API.⌋
 [SWS_Rte_08043]
 Upstream requirements: SRS_Rte_00122
 ⌈For intra-partition communication with incoherent implicit dataWriteAccess no
-write-back copy actions to a global RTE-buffer will</div></section>
+write-back copy actions to a global RTE-buffer will be performed, if the involved
+runnables are all running in one preemption area. In this case the DataWriteCom-
+pletedEvent shall be fired after the termination of the last sending runnable in the
+sending task/ISR2. The transmission status shall be RTE_E_TRANSMIT_ACK and can
+be collected with Rte_IFeedback API.⌋
+[SWS_Rte_08018]
+Upstream requirements: SRS_Rte_00122
+⌈For intra-partition communication with explicit dataSendPoint the DataSendCom-
+pletedEvent shall be fired if and only if the sending to all receivers has been per-
+formed. The transmission status shall be RTE_E_TRANSMIT_ACK and can be col-
+lected with Rte_Feedback API.⌋
+Inter-Partition communication
+[SWS_Rte_08020]
+Upstream requirements: SRS_Rte_00122
+⌈For inter-partition communication with implicit dataWriteAccess the DataWrite-
+CompletedEvent shall be fired if and only if a task/ISR2 terminates and the write-
+back copy actions to the global RTE-buffer are completed. In addition the execution of
+the data write operations at the data receiver partitions must have taken place. Thereby
+the return status of the IOC for the different write operations can be neglected. The
+transmission status shall be RTE_E_TRANSMIT_ACK and can be collected with Rte_
+IFeedback API.⌋
+[SWS_Rte_08044]
+Upstream requirements: SRS_Rte_00122
+⌈For inter-partition communication with incoherent implicit dataWriteAccess no
+write-back copy actions to a global RTE-buffer will be performed, if the involved
+runnables are all running in one preemption area.
+In this case the DataWrite-
+CompletedEvent shall be fired after the termination of the last sending runnable
+in the sending task/ISR2 and after the execution of the data write operations at the
+data receiver partitions have taken place. Thereby the return status of the IOC for
+the different write operations can be neglected.
+The transmission status shall be
+RTE_E_TRANSMIT_ACK and can be collected with Rte_IFeedback API.⌋
+[SWS_Rte_08021]
+Upstream requirements: SRS_Rte_00122
+⌈For inter-partition communication with explicit dataSendPoint the DataSendCom-
+pletedEvent shall be fired if and only if the sending to all receivers has been per-
+formed and the execution of the data write operations at the data receiver partitions
+have taken place. Thereby the return status of the IOC for the different write opera-
+tions can be neglected. The transmission status shall be RTE_E_TRANSMIT_ACK and
+can be collected with Rte_Feedback API.⌋
+Inter-ECU communication
+A transmission of a single COM Signal(Group) or COM Large Data IPdu is considered
+being complete if one of the following situations occurs:
+• the related transmission acknowledgement callback (Rte_COMCbkTAck, Rte_
+COMCbkTxConfirmation or Rte_COMCbkTpTxConfirmation) has been
+called
+• the related transmission error callback (Rte_COMCbkTErr) has been called
+• a transmission timeout occurred (Rte_COMCbkTxTOut or RTE internal timeout
+supervision)
+[SWS_Rte_08022]
+Upstream requirements: SRS_Rte_00122
+⌈For inter-ECU communication with implicit dataWriteAccess the DataWriteCom-
+pletedEvent shall be fired if and only if a task/ISR2 terminates and the write-back
+copy actions to the global RTE-buffer are completed. In addition the transmission of
+all related COM Signal(Group)s and COM Large Data IPdus has to be complete. The
+transmission status (success or type of error) can be collected with the Rte_IFeed-
+back API.⌋
+[SWS_Rte_08045]
+Upstream requirements: SRS_Rte_00122
+⌈For inter-ECU communication with incoherent implicit dataWriteAccess no write-
+back copy actions to a global RTE-buffer will be performed, if the involved runnables
+are all running in one preemption area. In this case the DataWriteCompletedEvent
+shall be fired after the termination of the last sending runnable in the sending task/ISR2
+and after the transmission of all related COM Signal(Group)s and COM Large Data
+IPdus is complete. The transmission status (success or type of error) can be collected
+with the Rte_IFeedback API.⌋
+[SWS_Rte_08023]
+Upstream requirements: SRS_Rte_00122
+⌈For inter-ECU communication with explicit dataSendPoint the DataSendCom-
+pletedEvent shall be fired if and only if the sending to all receivers has been per-
+formed and the transmission of all related COM Signal(Group)s and COM Large Data
+IPdus is complete. The transmission status (success or type of error) can be collected
+with the Rte_Feedback API.⌋
+Note that errors occurring inside Rte_Write, Rte_Send or Rte_IWrite APIs don’t
+lead to the firing of DataWriteCompletedEvents or DataSendCompletedEvents.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_08043] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_08045] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -106,7 +182,7 @@ write-back copy actions to a global RTE-buffer will</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=345" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,7 +194,7 @@ write-back copy actions to a global RTE-buffer will</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_08043" class="swsref internal-spec-ref"><code>SWS_Rte_08043</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_08045" class="swsref internal-spec-ref"><code>SWS_Rte_08045</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

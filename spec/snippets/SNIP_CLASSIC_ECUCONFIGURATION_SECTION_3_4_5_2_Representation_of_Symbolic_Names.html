@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -94,7 +95,207 @@ EcucDefs/CorTst/CorTstDemEventParameterRefs&lt;/DEFINITION-REF&gt;
 &lt;ECUC-REFERENCE-VALUE&gt;
 &lt;DEFINITION-REF DEST="ECUC-SYMBOLIC-NAME-REFERENCE-DEF"&gt;/AUTOSAR/
 EcucDefs/CorTst/CorTstDemEventParameterRefs/
-CORTST_E_CORE_FAILURE&lt;</div></section>
+CORTST_E_CORE_FAILURE&lt;/DEFINITION-REF&gt;
+&lt;VALUE-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/ECUC/myDem/
+CORTST_E_CORE_FAILURE_1&lt;/VALUE-REF&gt;
+&lt;/ECUC-REFERENCE-VALUE&gt;
+&lt;/REFERENCE-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;/CONTAINERS&gt;
+&lt;/ECUC-MODULE-CONFIGURATION-VALUES&gt;
+&lt;ECUC-MODULE-CONFIGURATION-VALUES&gt;
+&lt;SHORT-NAME&gt;myDem&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-MODULE-DEF"&gt;/AUTOSAR/EcucDefs/Dem&lt;/DEFINITION-
+REF&gt;
+&lt;CONTAINERS&gt;
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;CORTST_E_CORE_FAILURE_1&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/Dem/DemEventParameter&lt;/DEFINITION-REF&gt;
+&lt;PARAMETER-VALUES&gt;
+25The one that is referenced to
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+&lt;ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;DEFINITION-REF DEST="ECUC-INTEGER-PARAM-DEF"&gt;/AUTOSAR/EcucDefs/
+Dem/DemEventParameter/DemEventId&lt;/DEFINITION-REF&gt;
+&lt;VALUE&gt;17&lt;/VALUE&gt;
+&lt;/ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;/PARAMETER-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;/CONTAINERS&gt;
+&lt;/ECUC-MODULE-CONFIGURATION-VALUES&gt;
+[ecuc_sws_2108] The values of conﬁguration parameters which are deﬁned as sym-
+blicNameValue = true shall be generated into the header ﬁle of the declaring module
+as #deﬁne. The symbol shall be composed of
+• the module abbreviation &lt;MA&gt; of the declaring BSW Module (according to
+BswModuleList [17]) followed by the literal "Conf_" followed by
+• the shortName of the EcucParamConfContainerDef of the declaring module
+followed by "_" followed by
+• the shortName of the EcucContainerValue container which holds the sym-
+blicNameValue conﬁguration parameter value.
+Taking the speciﬁcation requirements above the conﬁguration snippet results in the
+according symbolic name deﬁnition in the header ﬁle of the providing Dem module:
+...
+#define DemConf_DemEventParameter_CORTST_E_CORE_FAILURE_1 17
+...
+Especially in case of production error reporting this pattern is used extensively: The
+integrator has the freedom to call the DemEventParameter container name arbitrarily.
+In general it is reasonable to name the DemEventParameter like the actual production
+error (e.g. FLS_E_ERASE_FAILED), however there are use-cases where the same
+production error shall be reported for several instances / channels individually, thus it
+is required to distinguish between these different production error occurrences (e.g.
+FRIF_E_NIT_CH_A_CLUSTER_1 where FRIF_E_NIT_CH_A is the production error
+name and _CLUSTER_1 encodes one speciﬁc FlexRay cluster). This needs to be kept
+in mind when accessing the production error symbolic name from the reporting module,
+e.g. FrIf shall call:
+Dem_ReportErrorStatus(DemConf_DemEventParameter_FRIF_E_NIT_CH_A_CLUSTER_1,
+DEM_EVENT_STATUS_PASSED);
+In ﬁgure 3.29 another example of a symbolic name value conﬁguration setup is shown.
+The example 3.46 shows a possible value description for this deﬁnition.
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+ComSignal :
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+ComConfig :
+EcucParamConfContainerDef
+ComMPncComSignal :
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+ComMPncComSignalRef :
+EcucSymbolicNameReferenceDef
+ComHandleId :
+EcucIntegerParamDef
+symbolicNameValue = true
+min = 0
+max = 65535
+DbgAddInfoComSignal :
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DbgComSignalRef :
+EcucSymbolicNameReferenceDef
++reference
++reference
++subContainer
++destination
++destination
++parameter
+Figure 3.29: Example of ComSignal symbolic name deﬁnition
+Example 3.46
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;myComConfig&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/EcucDefs/
+Com/ComConfig&lt;/DEFINITION-REF&gt;
+&lt;SUB-CONTAINERS&gt;
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;PNC_02&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig/ComSignal&lt;/DEFINITION-REF&gt;
+&lt;PARAMETER-VALUES&gt;
+&lt;ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;DEFINITION-REF DEST="ECUC-INTEGER-PARAM-DEF"&gt;/AUTOSAR/EcucDefs/
+Com/ComConfig/ComSignal/ComHandleId&lt;/DEFINITION-REF&gt;
+&lt;VALUE&gt;231&lt;/VALUE&gt;
+&lt;/ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;/PARAMETER-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;Debuging_Sig5&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig/ComSignal&lt;/DEFINITION-REF&gt;
+&lt;PARAMETER-VALUES&gt;
+&lt;ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;DEFINITION-REF DEST="ECUC-INTEGER-PARAM-DEF"&gt;/AUTOSAR/EcucDefs/
+Com/ComConfig/ComSignal/ComHandleId&lt;/DEFINITION-REF&gt;
+&lt;VALUE&gt;245&lt;/VALUE&gt;
+&lt;/ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;/PARAMETER-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;/SUB-CONTAINERS&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+This leads to the generation of the following deﬁnitions in the Com header ﬁle:
+#define ComConf_ComSignal_PNC_02 231
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+#define ComConf_ComSignal_Debuging_Sig5 245
+Such that the other BSW Modules - which include the Com header ﬁle - can call the
+Com module using these symbols:
+ComM: Com_SendSignal(ComConf_ComSignal_PNC_02, value)
+Dgb:
+Com_SendSignal(ComConf_ComSignal_Debuging_Sig5, value)
+Invalid conﬁguration due to symbolic name values
+[ecuc_sws_6074] Due to the hierarchical structure of the parameter values it is pos-
+sible that the same shortName (in independent container structures) is the base for
+multiple symbolic name value deﬁnitions. If the respective value is equal in all occur-
+rences of the shortName the generation of the #deﬁne shall only be done once. If the
+respective value is different in any of the occurrences of the shortName the conﬁgu-
+ration is invalid.
+The following example shows a valid and an invalid conﬁguration.
+Invalid Icu configuration
+Valid Icu configuration
+DEFINITION
+IcuConfigSet0 :
+EcucContainerValue
+IcuChannel0 :
+EcucContainerValue
+Icu :EcucModuleDef
+upperMultiplicity = *
+lowerMultiplicity = 0
+(from ICU)
+IcuChannel :
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 1
+(from ICU)
+IcuChannelId :
+EcucIntegerParamDef
+min = 0
+max = 65535
+symbolicNameValue = true
+(from ICU)
+IcuConfigSet :EcucParamConfContainerDef
+multipleConfigurationContainer = true
+(from ICU)
+IcuChannelId :
+EcucNumericalParamValue
+value = 0
+IcuConfigSet1 :
+EcucContainerValue
+IcuChannel0 :
+EcucContainerValue
+IcuChannelId :
+EcucNumericalParamValue
+value = 0
+IcuConfigSet0 :
+EcucContainerValue
+IcuChannel0 :
+EcucContainerValue
+IcuChannelId :
+EcucNumericalParamValue
+value = 0
+IcuConfigSet1 :
+EcucContainerValue
+IcuChannel0 :
+EcucContainerValue
+IcuChannelId :
+EcucNumericalParamValue
+value = 1
+MyIcu1 :
+EcucModuleConfigurationValues
+MyIcu2 :
+EcucModuleConfigurationValues
++subContainer
++parameter
++container
+Figure 3.30: SymbolicNameValues and the generation of #deﬁnes: valid and invalid con-
+ﬁgurations
+The valid example in ﬁgure 3.30 does lead to the following deﬁnition:
+#define IcuConf_IcuChannel_IcuChannel0 0
+The invalid example in ﬁgure 3.30 would possibly lead to the following deﬁnitions:</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

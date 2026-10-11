@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: eth</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETH_SECTION_9_5_EthTSyn_Ingress_Timestamping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverEthernet.pdf</strong> (Seite 85)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=85" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></strong> (Seite 85)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthTSyn_00179" class="swsref internal-spec-ref"><code>SWS_EthTSyn_00179</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00195" class="swsref internal-spec-ref"><code>SWS_Eth_00195</code></a></span>
         </div>
       </div>
 
@@ -465,11 +466,27 @@ convert ingressTimestamp to T1vlt;
 T2vlt = T1vlt; Tsrd = 0
 EthIf_GetCurrentTime()
 ingressTimestamp = *localTimePtr
-ingressTimestamp=*(TimeTupleType)(pduInfo-&gt;metaDataPtr[TIMETUPLE_TYPE_PTR])</div></section>
+ingressTimestamp=*(TimeTupleType)(pduInfo-&gt;metaDataPtr[TIMETUPLE_TYPE_PTR])
+StbM_GetCurrentVirtualLocalTime()
+LSduR_EthIfRxIndication()
+Eth_GetIngressTimeStamp()
+EthIf_RxIndication()
+EthTSyn_RxIndication()
+*timeTuplePtr-&gt;globalTime = preciseOriginTimestamp + correctionField + Pdelay;
+*timeTuplePtr-&gt;localTime = T2vlt, *measureDataPtr = Pdelay
+t4 = ingressTimestamp
+t2 = Pdelay_Resp.RequestReceiptTimestamp = ingressTimestamp
+StbM_BusSetGlobalTime()
+Pdelay = ((t4 - t1) - (t3 - t2))/2
+T1vlt = T2vlt =
+ingressTimestamp; Tsrd = 0
+T2vlt = *localTimePtr - Tsrd
+Figure 9.5: EthTSyn Ingress Timestamping
+Ethernet</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Follow_Up software ingress timestamping</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Eth_GetIngressTimeStamp().</p>
       </section>
 
       <section class="snip-card">
@@ -478,7 +495,7 @@ ingressTimestamp=*(TimeTupleType)(pduInfo-&gt;metaDataPtr[TIMETUPLE_TYPE_PTR])</
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverEthernet.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=85" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -490,15 +507,15 @@ ingressTimestamp=*(TimeTupleType)(pduInfo-&gt;metaDataPtr[TIMETUPLE_TYPE_PTR])</
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EthTSyn_00179" class="swsref internal-spec-ref"><code>SWS_EthTSyn_00179</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Eth_00195" class="swsref internal-spec-ref"><code>SWS_Eth_00195</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

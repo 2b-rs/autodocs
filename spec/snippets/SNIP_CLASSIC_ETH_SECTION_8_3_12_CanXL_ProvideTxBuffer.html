@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETH_SECTION_8_3_12_CanXL_ProvideTxBuffer</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANXLDriver.pdf</strong> (Seite 34)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANXLDriver.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANXLDriver.pdf</a></strong> (Seite 34)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00175" class="swsref internal-spec-ref"><code>SWS_Eth_00175</code></a></span>
         </div>
@@ -118,11 +119,54 @@ Ethernet Driver].
 [CP_SWS_CanXL_00058] ⌈The function shall provide a transmit buffer resource. The
 CAN XL Driver shall lock the buffer until it receives a subsequent call of CanXL_-
 Transmit() service with the buffer index returned in the BufIdxPtr parameter.⌋
-[CP_SWS_CanXL_00059] ⌈In case a ma</div></section>
+[CP_SWS_CanXL_00059] ⌈In case a matching configuration for parameter Prior-
+ity exists in CanXLEthEgressFifoIdx of the controller, the contained parameter
+CanXLEthEgressFifoCanXLPriority and CanXLEthEgressFifoCanXLQueue
+shall be used.
+Otherwise the defaults CanXLCtrlEthDefaultPriority and
+CanXLEthDefaultQueue do apply.⌋
+[CP_SWS_CanXL_00139] Value range of the returned buffer index
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00188
+⌈The returned buffer index value of type Eth_BufIdxType shall be greater than 216-1.
+The value range for the buffer index shall be:
+• 0x00 01 00 00 ... 0xFF FF FF FF: valid
+• 0x00 00 00 00 ... 0x00 00 FF FF: reserved for TxHandleId of CanXL_Immedi-
+ateTransmit
+⌋
+Note: Constraining the buffer index is needed, since TxHandleId of CanXL_Imme-
+diateTransmit used for direct data provision (used as PDU-ID) and BufIdxPtr of
+CanXL_ProvideTxBuffer used for indirect data provision could overlap. EthIf need
+an unambiguous id (non-overlapping value range) that corresponds to a transmission
+request, to idenfy the affected tranmssion request for transmission confirmation via
+EthIf_TxConfirmation.
+Specification for CAN XL Driver
+[CP_SWS_CanXL_00060] ⌈If a buffer requested with CanXL_ProvideTxBuffer()
+that is larger than the available buffer length, the buffer shall not be locked but return
+the available length and BUFREQ_E_OVFL.⌋
+[CP_SWS_CanXL_00061] ⌈If all available buffers are in use the component shall re-
+turn BUFREQ_E_BUSY.⌋
+[CP_SWS_CanXL_00063] ⌈If development error detection is enabled: the function
+shall check the parameter CtrlIdx for being valid. If the check fails, the function shall
+raise the development error CANXL_E_PARAM_CONTROLLER.⌋
+[CP_SWS_CanXL_00064] ⌈If development error detection is enabled: the function
+shall check the parameter BufIdxPtr for being valid. If the check fails, the function shall
+raise the development error CANXL_E_PARAM_POINTER.⌋
+[CP_SWS_CanXL_00065] ⌈If development error detection is enabled: the function
+shall check the parameter BufPtr for being valid. If the check fails, the function shall
+raise the development error CANXL_E_PARAM_POINTER.⌋
+[CP_SWS_CanXL_00066] ⌈If development error detection is enabled: the function
+shall check the parameter LenBytePtr for being valid. If the check fails, the function
+shall raise the development error CANXL_E_PARAM_POINTER.⌋
+[CP_SWS_CanXL_00067] ⌈If development error detection is enabled:
+CanXL_-
+ProvideTxBuffer() shall raise the error CANXL_E_UNINIT if the driver is not yet
+initialized.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Eth_BufIdxType().</p>
       </section>
 
       <section class="snip-card">
@@ -131,7 +175,7 @@ Transmit() service with the buffer index returned in the BufIdxPtr parameter.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANXLDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANXLDriver.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANXLDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

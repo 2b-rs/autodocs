@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_4_Meta_Data_Handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWGeneral.pdf</strong> (Seite 60)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></strong> (Seite 60)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUC_06086" class="swsref"><code>TPS_ECUC_06086</code></a></span>
         </div>
@@ -86,7 +87,33 @@ is required within the meta data (i.e., between different meta data items) allow
 meta data items to be densely packed within the meta data array.⌋()
 A PDU has always an originating (producing) module, and a final (consuming) module,
 and possibly a number of intermediate (forwarding) modules. The layout of the meta
-data is fixed for a PDU. Therefore the originating module</div></section>
+data is fixed for a PDU. Therefore the originating module allocates the space for the
+complete meta data (i.e., for all meta data items), but each module along the chain
+of modules accessing the same PDU will only access the meta data items known to
+them.
+[SWS_BSW_00240] Allocation of Meta Data ⌈The first module that references a
+global PDU (/EcuC/EcucConfigSet/EcucPduCollection/Pdu) in a certain di-
+rection (the producing module) assembles the data of the PDU. It shall allocate space
+for the entire meta data defined for the PDU, even when it supports only a subset of
+the contained meta data items. Only the known subset of meta data items shall be
+initialized by the producing module.⌋()
+For example, meta data might by created by the CanIf as a CAN ID attached to an
+N-PDU. This meta data is then consumed by the CanTp, which creates a SOURCE_
+ADDRESS_16, a TARGET_ADDRESS_16, and an ADDRESS_EXTENSION_8 from
+the CAN ID, and attaches them to an N-SDU, which is then forwarded (untouched) by
+the PduR and consumed by the DCM. When (due to wrong configuration) an ETHER-
+NET_MAC_64 was attached to the N-PDU, it would have been allocated by the CanIf,
+but neither initialized by CanIf, nor accessed by CanTp.
+[SWS_BSW_00241] Alignment of Meta Data ⌈To be able to access meta data items
+by casting to the proper base type (according to MetaDataItemType), the whole
+meta data array allocated by the producing module needs to be aligned according to
+the most stringent alignment requirements of all the contained meta data items.⌋()
+For example, the meta data array for meta data consisting of meta data items
+of type SOURCE_ADDRESS_16, ADDRESS_EXTENSION_8, and ETHERNET_
+MAC_64 has to be 64 bit aligned.
+[SWS_BSW_00242] Access to Meta Data ⌈Each module that references a global
+PDU including meta data shall only access (read and/or write) the meta data items
+that it knows. Unknown meta data items shall be left untouched.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -99,7 +126,7 @@ data is fixed for a PDU. Therefore the originating module</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

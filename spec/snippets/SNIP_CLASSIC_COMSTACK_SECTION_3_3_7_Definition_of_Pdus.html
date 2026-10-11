@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_3_3_7_Definition_of_Pdus</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ECUConfiguration.pdf</strong> (Seite 193)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=190" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></strong> (Seite 193)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01052" class="swsref"><code>TPS_SYST_01052</code></a></span>
         </div>
@@ -99,7 +100,158 @@ upperMultiplicity = *
 PduLength:
 EcucIntegerParamDef
 min = 0
-max = 4294</div></section>
+max = 4294967295
+PduLengthTypeEnum:
+EcucEnumerationParamDef
+PduIdTypeEnum:
+EcucEnumerationParamDef
+SysTPduToFrameTriggeringRef:
+EcucForeignReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+destinationType = FRAME-TRIGGERING
+UINT8:
+EcucEnumerationLiteralDef
+UINT16:
+EcucEnumerationLiteralDef
+SysTPduToPduTriggeringRef:
+EcucForeignReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+destinationType = PDU-TRIGGERING
+UINT32:
+EcucEnumerationLiteralDef
+Identifiable
+FrameTriggering
+Identifiable
+PduTriggering
+J1939Requestable:
+EcucBooleanParamDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+MetaDataType:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+MetaDataTypeRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DynamicLength:
+EcucBooleanParamDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+EcucPartition:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+EcucPduDefaultPartitionRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+EcucPduDedicatedPartition:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+EcucPduDedicatedPartitionRef:
+EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+EcucPduDedicatedPartitionBswModuleRef:
+EcucForeignReferenceDef
+destinationType = ECUC-MODULE-CONFIGURATION-VALUES
+lowerMultiplicity = 1
+upperMultiplicity = 1
+ARElement
+EcucModuleConfigurationValues
+KeepLocalPduBuffer:
+EcucBooleanParamDef
+defaultValue = false
+lowerMultiplicity = 0
+upperMultiplicity = 1
+PduBufferAlignment:
+EcucIntegerParamDef
+min = 1
+max = 8
+defaultValue = 2
+lowerMultiplicity = 0
+upperMultiplicity = 1
++literal
++literal
++parameter
++subContainer
++destination
++reference
++reference
++parameter
++literal
++literal
++parameter
++parameter
++reference
++destination
++subContainer
++parameter
++reference
++reference
++parameter
++parameter
++reference
++destination
++literal
++subContainer
+Figure 3.10: Generic Pdu Container
+[ECUC_EcuC_00002] Definition of EcucParamConfContainerDef EcucPduCollec-
+tion ⌈
+Container Name
+EcucPduCollection
+Parent Container
+EcucConfigSet
+Description
+Collection of all Pdu objects flowing through the Com-Stack.
+Multiplicity
+0..1
+Configuration Parameters
+Included Parameters
+Parameter Name
+Multiplicity
+ECUC ID
+PduIdTypeEnum
+1
+[ECUC_EcuC_00041]
+PduLengthTypeEnum
+1
+[ECUC_EcuC_00042]
+Included Containers
+Container Name
+Multiplicity
+Dependency
+MetaDataType
+0..*
+Meta data serves to transport information through the AUTOSAR
+layers. It is transported by the PduInfoType structure via a
+separate pointer to a byte array alongside the length of and a
+pointer to the payload of the PDU. This container defines the
+content of the meta data.
+Pdu
+0..*
+One Pdu flowing through the COM-Stack. This Pdu is used by all
+Com-Stack modules to agree on referencing the same Pdu.
+⌋
+[ECUC_EcuC_00041] Definition of EcucEnumerationParamDef PduIdTypeEnum
+⌈
+Parameter Name
+PduIdTypeEnum
+Parent Container
+EcucPduCollection
+Description
+The PduIdType is used within the entire AUTOSAR Com Stack except for bus drivers.
+The size of this global type depends on the maximum number of PDUs used within one
+software module. If no software module deals with more PDUs that 256, this type can
+be set to uint8. If at least one software module handles more than 256 PDUs, this type
+shall be set to uint16. See AUTOSAR_SWS_CommunicationStackTypes for more
+details.
+Multiplicity</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -112,7 +264,7 @@ max = 4294</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ECUConfiguration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=190" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

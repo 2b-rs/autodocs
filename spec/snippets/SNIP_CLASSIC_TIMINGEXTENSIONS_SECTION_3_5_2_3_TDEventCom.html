@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TIMINGEXTENSIONS_SECTION_3_5_2_3_TDEventCom</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TimingExtensions.pdf</strong> (Seite 69)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_TimingExtensions.pdf#page=67" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TimingExtensions.pdf</a></strong> (Seite 69)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_TIMEX_00026" class="swsref"><code>TPS_TIMEX_00026</code></a></span>
         </div>
@@ -143,7 +144,174 @@ Class
 TDEventCom (abstract)
 Package
 M2::AUTOSARTemplates::CommonStructure::Timing::TimingDescription::TimingDescription
-Events::TDEv</div></section>
+Events::TDEventCom
+Note
+This is the abstract parent class to describe timing events related to communication including the physical
+layer.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable, TimingDescription, TimingDescriptionEvent
+Subclasses
+TDEventCycleStart, TDEventFrame, TDEventFrameEthernet, TDEventIPdu, TDEventISignal
+Aggregated by
+TimingExtension.timingDescription
+Attribute
+Type
+Mult.
+Kind
+Note
+ecuInstance
+EcuInstance
+0..1
+ref
+The ECU context for a particular timing event. The link is
+optional, because the EcuInstance can not be defined for
+events of type TDEventCycleStart.
+Table 3.28: TDEventCom
+[TPS_TIMEX_00022] TDEventISignal specifies events related to the exchange
+of I-Signals ⌈The element TDEventISignal is used to specify events, namely the
+exchange of I-Signals, observable between the RTE and the AUTOSAR Com.⌋(RS_-
+TIMEX_00001)
+Class
+TDEventISignal
+Package
+M2::AUTOSARTemplates::CommonStructure::Timing::TimingDescription::TimingDescription
+Events::TDEventCom
+Note
+This is used to describe timing events related to the exchange of I-Signals between COM and RTE.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable, TDEventCom, TimingDescription, Timing
+DescriptionEvent
+Aggregated by
+TimingExtension.timingDescription
+Attribute
+Type
+Mult.
+Kind
+Note
+iSignal
+ISignal
+0..1
+ref
+The scope of this timing event.
+physical
+Channel
+PhysicalChannel
+0..1
+ref
+The PhysicalChannel on which the ISignal is transmitted.
+tdEventType
+TDEventISignalType
+Enum
+0..1
+attr
+The specific type of this timing event.
+Table 3.29: TDEventISignal
+[constr_6864] Existence of TDEventISignal.tdEventType ⌈For each TDEven-
+tISignal, the attribute tdEventType shall exist at the time when the Ecu
+Timing Description is complete.⌋()
+[constr_6865] Existence of TDEventISignal.iSignal ⌈For each TDEventISig-
+nal, the reference to ISignal in the role iSignal shall exist at the time when
+the Ecu Timing Description is complete.⌋()
+[constr_6866] Existence of TDEventISignal.physicalChannel ⌈For each TDE-
+ventISignal, the reference to PhysicalChannel in the role physicalChan-
+nel shall exist at the time when the Ecu Timing Description is com-
+plete.⌋()
+Enumeration
+TDEventISignalTypeEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::Timing::TimingDescription::TimingDescription
+Events::TDEventCom
+Note
+This is used to describe the specific event type of a TDEventISignal.
+Aggregated by
+TDEventISignal.tdEventType
+Literal
+Description
+iSignalAvailableFor
+RTE
+A point in time, where the COM module makes the contained signal / signal group available for the
+RTE and the corresponding Rx Indication callout is generated (if configured).
+Tags:atp.EnumerationLiteralIndex=0
+iSignalSentToCOM
+A point in time, where a transmission request call is issued by the RTE on a named COM signal /
+signal group and the new value is stored to the carrier COM I-PDU buffer.
+Tags:atp.EnumerationLiteralIndex=1
+Table 3.30: TDEventISignalTypeEnum
+[TPS_TIMEX_00023] TDEventIPdu specifies events related to the exchange of
+I-PDUs ⌈The element TDEventIPdu is used to specify events, namely the exchange
+of I-PDUs, observable between the bus specific BSW modules (CANbus, FlexRay, LIN)
+and the AUTOSAR Com.⌋(RS_TIMEX_00001)
+Class
+TDEventIPdu
+Package
+M2::AUTOSARTemplates::CommonStructure::Timing::TimingDescription::TimingDescription
+Events::TDEventCom
+Note
+This is used to describe timing events related to the exchange of I-PDUs between the bus specific (Flex
+Ray / CAN / LIN) Interface BSW module and COM.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable, TDEventCom, TimingDescription, Timing
+DescriptionEvent
+Aggregated by
+TimingExtension.timingDescription
+Attribute
+Type
+Mult.
+Kind
+Note
+iPdu
+IPdu
+0..1
+ref
+The scope of this timing event.
+physical
+Channel
+PhysicalChannel
+0..1
+ref
+The PhysicalChannel on which the IPdu is transmitted.
+tdEventType
+TDEventIPduTypeEnum
+0..1
+attr
+The specific type of this timing event.
+Table 3.31: TDEventIPdu
+[constr_6867] Existence of TDEventIPdu.tdEventType ⌈For each TDEventIPdu,
+the attribute tdEventType shall exist at the time when the Ecu Timing De-
+scription is complete.⌋()
+[constr_6868] Existence of TDEventIPdu.iPdu ⌈For each TDEventIPdu, the ref-
+erence to IPdu in the role iPdu shall exist at the time when the Ecu Timing
+Description is complete.⌋()
+[constr_6869] Existence of TDEventIPdu.physicalChannel ⌈For each TDEven-
+tIPdu, the reference to PhysicalChannel in the role physicalChannel shall exist
+at the time when the Ecu Timing Description is complete.⌋()
+Enumeration
+TDEventIPduTypeEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::Timing::TimingDescription::TimingDescription
+Events::TDEventCom
+Note
+This is used to describe the specific event type of a TDEventIPdu.
+Aggregated by
+TDEventIPdu.tdEventType
+Literal
+Description
+iPduReceivedBy
+COM
+A point in time where the received frame is processed by the corresponding (FlexRay / CAN / LIN)
+Interface BSW module, routed through the PDUR and the contained PDUs are pushed to the COM
+module.
+Tags:atp.EnumerationLiteralIndex=0
+iPduSentToIf
+A point in time where the carrier COM I-PDU is routed through the PDUR and is pushed to the bus
+specific (FlexRay / CAN / LIN) Interface BSW module.
+Tags:atp.EnumerationLiteralIndex=1
+Table 3.32: TDEventIPduTypeEnum
+[TPS_TIMEX_00024] TDEventFrame specifies events related to the exchange of
+network frames ⌈The element TDEventFrame is used to specify events, namely the
+exchange of Frames, observable between the communication controller and the bus
+specific BSW modules (CANbus, FlexRay, LIN) and observable at the physical layer.⌋
+(RS_TIMEX_00001)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -156,7 +324,7 @@ Events::TDEv</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TimingExtensions.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_TimingExtensions.pdf#page=67" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TimingExtensions.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

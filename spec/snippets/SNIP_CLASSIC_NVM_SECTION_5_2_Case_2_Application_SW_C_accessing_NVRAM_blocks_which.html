@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_5_2_Case_2_Application_SW_C_accessing_NVRAM_blocks_which</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_NVDataHandling.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_NVDataHandling.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_NVDataHandling.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_05062" class="swsref internal-spec-ref"><code>SWS_Rte_05062</code></a></span>
         </div>
@@ -87,7 +88,31 @@ In general, there are two different kinds of Per Instance Memory available which
 varying in the typing mechanisms. ’C’ typed PerInstanceMemory is typed by the de-
 scription of a ’C’ typedef whereas arTypedPerInstanceMemory (AUTOSAR Typed Per
 Instance Memory) is typed by the means of an AutosarDataType. Nevertheless, both
-kinds of Per Instan</div></section>
+kinds of Per Instance Memory are accessed via the Rte_Pim API.
+Figure 5.7 provides an overview of memory allocation in Application and NvM as per
+this use case. For details about interaction between these modules refer sequence
+diagram in figure 5.9.
+Figure 5.7: Overview of memory allocation for use case 2
+Figure 5.8 shows port configuration used to access NvM interfaces by user (SWC1 /
+SWC2), here NvM is configured as ServiceSwComponentType.
+NV Data Handling Guideline
+Figure 5.8: Port configuration for use case 2
+Refer section 5.1.1 for details of operations for ports NvMService, NvMAdmin,
+NvM_NotifyInitBlock and NvM_NotifyJobFinished.
+Figure 5.9 shows how application can access NvM in this scenario:
+NV Data Handling Guideline
+Figure 5.9: Sequence diagram of NvM access for use case 2
+• Applicability:
+RTE does not ensure data consistency for the access to Per Instance Memory.
+An application is responsible for consistency of accessed data. For Data con-
+sistency, application should not access NV Data after call to NvM_ReadBlock /
+NvM_WriteBlock until it has been notified - via the JobFinished callback - that the
+job was successful.
+The PerInstanceMemory is allocated as RAM block in the RTE and can only
+be accessed by that SW-C. Thus, same data cannot be shared between two or
+more SW-C’s. The "Access to NVRAM blocks" should not be used in multi core
+environments in this use case.
+• Configuration:</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +125,7 @@ kinds of Per Instan</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_NVDataHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_NVDataHandling.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_NVDataHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

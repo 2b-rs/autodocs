@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_6_1_Initial_Wait_Phase_for_Server_Services</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ServiceDiscovery.pdf</strong> (Seite 63)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></strong> (Seite 63)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Sd_00330" class="swsref internal-spec-ref"><code>SWS_Sd_00330</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Sd_00606" class="swsref internal-spec-ref"><code>SWS_Sd_00606</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,57 @@ value within the configured range of SdServerTimerInitialOfferDelayMin and SdSer
 TimerInitialOfferDelayMax.⌋
 [SWS_Sd_00320]
 Upstream requirements: SRS_Eth_00161
-⌈If a SubscribeEventgroup Entry or StopSubscribeEventgroup Ent</div></section>
+⌈If a SubscribeEventgroup Entry or StopSubscribeEventgroup Entry are received
+within the Initial Wait Phase (or other phases) for an Event Handler of this Server
+Service Instance, it shall only be processed within the Service Discovery.⌋
+Note to [SWS_Sd_00320]: Please refer to the according sequence diagrams and sec-
+tion 7.6.4.
+[SWS_Sd_00321]
+Upstream requirements: SRS_Eth_00001
+⌈
+When the calculated random timer based on the min and max values SdServer-
+TimerInitialOfferDelayMin and SdServerTimerInitialOfferDelayMax expires and SoAd_
+GetSoConMode() provides SOAD_SOCON_ONLINE or SOAD_SOCON_RECON-
+NECT state for at least one of the associated socket connection of this service ( con-
+figured in SdServerServiceTcpRef or SdServerServiceUdpRef ) :
+• OfferService Entry shall be sent.
+• If the SdServerTimerInitialOfferRepetitionsMax &gt;0, enter the Repetition Phase
+• If the SdServerTimerInitialOfferRepetitionsMax =0, enter the Main Phase.
+⌋
+Note:
+1. Init Wait Phase could be extended depends upon the out parameter of type SoAd_
+SoConModeType provided by SoAd_GetSoConMode() API.
+2. In some case SoAd may need more time to change the socket connection state from
+SOAD_SOCON_OFFLINE to SOAD_SOCON_RECONNECT or SOAD_SOCON_ON-
+LINE. E.G. Socket Connection will not change to SOAD_SOCON_RECONNECT or
+SOAD_SOCON_ONLINE only if InitWaitPhase of Service is configured as 0 or SoAd
+main function period is greater then Sd main function period.
+[SWS_Sd_00323]
+Upstream requirements: SRS_Eth_00162
+⌈If SdServerService is set to a state other than SD_SERVER_SERVICE_AVAILABLE (
+via Sd_ServerServiceSetState() or Sd_ServiceGroupStop() ) while being in Initial Wait
+Phase:
+• Enter the Down Phase.
+• Set all associated EventHandler to SD_EVENT_HANDLER_RELEASED and re-
+port it to the BswM by calling the API BswM_Sd_EventHandlerCurrentState.
+• Cancle all relevant timers for service instance (see [SWS_Sd_00318]).
+⌋
+[SWS_Sd_00325]
+Upstream requirements: SRS_Eth_00022
+⌈If Sd_LocalIpAddrAssignmentChg() is called with a state other than "TCPIP_
+IPADDR_STATE_ASSIGNED" while being in Initial Wait Phase, this phase shall be
+left and the Down Phase shall be entered.⌋
+[SWS_Sd_00606]
+Upstream requirements: SRS_Eth_00001
+⌈When the Initial Wait Phase is entered, the API SoAd_OpenSoCon() shall be called
+for all Socket Connections associated with this Server Service Instance.⌋
+Note: As soon as an IP address is assigned again and no SD_SERVER_SERVICE_
+DOWN was received, the Initial Wait Phase shall be reentered with the random timer
+reset to the random value.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Sd_00330] im Text von SWS_ServiceDiscovery.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Sd_00606] im Text von SWS_ServiceDiscovery.</p>
       </section>
 
       <section class="snip-card">
@@ -110,7 +157,7 @@ Upstream requirements: SRS_Eth_00161
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ServiceDiscovery.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -122,7 +169,7 @@ Upstream requirements: SRS_Eth_00161
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Sd_00330" class="swsref internal-spec-ref"><code>SWS_Sd_00330</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Sd_00606" class="swsref internal-spec-ref"><code>SWS_Sd_00606</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

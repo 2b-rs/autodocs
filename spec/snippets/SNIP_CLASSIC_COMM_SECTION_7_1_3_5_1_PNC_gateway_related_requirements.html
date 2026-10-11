@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_1_3_5_1_PNC_gateway_related_requirements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 43)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 41)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_01078" class="swsref internal-spec-ref"><code>SWS_ComM_01078</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_01082" class="swsref internal-spec-ref"><code>SWS_ComM_01082</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,108 @@ munication", then ComM shall set the PNC bit representing this specific PNC to v
 • which have ComMPncGatewayType parameter set to COMM_GATEWAY_TYPE_
 PASSIVE and
 • referenced either via ComMChannelPerPnc or via ComMChannelPerTxOn-
-lyPn</div></section>
+lyPnc by this PNC,
+and forward the updated IRA with a call of Nm_UpdateIRA(&lt;channel&gt;, &lt;IRA&gt;).⌋
+[SWS_ComM_01077]
+Upstream requirements: SRS_ModeMgm_09256
+⌈In sub state COMM_PNC_REQUESTED when ComMPncGatewayEnabled is set to
+TRUE and the PNC bit representing a specific PNC equals to ’1’ in at least one ERA,
+whose corresponding ComMChannel has the ComMPncGatewayType parameter set
+to COMM_GATEWAY_TYPE_ACTIVE, then ComM shall set the PNC bit representing this
+specific PNC to value ’1’ within the IRA of those ComMChannels
+• which have ComMPncGatewayType parameter set to COMM_GATEWAY_TYPE_
+PASSIVE and
+• referenced via ComMChannelPerPnc or via ComMChannelPerTxOnlyPnc by
+this PNC,
+and forward the updated IRA with a call of Nm_UpdateIRA(&lt;channel&gt;, &lt;IRA&gt;).⌋
+[SWS_ComM_01078]
+Upstream requirements: SRS_ModeMgm_09256
+⌈In sub state COMM_PNC_REQUESTED when ComMPncGatewayEnabled is set to
+TRUE and at least one ComMUser assigned to a specific PNC requests "Full Com-
+munication", then ComM shall request COMM_FULL_COMMUNICATION of those ComM-
+Channels which are referenced via ComMChannelPerTxOnlyPnc by this PNC.⌋
+[SWS_ComM_01079]
+Upstream requirements: SRS_ModeMgm_09256, SRS_ModeMgm_09250
+⌈In sub state COMM_PNC_REQUESTED when ComMPncGatewayEnabled is set to
+TRUE, if
+• all ComMUsers assigned to a specific PNC request "No Communication" and
+• the PNC bit representing this specific PNC equals to ’0’ in ERAn, whose cor-
+responding ComMChannel has the ComMPncGatewayType parameter set to
+COMM_GATEWAY_TYPE_ACTIVE,
+then ComM shall set the PNC bit representing this specific PNC to value ’0’ within
+the IRA of those ComMChannels
+• which have ComMPncGatewayType parameter set to COMM_GATEWAY_TYPE_
+PASSIVE and
+• which are referenced via ComMChannelPerPnc or via ComMChannelPerTxOn-
+lyPnc by this PNC,
+and forward the updated IRA with a call of Nm_UpdateIRA(&lt;channel&gt;, &lt;IRA&gt;).⌋
+[SWS_ComM_01080]
+Upstream requirements: SRS_ModeMgm_09256, SRS_ModeMgm_09250
+⌈In sub state COMM_PNC_REQUESTED when ComMPncGatewayEnabled is set to
+TRUE, if
+• all ComMUsers assigned to a specific PNC request "No Communication" and
+• the ComMChannels which are referenced by this PNC have the ComMPncGate-
+wayType parameter not set,
+then ComM shall set the PNC bit representing this specific PNC to value ’0’ within
+the IRA of all ComMChannels which are referenced by this PNC and forward the up-
+dated IRA with a call of Nm_UpdateIRA(&lt;channel&gt;, &lt;IRA&gt;)⌋
+[SWS_ComM_01081]
+Upstream requirements: SRS_ModeMgm_09256, SRS_ModeMgm_09250
+⌈In sub state COMM_PNC_REQUESTED when ComMPncGatewayEnabled is set to
+TRUE and all ComMUsers assigned to a specific PNC request "No Communication",
+then ComM shall request COMM_NO_COMMUNICATION of those ComMChannels which
+are referenced via ComMChannelPerTxOnlyPnc by this PNC.⌋
+[SWS_ComM_01082]
+Upstream requirements: SRS_ModeMgm_09269
+⌈When a request to forward a synchronized PNC shutdown has been indicated via a
+call of ComM_Nm_ForwardSynchronizedPncShutdown(&lt;channel&gt;, &lt;PNC bit vector&gt;)
+in sub-state COMM_PNC_REQUESTED and all following conditions apply:
+• all ComM users assigned to this PNC request "No Com",
+• all corresponding PNC bits are set to ’0’ in ERAn of all channels which are ref-
+erenced by this PNC via ComMChannelPerPnc (see [ECUC_ComM_00880])
+where the channel attribute ComMPncGatewayType is set to COMM_GATEWAY_
+TYPE_ACTIVE,
+• the PNC is indicated for a shutdown (PNC bit set to ’1’ in the given PNC bit vector)
+within the call of ComM_Nm_ForwardSynchronizedPncShutdown
+• the indicated channel has ComMPncGatewayType set to COMM_GATEWAY_-
+TYPE_PASSIVE and the channel is referenced via ComMChannelPerPnc (see
+[ECUC_ComM_00880]),
+• ComMSynchronizedPncShutdownEnabled is set to TRUE,
+then the ComM module shall perform the following actions:
+• ComM shall set the ERA bit to ’0’ of this PNC in the ERA of all channels which are
+referenced by this PNC via ComMChannelPerPnc (see [ECUC_ComM_00880])
+where the channel attribute ComMPncGatewayType is set to COMM_GATEWAY_
+TYPE_PASSIVE
+• ComM shall call Nm_RequestSynchronizedPncShutdown (&lt;channel&gt;, &lt;PncId&gt;)
+for each &lt;channel&gt; with &lt;PncId&gt; of the current handled PNC, where ComMP-
+ncGatewayType is set to "COMM_GATEWAY_TYPE_ACTIVE" and the channel is
+referenced via ComMChannelPerPnc (see [ECUC_ComM_00880])
+• The sub state COMM_PNC_REQUESTED shall be left and the sub state COMM_-
+PNC_READY_SLEEP shall be entered
+⌋
+Comment on [[SWS_ComM_01082]]:
+• Every time an intermediate PNC coordinator (PNC coordinator which have at
+least one ComMChannel with ComMPncGatewayType set to COMM_GATEWAY_
+TYPE_PASSIVE) receive a Nm frame as PN shutdown message from the top-
+level PNC coordinator, ComM shall immediately release the PNC, forward the
+PNC bit vector of the PN shutdown message and request a synchronized PNC
+shutdown (request to transmit a PN shutdown message) on those ComMChan-
+nels which are are assigned to the affected PNC and where ComMPncGate-
+wayType is set to COMM_GATEWAY_TYPE_ACTIVE
+• ComM has to ensure that the procedure upon the reception of Nm frame as PN
+shutdown message has to be performed as fast as possible, to minimize the delay
+of the synchronized PNC shutdown
+• The forwarding of a synchronized PNC shutdown is not performed if a local user
+has indicated to request the affected PNC, or a PNC request was received via
+a ComM channel with ComMPncGatewayType set to COMM_GATEWAY_TYPE_-
+ACTIVE. The request for a PNC either local requested or remotely requested
+always overrule a request for a synchronized PNC shutdown.
+• Synchronized PNC shutdown handling is only performed if the indicated PNCs
+(given within the PNC bit vector) reside in COMM_PNC_REQUESTED</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Tx-only channels handling in COMM_PNC_REQUESTED</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_ComM_01082] im Text von SWS_COMManager.</p>
       </section>
 
       <section class="snip-card">
@@ -110,11 +208,11 @@ lyPn</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 43</td>
+              <td>Seite 41</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -122,15 +220,15 @@ lyPn</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_ComM_01078" class="swsref internal-spec-ref"><code>SWS_ComM_01078</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_ComM_01082" class="swsref internal-spec-ref"><code>SWS_ComM_01082</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

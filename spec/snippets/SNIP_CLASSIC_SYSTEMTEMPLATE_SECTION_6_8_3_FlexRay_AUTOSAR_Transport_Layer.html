@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -117,7 +118,298 @@ maxRetries  :Integer [0..1]
 +
 minimumMulticastSeperationTime  :TimeValue [0..1]
 +
-mini</div></section>
+minimumSeparationTime  :TimeValue
++
+multicastSegmentation  :Boolean
++
+timeBr  :TimeValue [0..1]
++
+timeBuffer  :TimeValue [0..1]
++
+timeCs  :TimeValue [0..1]
++
+timeFrIf  :TimeValue [0..1]
++
+timeoutAr  :TimeValue [0..1]
++
+timeoutAs  :TimeValue [0..1]
++
+timeoutBs  :TimeValue [0..1]
++
+timeoutCr  :TimeValue [0..1]
++
+transmitCancellation  :Boolean [0..1]
+FlexrayArTpConnection
++
+connectionPrioPdus  :Integer [0..1]
+NPdu
+Pdu
+IPdu
+«enumeration»
+FrArTpAckType
+noAck
+ackWithRt
+ackWithoutRt
+«enumeration»
+MaximumMessageLengthType
+iso6
+iso
+I4g
+CommunicationConnector
+FlexrayCommunicationConnector
++
+nmReadySleepTime  :Float [0..1]
++
+pncFilterDataMask  :PositiveUnlimitedInteger [0..1]
++
+wakeUpChannel  :Boolean
+«atpVariation» Tags:
+vh.latestBindingTime =
+postBuild
+«atpVariation» Tags:
+vh.latestBindingTime =
+postBuild
+«atpVariation» Tags:
+vh.latestBindingTime =
+postBuild
+Association Tags:
+atp.Status = obsolete
+Aggregation Tags:
+atp.Status = obsolete
+Association Tags:
+atp.Status = obsolete
+Association Tags:
+atp.Status = obsolete
++source
+1
++tpAddress
+0..1
++connector
+0..*
++tpNode 0..*
+«atpVariation»
++flowControlPdu
+0..1
++multicast
+0..1
++tpAddress 0..*
+«atpVariation»
++reversedTpSdu
+0..1
++nPdu
+0..*
++directTpSdu
+1
++target
+1..*
++transmitPdu
+*
++pduPool 0..*
++tpChannel 0..*
+«atpVariation»
++flowControlPdu
+0..1
++tpConnection
+1..*
+Figure 6.35:
+FlexRay Autosar Transport Layer Conﬁguration (TransportProtocols:
+FlexRayAutosarTransportProtocol)
+Class
+FlexrayArTpChannel
+Package
+M2::AUTOSARTemplates::SystemTemplate::TransportProtocols
+Note
+A channel is a group of connections sharing several properties.
+The FlexRay AutosarTransport Layer supports several channels. These channels can
+work concurrently, thus each of them requires its own state machine and
+management data structures and its own PDU-IDs.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+ackType
+FrArTpAckType
+1
+attr
+Type of Acknowledgement.
+System Template
+R4.1 Rev 3
+Attribute
+Datatype
+Mul.
+Kind
+Note
+cancellatio
+n
+Boolean
+0..1
+attr
+With this switch Tx and Rx Cancellation can be
+turned on or off.
+extendedA
+ddressing
+Boolean
+1
+attr
+Adressing Type of this connection: true: Two
+Bytes false: One Byte
+flowControl
+Pdu
+NPdu
+0..1
+ref
+Reference to the Flow Control NPdu. Please note
+that this reference is deprecated and will be
+removed in future.
+Tags: atp.Status=obsolete
+maxAr
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+trying to send a frame when a TIMEOUT AR
+occurs (depending on whether retry is conﬁgured).
+maxAs
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+trying to send a frame when a TIMEOUT AS
+occurs (depending on whether retry is conﬁgured).
+maxBs
+Integer
+0..1
+attr
+This attribute deﬁnes the number of consecutive
+CFs between two FCs (block size). Valid values
+are 1 .. 16 when retry is activated, and 0 .. 255
+otherwise.
+maxBuffer
+Request
+Integer
+0..1
+attr
+Please note that this attribute is deprecated and
+will be removed in future.
+maxFcWait will be used instead to conﬁgure the
+maximum number of wait frames on receiver side.
+On the sender side, timeCs deﬁnes the maximum
+time for retries.
+Tags: atp.Status=obsolete
+maxFcWait
+PositiveInteger
+0..1
+attr
+This attribute deﬁnes the maximal number of wait
+frames to be sent for a pending connection.
+Range is 0..255.
+maxFrIf
+Integer
+0..1
+attr
+Please note that this attribute is deprecated and
+will be removed in future.
+Old description: This attribute deﬁnes the
+maximum number of trying to send a frame when
+the FrIf returns an error.
+Tags: atp.Status=obsolete; atp.StatusRevision
+Begin=4.1.2
+maxRetrie
+s
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+retries (if retry is conﬁgured for the particular
+channel).
+maximum
+MessageL
+ength
+MaximumMessa
+geLengthType
+1
+attr
+This speciﬁes the maximum message length for
+the particular channel.
+System Template
+R4.1 Rev 3
+Attribute
+Datatype
+Mul.
+Kind
+Note
+minimumM
+ulticastSep
+erationTim
+e
+TimeValue
+0..1
+attr
+This attribute deﬁnes the minimum amount of time
+between two succeeding CFs of a 1:n segmented
+transmission in seconds. Valid values are 0,
+100µs, 200µs ... 900µs, 1ms, 2ms .. 127ms. The
+value can be changed at runtime using the
+FrArTp_ChangeParameter interface.
+minimumMulticastSeparationTime must be an
+integer multiple of the cycle length multiplied with
+the multiplexing factor, i.e.
+minimumMulticastSeparationTime = n * cycle * m,
+where n is an integer &gt;= 0, cycle is
+FlexrayCluster.cycle, and m is the cycle
+multiplexor of those cycles where PDUs of the
+PDU pool are scheduled. Please note: Due to the
+scheduling strategies of FrTp,
+minimumMulticastSeparationTime can only be
+kept to a degree deﬁned by the maximum
+temporal distance of the PDUs of a PDU pool
+within one FlexRay cycle.
+Range: 0 .. 0.127
+minimumS
+eparationTi
+me
+TimeValue
+1
+attr
+This attribute deﬁnes the minimum amount of time
+between two succeeding CFs of a 1:1 segmented
+transmission in seconds. Valid values are 0,
+100µs, 200µs .. 900µs, 1ms, 2ms .. 127ms. The
+value can be changed at runtime using the
+FrArTp_ChangeParameter interface.
+The minimumSeparationTime must be an integer
+multiple of the cycle length multiplied with the
+multiplexing factor, i.e. minimumSeparationTime =
+n * cycle * m, where n is an integer &gt;=0, cycle is
+FlexrayCluster.cycle, and m is the cycle
+multiplexor of those cycles where PDUs of the
+PDU pool are scheduled.
+Please note: Due to the scheduling strategies of
+FrTp, minimumSeparationTime can only be kept to
+a degree deﬁned by the maximum temporal
+distance of the PDUs of a PDU pool within one
+FlexRay cycle.
+Range: 0 .. 0.127
+multicastS
+egmentatio
+n
+Boolean
+1
+attr
+This attribute deﬁnes whether segmentation within
+a 1:n connection is allowed or not.
+nPdu
+NPdu
+*
+ref
+A FlexRayTpChannel references a set of NPdus.
+These NPdus are logically assembled into a pool
+of Rx NPdus and another pool of Tx NPdus. It
+must be ensured that a second channel either
+references all NPdus of such a pool, or none.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

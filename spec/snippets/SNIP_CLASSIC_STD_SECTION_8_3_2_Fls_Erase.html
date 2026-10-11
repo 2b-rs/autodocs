@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_2_Fls_Erase</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlashDriver.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlashDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlashDriver.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -121,11 +122,53 @@ MEMIF_JOB_PENDING.⌋
 [SWS_Fls_00330]
 Upstream requirements: SRS_Fls_12136
 ⌈After initiating the erase job, the function Fls_Erase shall return with E_OK.⌋
-[SWS_Fls_</div></section>
+[SWS_Fls_00220]
+Upstream requirements: SRS_Fls_12136, SRS_Fls_12144
+⌈The FLS module shall execute the job of the function Fls_Erase asynchronously
+within the FLS module’s main function.⌋
+[SWS_Fls_00221]
+Upstream requirements: SRS_Fls_12136
+⌈The job of the function Fls_Erase shall erase a flash memory block starting from
+the flash memory base address + TargetAddress of size Length.
+Note: Length will be rounded up to the next full sector boundary since only complete
+flash sectors can be erased.⌋
+[SWS_Fls_00020]
+Upstream requirements: SRS_BSW_00323, SRS_Fls_12136, SRS_Fls_12159
+⌈If development error detection for the module Fls is enabled: the function Fls_Erase
+shall check that the erase start address (flash memory base address + TargetAd-
+dress) is aligned to a flash sector boundary and that it lies within the specified lower
+and upper flash address boundaries. If this check fails, the function Fls_Erase shall
+reject the erase request, raise the development error FLS_E_PARAM_ADDRESS and
+return with E_NOT_OK.⌋
+[SWS_Fls_00021]
+Upstream requirements: SRS_BSW_00323, SRS_Fls_12136, SRS_Fls_12159
+⌈If development error detection for the module Fls is enabled: the function Fls_Erase
+shall check that the erase length is greater than 0 and that the erase end address
+(erase start address + length) is aligned to a flash sector boundary and that it lies within
+the specified upper flash address boundary. If this check fails, the function Fls_Erase
+shall reject the erase request, raise the development error FLS_E_PARAM_LENGTH and
+return with E_NOT_OK.⌋
+[SWS_Fls_00065]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection for the module Fls is enabled: the function Fls_-
+Erase shall check that the FLS module has been initialized. If this check fails, the
+function Fls_Erase shall reject the erase request, raise the development error FLS_-
+E_UNINIT and return with E_NOT_OK.⌋
+[SWS_Fls_00023]
+Upstream requirements: SRS_Fls_12143
+⌈If runtime error detection for the module Fls is enabled: the function Fls_Erase shall
+check that the FLS module is currently not busy. If this check fails, the function Fls_-
+Erase shall reject the erase request, raise the development error FLS_E_BUSY and
+return with E_NOT_OK.⌋
+[SWS_Fls_00145]
+Upstream requirements: SRS_Fls_12136
+⌈If possible, e.g. with interrupt controlled implementations, the FLS module shall start
+the first round of the erase job directly within the function Fls_Erase to reduce overall
+runtime.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -134,7 +177,7 @@ Upstream requirements: SRS_Fls_12136
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlashDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlashDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlashDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

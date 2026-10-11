@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_8_3_3_MAC_Interface</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoServiceManager.pdf</strong> (Seite 51)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></strong> (Seite 51)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -110,11 +111,88 @@ contain the size of the buffer provided by macPtr. When the
 request has finished, the actual length of the returned MAC shall
 be stored. If the provided length information is smaller than the
 total length of the MAC result, the macPtr will contain the
-truncated MAC resu</div></section>
+truncated MAC result.
+Parameters (out)
+macPtr
+Contains the pointer to the data where the MAC shall be stored.
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, a key
+element has the wrong size
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Uses the given data to perform a MAC generation and stores the MAC in the memory location
+pointed to by the MAC pointer.
+Available via
+Csm.h
+⌋
+[SWS_Csm_01050] Definition of API function Csm_MacVerify ⌈
+Service Name
+Csm_MacVerify
+Syntax
+Std_ReturnType Csm_MacVerify (
+uint32 jobId,
+Crypto_OperationModeType mode,
+const uint8* dataPtr,
+uint32 dataLength,
+const uint8* macPtr,
+uint32 macLength,
+Crypto_VerifyResultType* verifyPtr
+)
+Service ID [hex]
+0x61
+▽
+△
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+jobId
+Holds the identifier of the job using the CSM service.
+mode
+Indicates which operation mode(s) to perfom.
+dataPtr
+Holds a pointer to the data for which the MAC shall be verified.
+dataLength
+Contains the number of data bytes for which the MAC shall be
+verified.
+macPtr
+Holds a pointer to the MAC to be verified.
+Parameters (in)
+macLength
+Contains the MAC length in BITS to be verified.
+Parameters (inout)
+None
+Parameters (out)
+verifyPtr
+Holds a pointer to the memory location, which will hold the result
+of the MAC verification.
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, a key
+element has the wrong size
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Verifies the given MAC by comparing if the MAC is generated with the given data.
+Available via
+Csm.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +201,7 @@ truncated MAC resu</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoServiceManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

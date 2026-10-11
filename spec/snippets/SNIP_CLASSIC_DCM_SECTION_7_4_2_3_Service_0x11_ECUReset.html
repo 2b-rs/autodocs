@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_3_Service_0x11_ECUReset</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 108)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=108" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 108)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91021" class="swsref internal-spec-ref"><code>SWS_Dcm_91021</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06080</span>
         </div>
       </div>
 
@@ -88,11 +89,33 @@ of the positive response for the subfunctions other than enableRapidPowerShutDow
 (0x04) or disableRapidPowerShutDown (0x05), the Dcm module shall trigger the mode
 switch of ModeDeclarationGroupPrototype DcmEcuReset to the mode EXECUTE (via
 SchM_Switch_&lt;bsnp&gt;_DcmEcuReset(RTE_MODE_DcmEcuReset_EXECUTE)).c()⌋
-Note: By this mo</div></section>
+Note: By this mode switch the Dcm requests the BswM to perform the final processing
+on the reset type according to the configured action list.
+[SWS_Dcm_00818] ⌈On reception of a request for UDS Service 0x11 with the
+sub functions enableRapidPowerShutdown (0x04) or disableRapidPowerShutdown
+(0x05), the Dcm module shall trigger the mode switch of ModeDeclarationGroupPro-
+totype DcmRapidPowerShutDown: Sub function enableRapidPowerShutDown (0x04)
+to ENABLE_RAPIDPOWERSHUTDOWN, Sub function disableRapidPowerShutDown
+(0x05) to DISABLE_RAPIDPOWERSHUTDOWN⌋
+Note: If EnableRapidPowerShutdown is enabled, the ECU should shorten its power-
+down time.
+[SWS_Dcm_00589] ⌈In case the parameter DcmDspPowerDownTime is present, the
+Dcm shall set the powerDownTime in positive response to sub-service enableRapid-
+PowerShutDown with value set in DcmDspPowerDownTime.⌋
+Manager
+[SWS_Dcm_00834] ⌈After sending the positive response of EcuReset (call of
+Dcm_TpTxConfirmation) the Dcm shall ignore all further requests during reset-
+processing.⌋
+[SWS_Dcm_CONSTR_06080] DcmDspEcuResetRow container configuration
+Upstream requirements: RS_Diag_04098
+⌈One container DcmDspEcuResetRow shall be configured for each DcmDsdSubSer-
+vice (DcmDspEcuResetId matching to the DcmDsdSubServiceId) configured for
+the UDS service ECUReset (0x11) which does not have the corresponding DcmDsd-
+SubServiceFnc parameter configured.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06080] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +124,7 @@ Note: By this mo</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=108" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +136,7 @@ Note: By this mo</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_91021" class="swsref internal-spec-ref"><code>SWS_Dcm_91021</code></a></td>
+              <td>SWS_Dcm_CONSTR_06080</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_8_Data_Element_Invalidation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 313)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=311" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 313)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01646" class="swsref"><code>TPS_SWCT_01646</code></a></span>
         </div>
@@ -89,7 +90,90 @@ and [constr_1390]).
 Upstream requirements: SRS_Rte_00078
 ⌈On receiver side the handleInvalid attribute of the associated Invalidation-
 Policy specifies how to handle the reception of the invalid value.⌋
-Data element invalidation is</div></section>
+Data element invalidation is only supported for data elements with a swIm-
+plPolicy different from ’queued’. Configurations violating this constraint are rejected
+by the RTE generator, see [SWS_Rte_06727].
+6When InvalidationPolicy is set to keep, replace or externalReplacement but there is
+no invalidValue specified it is considered as an invalid configuration.
+[SWS_Rte_06727]
+Upstream requirements: SRS_Rte_00078
+⌈The RTE generator shall reject configurations which are violating [constr_1219].⌋
+The API to set a dataElement to invalid shall be provided to the RunnableEntitys
+on data element level.
+In case an invalidated data element is received a software component can be notified
+using the activation of runnable entity. If an invalidated data element is read by the
+SW-C the invalid status shall be indicated in the status code of the API.
+[SWS_Rte_08005]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and
+handleInvalid is set to keep and the handleNeverReceived is set to FALSE,
+the RTE APIs Rte_Read() and Rte_IStatus() shall return RTE_E_INVALID until
+first reception of data element. In this case the APIs Rte_Read() and Rte_IRead()
+shall provide the invalidValue.⌋
+[SWS_Rte_08008]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and
+handleInvalid is set to keep and the handleNeverReceived is not defined, the
+RTE APIs Rte_Read() and Rte_IStatus() shall return RTE_E_INVALID until first
+reception of data element. In this case the APIs Rte_Read() and Rte_IRead() shall
+provide the invalidValue.⌋
+[SWS_Rte_08009]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and han-
+dleInvalid is set to keep and the handleNeverReceived is set to TRUE, the RTE
+APIs Rte_Read() and Rte_IStatus() shall return RTE_E_NEVER_RECEIVED until
+first reception of data element. In this case the APIs Rte_Read() and Rte_IRead()
+shall provide the initValue.⌋
+[SWS_Rte_08007]
+Upstream requirements: SRS_Rte_00078
+⌈The RTE Generator shall reject configurations in which the initValue of an un-
+queued data element equals the invalidValue and handleInvalid is set to re-
+place.⌋
+[SWS_Rte_08046]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and han-
+dleInvalid is set to dontInvalidate and the handleNeverReceived is set to
+FALSE, the RTE APIs Rte_Read() and Rte_IStatus() shall return RTE_E_OK until
+first reception of data element. In this case the APIs Rte_Read() and Rte_IRead()
+shall provide the initValue.⌋
+[SWS_Rte_08047]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and han-
+dleInvalid is set to dontInvalidate and the handleNeverReceived is not de-
+fined, the RTE APIs Rte_Read() and Rte_IStatus() shall return RTE_E_OK until
+first reception of data element. In this case the APIs Rte_Read() and Rte_IRead()
+shall provide the initValue.⌋
+[SWS_Rte_08048]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and
+handleInvalid is set to dontInvalidate and the handleNeverReceived
+is set to TRUE, the RTE APIs Rte_Read() and Rte_IStatus() shall return
+RTE_E_NEVER_RECEIVED until first reception of data element. In this case the APIs
+Rte_Read() and Rte_IRead() shall provide the initValue.⌋
+[SWS_Rte_08096]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and han-
+dleInvalid is set to externalReplacement and the handleNeverReceived
+is set to FALSE, the RTE APIs Rte_Read() and Rte_IStatus() shall return
+RTE_E_OK until first reception of data element. In this case the APIs Rte_Read()
+and Rte_IRead() shall provide the value sourced from the ReceiverComSpec.re-
+placeWith.⌋
+[SWS_Rte_08097]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and han-
+dleInvalid is set to externalReplacement and the handleNeverReceived
+is not defined, the RTE APIs Rte_Read() and Rte_IStatus() shall return
+RTE_E_OK until first reception of data element. In this case the APIs Rte_Read()
+and Rte_IRead() shall provide the value sourced from the ReceiverComSpec.re-
+placeWith.⌋
+[SWS_Rte_08098]
+Upstream requirements: SRS_Rte_00078, SRS_Rte_00184
+⌈If the initValue of an unqueued data element equals the invalidValue and han-
+dleInvalid is set to externalReplacement and the handleNeverReceived
+is set to TRUE, the RTE APIs Rte_Read() and Rte_IStatus() shall return
+RTE_E_NEVER_RECEIVED until first reception of data element. In this case the APIs
+Rte_Read() and Rte_IRead() shall provide the value sourced from the Receiver-
+ComSpec.replaceWith.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +186,7 @@ Data element invalidation is</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=311" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

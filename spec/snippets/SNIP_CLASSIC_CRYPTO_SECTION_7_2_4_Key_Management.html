@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/crypto.html">Modul: crypto</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 90%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYPTO_SECTION_7_2_4_Key_Management</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoDriver.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_00954" class="swsref internal-spec-ref"><code>SWS_Csm_00954</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_01022" class="swsref internal-spec-ref"><code>SWS_Csm_01022</code></a></span>
         </div>
       </div>
 
@@ -103,11 +104,88 @@ to key elements are required. This applies for read and write access.⌋
 Keys or key elements can be copied using the key copy interface functions. This allows,
 for example, to store keys in one driver channel that provides secure key storage and to
 distribute them to other driver implementations that have no such capabilities. However,
-it is important that access rights to key e</div></section>
+it is important that access rights to key elements are guarded within the copy operation
+to avoid unintended disclosure of stored keys.
+[SWS_Crypto_00220] ⌈A source key element must have higher or the same
+rights than the destination key element when key elements are copied us-
+ing the key copying interfaces.
+A source key must have at least the rights
+CRYPTO_RA_INTERNAL_COPY or lower to get copied.⌋
+Info:
+An internal copy operation can only be performed if the key elements are located in the
+same crypto driver object.
+[SWS_Crypto_00221] ⌈Jobs shall use the assigned key elements without guarding
+the key access rights with the following exceptions:
+• If a key element is used for input using the input re-direction, the key element
+must have access rights CRYPTO_RA_INTERNAL_COPY or lower.
+If input re-direction is used for CryptoPrimitiveService ENCRYPT/DECRYPT
+or AEAD_ENCRYPT/AEAD_DECRYPT, the access rights must be set to
+RA_ENCRYPTED or lower.1
+• If a key element is used for output re-direction, the key element must have access
+rights CRYPTO_WA_INTERNAL_COPY or lower.
+• Any key element that is used to generate keys using Key Exchange operation
+shall have access rights of at least CRYPTO_RA_INTERNAL_COPY or lower.
+• For Key Derivation, the source key shall have access rights of at least
+CRYPTO_RA_INTERNAL_COPY or lower.
+The destination key shall have at
+least the access right of its source key or lower2.
+⌋
+[SWS_Crypto_00037] ⌈The index of the different key elements from the different
+crypto services are defined as in imported types table [SWS_Csm_01022].⌋
+[SWS_Crypto_00038] ⌈A key has a state which is either "valid" or "invalid".⌋
+[SWS_Crypto_00039] ⌈If a key is in the state "invalid", crypto services which make
+use of that key, shall return with CRYPTO_E_KEY_NOT_VALID⌋
+1Rationale: This is to avoid using a key element as input and (another for) output for encrypt and
+successively decrypt that key which would allow to extract the secret key in plaintext at the end.
+2This is to avoid to deduce the source key when using weak key derivation algorithms.
+Note: In case of error observed during Crypto_KeyElementSet API call, the status
+of the key element needs to be considered as unknown.
+If a key (or key element) is currently in use by a crypto service, the state of the key
+has to be "valid". When the Crypto_KeyElementSet is called, the key state is set to
+"invalid". So, the job which is currently running will probably work with an inconsistent
+key. It is up to the application to only change key, if currently no primitive works with
+that key (element).
+Note: The mapping of keys and key elements to SHE hardware functionality is possible
+without being subject to any restrictions except that read and write access through key
+management interfaces must be performed in encrypted form due to hardware con-
+strains. To provide an environment for legacy software the single key used by the hard-
+ware can be placed in a key element referenced by several keys. Every key has also
+a unique reference to a key element containing an identifier. The driver implemented
+according to this specification can hence wrap existing SHE hard- and software and
+pass the data from the key elements to the existing SHE driver. In this use case one
+key element could contain a counter that could be read and written by the driver as well
+as the application. This counter could be used to detect if the key was overwritten. The
+loading of a key into the actual hardware key slot could be done immediately before
+the key is used, which would result in a combined loading and processing of the key,
+as well as a separate operation following the writing of a key into a key element. This
+would result in separate operations for loading and processing the key.
+If a new driver is to be implemented, it would also be possible to configure keys with
+completely independent key elements. These independent keys can be stored in RAM
+and passed to the hardware key slot only when required for an operation. The number
+of keys stored in the driver can be independent of (and much larger than) the number of
+hardware key slots. This requires, of course, a handling and storing of keys in software
+with all potential drawbacks.
+Storing keys permanently is done by calling Crypto_KeySetValid with the con-
+figuration parameter CryptoKeyElementPersist set.
+As in most cases writing op-
+eration takes some time it is recommended to store key permanently using the
+CRYPTO_KEYSETVALID job interface.
+Different key types can have compatible key elements. In this case the keyElementId
+has the same value. Key elements with the same keyElementId may be regarded as
+compatible. This way, the same key can be used for different services.
+The key material therefore shall always have the keyElementId 1.
+Example is the generation of a key with the Key Management Interface and usage of
+the same key in a primitive like MacGenerate afterwards.
+A key element may not be fully written. In some cases, the size of data to be stored
+in the key element can vary, e.g. asymmetric key elements. The Crypto Driver shall
+store the actually written size of data for internal usage and for exporting the element
+with Crypto_KeyElementGet. If the key element shall allow to be not fully read or
+written can be configured with the parameter CryptoKeyElementAllowPartialAccess in
+the CryptoKeyElement container.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Key consists of key elements</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Csm_01022] im Text von SWS_CryptoDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -116,7 +194,7 @@ it is important that access rights to key e</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -128,15 +206,15 @@ it is important that access rights to key e</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Csm_00954" class="swsref internal-spec-ref"><code>SWS_Csm_00954</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Csm_01022" class="swsref internal-spec-ref"><code>SWS_Csm_01022</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.90</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

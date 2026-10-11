@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_8_7_3_Configurable_interfaces</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SAEJ1939RequestManager.pdf</strong> (Seite 46)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939RequestManager.pdf#page=46" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939RequestManager.pdf</a></strong> (Seite 46)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Rm_00085" class="swsref internal-spec-ref"><code>SWS_J1939Rm_00085</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Rm_00087" class="swsref internal-spec-ref"><code>SWS_J1939Rm_00087</code></a></span>
         </div>
       </div>
 
@@ -124,11 +125,122 @@ definition reference via J1939RmUserCddRef
 [SWS_J1939Rm_00085]
 Upstream requirements: SRS_BSW_00171
 ⌈The configured User_RequestIndication function shall be available for each user
-that has J1939RmUserRequestIndication</div></section>
+that has J1939RmUserRequestIndication enabled.⌋
+See section 7.4 for details.
+8.7.3.2
+&lt;User&gt;_AckIndication
+[SWS_J1939Rm_00064] Definition of configurable interface &lt; User &gt;_AckIndica-
+tion
+Upstream requirements: SRS_J1939_00015
+⌈
+Service Name
+&lt; User &gt;_AckIndication
+Syntax
+void &lt; User &gt;_AckIndication (
+uint8 node,
+NetworkHandleType channel,
+uint32 ackPgn,
+const J1939Rm_ExtIdInfoType* extIdInfo,
+J1939Rm_AckCode ackCode,
+uint8 ackAddress,
+uint8 sourceAddress,
+uint8 priority
+)
+Service ID [hex]
+0x4d
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+node
+Node by which the acknowledgement was received.
+channel
+Channel on which the acknowledgement was received.
+ackPgn
+Acknowledged PGN.
+extIdInfo
+Extended identifier bytes.
+ackCode
+Type of acknowledgement, see definition of J1939Rm_AckCode
+for available codes.
+ackAddress
+Address of this node.
+sourceAddress
+Address of the node that sent the Acknowledgement PG.
+Parameters (in)
+priority
+Priority of the Acknowledgement PG.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+Indicates reception of an Acknowledgement PG.
+Available via
+&lt;apiServicePrefix&gt;_J1939Rm.h, where apiServicePrefix is taken from the CDD’s module
+definition reference via J1939RmUserCddRef
+⌋
+[SWS_J1939Rm_00086]
+Upstream requirements: SRS_BSW_00171
+⌈The configured User_AckIndication function shall be available for each user that
+has J1939RmUserAckIndication enabled.⌋
+See section 7.7 for details.
+8.7.3.3
+&lt;User&gt;_RequestTimeoutIndication
+[SWS_J1939Rm_00065] Definition of configurable interface &lt; User &gt;_Request
+TimeoutIndication
+Upstream requirements: SRS_J1939_00026
+⌈
+Service Name
+&lt; User &gt;_RequestTimeoutIndication
+Syntax
+void &lt; User &gt;_RequestTimeoutIndication (
+uint8 node,
+NetworkHandleType channel,
+uint32 requestedPgn,
+const J1939Rm_ExtIdInfoType* extIdInfo,
+uint8 destAddress
+)
+Service ID [hex]
+0x4e
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+node
+Node by which the request was sent.
+channel
+Channel on which the request was sent.
+requestedPgn
+PGN of the requested PG.
+extIdInfo
+Extended identifier bytes.
+Parameters (in)
+destAddress
+Address of the destination node or 0xFF for broadcast.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+Indicates timeout of a request triggered with the same parameters.
+Available via
+&lt;apiServicePrefix&gt;_J1939Rm.h, where apiServicePrefix is taken from the CDD’s module
+definition reference via J1939RmUserCddRef
+⌋
+[SWS_J1939Rm_00087]
+Upstream requirements: SRS_BSW_00171
+⌈The configured User_RequestTimeoutIndication function shall be available for
+each user that has J1939RmUserTimeoutSupervision enabled.⌋
+See section 7.8 for details.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_J1939Rm_00085] im Text von SWS_SAEJ1939RequestManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_J1939Rm_00087] im Text von SWS_SAEJ1939RequestManager.</p>
       </section>
 
       <section class="snip-card">
@@ -137,7 +249,7 @@ that has J1939RmUserRequestIndication</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SAEJ1939RequestManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939RequestManager.pdf#page=46" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939RequestManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -149,7 +261,7 @@ that has J1939RmUserRequestIndication</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_J1939Rm_00085" class="swsref internal-spec-ref"><code>SWS_J1939Rm_00085</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_J1939Rm_00087" class="swsref internal-spec-ref"><code>SWS_J1939Rm_00087</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

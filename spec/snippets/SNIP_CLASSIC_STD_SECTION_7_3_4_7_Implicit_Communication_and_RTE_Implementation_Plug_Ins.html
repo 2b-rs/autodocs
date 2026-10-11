@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_3_4_7_Implicit_Communication_and_RTE_Implementation_Plug_Ins</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 1065)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1065" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 1065)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_80044" class="swsref internal-spec-ref"><code>SWS_Rte_80044</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_80150" class="swsref internal-spec-ref"><code>SWS_Rte_80150</code></a></span>
         </div>
       </div>
 
@@ -86,11 +87,62 @@ component data structures in case of software components are delivered as source
 code. The usage of the according RTE Implementation Plug-In Services is
 described in section 7.2.4.2 and 7.2.4.1.
 [SWS_Rte_80044]
-Upstream requirements: SRS_Rte_0</div></section>
+Upstream requirements: SRS_Rte_00301, SRS_Rte_00316
+⌈The RTE shall use the Data Handles Section and Inter Runnable Variable Handles
+Section for implicit communication only if the specific software component is delivered
+as object code or if the specific software component supports multiple instantiations.⌋
+[SWS_Rte_80046]
+Upstream requirements: SRS_Rte_00301
+⌈The RTE Generator shall inhibit the creation of implicit buffers and according fill
+and flush routines for a Data Communication Graph if it is assigned to an Local
+Software Cluster Communication Plug-In.⌋
+[SWS_Rte_80056]
+Upstream requirements: SRS_Rte_00301
+⌈The RTE shall reject the configuration if any RteImplicitCommunication buffer-
+ing related needs (RteCoherentAccess or RteImmediateBufferUpdate) affect a
+Data Communication Graph which is associated to an Local Software Clus-
+ter Communication Plug-In.⌋
+This refers to the section 4.3.1.5.
+In case a Cross Software Cluster Communication Plug-In is assigned to
+a Data Communication Graph using implicit accesses, RTE utilizes the Rte_-
+Rips_Read and Rte_Rips_Write services to get the data from a other Soft-
+ware Cluster or to communicate data towards other Software Clusters. Please note
+[SWS_Rte_80148] and [SWS_Rte_80150].
+In case a Cross Software Cluster Communication Plug-In and a Local
+Software Cluster Communication Plug-In is assigned to a Data Communi-
+cation Graph using implicit accesses, RTE can not handle read and writes from the
+Cross Software Cluster Communication Plug-In since it neither knows the
+real point in time when the Local Software Cluster Communication Plug-
+In fill or flush the data nor can the RTE impact the implementation of those fill and
+flush routines.
+[SWS_Rte_70136]
+Upstream requirements: SRS_Rte_00300, SRS_Rte_00306, SRS_Rte_00320
+⌈If the data is required from another Software Cluster the Local Software
+Cluster Communication Plug-In shall call the Rte_Rips_Read Services of the
+Cross Software Cluster Communication Plug-In when it would read from
+the global copy.⌋
+[SWS_Rte_70137]
+Upstream requirements: SRS_Rte_00300, SRS_Rte_00306, SRS_Rte_00320
+⌈If the data is provided to another Software Cluster the Local Software
+Cluster Communication Plug-In shall call the Rte_Rips_Write Services of
+the Cross Software Cluster Communication Plug-In when it writes to the
+global copy.⌋
+Please note: Due to [SWS_Rte_70136] and [SWS_Rte_70137] the Local Software
+Cluster Communication Plug-In is free in the point in time when Rte_Rips_-
+Read and Rte_Rips_Write are called.
+This point in time depends on the to be
+implemented buffering strategy. For example, this can be compliant to the classical
+implicit communication behavior or be compliant to Logical Execution Time (LET).
+The Local Software Cluster Communication Plug-In is free to implement
+[SWS_Rte_70136] and [SWS_Rte_70136] with the means of a Complex Driver. This
+is illustrated in figure 7.12.
+Figure 7.12: Example of implicit communication via RTE Implementation Plug-In
+For sure an approach may change the communication multiplicity seen by the RTE.
+Please note section 7.3.3.4.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_80044] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_80150] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -99,7 +151,7 @@ Upstream requirements: SRS_Rte_0</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1065" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -111,7 +163,7 @@ Upstream requirements: SRS_Rte_0</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_80044" class="swsref internal-spec-ref"><code>SWS_Rte_80044</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_80150" class="swsref internal-spec-ref"><code>SWS_Rte_80150</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

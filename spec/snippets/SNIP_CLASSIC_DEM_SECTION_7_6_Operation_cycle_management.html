@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_6_Operation_cycle_management</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 71)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 71)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01224" class="swsref internal-spec-ref"><code>SWS_Dem_01224</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91001" class="swsref internal-spec-ref"><code>SWS_Dem_91001</code></a></span>
         </div>
       </div>
 
@@ -117,11 +118,92 @@ EcucReferenceDef
 lowerMultiplicity = 0
 upperMultiplicity = 1
 DemEventParameter:
-EcucParamCo</div></section>
+EcucParamConfContainerDef
+upperMultiplicity = 65535
+lowerMultiplicity = 1
+DemDTCAttributes:
+EcucParamConfContainerDef
+upperMultiplicity = 65535
+lowerMultiplicity = 0
+DemLeadingCycleRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+requiresSymbolicNameValue = true
+DemOBDPFCCycleRef:
+EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+DemGeneralOBD:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
++destination
++destination
++reference
++reference
++reference
++destination
++destination
++reference
+Figure 7.12: Operation and aging cycle assignment
+[SWS_Dem_01318] Operation Cycle restart
+Upstream requirements: RS_Diag_04178
+⌈Calling the function Dem_RestartOperationCycle shall be allowed only after
+Dem_PreInit. In case an operation cycle is restarted before Dem_Init, the
+processing of the restart shall be done after Dem_Init.⌋
+[SWS_Dem_01316] Operation Cycle restart
+Upstream requirements: RS_Diag_04178
+⌈The Dem shall only restart operation cycles after the previous restart has been
+fully processed. In other words this means that there is no Operation Cycle restart
+queue.⌋
+[SWS_Dem_01221]
+Upstream requirements: RS_Diag_04129, RS_Diag_04133
+⌈The Dem allows definition of dependent operation cycles using DemLeading-
+CycleRef parameter. Whenever the parameter is set, the operation cycle is con-
+sidered as a dependent operation cycle. Whenever the parameter is not set, the
+operation cycle is considered as "normal" operation cycle.⌋
+[SWS_Dem_01222]
+Upstream requirements: RS_Diag_04129
+⌈If the operation cycle passed to Dem_SetCycleQualified is not configured at
+all, the Det error DEM_E_WRONG_CONFIGURATION shall be reported.⌋
+[SWS_Dem_01317]
+Upstream requirements: RS_Diag_04178
+⌈The Dem shall store the qualification state of the dependent operation cycles
+over power cycles.⌋
+[SWS_Dem_01224] Operation Cycle restart
+Upstream requirements: RS_Diag_04178
+⌈Whenever an operation cycle is requested to be restarted via Dem_Restart-
+OperationCycle, all operation cycles which are depending on the selected
+operation cycle shall also be restarted, but only if they are qualified⌋
+Note: Setting a dependent operation cycle as qualified will not start the opera-
+tion cycle, even if the leading operation cycle has been started before.
+[SWS_Dem_01225] Operation Cycle restart
+Upstream requirements: RS_Diag_04178
+⌈When restarting a dependent operation cycle, its operation cycle qualifi-
+cation shall be reset.⌋
+[SWS_Dem_01234]
+Upstream requirements: RS_Diag_04129
+⌈The API Dem_GetCycleQualified shall provide the qualification state of the re-
+quested operation cycle in the out parameter "isQualified".⌋
+[SWS_Dem_01235]
+Upstream requirements: RS_Diag_04129
+⌈If the operation cycle passed to Dem_GetCycleQualified is not configured at all,
+the Det error DEM_E_WRONG_CONFIGURATION shall be reported.⌋
+[SWS_Dem_01220]
+Upstream requirements: RS_Diag_04129
+⌈If DemOBDDelayedDCYConfirmedAndMIL is set to TRUE, the behavior of events
+linked to the OBD driving cycle (DemOBDDrivingCycleRef) shall be changed:
+If the operation cycle is not qualified, status reports shall be processed, except update
+of the confirmed status. At the moment the OBD driving cycle is set to qualified, the Dem
+shall execute computations required to reach the confirmed states of events collected
+during the "not qualified" phase of the cycle.⌋
+OBD legislation requires specific implementation of operation cycles. For emission
+related ECUs it is mandatory to implement these accordingly.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Restarting operation cycles and dependent cycles</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SetCycleQualified().</p>
       </section>
 
       <section class="snip-card">
@@ -130,7 +212,7 @@ EcucParamCo</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -142,15 +224,15 @@ EcucParamCo</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01224" class="swsref internal-spec-ref"><code>SWS_Dem_01224</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_91001" class="swsref internal-spec-ref"><code>SWS_Dem_91001</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

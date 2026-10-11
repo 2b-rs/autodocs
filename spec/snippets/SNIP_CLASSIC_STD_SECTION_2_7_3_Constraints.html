@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_2_7_3_Constraints</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_BSWDistributionGuide.pdf</strong> (Seite 53)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_BSWDistributionGuide.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_BSWDistributionGuide.pdf</a></strong> (Seite 53)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_PDUR_CONSTR_00842</span>
         </div>
@@ -91,7 +92,19 @@ Com and &lt;Net&gt;If)
 supported, as the PDU buffer is managed by PduR)
 6. Com assumes signal related API calls always occur in the partition, where the
 affected signal (Pdu) is located in
-(a) Rationale: It might be possible for a s</div></section>
+(a) Rationale: It might be possible for a software component to send data to
+another ECU via a PDU, which might be located in a different partition than
+the sending software component. In this case, Rte shall take care to switch
+the context to the target partition before calling Com APIs.
+7. V2X stack has to be mapped to the same partition as the other Ethernet related
+modules
+8. The entire J1939 stack (all J1939 modules) shall be assigned to the same parti-
+tion as the DEM (due to the wide API between J1939DCM and DEM).
+9. In a setup with a distributed Com-Stack, the post-build time configuration feature
+is not supported.
+10. The APIs of the BusMirroring module shall only be called in the partition to which
+BusMirroring module is mapped to (via MirrorEcucPartitionRef).
+Guide to BSW Distribution</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +117,7 @@ affected signal (Pdu) is located in
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_BSWDistributionGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_BSWDistributionGuide.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_BSWDistributionGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

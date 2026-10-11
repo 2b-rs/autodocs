@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_7_2_7_2_Custom_service_and_function_profile_1_KeyM_and_certificate_management</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoDriver.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_91016" class="swsref internal-spec-ref"><code>SWS_KeyM_91016</code></a></span>
         </div>
@@ -90,7 +91,275 @@ ters of Crypto_CustomService to the using KeyM service/function.⌋
 Crypto_CustomService returns the actual error value
 of the KeyM service ⌈If Crypto_ProcessJob() is called for a job configured
 with service CUSTOM_SERVICE and if CRYPTO_E_CUSTOM_ERROR will be re-
-turned then secondar</div></section>
+turned then secondaryOutputPtr shall contain the appropriate return value from
+Crypto_KeyM_ReturnType data type.⌋
+Note: The remaining return values relevant for service CUSTOM_SERVICE map au-
+tomatically as their enumeration values are identical, i.e. the following Crypto Driver
+Std_ReturnType values map directly to the according KeyM Std_ReturnType:
+• E_OK →E_OK
+• E_NOT_OK →E_NOT_OK
+• CRYPTO_E_BUSY →KEYM_E_BUSY
+[SWS_Crypto_00263]
+Crypto_CustomService returns the actual error value
+of the KeyM_ServiceCertificate ⌈If Crypto_ProcessJob() is called for an asyn-
+chronous job configured with service CUSTOM_SERVICE that is mapped from
+a KeyM API that will trigger KeyM_ServiceCertificateCallbackNotification() and if
+CRYPTO_E_CUSTOM_ERROR will be returned in the Crypto_ResultType param-
+eter,
+then uint8* secondaryOutputPtr shall contain the appropriate value from
+Crypto_KeyM_ResultType data type.⌋
+[SWS_Crypto_00264]
+Crypto_CustomService returns the actual error value
+of the KeyM_CertificateVerify ⌈If Crypto_ProcessJob() is called for an asyn-
+chronous job configured with service CUSTOM_SERVICE that is mapped from a
+KeyM API that will trigger KeyM_CertificateVerifyCallbackNotification() and if E_OK
+or CRYPTO_E_CUSTOM_ERROR will be returned in the Crypto_ResultType pa-
+rameter, then uint8* secondaryOutputPtr shall contain the appropriate value from
+Crypto_KeyM_CertificateStatusType data type.⌋
+Note:
+KeyM
+distinguishes
+between
+KeyM_CertificateVerifyCallbackNotification()
+and KeyM_ServiceCertificateCallbackNotification() callback functions having dif-
+ferent data types of results, KeyM_ResultType and KeyM_CertificateStatusType.
+The
+configured
+Csm_ApplicationCallbackNotification
+provides
+the
+result
+as
+a
+Crypto_ResultType
+value.
+In
+case
+of
+an
+unrecoverable
+error,
+e.g.
+CRYPTO_E_BUSY, it is not possible to provide a value of KeyM_ResultType or
+KeyM_CertificateStatusType.
+Therefore, secondaryOutputPtr will only contain a
+valid result for KeyM if the Csm_ApplicationCallbackNotification returns E_OK or
+CRYPTO_E_CUSTOM_ERROR.
+Mapping table for Csm_CustomService:
+Csm_CustomService
+KeyM_ ServiceCertifi-
+cateByCertId
+KeyM_
+VerifyCertificates
+KeyM_
+VerifyCertificate
+KeyM_
+VerifyCertificateChain
+service Id
+0x13
+0x0C
+0x0D
+0x0E
+processing type
+async
+async
+async
+async
+Return type
+Std_ReturnType
+Std_ReturnType
+Std_ReturnType
+Std_ReturnType
+uint32 JobId*****
+JobId of the referenced custom CSM job from the given certificate configuration
+Crypto_
+OperationModeType
+mode
+CRYPTO_
+OPERATIONMODE_
+SINGLECALL
+CRYPTO_
+OPERATIONMODE_
+SINGLECALL
+CRYPTO_
+OPERATIONMODE_
+SINGLECALL
+CRYPTO_
+OPERATIONMODE_
+SINGLECALL
+uint32 targetKeyId
+uint8 SvcId**
+uint8 SvcId**
+uint8 SvcId**
+uint8 SvcId**
+const uint8* inputPtr
+uint8 Service***
+uint16
+CertUpperId****
+empty*
+uint8
+NumberOfCertificates
+uint32 inputLength
+1
+2
+0
+1
+const uint8 *
+secondaryInputPtr
+const unit8 *
+RequestData
+empty*
+empty*
+KeyM_CertDataType[]
+certChainData
+uint32 secondaryIn-
+putLength
+uint32
+RequestDataLength
+empty*
+empty*
+NumberOfCertificates
+* sizeof
+(KeyM_CertDataType)
+const uint8*
+tertiaryInputPtr
+empty*
+empty*
+empty*
+empty*
+uint32
+tertiaryInputLength
+empty*
+empty*
+empty*
+empty*
+uint8* outputPtr
+uint8 ResponseData
+empty*
+empty*
+empty*
+uint32*
+outputLengthPtr
+unit32
+ResponseDataLength
+empty*
+empty*
+empty*
+uint8*
+secondaryOutputPtr
+&lt;specific return value for that custom service&gt;
+uint32* secondary-
+OutputLengthPtr
+&lt; sizeof(Std_ReturnType)&gt;
+Crypto_
+VerifyResultType*
+verifyPtr
+empty*
+* "empty": it’s up to the vendor how to set the value of the parameter, but will not be
+used
+** "SvcId": is Service ID of the original KeyM API function; casted to uint32
+*** "Service" is the parameter KeyM_ServiceCertificateType Service from the caller
+**** "CertUpperId": most significant byte (MSB) of uint16 CertUpperId
+***** "JobId": Referenced Csm key holds the KeyM certificate
+The picture below shows the usage of the crypto driver (on HSM). Service requests
+from the application go to the standardized KeyM interfaces and if a crypto profile
+for custom processing defines the handling on HSM the crypto driver transfers the
+execution onto the HSM.
+Figure 7.3
+[SWS_Crypto_00269] Mapping Crypto profile parameters to KeyM services ⌈Each
+Crypto profile shall define the mapping of the parameters of Crypto_CustomSync to the
+using KeyM service/function.⌋
+Mapping table for Csm_CustomSync:
+Csm_
+CustomSync
+KeyM_
+CertElement-
+Get
+KeyM_
+CertGetStatus
+KeyM_ Certifi-
+cateElement-
+GetByIndex
+KeyM_
+CertificateEle-
+mentGetCount
+KeyM_
+SetCertificate
+KeyM_
+GetCertificate
+service Id
+0x0F
+0x12
+0x1B
+0x1C
+0x0A
+0x0B
+processing
+type
+sync
+Return type
+Std_ReturnType
+uint32
+dispatchId**
+0x1580000F
+0x15800012
+0x1580001B
+0x1580001C
+0x1580000A
+0x1580000B
+uint32 keyId
+Csm keyId from the certificate’s configuration where it is stored to
+uint32
+keyElementId
+mapped
+keyElementId
+from
+CertElementId
+empty*
+mapped keyId
+from
+CertElementId
+mapped keyId
+from
+CertElementId
+empty*
+empty*
+uint32
+targetKeyId
+empty*
+empty*
+uint32 index
+empty*
+empty*
+empty*
+uint32
+targetKeyEle-
+mentId
+empty*
+empty*
+empty*
+empty*
+empty*
+empty*
+const uint8*
+inputPtr
+empty*
+empty*
+empty*
+empty*
+KeyM_
+CertDataType*
+CertificateDat-
+aPtr
+uint32
+inputLength
+empty*
+empty*
+empty*
+empty*
+empty*
+empty*
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +372,7 @@ turned then secondar</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

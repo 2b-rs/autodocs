@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_6_2_5_8_Subfunction_0x05</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 118)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=118" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 118)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_00327" class="swsref internal-spec-ref"><code>SWS_Dem_00327</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91016" class="swsref internal-spec-ref"><code>SWS_Dem_91016</code></a></span>
         </div>
       </div>
 
@@ -96,11 +97,43 @@ Table 7.13: Subfunction 0x05 response values
 and DTCStoredDataRecordNumber is 0x00, the Dcm shall compose the OBD Freeze-
 frame by looping all DcmDspPid and collecting all DcmDspPidData which are con-
 figured for service 0x02 by calling Dem_DcmReadDataOfOBDFreezeFrame() for the
-Data Element. The Dcm</div></section>
+Data Element. The Dcm shall compose the DidId by adding 0xF400 to the Pid, and
+calculate padding and supported informations.⌋(RS_Diag_04058)
+[SWS_Dcm_01193]
+⌈When
+responding
+to
+UDS
+Service
+0x19
+with
+subfunc-
+tion
+0x05
+and
+DTCStoredDataRecordNumber
+is
+0x00,
+the
+Dcm
+shall
+call
+Dem_DcmGetDTCOfOBDFreezeFrame() with FrameNumber 0x00 and DTCFormat
+DEM_DTC_FORMAT_UDS to retrieve the DTC of the provided FreezeFrame.⌋()
+[SWS_Dcm_00389] ⌈When responding to UDS Service 0x19 with subfunction 0x05
+and DTCStoredDataRecordNumber is 0x00, the Dcm module shall obtain the status of
+the DTC by first calling Dem_SelectDTC() with the following parameters:
+• ClientId: Client Id for this Dcm instance (see DcmDemClientRef)
+• DTC: DTC as defined in [SWS_Dcm_00388]
+• DTCOrigin: DEM_DTC_ORIGIN_PRIMARY_MEMORY
+Manager
+and then Dem_GetStatusOfDTC() with the following parameter:
+• ClientId: Client Id for this Dcm instance (see DcmDemClientRef)
+⌋(RS_Diag_04058)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SelectDTC().</p>
       </section>
 
       <section class="snip-card">
@@ -109,7 +142,7 @@ Data Element. The Dcm</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=118" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -121,7 +154,7 @@ Data Element. The Dcm</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_00327" class="swsref internal-spec-ref"><code>SWS_Dem_00327</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_91016" class="swsref internal-spec-ref"><code>SWS_Dem_91016</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -129,7 +162,7 @@ Data Element. The Dcm</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

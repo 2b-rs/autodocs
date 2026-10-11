@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_RTE_SECTION_8_5_1_RTE_Event_to_task_ISR_mapping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 998)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=995" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 998)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Rte_CONSTR_08936</span>
         </div>
@@ -134,7 +135,221 @@ OsAlarm:
 EcucParamConfContainerDef
 upperMultiplicity = *
 lowerMultiplicity = 0
-RteV</div></section>
+RteVirtuallyMappedToTaskRef:
+EcucReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteUsedOsAlarmRef:
+EcucReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteUsedOsSchTblExpiryPointRef:
+EcucReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteOsSchedulePoint:
+EcucEnumerationParamDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+NONE:
+EcucEnumerationLiteralDef
+CONDITIONAL:
+EcucEnumerationLiteralDef
+UNCONDITIONAL:
+EcucEnumerationLiteralDef
+RteImmediateRestart:
+EcucBooleanParamDef
+defaultValue = false
+RteInitializationRunnableBatch:
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 0
+RteUsedInitFnc: EcucReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+Os
+RteSyncPoint:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+RteEventPredecessorSyncPointRef:
+EcucReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteEventSuccessorSyncPointRef:
+EcucReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteServerQueueLength:
+EcucIntegerParamDef
+min = 1
+max = 65535
+lowerMultiplicity = 0
+upperMultiplicity = 1
++reference
++parameter
++destination
++reference
++reference
++destination
++reference
++destination
++literal
++destination
++destination
++literal
++waitPoint
+0..*
++destination
++reference
++reference
++destination
++parameter
++reference
++startOnEvent
+0..1
++subContainer
++destination
++parameter
++literal
++parameter
++reference
++parameter
++reference
++trigger
+0..1
+Figure 8.10: RTE Event to task mapping
+Software Component template
+RteSwComponentInstance:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+Rte: EcucModuleDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteEventToIsrMapping:
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 0
+RtePositionInIsr:
+EcucIntegerParamDef
+min = 0
+max = 65535
+lowerMultiplicity = 1
+upperMultiplicity = 1
+AtpStructureElement
+ExecutableEntity
+RunnableEntity
++
+canBeInvokedConcurrently: Boolean [0..1]
++
+symbol: CIdentifier [0..1]
+AbstractEvent
+AtpStructureElement
+RTEEvent
+Identifiable
+WaitPoint
++
+timeout: TimeValue [0..1]
+RteIsrEventRef:
+EcucForeignReferenceDef
+destinationType = RTE-EVENT
+lowerMultiplicity = 1
+upperMultiplicity = 1
+OsIsr:
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 0
+RteMappedToIsrRef:
+EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+RteRipsPluginFillFlushRoutine:
+EcucDestinationUriDef
+RteRipsFillRoutineRef:
+EcucUriReferenceDef
+requiresIndex = true
+lowerMultiplicity = 0
+upperMultiplicity = *
+RteRipsFlushRoutineRef:
+EcucUriReferenceDef
+requiresIndex = true
+lowerMultiplicity = 0
+upperMultiplicity = *
++trigger
+0..1
++destinationUri
++reference
++container
++subContainer
++reference
++reference
++destination
++reference
++parameter
++startOnEvent
+0..1
++destinationUri
++waitPoint
+0..*
+Figure 8.11: RTE Event to ISR mapping
+The mapping is based on the RTEEvent because it is the source of the activation.
+For each RunnableEntity which belongs to an AUTOSAR Software-Component in-
+stance mapped on the ECU there needs to be a mapping container specifying how this
+RunnableEntity activation shall be handled.
+[SWS_Rte_07843] ⌈The RTE Generator shall reject configurations where
+• multiple RteEventToTaskMappings or RteEventToIsrMappings reference
+the same RTEEvent within the context of one RteSwComponentInstance OR
+• multiple RteBswEventToTaskMappings or RteBswEventToIsrMappings
+reference the same BswEvent within the context of one RteBswModuleIn-
+stance
+⌋()
+[SWS_Rte_04641] ⌈The RTE Generator shall reject configurations which contain
+• an RteEventToTaskMapping resp. RteEventToIsrMapping that does not
+reference an RTEEvent OR
+• an RteBswEventToTaskMapping resp.
+RteBswEventToIsrMapping that
+does not reference a BswEvent
+⌋()
+[SWS_Rte_03630] ⌈The RTE Generator shall reject configurations where the same
+RTEEvent instance which can start a RunnableEntity is mapped to RteInitial-
+izationRunnableBatches multiple times.⌋(SRS_Rte_00240)
+[SWS_Rte_03631] ⌈The RTE Generator shall reject configurations where the same
+RTEEvent instance which can start a RunnableEntity is mapped to both a
+task and an RteInitializationRunnableBatch with the exception of SwcMod-
+eSwitchEvents with activation = onEntry and referring to the initialMode.⌋
+(SRS_Rte_00240)
+In order to specify different RtePositionInTask values for on-entry Exe-
+cutableEntitys for the initialMode in the context of a RteInitialization-
+RunnableBatch and in the context of a transition of a mode machine instance
+(e.g. task context of all on-entry ExecutableEntitys, on-transition Exe-
+cutableEntityss, and on-exit ExecutableEntityss of the same core lo-
+cal mode user group), two RteEventToTaskMapping containers are required
+for these SwcModeSwitchEvents.
+Having the same RteEventToTaskMapping container to map such a SwcMod-
+eSwitchEvent instance (with activation = onEntry and referring to the ini-
+tialMode) to both an OsTask container and a RteInitializationRunnable-
+Batch container, the same RtePositionInTask value will be specified for both
+cases. This is useful if a separate RteInitializationRunnableBatch is created
+for each initial mode machine instance to handle the initial mode transitions as the
+relative ordering of the mapped events stays the same.
+Having two separate RteEventToTaskMapping containers to map such a SwcMod-
+eSwitchEvent (with activation = onEntry and referring to the initialMode)
+allows using two different RtePositionInTask values for the mapped OsTask con-
+tainer and the mapped RteInitializationRunnableBatch container. This is use-
+ful if the RteInitializationRunnableBatch container has other mapped RTE-
+Events/BswEvents.
+[SWS_Rte_03632] ⌈The RTE Generator shall reject configurations where a Swc-
+ModeSwitchEvent with activation = onEntry referring to the initialMode is
+mapped to an RteInitializationRunnableBatch container via an RteEvent-
+ToTaskMapping if the SwcModeSwitchEvent’s mode references a synchronized
+mode group.⌋(SRS_Rte_00240)
+Rationale: Synchronized mode groups are initialized with the SchM by the SchM_-
+Init() call and are allowed to perform mode switches even before the RTE is started
+by Rte_Start() call.
+Having the aforementioned SwcModeSwitchEvents of a
+synchronized mode group mapped to such RteInitializationRunnableBatch
+would not guarantee either that the triggered RunnableEntity instance is executed</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -147,7 +362,7 @@ RteV</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=995" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -88,7 +89,32 @@ The code must be reentrant and concurrency safe, which means that all access to
 data must be protected against concurrent access by the same or by a different entity
 of the same module.
 In this example, the same service "X" (BswCalledEntity) writes into a module internal
-data buffer accessible from</div></section>
+data buffer accessible from core 0 and from core 1. A "main function"
+(BswSchedulableEntity), which is mapped to a task, reads the data from the buffer
+for further processing. In order to prevent read/write-conflicts, this “main function”
+must be protected from reading the buffer while it is written.
+This can be considered a special case of the generic master/satellite approach for
+systems without memory protection between the BSW partitions.
+The advantage of this approach is that the original, unchanged modules can be used,
+as long as they are implemented concurrency safe, which is usually the case for
+single core already, if different entities of the same module work on the same data,
+as shown in the example for core 0. Compared to the AUTOSAR R4.0 solution,
+where all service calls have to be routed to the master core, the performance can be
+improved considerably without much effort (assuming there is no need to do cross-
+core communication later).
+The following must be considered for a concurrency safe, reentrant implementation:
+ Access to all shared resources, e.g. buffers, is protected by ExclusiveAreas.
+Guide to Multi-Core Systems
+R4.1 Rev 3
+ Call trees can be made multi-core safe, if either called entities are safe, or calls
+are protected by ExclusiveAreas (if lock times stay within a specified limit).
+BswCalledEntities that are available to CDDs can also be called directly by the CDD.
+The same rules apply as in R4.0.
+The SchM must support cross core ExclusiveAreas, implemented by protected
+Spinlocks. A protected spinlock is an exclusive area that has "OS_SPINLOCK" as its
+value of "RteExclusiveAreaImplMechanism". This kind of exclusive areas is available
+for controlled access by BSW modules only. Protected spinlocks are handled by the
+Basic Software Scheduler.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

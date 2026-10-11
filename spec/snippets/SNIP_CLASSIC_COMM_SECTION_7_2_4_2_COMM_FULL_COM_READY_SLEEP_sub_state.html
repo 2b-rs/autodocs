@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_4_2_COMM_FULL_COM_READY_SLEEP_sub_state</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 77)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=77" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 77)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_01095" class="swsref internal-spec-ref"><code>SWS_ComM_01095</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_01096" class="swsref internal-spec-ref"><code>SWS_ComM_01096</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,53 @@ Channel is referenced by a PNC and the timer for ComMNmLightTimeout (see
 to state COMM_NO_COMMUNICATION as soon as all referencing PNCs reside in COMM_
 PNC_NO_COMMUNICATION.⌋
 Note: [SWS_ComM_01095] prevents a ComMChannel to transit to COMM_NO_COMMU-
-NICATION, if this ComMChannel acts in the role of a managed chan</div></section>
+NICATION, if this ComMChannel acts in the role of a managed channel, this ComM-
+Channel is referenced by at least one PNC and the PNC is requested passively (PNC
+reside in COMM_PNC_READY_SLEEP).
+[SWS_ComM_01096] ⌈In sub-state COMM_FULL_COM_READY_SLEEP and configu-
+ration parameter ComMNmVariant=LIGHT (see [ECUC_ComM_00568]), this ComM-
+Channel act in role of an managed channel and is referenced by a ComMChannel in
+the role of a managing channel but not referenced by any PNC and the timer for ComM-
+NmLightTimeout (see [ECUC_ComM_00606]) has expired, the ComM channel state
+machine shall switch to state COMM_NO_COMMUNICATION as soon as the referencing
+ComMChannel (managing channel) transit to COMM_PNC_NO_COMMUNICATION.⌋
+Note: [SWS_ComM_01096] prevents a ComMChannel to transit to COMM_NO_COMMU-
+NICATION, if this ComMChannel acts in the role of a managed channel, this ComM-
+Channel is referenced by a ComMChannel in the role of a managing channel without
+any referencing PNC and this ComMChannel is requested passively (ComM channel
+statemachine reside in COMM_FULL_COM_READY_SLEEP).
+[SWS_ComM_00671]
+⌈In
+sub-state
+COMM_FULL_COM_READY_SLEEP
+and
+configuration
+parameter
+ComMBusType=COMM_BUS_TYPE_INTERNAL
+([ECUC_ComM_00567]),
+the ComM channel state machine shall immediately
+switch to state COMM_NO_COMMUNICATION.⌋
+[SWS_ComM_00882] ⌈In sub-state COMM_FULL_COM_READY_SLEEP and a user re-
+quest COMM_FULL_COMMUNICATION and communication limitation is disabled (see
+Section [REF]), the ComM channel state machine shall immediately switch to sub-state
+COMM_FULL_COM_NETWORK_REQUESTED.⌋
+[SWS_ComM_00883] ⌈In sub-state COMM_FULL_COM_READY_SLEEP, configuration
+parameter ComMNmVariant=FULL|LIGHT|NONE ([ECUC_ComM_00568]) and DCM
+indicate ComM_DCM_ActiveDiagnostic([SWS_ComM_00873]), the ComM channel
+state machine shall switch to sub-state COMM_FULL_COM_NETWORK_REQUESTED.⌋
+Rationale for [SWS_ComM_00883]: A potential communication limitation (see Sec-
+tion [REF]) shall temporarily be inactive during an active diagnostic session, see
+[SWS_ComM_00182]
+[SWS_ComM_00892] ⌈In sub-state COMM_FULL_COM_READY_SLEEP and config-
+uration parameter ComMNmVariant=LIGHT ([ECUC_ComM_00568]) and a switch
+to sub-state COMM_FULL_COM_NETWORK_REQUESTED, due to request for COMM_-
+FULL_COMMUNICATION according to requirements in [SWS_ComM_00882] or
+[SWS_ComM_00883], the timer for ComMNmLightTimeout ([ECUC_ComM_00606])
+shall be canceled.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_ComM_01095] im Text von SWS_COMManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_ComM_01096] im Text von SWS_COMManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +145,7 @@ NICATION, if this ComMChannel acts in the role of a managed chan</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=77" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +157,7 @@ NICATION, if this ComMChannel acts in the role of a managed chan</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_ComM_01095" class="swsref internal-spec-ref"><code>SWS_ComM_01095</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_ComM_01096" class="swsref internal-spec-ref"><code>SWS_ComM_01096</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

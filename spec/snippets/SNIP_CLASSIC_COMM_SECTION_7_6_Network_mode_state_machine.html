@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_6_Network_mode_state_machine</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetStateManager.pdf</strong> (Seite 18)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetStateManager.pdf#page=16" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetStateManager.pdf</a></strong> (Seite 18)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthSM_00207" class="swsref internal-spec-ref"><code>SWS_EthSM_00207</code></a></span>
         </div>
@@ -92,7 +93,401 @@ SM_TrcvLinkStateChg
 communication is available) via EthSM_TcpIpModeIndication
 2. If communication mode COMM_FULL_COMMUNICATION_WITH_WAKEUP_
 REQUEST is requested for a certain Ethernet network, EthSMWakeupSleepOn
-Dataline</div></section>
+DatalineEnabled is set to TRUE and the corresponding EthSM statemachine is in
+state ETHSM_NO_COMMUNICATION, then at least the following preconditions
+have to be fulfilled to transit to ETHSM_FULL_COMMUNICATION:
+• Request ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST for the corre-
+sponding Ethernet Interface Controller.
+• The corresponding Ethernet hardware has indicated ETHTRCV_LINK_
+STATE_ACTIVE (active link state, thus, Ethernet cable is connected) via Eth
+SM_TrcvLinkStateChg
+• The corresponding TcpIpCtrl has indicated TCPIP_STATE_ONLINE (IP
+communication is available) via EthSM_TcpIpModeIndication
+3. If ComM request COMM_SILENT_COMMUNICATION and the corresponding
+EthSM state machine is in state ETHSM_FULL_COMMUNICATION, then the fol-
+lowing actions will be performed:
+• EthSM request ETH_MODE_ACTIVE_TX_OFFLINE for the corresponding
+Ethernet Interface Controller, if forwarding of silent communication is en-
+abled (see [ECUC_EthSM_00110])
+• EthSM state machine transit to ETHSM_STATE_WAIT_OFFLINE
+4. If the ComM requests COMM_NO_COMMUNICATION and the corresponding
+EthSM state machine is in state ETHSM_STATE_WAIT_OFFLINE, then the fol-
+lowing preconditions have to be fulfilled to transist to ETHSM_NO_COMMUNI-
+CATION:
+• EthSM request ETH_MODE_DOWN for the corresponding Ethernet Inter-
+face Controller
+• The corresponding TcpIpCtrl has indicated TCPIP_STATE_OFFLINE
+5. If communication mode COMM_FULL_COMMUNICATION_WITH_WAKEUP_
+REQUEST is requested for a certain Ethernet network, EthSMWakeupSleepOn
+DatalineEnabled is set to TRUE and the corresponding EthSM statemachine is in
+state ETHSM_FULL_COMMUNICATION, then the EthSM request ETH_MODE_
+ACTIVE_WITH_WAKEUP_REQUEST for the corresponding Ethernet Interface
+Controller, even though the current state is ETHSM_FULL_COMMUNICATION
+The call of silent communication in point 3 will disable the transmission path of the cor-
+responding Ethernet Interface Controller, if the forwarding of the request is configured
+(see [ECUC_EthSM_00110])
+The re-trigger of the Ethernet Interface Controller described in point 5 in the previous
+section is used to request the lower layer to trigger a wake-up on the network. This
+could be used for example for Ethernet hardware which is compliant with OA TC10
+([1])
+The internal states are shown in Figure 7.1. Details are described in the following sub
+chapters. An overview of the internal states are described in [SWS_EthSM_00041].
+ETHSM_NO_COMMUNICATION
+ETHSM_FULL_COMMUNICATION
+ETHSM_STATE_OFFLINE
+ETHSM_STATE_WAIT_TRCVLINK
+ETHSM_STATE_WAIT_ONLINE
+ETHSM_STATE_ONLINE
+ETHSM_STATE_ONHOLD
+Initial
+ETHSM_STATE_WAIT_OFFLINE
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ !
+"
+
+
+#
+"
+$ #
+!
+%
+  &amp;
+
+'
+
+"(
+
+
+
+
+
+
+
+
+
+ #
+
+)
+
+
+*
+
+
+
+* 
++
+
+
+
+,
+,
+"
+
+
+ 
+-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+$
+
+
++ 
+!
+
+"
+.
+
+
+#
+"$ 
+#
+!
+%
+  &amp;
+
+
+ '
+ 
+"(
+
+
+
+
+
+
+
+
+
+/
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+!
+"
+
+(
+
+
+-
+
+"
+-
+*
+* 
+
+
+ 
+
+
+
+
+
+
+
+
+"
+&amp;
+&amp;
+
+
+"
+!
+"
+
+
+
+ (
+EthSM_RequestComMode(NO_COMMUNICATION)
+/BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_OFFLINE)
+TcpIp_RequestComMode(TCPIP_STATE_OFFLINE)
+a
+EthSM_TrcvLinkStateChg(ETHTRCV_LINK_STATE_DOWN)
+/TcpIp_RequestComMode(TCPIP_STATE_ONHOLD)
+BswM_EthSM_CurrentState(ETHSM_STATE_ONHOLD)
+EthSM_TrcvLinkStateChg(ETHTRCV_LINK_STATE_ACTIVE)
+/TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
+BswM_EthSM_CurrentState(ETHSM_STATE_ONLINE)
+EthSM_RequestComMode(COMM_FULL_COMMUNICATION_WITH_WAKEUP_REQUEST)
+/EthIf_SetControllerMode(ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST)
+BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_TRCVLINK)
+EthSM_TcpIpModeIndication(TCPIP_STATE_OFFLINE)
+/EthIf_SetControllerMode(ETH_MODE_DOWN)
+BswM_EthSM_CurrentState(ETHSM_STATE_OFFLINE)
+ComM_BusSM_ModeIndication(COMM_NO_COMMUNICATION)
+EthSM_TcpIpModeIndication(TCPIP_STATE_ONLINE)
+/BswM_EthSM_CurrentState(ETHSM_STATE_ONLINE)
+ComM_BusSM_ModeIndication(COMM_FULL_COMMUNICATION)
+EthSM_TrcvLinkStateChg(ETHTRCV_LINK_STATE_DOWN)
+/TcpIp_RequestComMode(TCPIP_STATE_OFFLINE)
+BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_TRCVLINK)
+EthSM_RequestComMode(COMM_NO_COMMUNICATION)
+/EthIf_SetControllerMode(ETH_MODE_DOWN)
+BswM_EthSM_CurrentState(ETHSM_STATE_OFFLINE)
+EthSM_Init()
+EthSM_RequestComMode(COMM_SILENT_COMMUNICATION)
+/BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_OFFLINE)
+(optional) EthIf_SetControllerMode(ETH_MODE_ACTIVE_TX_OFFLINE)
+a
+b
+a
+EthSM_RequestComMode(COMM_NO_COMMUNICATION)
+/TcpIp_RequestComMode(TCPIP_STATE_OFFLINE)
+EthIf_SetControllerMode(ETH_MODE_DOWN)
+BswM_EthSM_CurrentState(ETHSM_STATE_OFFLINE)
+ComM_BusSM_ModeIndication(COMM_NO_COMMUNICATION)
+EthSM_RequestComMode(COMM_NO_COMMUNICATION)
+/TcpIp_RequestComMode(TCPIP_STATE_OFFLINE)
+EthIf_SetControllerMode(ETH_MODE_DOWN)
+BswM_EthSM_CurrentState(ETHSM_STATE_OFFLINE)
+EthSM_RequestComMode(COMM_FULL_COMMUNICATION)
+/EthIf_SetControllerMode(ETH_MODE_ACTIVE)
+BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_TRCVLINK)
+EthSM_TcpIpModelIndication(TCPIP_STATE_ONLINE)
+/BswM_EthSM_CurrentState(ETHSM_STATE_ONLINE)
+EthSM_TcpIpModeIndication(TCPIP_STATE_OFFLINE)
+/BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_TRCVLINK)
+ComM_BusSM_ModeIndication(COMM_NO_COMMUNICATION)
+EthSM_TrcvLinkStateChg(ETHTRCV_LINK_STATE_ACTIVE)
+/TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
+BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_ONLINE)
+EthSM_TcpIpModeIndication(TCPIP_STATE_OFFLINE)
+/BswM_EthSM_CurrentState(ETHSM_STATE_WAIT_ONLINE)
+ComM_BusSM_ModeIndication(COMM_NO_COMMUNICATION)
+EthSM_RequestComMode(COMM_FULL_COMMUNICATION_WITH_WAKEUP_REQUEST)
+/EthIf_SetControllerMode(ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST)
+TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
+EthSM_RequestComMode(COMM_FULL_COMMUNICATION)
+/EthIf_SetControllerMode(ETH_MODE_ACTIVE)
+TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
+a
+Figure 7.1: Network mode state machine of the EthSM
+Table 7.1 shows the expected state of the EthSM sub state, the state of the affected
+Ethernet hardware and the IP assignment, according to the requested communication
+mode of the ComM. Please note, requested mode (either ACTIVE or ACTIVE_TX_
+OFFLINE) is configurable (see [ECUC_EthSM_00110])
+Requested Com
+M Mode
+EthSM sub state
+Controller
+state
+Transceiver
+state
+Transceiver
+link state
+TcpIpCtrl
+state
+No Com
+ETHSM_STATE_
+OFFLINE
+DOWN
+DOWN
+DOWN
+OFFLINE
+No Com
+ETHSM_STATE_
+WAIT_
+TRCVLINK
+ACTIVE
+ACTIVE
+DOWN
+OFFLINE
+No Com
+ETHSM_STATE_
+WAIT_ONLINE
+ACTIVE
+ACTIVE
+ACTIVE
+OFFLINE
+Full Com
+ETHSM_STATE_
+ONLINE
+ACTIVE
+ACTIVE
+ACTIVE
+ONLINE
+Full Com
+ETHSM_STATE_
+ONHOLD
+ACTIVE
+ACTIVE
+DOWN
+ONLINE
+Silent Com
+ETHSM_STATE_
+WAIT_OFFLINE
+ACTIVE or
+ACTIVE_
+TX_OFFLINE *)
+ACTIVE
+ACTIVE
+ONLINE
+No Com
+ETHSM_STATE_
+WAIT_OFFLINE
+ACTIVE or
+ACTIVE_
+TX_OFFLINE *)
+ACTIVE
+ACTIVE
+ONLINE
+Table 7.1: EthSM sub states and the excepted states of the according Ethernet hardware
+and the IP assignment. *)
+The following preconditions have to be fulfilled to transit to ETHSM_FULL_COMMUNI-
+CATION:
+• Ethernet Interface Controller and transceiver are active
+• The transceiver link state is active
+• An active IP communication is available
+The first step is set the Ethernet controller to ETH_MODE_ACTIVE. After this is done,
+the Ethernet State Manager is in the sub state ETHSM_STATE_WAIT_TRCVLINK. In
+this sub state the state manager has to wait for the monitored link state information of
+the Ethernet transceiver. After the link state is set to ETHTRCV_MODE_ACTIVE, the
+Ethernet State Manager transit to sub state ETHSM_STATE_WAIT_ONLINE. In this
+sub state the Ethernet state manager has to wait for the monitored TcpIp stateinfor-
+mation of the TcpIp module. After the TcpIp module indicate TCPIP_STATE_ONLINE
+(= IP communication is available), the Ethernet State Manager transit to main state
+ETHSM_ FULL_COMMUNICATION and sub state ETHSM_STATE_ONLINE.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +500,7 @@ Dataline</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetStateManager.pdf#page=16" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

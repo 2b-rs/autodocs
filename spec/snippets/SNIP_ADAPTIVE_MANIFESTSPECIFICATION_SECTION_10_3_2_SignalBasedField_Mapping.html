@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_ADAPTIVE_MANIFESTSPECIFICATION_SECTION_10_3_2_SignalBasedField_Mapping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ManifestSpecification.pdf</strong> (Seite 413)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-03/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=480" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></strong> (Seite 413)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02295" class="swsref"><code>TPS_SYST_02295</code></a></span>
         </div>
@@ -111,7 +112,242 @@ AtpBlueprintable
 AtpType
 PortInterface
 DataPrototypeInPortInterfaceInstanceRef
-DataPrototypeInServiceInterfaceInstanc</div></section>
+DataPrototypeInServiceInterfaceInstanceRef
+«atpDerived»
++/base
+0..1
+{redefines base}
++notifierSignalTriggering
+0..1
++serviceInstanceToSignalMapping
+0..*
++setterCallSignal
+0..1
++portInterface
+0..1
++fieldMapping
+0..*
++setterReturnSignal
+0..1
++elementInImplDatatype
+0..1
++serviceInterface
+0..1
++getterReturnSignal
+0..1
++getterCallSignal
+0..1
++iSignal
+0..1
++dataPrototypeInServiceInterfaceRef
+1
++dataPrototype
+0..1
++serviceInstance
+0..1
+«atpUriDef»
++serviceInterface
+0..1
+Figure 10.5: Mapping of Fields to ISignals
+Class
+SignalBasedFieldToISignalTriggeringMapping
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::SignalBasedCommunication
+Note
+This meta-class defines the mapping of a ServiceInterface field to ISignalTriggerings that represent the
+notifier elements, the getter call and response, the setter call and response on a signal-based
+communication channel.
+.
+Tags: atp.Status=draft
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Attribute
+Type
+Mul.
+Kind
+Note
+dataPrototypeIn
+ServiceInterface
+Ref
+DataPrototypeInService
+InterfaceRef
+1
+aggr
+Reference to a DataPrototype or to an internal structure
+of a DataPrototype in the context of a ServiceInterface.
+Tags: atp.Status=draft
+getterCallSignal
+ISignalTriggering
+0..1
+ref
+Reference to the ISignalTriggering that is used to
+transport the getter method call in a signal-based way
+over a communication channel.
+Tags: atp.Status=draft
+getterReturn
+Signal
+ISignalTriggering
+0..1
+ref
+Reference to the ISignalTriggering that is used to
+transport the getter method response in a signal-based
+way over a communication channel.
+Tags: atp.Status=draft
+notifierSignal
+Triggering
+ISignalTriggering
+0..1
+ref
+Reference to the ISignalTriggering that is used to
+transport a piece of data of a notifier in a signal-based
+way over a communication channel.
+Tags: atp.Status=draft
+setterCallSignal
+ISignalTriggering
+0..1
+ref
+Reference to the ISignalTriggering that is used to
+transport the setter method call in a signal-based way
+over a communication channel.
+Tags: atp.Status=draft
+setterReturn
+Signal
+ISignalTriggering
+0..1
+ref
+Reference to the ISignalTriggering that is used to
+transport the setter method response in a signal-based
+way over a communication channel.
+Tags: atp.Status=draft
+Table 10.5: SignalBasedFieldToISignalTriggeringMapping
+In the example sketched in Figure 10.6 the testField in the testServiceInterface is of
+type struct1 that consists of the primitive elements a and b. The testField defines a
+notifier and a setter method.
+One SignalBasedFieldToISignalTriggeringMapping maps the TestField to
+ISignalTriggerings for the Setter-Call and Setter-Return. Here the dataProto-
+type role of DataPrototypeInServiceInterfaceRef is used to refer to the tar-
+getDataPrototype (field) according to the rules defined in [TPS_MANI_01136]
+and [TPS_MANI_01137].
+Additional SignalBasedFieldToISignalTriggeringMappings are necessary to
+map the field notifier to the corresponding ISignalTriggerings. One Signal-
+BasedFieldToISignalTriggeringMapping maps the TestField to the ISignal-
+Triggering of the ISignalGroup that collects all ISignals that transport the con-
+tent of the notifier.
+The primitive DataPrototypes a and b are mapped by additional SignalBased-
+FieldToISignalTriggeringMappings to ISignalTriggerings of ISignals
+located in the ISignalGroup. Here the elementInImplDatatype role of Dat-
+aPrototypeInServiceInterfaceRef is used to refer to the targetDataProto-
+type since it refers to the internal structure of an AutosarDataPrototype which is
+typed by a CppImplementationDataType. The context of this reference is defined
+by the testField.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+:SignalBasedFieldToISignalTriggeringMapping
+testField_setterCall:
+ISignalTriggering
+testField_setterReturn:
+ISignalTriggering
+testField_notifier_a:
+ISignalTriggering
+testField: Field
+hasSetter = true
+hasGetter = false
+hasNotifier = true
+testServiceInterface:
+ServiceInterface
+struct1: CppImplementationDataType
+category = STRUCTURE
+a:
+CppImplementationDataTypeElement
+b:
+CppImplementationDataTypeElement
+testField_notifier_b:
+ISignalTriggering
+:SignalBasedFieldToISignalTriggeringMapping
+:
+SignalBasedFieldToISignalTriggeringMapping
+:DataPrototypeInServiceInterfaceInstanceRef
+TestField_setter:
+DataPrototypeInServiceInterfaceRef
+notifier_struct1_a:
+DataPrototypeInServiceInterfaceRef
+:PortInterfaceElementInImplementationDatatypeRef
+notifier_struct1_b:
+DataPrototypeInServiceInterfaceRef
+:PortInterfaceElementInImplementationDatatypeRef
+testFieldNotifierSignalGroup:
+ISignalTriggering
+testField_notifier_Mapping:
+SignalBasedEventElementToISignalTriggeringMapping
+:DataPrototypeInServiceInterfaceInstanceRef
+notifier:
+DataPrototypeInServiceInterfaceRef
++targetDataPrototype
++rootDataPrototype
++field
++setterCallSignal
++elementInImplDataType
++notifierSignalTriggering
++notifierSignalTriggering
++elementInImplDataType
++dataPrototype
++rootDataPrototype
++setterReturnSignal
++targetDataPrototype
++targetDataPrototype
++type
++iSignalTriggering
++targetDataPrototype
+Figure 10.6: Example for a mapping of a field to Signals</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -124,7 +360,7 @@ DataPrototypeInServiceInterfaceInstanc</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-03/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=480" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

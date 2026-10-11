@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 90%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_13_1_Development_Errors</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 238)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=238" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 238)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01301" class="swsref internal-spec-ref"><code>SWS_Dem_01301</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01324" class="swsref internal-spec-ref"><code>SWS_Dem_01324</code></a></span>
         </div>
       </div>
 
@@ -121,11 +122,37 @@ Upstream requirements: SRS_BSW_00406
 • Dem_InitAllNvmBlocks
 is called before Dem has been fully initialized, the Dem module shall set the error code
 DEM_E_UNINIT.⌋
-Note: If development error</div></section>
+Note: If development error detection is disabled and the Dem is not fully initialized, the
+behavior of the APIs is undefined.
+[SWS_Dem_01324] ⌈During Dem_Init the Dem initializes the monitor and component
+states. After this point in time, the Dem shall return E_OK on the APIs Dem_GetMoni-
+torStatus and Dem_GetComponentFailed.⌋
+[SWS_Dem_00364]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection is enabled and any instance calls Dem_SetEventSta-
+tus or Dem_ResetEventDebounceStatus before the Dem was preinitialized, the
+Dem module shall set the error code DEM_E_UNINIT.⌋
+Note: If development error detection is disabled and the Dem is not preinitialized, the
+behavior of these APIs is undefined.
+[SWS_Dem_00368]
+Upstream requirements: SRS_BSW_00337
+⌈If development error detection is enabled and any instance calls any Dem API, exclud-
+ing Dem_SetEventStatus, Dem_ResetEventDebounceStatus, Dem_GetVer-
+sionInfo and Dem_MainFunction, after Dem_Shutdown has been called, the Dem
+module shall set the error code DEM_E_UNINIT until Dem_Init is called again.⌋
+Note: If development error detection is disabled and the Dem is shut down, the behavior
+of these APIs is undefined.
+[SWS_Dem_00518]
+Upstream requirements: RS_Diag_04057
+⌈If development error detection is enabled and a Dem function is called with required
+preconditions not fulfilled, the Dem module shall set the error code DEM_E_WRONG_
+CONDITION.⌋
+Note: For example, Dem_GetNextFilteredDTCAndFDC is called, after Dem_Set-
+DTCFilter with FilterForFaultDetectionCounter = FALSE was called.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Specifies DEM_E_INVALID_OBDMID error code</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01324] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -134,7 +161,7 @@ Note: If development error</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=238" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -146,15 +173,15 @@ Note: If development error</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01301" class="swsref internal-spec-ref"><code>SWS_Dem_01301</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_01324" class="swsref internal-spec-ref"><code>SWS_Dem_01324</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.90</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

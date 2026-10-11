@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_ADAPTIVE_MANIFESTSPECIFICATION_SECTION_11_1_4_REST_Element</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ManifestSpecification.pdf</strong> (Seite 427)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-03/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=495" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></strong> (Seite 427)</span>
           <span>&bull;</span>
           <span>Ziel-Element: –</span>
         </div>
@@ -131,7 +132,208 @@ Note
 –
 –
 –
-Table 11.11: RestAbstractProperty</div></section>
+Table 11.11: RestAbstractPropertyDef
+As depicted by Figure 11.6, there is a certain variety of ways in which the properties of
+a REST element can be described.
+However, the expressiveness of this description is in no way comparable to the rich-
+ness of the semantics of an ApplicationDataType or a CppImplementation-
+DataType.
+AtpStructureElement
+RestAbstractPropertyDef
+RestStringPropertyDef
++
+format: String [0..1]
+RestBooleanPropertyDef
+RestIntegerPropertyDef
+RestNumberPropertyDef
+RestObjectRef
++
+role: String
+RestEnumeratorDef
++
+value: String
+RestArrayPropertyDef
+RestPrimitivePropertyDef
+RestAbstractNumericalPropertyDef
++
+lowerLimit: Limit [0..1]
++
+resolution: Float [0..1]
++
+unit: String [0..1]
++
+upperLimit: Limit [0..1]
+Identifiable
+RestElementDef
++element
+1
++property
+1..*
++object
+0..*
++enum
+1..*
+Figure 11.6: Modeling of the REST elements
+[TPS_MANI_01125]{DRAFT} Properties of REST elements can either be primitive
+or have array semantics ⌈The properties of REST elements can either be primitive
+or have array semantics.
+There is no support for the creation of structures nor is the nesting of property defini-
+tions with array semantics supported.
+This aspect is already clarified by the model (RestArrayPropertyDef directly ag-
+gregates RestPrimitivePropertyDef) and does not need to be expressed by a
+written constraint. ⌋(RS_MANI_00033)
+Class
+RestPrimitivePropertyDef (abstract)
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::REST::RESTDesign
+Note
+This meta-class acts as an abstract base class for the definition of primitive properties of elements of a
+REST service.
+Tags: atp.Status=draft
+Base
+ARObject, AtpClassifier, AtpFeature, AtpStructureElement, Identifiable, MultilanguageReferrable,
+Referrable, RestAbstractPropertyDef
+▽
+△
+Class
+RestPrimitivePropertyDef (abstract)
+Subclasses
+RestAbstractNumericalPropertyDef, RestBooleanPropertyDef, RestObjectRef, RestStringPropertyDef
+Attribute
+Type
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 11.12: RestPrimitivePropertyDef
+Class
+RestArrayPropertyDef
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::REST::RESTDesign
+Note
+This meta-class represents the ability to define a property of an element of a rest service where the
+property is supposed to represent an array of other primitive properties.
+Tags: atp.Status=draft
+Base
+ARObject, AtpClassifier, AtpFeature, AtpStructureElement, Identifiable, MultilanguageReferrable,
+Referrable, RestAbstractPropertyDef
+Attribute
+Type
+Mul.
+Kind
+Note
+element
+RestPrimitiveProperty
+Def
+1
+aggr
+This aggregation represents the definition of the base
+element type of the array property
+Tags: atp.Status=draft
+Table 11.13: RestArrayPropertyDef
+Class
+RestBooleanPropertyDef
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::REST::RESTDesign
+Note
+This meta-class represents the ability to define a REST property with boolean semantics.
+Tags: atp.Status=draft
+Base
+ARObject, AtpClassifier, AtpFeature, AtpStructureElement, Identifiable, MultilanguageReferrable,
+Referrable, RestAbstractPropertyDef, RestPrimitivePropertyDef
+Attribute
+Type
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 11.14: RestBooleanPropertyDef
+[TPS_MANI_01126]{DRAFT} Definition of string properties ⌈Properties with string
+semantics can be defined by means of RestStringPropertyDef.
+In many cases, the intention will be to only allow a certain number of values within
+the string property and define the potential values of the string property directly by the
+string property itself.
+For this purpose, RestStringPropertyDef aggregates RestEnumeratorDef in
+the role enum that in turn allows for the definition of the predefined value by way of
+attribute value. ⌋(RS_MANI_00033)
+Class
+RestStringPropertyDef
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::REST::RESTDesign
+Note
+This meta-class represents the ability to define a REST property with string semantics.
+Tags: atp.Status=draft
+Base
+ARObject, AtpClassifier, AtpFeature, AtpStructureElement, Identifiable, MultilanguageReferrable,
+Referrable, RestAbstractPropertyDef, RestPrimitivePropertyDef
+Attribute
+Type
+Mul.
+Kind
+Note
+enum
+RestEnumeratorDef
+1..*
+aggr
+This aggregation represents the collection of enumerators
+for the enclosing string property.
+Tags: atp.Status=draft
+format
+String
+0..1
+attr
+This attribute can be used to define a specific format that
+the value of the string property shall be conform with.
+Tags: atp.Status=draft
+Table 11.15: RestStringPropertyDef
+Class
+RestEnumeratorDef
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::REST::RESTDesign
+Note
+This meta-class represents the ability to define enumerator values that can be taken as a the value of the
+enclosing string property.
+Tags: atp.Status=draft
+Base
+ARObject
+Attribute
+Type
+Mul.
+Kind
+Note
+value
+String
+1
+attr
+This attribute represents the ability to assign a value to an
+enumerator.
+Tags: atp.Status=draft
+Table 11.16: RestEnumeratorDef
+[TPS_MANI_01127]{DRAFT} Limited support for data semantics in RestAb-
+stractNumericalPropertyDef ⌈Meta-class RestAbstractNumericalProp-
+ertyDef allows for a limited support of data semantics by means of the following
+attributes:
+lowerLimit This value represents a definition of the lower boundary of the allowed
+interval for this property. The value shall always be provided as a physical value.
+upperLimit This value represents a definition of the upper boundary of the allowed
+interval for this property. The value shall always be provided as a physical value.
+unit This value represents the unit of the property.
+It is only defied as a simple
+string without further formalization, i.e. it does not make use of Unit and/or
+PhysicalDimension.
+resolution This attribute defines the resolution of the property. However, this def-
+inition should not be confused with a conversion into an internal value domain,
+comparable to the usage of CompuMethod. It just says that the value of the
+property shall have a certain resolution.
+⌋(RS_MANI_00033)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -144,7 +346,7 @@ Table 11.11: RestAbstractProperty</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-03/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=495" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_3_4_1_1_Handle_ID_concept</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ECUConfiguration.pdf</strong> (Seite 207)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=207" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></strong> (Seite 207)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_CP_COM_00010</span>
         </div>
@@ -88,7 +89,23 @@ ID=19. In the configuration information of the PduR it has to be possible to con
 that if a Pdu arrives from Com with ID=5 it has to be forwarded to the CanIf with ID=19.
 It has to be guaranteed that each Pdu does have a unique handle ID within the scope
 of the corresponding API. For example: The PduR gets transmission requests from
-both, the Com and the Dcm modules. But there a</div></section>
+both, the Com and the Dcm modules. But there are also two distinct APIs defined for
+those requests:
+• PduR_ComTransmit(...)
+• PduR_DcmTransmit(...)
+Therefore the PduR can distinguish two Pdus, even when they have the same handle
+ID but are requested via different APIs.
+Another use-case in the COM-Stack only provides one API for all the callers: the inter-
+face layer (CanIf, FrIf, LinIf).
+• CanIf_Transmit(...)
+3Modules are called adjacent if they share an interface, so PduR and Com are adjacent, while PduR
+and Can driver are not.
+Here it has to be guaranteed that each transmit request for a distinct Pdu does have a
+unique handle ID.
+The actual values of the handle IDs can only be assigned properly when the configu-
+ration of one module is completed, since only then the internal data structures can be
+defined.
+In the next sections the patterns used to define and utilize Handle IDs are described.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +118,7 @@ both, the Com and the Dcm modules. But there a</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ECUConfiguration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=207" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

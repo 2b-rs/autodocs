@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_4_4_2_FRTRCV_E_FR_BUSERROR_TRCV__TrcvIdx</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayTransceiverDriver.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayTransceiverDriver.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayTransceiverDriver.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTrcv_00488" class="swsref internal-spec-ref"><code>SWS_FrTrcv_00488</code></a></span>
         </div>
@@ -98,7 +99,138 @@ All AUTOSAR Basic Software Modules shall apply the following naming rules for al
 error values:
 Error values shall have only CAPITAL LETTERS
 Naming convention: FRTRCV_E_&lt;ERRORNAME&gt;
-If &lt;ERRORNAME&gt; consists of several words, they shall be separated by und</div></section>
+If &lt;ERRORNAME&gt; consists of several words, they shall be separated by underscores
+The error shows to which module it belongs.⌋
+Error detection
+[SWS_FrTrcv_00237]
+Upstream requirements: SRS_Fr_05151
+⌈The FlexRay Transceiver Driver shall check the control communication to the
+transceiver and the reaction of the transceiver for correctness if supported by hard-
+ware.⌋
+[SWS_FrTrcv_00354]
+⌈In
+case
+of
+faults
+of
+the
+transceiver
+hard-
+ware,
+the
+FlexRay
+Transceiver
+Driver
+shall
+raise
+a
+runtime
+error
+FRTRCV_E_FR_NO_CONTROL_TRCV.⌋
+Example: Depending on the supported transceiver device, the driver could check the
+correctness of the executed control communication and the operation mode of the
+transceiver in order to detect defective or faulty transceiver hardware and/or corrupted
+SPI communication.
+This check only applies to errors within the transceiver or the transceiver control com-
+munication (ports or SPI), i.e. errors caused by malfunction of the µC, SW or a defect
+transceiver device.
+[SWS_FrTrcv_00295]
+⌈The
+FrTrcv
+module
+shall
+check
+for
+bus
+errors
+and
+report
+them
+to
+DEM
+executing
+Dem_SetEventStatus(FRTRCV_E_FR_BUSERROR_TRCV_&lt;TrcvIdx&gt;,
+DEM_EVENT_STATUS_PREFAILED).⌋
+[SWS_FrTrcv_00472] ⌈If a no bus error is detected,
+the module shall ex-
+ecute
+Dem_SetEventStatus(FRTRCV_E_FR_BUSERROR_TRCV_&lt;TrcvIdx&gt;,
+DEM_EVENT_STATUS_PREPASSED).⌋
+In the above descriptions, &lt;TrcvIdx&gt; represents the transceiver index.
+Note on Host Software / ECU control (derived from [6, SRS FlexRay])
+The application controller (host) has to ensure that the BD enters NORMAL (or RE-
+CEIVEONLY) mode, before the CC enters one of its states where the CC starts to
+listen to the channel (e.g. POC:startup, POC:normal active, POC:normal passive).
+In case the BD cannot enter NORMAL (or RECEIVEONLY) due to low voltage condi-
+tions, this low voltage will be signaled as error to the host. In this case the host shall
+force the CC to step back to a non listening state (e.g. POC:default config, POC:config,
+POC:ready, POC:halt).
+The reason for this is that as long as the BD is not in NORMAL (or RECEIVEONLY)
+mode, no information about the status of the channel is available via the signals RxD
+and RxEN
+When shutting down the ECU, the host shall command the BD into a low power mode
+before commanding the CC into a state, where the CC does not evaluate the RxD
+signal. This is to ensure that the CC does not miss any communication element on
+the channel. Mind that the BD does not necessarily react on traffic when in a low
+power mode. For more information see [PS08], especially those sections that deal
+with wakeup and startup.
+Error notification
+[SWS_FrTrcv_00391]
+Upstream requirements: SRS_Fr_05168
+⌈If the configuration parameter FrTrcvErrorCheckDuringCommunication is set to true,
+the function FrTrcv_MainFunction shall report periodically the error state of the FlexRay
+transceiver to the Diagnostic Event Manager.⌋
+[SWS_FrTrcv_00384]
+⌈If
+an
+error
+(e.g.
+the
+state
+of
+the
+ERRN
+pin
+is
+active
+low)
+is
+detected
+the
+module
+shall
+execute
+Dem_SetEventStatus(
+FRTRCV_E_FR_ERRN_TRCV_&lt;TrcvIdx&gt;, DEM_EVENT_STATUS_PREFAILED).
+In the above description, &lt;TrcvIdx&gt; represents the transceiver index.⌋
+[SWS_FrTrcv_00395]
+⌈If
+an
+error
+is
+not
+detected
+(e.g.
+the
+state
+of
+the
+ERRN
+pin
+is
+passive
+high)
+the
+module
+shall
+execute
+Dem_SetEventStatus(
+FRTRCV_E_FR_ERRN_TRCV_&lt;TrcvIdx&gt;, DEM_EVENT_STATUS_PREPASSED).
+In the above descriptions, &lt;TrcvIdx&gt; represents the transceiver index.⌋
+Note: It is possible that ERRN status is active only for a short time. There is a possibility
+that ERRN status has already vanished when the MainFunction is executed. In this
+case, ERRN could be connected to an interrupt pin in the actual hardware. This way
+the transceiver driver would detect any active transitions of the ERRN status.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -111,7 +243,7 @@ If &lt;ERRORNAME&gt; consists of several words, they shall be separated by und</
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayTransceiverDriver.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

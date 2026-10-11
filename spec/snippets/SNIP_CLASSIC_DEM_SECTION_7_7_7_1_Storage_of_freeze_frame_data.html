@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_7_1_Storage_of_freeze_frame_data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 133)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=133" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 133)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dem_CONSTR_06166</span>
         </div>
@@ -100,7 +101,152 @@ DemTypeOfFreezeFrameRecordNumeration
 is
 set
 to
-DEM_FF_RECNUM_CALCULATED, pa</div></section>
+DEM_FF_RECNUM_CALCULATED, parameter DemFreezeFrameRecordTrigger
+shall be set to DEM_TRIGGER_ON_TEST_FAILED.⌋
+[SWS_Dem_00581]
+Upstream requirements: RS_Diag_04127
+⌈If the Dem module uses calculated record numbers, the Dem module shall numerate
+the event-specific freeze frame records consecutively starting by 1, based on their
+chronological order.⌋
+[SWS_Dem_00582] ⌈If DemTypeOfFreezeFrameRecordNumeration is set to
+DEM_FF_RECNUM_CONFIGURED (refer to DemPrimaryMemory or DemUserDe-
+finedMemory), the Dem shall store per event memory entry all configured freeze
+frame records for this DTC.⌋
+[SWS_Dem_00797]
+Upstream requirements: RS_Diag_04127
+⌈If the FreezeFrame uses dedicated, configured record numbers (refer to Dem-
+FreezeFrameRecNumClassRef) and an event memory entry exists, the Dem mod-
+ule shall capture the FreezeFrame on the configured trigger (refer to DemFreeze-
+FrameRecordTrigger) and store it to the event memory entry.⌋
+In case, the storage trigger was not able to allocate an event memory entry (due to
+event retention) there might meanwhile the possibility (due to aging) to have suitable
+memory entries Therefore the FreezeFrame trigger should try again to allocate an
+event memory entry.
+[SWS_Dem_00798]
+Upstream requirements: RS_Diag_04127
+⌈If
+the
+FreezeFrame
+uses
+dedicated,
+configured
+record
+numbers
+(refer
+to
+DemFreezeFrameRecNumClassRef) and no event memory entry exists,
+the
+Dem
+module
+shall
+first
+try
+to
+allocate
+an
+event memory entry
+as
+de-
+scribed in
+[SWS_Dem_00783],
+[SWS_Dem_00784],
+[SWS_Dem_00785] and
+[SWS_Dem_00786]. Afterwards requirement [SWS_Dem_00797] applies.⌋
+[SWS_Dem_00799]
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_FDC_-
+THRESHOLD, the FreezeFrame shall be captured (as allowed by [SWS_Dem_00797])
+each time the configured FDC threshold (refer to DemCounterBasedFdcThreshold-
+StorageValue or DemTimeBasedFdcThresholdStorageValue) is reached (by a
+positive increment), but at most once per operation cycle.⌋
+[SWS_Dem_01068]
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_FDC_-
+THRESHOLD and the event reports DEM_EVENT_STATUS_FDC_THRESHOLD_REACHED
+(monitor-internal debounced event),
+the FreezeFrame shall be captured (refer
+[SWS_Dem_00797]), but at most once per operation cycle.⌋
+[SWS_Dem_00800]
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_TEST_-
+FAILED, the FreezeFrame shall be captured (as allowed by [SWS_Dem_00797]) each
+time the UDS status bit 0 is set (changing from 0 to 1).⌋
+[SWS_Dem_00801]
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_PENDING, the
+FreezeFrame shall be captured (as allowed by [SWS_Dem_00797]) each time the UDS
+status bit 2 is set (changing from 0 to 1).⌋
+[SWS_Dem_00802]
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_CONFIRMED,
+the FreezeFrame shall be captured (as allowed by [SWS_Dem_00797]) each time the
+Confirmed UDS status bit 3 is set (changing from 0 to 1).⌋
+[SWS_Dem_01351]
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_TEST_-
+FAILED_THIS_OPERATION_CYCLE, the FreezeFrame shall be captured each time
+the UDS status bit 1 (TFTOC) has a transition from 0 to 1.⌋
+[SWS_Dem_01308] Continous trigger conditions for freeze frames
+Upstream requirements: RS_Diag_04127
+⌈If the DemFreezeFrameRecordTrigger is set to DEM_TRIGGER_ON_EVERY_-
+TEST_FAILED, each time an event was reported as FAILED or after optional debounc-
+ing a qualified FAILED is detected the Dem shall capture the Freeze frame.⌋
+[SWS_Dem_00803]
+Upstream requirements: RS_Diag_04127
+⌈If the FreezeFrame uses dedicated, configured record numbers (refer to Dem-
+FreezeFrameRecNumClass) and DemFreezeFrameRecordUpdate is set to DEM_-
+UPDATE_RECORD_NO, the FreezeFrame shall be stored only if the FreezeFrame is cur-
+rently not stored in this event memory entry.⌋
+[SWS_Dem_00804]
+Upstream requirements: RS_Diag_04127
+⌈If the FreezeFrame uses dedicated, configured record numbers (refer to Dem-
+FreezeFrameRecNumClass) and DemFreezeFrameRecordUpdate is set to DEM_-
+UPDATE_RECORD_YES, the FreezeFrame shall be updated with each trigger (refer to
+DemFreezeFrameRecordTrigger).⌋
+[SWS_Dem_00461] Asynchronous capturing of freeze frame data
+Upstream requirements: RS_Diag_04127
+⌈The Dem shall capture the event-specific freeze frame data at latest in the next cycle
+of the Dem_MainFunction.⌋
+[SWS_Dem_01081] Asynchronous capturing of extended data
+Upstream requirements: RS_Diag_04127
+⌈The Dem shall capture the event-specific extended data at latest in the next cycle of
+the Dem_MainFunction.⌋
+[SWS_Dem_CONSTR_06124]
+Dependency for DemPTOSupport ⌈DemPTOSup-
+port shall only be present if DemOBDSupport is set to DEM_OBD_MASTER_ECU or
+DEM_OBD_PRIMARY_ECU.⌋
+[SWS_Dem_CONSTR_06127] Dependency for DemMaxNumberFreezeFrameRe-
+cords ⌈DemMaxNumberFreezeFrameRecords shall only be present if DemTypeOf-
+FreezeFrameRecordNumeration is set to DEM_FF_RECNUM_CALCULATED.⌋
+[SWS_Dem_CONSTR_06128] Dependency for DemAgingCycleRef ⌈DemAging-
+CycleRef shall only be present if DemAgingCycleCounterThreshold is config-
+ured.⌋
+[SWS_Dem_CONSTR_06129] Dependency for DemFreezeFrameRecNumClass-
+Ref ⌈DemFreezeFrameRecNumClassRef shall only be present if that DTC refer-
+ences a fault memory that has DemTypeOfFreezeFrameRecordNumeration is
+set to DEM_FF_RECNUM_CONFIGURED (refer to DemPrimaryMemory or De-
+mUserDefinedMemory).⌋
+[SWS_Dem_CONSTR_06130]
+Dependency for DemReportBehavior ⌈DemRe-
+portBehavior shall only be present if DemEventKind is set to DEM_EVENT_KIND_
+SWC.⌋
+[SWS_Dem_CONSTR_06131]
+Dependency
+for
+DemOBDGroupingAssocia-
+tiveEventsRef ⌈DemOBDGroupingAssociativeEventsRef shall only be present
+if DemOBDSupport is set to DEM_OBD_MASTER_ECU or DEM_OBD_PRIMARY_ECU.⌋
+[SWS_Dem_CONSTR_06132]
+Dependency
+for
+DemOBDCentralized-
+PID21Handling
+⌈DemOBDCentralizedPID21Handling
+shall
+only
+be
+present
+if DemOBDSupport is set to DEM_OBD_MASTER_ECU or DEM_OBD_PRIMARY_ECU.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -113,7 +259,7 @@ DEM_FF_RECNUM_CALCULATED, pa</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=133" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

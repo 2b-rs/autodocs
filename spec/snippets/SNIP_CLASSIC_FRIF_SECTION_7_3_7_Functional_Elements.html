@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayStateManager.pdf</strong> (Seite 22)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayStateManager.pdf#page=22" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayStateManager.pdf</a></strong> (Seite 22)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05212" class="swsref internal-spec-ref"><code>SWS_FrIf_05212</code></a></span>
         </div>
@@ -98,7 +99,46 @@ Call FrIf_HaltCommunication for each controller of the FlexRay cluster.
 FE_TRCV_STANDBY
 Call FrIf_SetTransceiverMode with FrIf_TrcvMode as FRTRCV_
 TRCVMODE_STANDBY for each transceiver of the FlexRay cluster.
-FE_TRCV_NOR</div></section>
+FE_TRCV_NORMAL
+In case the FrSM state machine is in state FRSM_ECU_ACTIVE, call Fr
+If_SetTransceiverMode with FrIf_TrcvMode as FRTRCV_TRCVMODE_
+NORMAL and FrIf_ClearTransceiverWakeup for each transceiver of the
+FlexRay cluster.
+In case the FrSM state machine is in state FRSM_ECU_PASSIVE, call Fr
+If_SetTransceiverMode with FrIf_TrcvMode as FRTRCV_TRCVMODE_
+RECEIVEONLY and FrIf_ClearTransceiverWakeup for each transceiver
+of the FlexRay cluster.
+FE_START_FRIF
+Set the FrIf state to ONLINE by calling FrIf_SetState with FrIf_State
+Transition as FRIF_GOTO_ONLINE
+for the cluster.
+FE_STOP_FRIF
+Set the FrIf state to OFFLINE by calling FrIf_SetState with FrIf_State
+Transition as FRIF_GOTO_OFFLINE for the cluster.
+FE_DEM_STATUS_FAILED
+Report status of production error FRSM_E_CLUSTER_STARTUP as
+failed.
+FE_DEM_STATUS_PASSED
+Report status of production error FRSM_E_CLUSTER_STARTUP as
+passed.
+FE_DEM_SYNC_LOSS
+Report the status of the production error
+FRSM_E_CLUSTER_SYNC_LOSS as failed. If the name of an indication
+function (see Section 8.6.3) is configured, call the indication function
+with the parameter SyncLossErrorStatus = true.
+FE_DEM_SYNC_LOSS_PASSED
+If the name of an indication function (see Section 8.6.3) is configured,
+call the indication function with the parameter SyncLossErrorStatus =
+false. Additionally report the status of the production error
+FRSM_E_CLUSTER_SYNC_LOSS as passed.
+FE_FULL_COM_IND
+Indicate to the ComM that FullCom has been reached by calling Com
+M_BusSM_ModeIndication (FullCom)
+FE_NO_COM_IND
+Indicate to the ComM that FullCom has been left by calling ComM_Bus
+SM_ModeIndication (NoCom).
+FE_STARTUP_ERROR_IND
+Call FrNm_StartupError.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -111,7 +151,7 @@ FE_TRCV_NOR</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayStateManager.pdf#page=22" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

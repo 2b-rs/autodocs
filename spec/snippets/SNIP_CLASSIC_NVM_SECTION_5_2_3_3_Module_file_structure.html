@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: nvm</span>
-          <span class="badge-role">Rolle: heuristic</span>
+          <span class="badge-role">Rolle: constitutive</span>
           <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_5_2_3_3_Module_file_structure</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_SRS_BSWGeneral.pdf</strong> (Seite 60)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_SRS_BSWGeneral.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_BSWGeneral.pdf</a></strong> (Seite 60)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BSW_00016" class="swsref internal-spec-ref"><code>SWS_BSW_00016</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00470" class="swsref internal-spec-ref"><code>SWS_NvM_00470</code></a></span>
         </div>
       </div>
 
@@ -106,11 +107,66 @@ the service routine in the following way:
 &lt;Module name&gt;.c: implementation of service routine called from
 interrupt frame
 Rationale:
-Flexibility using different compilers</div></section>
+Flexibility using different compilers and/or different OS integrations
+Use Case:
+The interrupt could be realized as ISR frame of the operating system or
+implemented directly without changing the driver code.
+The service routine can be called directly during module test without the
+need of causing an interrupt.
+Dependencies:
+--
+Supporting Material:
+&lt; Module name &gt; shall be derived from WP Architecture “List of Basic
+Software Modules”, [DOC_MOD_LIST] (2…8 characters)
+⌋(RS_BRF_01144)
+[SRS_BSW_00447] Standardizing Include file structure of BSW
+Modules Implementing Autosar Service
+⌈
+Type:
+Draft
+Description:
+I. A Basic Software Module implementing an Autosar Service shall
+include its Application Types Header file in the Module Header File.
+II. Data Types used in Standard Interface and Standard AUTOSAR
+Interface shall only be defined in RTE Types Header file only.
+III. A Basic Software Module implementing an Autosar Service shall
+include Rte_&lt;ModuleShortName&gt;.h as AUTOSAR Service
+Application Header File, providing the interface for interaction with
+the RTE.
+IV. A Basic Software Module implementing an Autosar Service shall
+include its AUTOSAR Service Application Header File in module
+files, which are using RTE interfaces. The Application Header file
+shall not be included in module files, which are in included directly or
+indirectly by other modules.
+Data Type NvM_RequestResultType used in BSW C-API
+"NvM_GetErrorStatus” and in the AUTOSAR Interface "NvMService"
+operation GetErrorStatus (OUT NvM_RequestResultType
+RequestResultPtr); is same.
+The proper types shall be generated in Rte_Type.h.
+Rte_Type.h shall be included in BSW module header file via
+Rte_”Service”_Type.h
+Rte_Type.h shall be included in SW-C module header file via
+Rte_”Swc”_Type.h
+Rationale:
+Standardizing Include Header file structure will allow common data types to
+be defined in RTE Types header files. This will avoid double and inconsistent
+definition of data types in both BSW and Software Component. This will also
+avoid type casts if SW-Cs are communicating with Autosar Services.
+Use Case:
+All BSW Services which are called by Application SW-C and share data
+types. E.g.
+Asynchronous NvRAM Block request result returned by the operation
+GetErrorStatus and API service NvM_GetErrorStatus.
+Dependencies:
+--
+Supporting Material:
+Please see the Figure “Relationships between RTE Header Files” and
+related information in Chapter “RTE Modules” of RTE_SWS
+⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Provide interrupt frame implementation source files</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_RequestResultType().</p>
       </section>
 
       <section class="snip-card">
@@ -119,7 +175,7 @@ Flexibility using different compilers</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_SRS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_SRS_BSWGeneral.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -131,11 +187,11 @@ Flexibility using different compilers</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_BSW_00016" class="swsref internal-spec-ref"><code>SWS_BSW_00016</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_NvM_00470" class="swsref internal-spec-ref"><code>SWS_NvM_00470</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>

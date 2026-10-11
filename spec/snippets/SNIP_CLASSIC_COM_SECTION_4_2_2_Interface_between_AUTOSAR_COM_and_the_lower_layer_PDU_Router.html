@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_2_2_Interface_between_AUTOSAR_COM_and_the_lower_layer_PDU_Router</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>RS_COM.pdf</strong> (Seite 12)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_RS_COM.pdf#page=12" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_COM.pdf</a></strong> (Seite 12)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_PduR_00627" class="swsref internal-spec-ref"><code>SWS_PduR_00627</code></a></span>
         </div>
@@ -107,7 +108,38 @@ Description:
 AUTOSAR COM shall provide a function that is called by the lower layer
 (PDU-Router) when an I-PDU shall be transmitted. Within this function,
 AUTOSAR COM shall copy the contents of its I-PDU transmit buffer to the
-L-PDU buffer</div></section>
+L-PDU buffer given by the calling layer.
+The name of the function has to be Com_TriggerTransmit.
+Rationale:
+Basic functionality of a communication layer
+Use Case:
+This function is used e.g. by the LIN Master for sending out a LIN frame. In this
+case, the trigger transmit can be initiated by the Master schedule table it self or
+a received LIN header.
+This function is also used by the FlexRay Interface for requesting PDUs to be
+sent in the static part (synchronous to the FlexRay global time).
+Dependencies:
+–
+Supporting
+Material:
+[9]
+⌋
+[SRS_Com_02107] The AUTOSAR COM module shall cancel transmission re-
+quests in case of expired transmissions ⌈
+Description:
+The AUTOSAR COM module shall cancel the transmission request of an I-PDU
+in case a violation of the transmission deadline monitoring of an I-PDU is
+detected.
+Rationale:
+Needed to free buffers in the FlexRay interface.
+Use Case:
+Cancellation of outdated I-PDU
+Dependencies:
+–
+Supporting
+Material:
+–
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -120,7 +152,7 @@ L-PDU buffer</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>RS_COM.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_RS_COM.pdf#page=12" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_COM.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

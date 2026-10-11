@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: modemanagementguide</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MODEMANAGEMENTGUIDE_SECTION_3_2_2_1_ModeDeclarationGroups_de_ned_by_the_standardized_interface_of_the</h1>
         <div class="snip-meta-line">
           <span>Quelle: <strong>ModemanagementGuide.pdf</strong> (Seite 22)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BswM_00148" class="swsref internal-spec-ref"><code>SWS_BswM_00148</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_LinSM_00220" class="swsref internal-spec-ref"><code>SWS_LinSM_00220</code></a></span>
         </div>
       </div>
 
@@ -110,11 +111,128 @@ modeGroup FrSM_BswM_StateType{
 FRSM_BSWM_READY,
 FRSM_BSWM_READY_ECU_PASSIVE,
 FRSM_BSWM_STARTUP,
-FR</div></section>
+FRSM_BSWM_STARTUP_ECU_PASSIVE,
+FRSM_BSWM_WAKEUP,
+FRSM_BSWM_WAKEUP_ECU_PASSIVE,
+FRSM_BSWM_HALT_REQ,
+FRSM_BSWM_HALT_REQ_ECU_PASSIVE,
+FRSM_BSWM_KEYSLOT_ONLY,
+FRSM_BSWM_KEYSLOT_ONLY_ECU_PASSIVE,
+FRSM_BSWM_ONLINE,
+FRSM_BSWM_ONLINE_ECU_PASSIVE,
+FRSM_BSWM_ONLINE_PASSIVE,
+FRSM_BSWM_ONLINE_PASSIVE_ECU_PASSIVE
+}
+Listing 3.10: Modes reported by the API BswM_LinSM_CurrentState
+modeGroup LinSM_ModeType{
+LINSM_FULL_COM,
+LINSM_NO_COM
+}
+Listing 3.11: Modes reported by the API BswM_EcuM_CurrentState
+modeGroup EcuM_StateType{
+ECUM_SUBSTATE_MASK,
+ECUM_STATE_STARTUP,
+ECUM_STATE_STARTUP_ONE,
+ECUM_STATE_STARTUP_TWO,
+ECUM_STATE_WAKEUP,
+ECUM_STATE_WAKEUP_ONE,
+ECUM_STATE_WAKEUP_VALIDATION,
+ECUM_STATE_WAKEUP_REACTION,
+ECUM_STATE_WAKEUP_TWO,
+ECUM_STATE_WAKEUP_WAKESLEEP,
+ECUM_STATE_WAKEUP_TTII,
+ECUM_STATE_RUN,
+ECUM_STATE_APP_RUN,
+ECUM_STATE_APP_POST_RUN,
+ECUM_STATE_SHUTDOWN,
+ECUM_STATE_PREP_SHUTDOWN,
+ECUM_STATE_GO_SLEEP,
+ECUM_STATE_GO_OFF_ONE,
+ECUM_STATE_GO_OFF_TWO,
+ECUM_STATE_SLEEP,
+Guide to Modemanagement
+V1.0.0.
+R4.0 Rev 3
+ECUM_STATE_RESET,
+ECUM_STATE_OFF
+}
+Listing 3.12: Modes reported by the API BswM_EcuM_CurrentWakeup
+modeGroup EcuM_WakeupStatusType{
+ECUM_WKSTATUS_NONE,
+ECUM_WKSTATUS_PENDING,
+ECUM_WKSTATUS_VALIDATED,
+ECUM_WKSTATUS_EXPIRED,
+ECUM_WKSTATUS_DISABLED
+}
+Listing 3.13: Modes reported by the API BswM_NvM_CurrentBlockMode
+modeGroup NvM_BlockMode {
+NVM_BLK_BLOCK_SKIPPED,
+NVM_BLK_INTEGRITY_FAILED,
+NVM_BLK_NOT_OK,
+NVM_BLK_NV_INVALIDATED,
+NVM_BLK_OK,
+NVM_BLK_PENDING,
+NVM_BLK_REDUNDANCY_FAILED,
+NVM_BLK_RESTORED_FROM_ROM
+}
+Listing 3.14: Modes reported by the API BswM_NvM_CurrentJobMode
+modeGroup NvM_JobMode {
+NVM_JOB_CANCELED,
+NVM_JOB_NOT_OK,
+NVM_JOB_OK,
+NVM_JOB_PENDING
+}
+Listing 3.15: Modes reported by the API BswM_LinTp_RequestMode
+modeGroup LinTp_Mode {
+LINTP_APPLICATIVE_SCHEDULE,
+LINTP_DIAG_REQUEST,
+LINTP_DIAG_RESPONSE
+}
+Listing 3.16: Modes reported by the API BswM_WdgM_RequestPartitionReset
+modeGroup WdgM_PartitionResetType{
+WDGM_PARTITION_RESET_REQUESTED,
+WDGM_PARTITION_RESET_NOTREQUESTED
+}
+For the Diagnostic Communication Manager (DCM) there are two ModeDeclara-
+tionGroups declared.
+Listing 3.17 shows the modes that determine which types
+communication are enabled or disabled during diagnostics. When the DCM wants to
+reset the ECU it has to indicated to the BswM which kind of reset should be executed.
+The various modes of reset can be seen in Listing 3.18.
+Guide to Modemanagement
+V1.0.0.
+R4.0 Rev 3
+Listing 3.17: Modes reported by the API BswM_DCM_CommunicationMode_CurrentState
+modeGroup Dcm_CommunicationModeType{
+DCM_ENABLE_RX_TX_NORM,
+DCM_ENABLE_RX_DISABLE_TX_NORM,
+DCM_DISABLE_RX_ENABLE_TX_NORM,
+DCM_DISABLE_RX_TX_NORMAL,
+DCM_ENABLE_RX_TX_NM,
+DCM_ENABLE_RX_DISABLE_TX_NM,
+DCM_DISABLE_RX_ENABLE_TX_NM,
+DCM_DISABLE_RX_TX_NM,
+DCM_ENABLE_RX_TX_NORM_NM,
+DCM_ENABLE_RX_DISABLE_TX_NORM_NM,
+DCM_DISABLE_RX_ENABLE_TX_NORM_NM,
+DCM_DISABLE_RX_TX_NORM_NM
+}
+Listing 3.18: Modes reported by the API BswM_DCM_ResetMode_CurrentState
+modeGroup Dcm_ResetModeType{
+DCM_NO_RESET,
+DCM_HARD_RESET,
+DCM_KEY_ON_OFF_RESET,
+DCM_SOFT_RESET,
+DCM_ENABLE_RAPID_POWER_SHUTDOWN_RESET,
+DCM_DISABLE_RAPID_POWER_SHUTDOWN_RESET,
+DCM_BOOTLOADER_RESET,
+DCM_SS_BOOTLOADER_RESET,
+DCM_RESET_EXECUTION
+}</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von LinSM_ModeType().</p>
       </section>
 
       <section class="snip-card">
@@ -135,7 +253,7 @@ FR</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_BswM_00148" class="swsref internal-spec-ref"><code>SWS_BswM_00148</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_LinSM_00220" class="swsref internal-spec-ref"><code>SWS_LinSM_00220</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -143,7 +261,7 @@ FR</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

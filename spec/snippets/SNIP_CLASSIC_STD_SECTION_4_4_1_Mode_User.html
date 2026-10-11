@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_1_Mode_User</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 419)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=418" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 419)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01378" class="swsref"><code>TPS_SWCT_01378</code></a></span>
         </div>
@@ -92,7 +93,84 @@ This SwcModeSwitchEvent
 or BswModeSwitchEvent can then be used as trigger for a RunnableEn-
 tity / BswSchedulableEntity. Both SwcModeSwitchEvent and BswMod-
 eSwitchEvent carry an attribute ModeActivationKind which can be ‘exit’,
-‘entry’</div></section>
+‘entry’, or ‘transition’.
+A RunnableEntity or BswSchedulableEntity that is triggered by a Swc-
+ModeSwitchEvent or a BswModeSwitchEvent with ModeActivationKind
+‘exit’ is triggered on exiting the mode. For simplicity it will be called
+on-exit ExecutableEntity.
+Correspondingly, an on-transition Ex-
+ecutableEntity is triggered by a SwcModeSwitchEvent or a BswMod-
+eSwitchEvent with ModeActivationKind ‘transition’ and will be executed
+during the transition between two modes, and an
+on-entry ExecutableEntity is triggered by a SwcModeSwitchEvent or
+a BswModeSwitchEvent with ModeActivationKind ‘entry’ and will be exe-
+cuted when the mode is entered.
+Since a RunnableEntity as well as a BswSchedulableEntity can be trig-
+gered by multiple RTEEvents respectively BswEvents, both can be an on-exit-,
+on-transition and on-entry ExecutableEntity at the same time.
+RTE does not support a WaitPoint for a SwcModeSwitchEvent (see
+[SWS_Rte_01358]).
+2. An RTEEvent or BswEvent that starts an ExecutableEntity can contain a
+mode disabling dependency.
+[SWS_Rte_02503]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00052
+⌈If a RunnableEntity r is referenced with startOnEvent by an RTEEvent e
+that has a mode disabling dependency on a mode m, then
+RTE shall not activate runnable r on any occurrence of e while the mode m
+is active.
+⌋
+[SWS_Rte_07530]
+Upstream requirements: SRS_Rte_00213
+⌈If a BswSchedulableEntity r is referenced with startsOnEvent by an
+BswEvent e that has a mode disabling dependency on a mode m, then
+Basic Software Scheduler shall not activate BswSchedulableEntitys r on
+any occurrence of e while the mode m is active.⌋
+Note: As a consequence of [SWS_Rte_02503] and [SWS_Rte_07530] in combi-
+nation with [SWS_Rte_02661], RTE or Basic Software Scheduler will not start
+runnable or BswSchedulableEntity r on any occurrence of e while the
+mode m is active.
+The mode disabling is active during the transition to a mode, during the mode
+itself and during the transition for exiting the mode. For a precise definition see
+section 4.4.4.
+The existence of a mode disabling dependency prevents the RTE to
+start the mode disabling dependent ExecutableEntity by the disabled
+RTEEvent / BswEvent during the mode, referenced by the mode disabling
+dependency, and during the transitions from and to that mode. mode dis-
+abling dependencys override any activation of a RunnableEntity and
+BswSchedulableEntity by the disabled RTEEvents / BswEvents. This is
+also true for the SwcModeSwitchEvent and BswModeSwitchEvent.
+A RunnableEntity as well as a BswSchedulableEntity can not be ‘en-
+abled’ explicitly. RunnableEntitys and Basic Software Schedulable Entities
+are only ‘enabled’ by the absence of any active mode disabling dependen-
+cys.
+Note that mode disabling dependencys do not prevent the wake up from
+a WaitPoint by the ‘disabled’ RTEEvent.
+This allows the wake-uped
+RunnableEntity to run until completion if a transition occurred during the
+RunnableEntitys execution.
+[SWS_Rte_02504]
+Upstream requirements: SRS_Rte_00143
+⌈The existence of a mode disabling dependency shall not instruct the RTE
+to kill a running runnable at a mode switch.⌋
+[SWS_Rte_07531]
+Upstream requirements: SRS_Rte_00213
+⌈The existence of a mode disabling dependency shall not instruct the Ba-
+sic Software Scheduler to kill a running BswSchedulableEntity at a mode
+switch.⌋
+The RTE and the Basic Software Scheduler can be configured to switch sched-
+ule tables to implement mode disabling dependencies for cyclic triggers of
+RunnableEntitys or Basic Software Schedulable Entities. Sets of mutual ex-
+clusive modes can be mapped to different schedule tables. The RTE shall imple-
+ment the switch between schedule tables according to the mapping of modes to
+schedule tables in RteModeScheduleTableRef, see [SWS_Rte_05146].
+The mode user can specify in the ModeSwitchReceiverComSpec (software compo-
+nents) or BswModeReceiverPolicy (BSW modules) that it is able to deal with asyn-
+chronous mode switch behavior (supportsAsynchronousModeSwitch == TRUE).
+If all mode users connected to the same ModeDeclarationGroupPrototype of
+the mode manager support the asynchronous mode switch behavior, the related mode
+machine instance can be implemented with the asynchronous mode switching pro-
+cedure. Otherwise, the synchronous mode switching procedure has to be applied (see
+[SWS_Rte_07150]).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +183,7 @@ eSwitchEvent carry an attribute ModeActivationKind which can be ‘exit’,
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=418" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

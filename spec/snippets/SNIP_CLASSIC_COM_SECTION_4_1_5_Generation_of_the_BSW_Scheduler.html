@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_1_5_Generation_of_the_BSW_Scheduler</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_SRS_RTE.pdf</strong> (Seite 41)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_SRS_RTE.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_RTE.pdf</a></strong> (Seite 41)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07520" class="swsref internal-spec-ref"><code>SWS_Rte_07520</code></a></span>
         </div>
@@ -113,7 +114,173 @@ Use Case:
 • Initialization and finalization phases
 • Different communication modes
 Supporting
-Mate</div></section>
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00214] Common Mode handling for Basic SW and Application SW ⌈
+Description:
+The RTE shall support the coordinated switching of a Mode affecting BSW
+Modules and Application Software Components.
+Rationale:
+Synchronized behavior during a mode transition controlling AUTOSAR BSW
+Modules and Application Software Components.
+Dependencies:
+[SRS_Rte_00144], [SRS_Rte_00143], [SRS_Rte_00213]
+Use Case:
+ECU initialization and finalization phase.
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00215] API for Mode switch notification to the SchM ⌈
+Description:
+The SchM shall provide APIs for communication of active modes from the BSW
+mode manager to the SchM.
+Rationale:
+The SchM needs to disable the execution of certain BSW Schedulable Entities
+depending on modes, therefore it needs to know the current modes.
+Dependencies:
+[SRS_Rte_00213], [SRS_Rte_00214]
+This might be implemented via a Port-Based API or a direct C-API.
+Use Case:
+See [SRS_Rte_00213]
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00216] Triggering of BSW Schedulable Entities by occurrence of Ex-
+ternal Trigger ⌈
+Description:
+The RTE shall support the triggering of BSW Schedulable Entities by the
+occurrence of External Triggers.
+Particular BSW Schedulable Entities in BSW dependent from External Triggers
+shall be executed after occurrence of the event in a defined and deterministic
+order specified by the integrator.
+The occurrence of the External Trigger is either reported via API to the RTE or
+by means of the OS (e.g. expiration of an OS Alarm).
+Restriction: This is only applicable for intra-ECU usage.
+Rationale:
+Sporadic and non timing based periodic activation of BSW Schedulable Entities
+in different BSW Modules.
+Dependencies:
+[SRS_Rte_00218]
+Use Case:
+Angle periodic triggering of the ignition for a combustion engine.
+Supporting
+Material:
+–
+⌋(RS_BRF_01328, RS_BRF_01320)
+[SRS_Rte_00230] Triggering of BSW Schedulable Entities by occurrence of In-
+ternal Trigger ⌈
+Description:
+The Basic Software Scheduler shall support the triggering of BSW Schedulable
+Entities by the occurrence of Internal Trigger.
+Particular BSW Schedulable Entities in BSW dependent from Internal Events
+shall be executed after occurrence of the event in a defined and deterministic
+order specified by the integrator.
+The occurrence of the Internal Trigger is either reported via API to the RTE or
+by means of the OS (e.g. expiration of an OS Alarm).
+Restriction: This is only applicable for intra-ECU usage.
+Rationale:
+Decoupling from Interrupt Context inside a Basic Software Module.
+Dependencies:
+–
+Use Case:
+An interrupt which shall not exceed a certain WCET activates a BSW
+Schedulable Entity to process more time consuming algorithms.
+Supporting
+Material:
+–
+⌋(RS_BRF_01328, RS_BRF_01320)
+[SRS_Rte_00217]
+Synchronized activation of Runnable Entities and BSW
+Schedulable Entities ⌈
+Description:
+The RTE shall support the triggering of both, Runnable Entities and BSW
+Schedulable Entities by the same Triggered Events.
+Rationale:
+Synchronous activation of routines in AUTOSAR BSW modules and Application
+Software Components.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the routines in Application Software Components
+and Complex Drivers for a combustion engine.
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00218] API for Triggering BSW modules by Triggered Events ⌈
+Description:
+The RTE shall provide an API usable for BSW modules to notify the RTE about
+the occurrence of Triggered Events.
+Rationale:
+The sources for Triggered Events may be captured in the BSW and need to be
+forwarded to the application SWCs.
+Dependencies:
+[SRS_Rte_00216], [SRS_Rte_00217]
+Use Case:
+See [SRS_Rte_00216]
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00219] Support for interlaced execution sequences of Runnable Enti-
+ties and BSW Schedulable Entities ⌈
+Description:
+The RTE shall support the interlaced execution sequences of Runnable Entities
+and BSW Schedulable Entities within the same Os Task.
+The whole execution sequence for all Runnable Entities and BSW Schedulable
+Entities which are mapped to the same OS Task can be arbitrarily defined.
+Rationale:
+Usage of OS Tasks for scheduling of Application Software Components and
+BSW Modules.
+Dependencies:
+–
+Use Case:
+Reduce response time of a closed loop control by configuration of a signal flow
+orientated calculation sequence (plant determination, controller, actuator).
+Reduce number of tasks.
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00220] ECU life cycle dependent scheduling ⌈
+Description:
+The RTE shall support the exclusive Scheduling of BSW modules dependent
+from the ECU life cycle. Before the RTE is fully initialized (call of Rte_Start) or
+after the RTE is finalized (call of Rte_Stop) only BSW Schedulable Entities shall
+be scheduled.
+Rationale:
+Support different life-cycles of BSW Modules and Application Software
+Components.
+Dependencies:
+–
+Use Case:
+Exclusive Scheduling of BSW Modules during start-up and shut-down phase of
+the ECU.
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)
+[SRS_Rte_00221] Support for "BSW integration" builds ⌈
+Description:
+The RTE generator shall provide means to generate the API for only for BSW
+Modules (with the related BSW Scheduling code), excluding the API for
+Application Software Components.
+When the input information contains Application Software Component parts
+these shall be ignored in this mode.
+The complete input information must be valid, including the ignored parts.
+Rationale:
+Support integration of BSW Modules without Application Software Components.
+Dependencies:
+–
+Use Case:
+Pre-integration and test of BSW Module packages.
+Supporting
+Material:
+–
+⌋(RS_BRF_01320)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -126,7 +293,7 @@ Mate</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_SRS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_SRS_RTE.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

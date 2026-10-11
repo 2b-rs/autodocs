@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_RTE_SECTION_5_6_14_Rte_Result</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 737)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=737" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 737)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_01296" class="swsref internal-spec-ref"><code>SWS_Rte_01296</code></a></span>
+          <span>Ziel-Element: SWS_Rte_CONSTR_09025</span>
         </div>
       </div>
 
@@ -123,11 +124,141 @@ AsynchronousServerCallResultPoint exists for the specific
 RunnableEntity and this AsynchronousServerCallResult-
 Point references an AsynchronousServerCallPoint which ac-
 cording to [SWS_Rte_01294] leads to the generation of an asyn-
-chronous Rte_Call API but no WaitPoint (of the RunnableEn-</div></section>
+chronous Rte_Call API but no WaitPoint (of the RunnableEn-
+tity) references an AsynchronousServerCallReturnsEvent
+that references the AsynchronousServerCallResultPoint.⌋
+Please note that a non-blocking Rte_Result API does not require
+the existence of a AsynchronousServerCallReturnsEvent. If
+the AsynchronousServerCallReturnsEvent exists it can be
+used to trigger the execution of a RunnableEntity in which the
+non-blocking Rte_Result API function may be called.
+[SWS_Rte_01297]
+Upstream requirements: SRS_Rte_00051
+⌈A blocking Rte_Result API shall be generated if an Asyn-
+chronousServerCallResultPoint
+exists
+for
+the
+specific
+RunnableEntity and this AsynchronousServerCallResult-
+Point references an AsynchronousServerCallPoint which ac-
+cording to [SWS_Rte_01294] leads to the generation of an asyn-
+chronous Rte_Call API and a WaitPoint (of the RunnableEn-
+tity) references an AsynchronousServerCallReturnsEvent
+that references the AsynchronousServerCallResultPoint.⌋
+[SWS_Rte_CONSTR_09025] Blocking Rte_Result API may only
+be used by the runnable that describe the WaitPoint ⌈The block-
+ing Rte_Result API may only be used by the runnable that contains
+the corresponding WaitPoint⌋
+[SWS_Rte_01298]
+Upstream requirements: SRS_Rte_00051
+⌈If an AsynchronousServerCallReturnsEvent references a
+RunnableEntity and a required ClientServerOperation, the
+RunnableEntity shall be activated when the operation’s re-
+sult is available or when a timeout was detected by the RTE
+[SWS_Rte_01133].⌋
+Requirement [SWS_Rte_01298] merely affects when the runnable is
+activated – an API call should still be created to actually read the
+reply based on requirement [SWS_Rte_01296].
+[SWS_Rte_01312]
+Upstream requirements: SRS_Rte_00051
+⌈An AsynchronousServerCallReturnsEvent that references a
+runnable entity and is referenced by a WaitPoint is invalid.⌋
+[SWS_Rte_08567]
+Upstream requirements: SRS_Rte_00249
+⌈The optional OUT parameter transformerError of the API shall
+be generated if the PortPrototype of port &lt;p&gt; is referenced by
+a PortAPIOption which has the attribute errorHandling set to
+transformerErrorHandling.⌋
+Description:
+The Rte_Result API is used by a client to collect the result of an
+asynchronous client-server communication.
+The Rte_Result API includes zero or more IN/OUT and OUT pa-
+rameters to pass back results.
+The pointers to all parameters passed by reference must remain valid
+until the API call returns.
+The OUT parameter transformerError contains the transformer
+error which occured during execution of the transformer chain. See
+chapter 4.10.5.
+Return Value:
+None in case returnValueProvision of the related Asyn-
+chronousServerCallResultPoint(s) is set to noReturnVal-
+ueProvided. Otherwise, the return value is used to indicate errors
+from either the Rte_Result call itself or communication errors de-
+tected before the API call was made.
+• [SWS_Rte_01112]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_OK – The API call completed successfully.⌋
+Note: This means that RTE_E_OK is returned when neither an
+infrastructure error nor an overlay error occurred at the invoca-
+tion of the server runnable and the invoked server runnable was
+returning a value equal to E_OK.
+• [SWS_Rte_08591]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_TRANSFORMER_LIMIT – The RTE is not able to allo-
+cate the buffer needed to transform the data.⌋
+• [SWS_Rte_08729]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_HARD_TRANSFORMER_ERROR – The return value of
+one transformer in the transformer chain represented a hard
+transformer error.⌋
+• [SWS_Rte_08556]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_SOFT_TRANSFORMER_ERROR – The return value of at
+least one transformer in the transformer chain was a soft error
+and no hard error occurred in the transformer chain.⌋
+• [SWS_Rte_01113]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_NO_DATA – (non-blocking read) The server’s result is
+not available but no other error occurred within the API call or
+the server was not called since Rte_Start. The buffers for the
+IN/OUT and OUT parameters shall not be modified.⌋
+• [SWS_Rte_08301]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_NO_DATA
+–
+(non-blocking
+read)
+The
+previous
+Rte_Call
+returned
+an
+RTE_E_SEG_FAULT,
+RTE_E_TRANSFORMER_LIMIT,
+RTE_E_HARD_TRANSFORMER_ERROR.⌋
+• [SWS_Rte_01114]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00069
+⌈RTE_E_TIMEOUT – The server’s result is not available within
+the specified timeout but no other error occurred within the API
+call. The buffers for the IN/OUT and OUT parameters shall not
+be modified.⌋
+• [SWS_Rte_03606]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_COM_STOPPED – the RTE could not perform the
+operation because the COM service is currently not avail-
+able (inter ECU communication only).
+RTE shall return
+RTE_E_COM_STOPPED when the corresponding COM service
+returns COM_SERVICE_NOT_AVAILABLE. The server’s result
+has not been successfully retrieved from the communication
+service. The buffers of the return parameters shall not be modi-
+fied.⌋
+• RTE_E_UNCONNECTED – Indicates that the client port is not con-
+nected [SWS_Rte_01333].
+• [SWS_Rte_02745]
+Upstream requirements: SRS_Rte_00092,
+SRS_Rte_00046,
+SRS_-
+Rte_00032
+⌈RTE_E_IN_EXCLUSIVE_AREA – Used only for the blocking
+API. RTE_E_IN_EXCLUSIVE_AREA indicates that the runnable
+can not enter wait, as one of the ExecutableEntitys in the
+call stack of this task is currently in an exclusive area, see</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_01296] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_CONSTR_09025] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -136,7 +267,7 @@ chronous Rte_Call API but no WaitPoint (of the RunnableEn-</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=737" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -148,7 +279,7 @@ chronous Rte_Call API but no WaitPoint (of the RunnableEn-</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_01296" class="swsref internal-spec-ref"><code>SWS_Rte_01296</code></a></td>
+              <td>SWS_Rte_CONSTR_09025</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

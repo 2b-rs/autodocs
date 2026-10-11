@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_6_5_4_SchM_Result</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 900)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=899" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 900)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -122,11 +123,64 @@ inside the OUT parameter returnValue.⌋
 Existence:
 [SWS_Rte_08744]
 Upstream requirements: SRS_Rte_00243
-⌈A non-blocking SchM_Result API shall be ge</div></section>
+⌈A non-blocking SchM_Result API shall be generated if a call-
+Point association to a BswAsynchronousServerCallResult-
+Point exists.⌋
+[SWS_Rte_CONSTR_09076] SchM_Result API may only be used
+by the BswModuleEntity that describe its usage ⌈The SchM_-
+Result API may only be used within the BswModuleEntity that
+references the corresponding BswAsynchronousServerCallRe-
+sultPoint using a callPoint association.⌋
+Description:
+The
+SchM_Result
+is
+used
+to
+collect
+the
+result
+of
+an
+asynchronous
+call
+of
+a
+BswModuleEntry
+in-
+voked
+by
+SchM_Call_&lt;bsnp&gt;[_&lt;vi&gt;_&lt;ai&gt;]_name(
+&lt;data_1&gt;...&lt;data_n&gt;).
+Using SchM_Result it is possible get back the result of call.
+The SchM_Result API includes zero or more IN/OUT and OUT pa-
+rameters to pass back results.
+The pointers to all parameters passed by reference must remain valid
+until the API call returns.
+If the SchM_Result crosses partition borders, the callback is
+mapped to IOCSend_&lt;id&gt;().
+Return Value:
+The return value is used to indicate errors from either the SchM_-
+Result call itself or communication errors detected before the API
+call was made.
+• [SWS_Rte_08745] ⌈SCHM_E_OK - The API call completed suc-
+cessfully.⌋
+• [SWS_Rte_08746] ⌈SCHM_E_NO_DATA - The BswModuleEn-
+try’s result is not available but no other error occurred within the
+API call or the BswModuleEntry was not called using SchM_
+Call. The buffers for the IN/OUT and OUT parameters shall
+not be modified.⌋
+• [SWS_Rte_04556] ⌈SCHM_E_TIMEOUT – if the call is ignored
+according to [SWS_Rte_04552]⌋
+The SCHM_E_NO_DATA return value is not considered to be an er-
+ror but rather indicate correct operation of the API call.
+When
+SCHM_E_NO_DATA occurs, a BSW module is free to invoke SchM_
+Result again and thus repeat the attempt to read the result.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -135,7 +189,7 @@ Upstream requirements: SRS_Rte_00243
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=899" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

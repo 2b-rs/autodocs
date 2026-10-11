@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_7_5_8_Timing_parameter_and_timeout_behaviour</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayISOTransportLayer.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTp_01154" class="swsref internal-spec-ref"><code>SWS_FrTp_01154</code></a></span>
         </div>
@@ -130,7 +131,180 @@ LastFrame
 FRTP_TIME_BR
 FrIf_Transmit(FC N-PDU)
 FRTP_TIME_AR
-FrTp_TxConfi</div></section>
+FrTp_TxConfirmation(FC N-PDU)
+FRTP_TIME_BS
+FrTp_RxIndication(FC N-PDU)
+FlowControl (ACK)
+FrTp_Transmit (SDU-ID, ..)
+PduR_FrTpTxConfirmation (SDU-ID,..)
+PduR_FrTpRxIndication (SDU-ID,..)
+PduR_FrTpProvideRxBuffer (SDU-ID, ..)
+FrTp
+(Sender)
+FrTp
+(Receiver)
+Figure 22: Timing parameter definition for one PDU transmission per Main-
+Function call
+As described above it is possible to transmit more than one N-PDU per connection
+within on FlexRay Communication Cycle. Hence the communication handler shall be
+able to call FrIf_Transmit API several times (depending on available N-PDUs within
+the Tx-PDU-Pool) independent whether FrTp_TxConfirmation for the previously
+transmitted N-PDUs is given. Due to that, timing behavior (e.g. Start FRTP_Time_AS
+etc.) is different too.  If more than one N-PDU shall be transmitted within one Main-
+Function call the timing behaviour is depict in Figure 23.
+FrIf_Transmit(STF N-PDU)
+FrTp_TxConfirmation(STF N-PDU)
+StartFrame_ACK
+FRTP_TIME_AS
+FrTp_RxIndication(STF N-PDU)
+FRTP_TIME_BR
+FrIf_Transmit(FC N-PDU)
+FRTP_TIME_AR
+FrTp_TxConfirmation(FC N-PDU)
+FRTP_TIME_BS
+FrTp_RxIndication(FC N-PDU)
+FlowControl (CTS)
+FrIf_Transmit(CF N-PDU)
+FrTp_TxConfirmation(CF N-PDU)
+FrTp_RxIndication(CF N-PDU)
+FRTP_TIME_CS
+FRTP_TIME_AS
+FRTP_TIME_CR
+ConsecutiveFrame
+FrTp_TxConfirmation(FC N-PDU)
+FrTp_RxIndication(FC N-PDU)
+FrTp_TxConfirmation(FC N-PDU)
+FRTP_TIME_BS
+FrTp_RxIndication(FC N-PDU)
+FRTP_TIME_BR
+FrTp_Transmit (SDU-ID, ..)
+PduR_FrTpTxConfirmation (SDU-ID,..)
+PduR_FrTpRxIndication (SDU-ID,..)
+PduR_FrTpProvideRxBuffer (SDU-ID, ..)
+FrTp
+(Sender)
+FrTp
+(Receiver)
+FrIf_Transmit(CF N-PDU)
+FrIf_Transmit(CF N-PDU)
+FrTp_RxIndication(CF N-PDU)
+FrTp_RxIndication(CF N-PDU)
+FrTp_TxConfirmation(CF N-PDU)
+FrTp_TxConfirmation(CF N-PDU)
+FR Communication Cycle n
+FR Communication Cycle n+1
+FR Communication Cycle n+2
+FR Communication Cycle n+3
+FR Communication Cycle n+4
+FR Communication Cycle n+5
+FlowControl (WT)
+FrIf_Transmit(FC N-PDU)
+FlowControl (CTS)
+FrIf_Transmit(FC N-PDU)
+FRTP_TIME_BS
+FrIf_Transmit(CF N-PDU)
+FrTp_TxConfirmation(LF N-PDU)
+FrTp_RxIndication(LF N-PDU)
+FRTP_TIME_AS
+ConsecutiveFrame
+FrIf_Transmit(LF N-PDU)
+FrIf_Transmit(CF N-PDU)
+FrTp_RxIndication(CF N-PDU)
+FrTp_RxIndication(CF N-PDU)
+FrTp_TxConfirmation(CF N-PDU)
+FrTp_TxConfirmation(CF N-PDU)
+FRTP_TIME_CS
+FRTP_TIME_BR
+FRTP_TIME_AR
+FRTP_TIME_AR
+FRTP_TIME_CR
+FrTp_TxConfirmation(FC N-PDU)
+FRTP_TIME_BS
+FrTp_RxIndication(FC N-PDU)
+FRTP_TIME_BR
+FR Communication Cycle n+6
+FlowControl (ACK)
+FrIf_Transmit(FC N-PDU)
+FRTP_TIME_AR
+ConsecutiveFrame_EOB
+ConsecutiveFrame
+LastFrame
+ConsecutiveFrame
+Figure 23:  Timing parameter definition for multiple PDU transmission per Main-
+Function call
+Note:
+Bandwidth Control restricts the number of N-PDUs per Flexray-Cycle.
+This has an impact to FrTp_Time_CS and. Hence that time depends on
+implementation (task schedule of FrTp_Main() and the corresponding
+FlowControl Parameters) For details please refer to chapter 7.3.3.3.
+Timing Parameter
+Description
+Timer Start Condition
+Timer Stop Condition
+FRTP_TIME_AS
+Time for transmission of any FrTp
+N-PDU on the sender side.
+This is a performance requirement.
+The time depends on
+implementation and the global
+FlexRay schedule.
+The maximum  time is controlled
+by the FRTP_TIMEOUT_AS.
+FrIf_Transmit()
+FrTp_TxConfirmation()
+FRTP_TIME_AR
+Time for transmission of
+FlowControl FrTp N-PDU on the
+receiver side.
+This is a performance requirement.
+The time depends on
+implementation and the global
+FlexRay schedule.
+The maximum  time is controlled
+by the FRTP_TIMEOUT_AR.
+FrIf_Transmit()
+FrTp_TxConfirmation
+FRTP_TIME_BS
+Time until reception of the next
+FlowControl N-PDU.
+The maximum  time is controlled
+by the FRTP_TIMEOUT_BS.
+FrTp_TxConfirmation (STF),
+FrTp_RxIndication (FC),
+FrTp_TxConfirmation (CF),
+FrTp_TxConfirmation (LF)
+FrTp_RxIndication (FC)
+FRTP_TIME_BR
+Time until transmission of the next
+FlowControl N-PDU.
+FrTp_RxIndication (STF),
+FrTp_TxConfirmation (FC),
+FrTp_RxIndication (CF),
+FrTp_RxIndication (LF)
+FrIf_Transmit (FC)
+FRTP_TIME_CR
+Time until reception of the next
+ConsecutiveFrame N-PDU.
+The maximum  time is controlled
+by the FRTP_TIMEOUT_CR.
+FrTp_TxConfirmation (FC),
+FrTp_RxIndication (CF)
+FrTp_RxIndication (CF)
+FrTp_RxIndication (LF)
+FRTP_TIME_CS
+Time (in seconds) until
+transmission of the next
+ConsecutiveFrame N-PDU /
+LastFrame N-PDU.
+FrTp_TxConfirmation (CF),
+FrTp_RxIndication (FC)
+FrIf_Transmit (CF)
+S/s …  sender
+R/r … receiver
+Table 2:  Timing parameter for the FrTp module
+[SWS_FrTp_01100]
+⌈The FrTp module shall support the communication
+timeout behavior as defined in Table 3.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -143,7 +317,7 @@ FrTp_TxConfi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayISOTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

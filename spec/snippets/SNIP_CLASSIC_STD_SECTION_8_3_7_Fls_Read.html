@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_7_Fls_Read</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlashDriver.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlashDriver.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlashDriver.pdf</a></strong> (Seite 37)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -123,11 +124,57 @@ Upstream requirements: SRS_Fls_12134
 to MEMIF_JOB_PENDING.⌋
 [SWS_Fls_00340]
 Upstream requirements: SRS_Fls_12134
-⌈After initiating a read job, the function Fls_Read shal</div></section>
+⌈After initiating a read job, the function Fls_Read shall return with E_OK.⌋
+[SWS_Fls_00238]
+Upstream requirements: SRS_Fls_12134, SRS_Fls_12144
+⌈The FLS module shall execute the read job of the function Fls_Read asynchronously
+within the FLS module’s main function.⌋
+[SWS_Fls_00239]
+Upstream requirements: SRS_Fls_12134
+⌈The read job of the function Fls_Read shall copy a continuous flash memory block
+starting from the flash memory base address + SourceAddress of size Length to
+the buffer pointed to by TargetAddressPtr.⌋
+[SWS_Fls_00097]
+Upstream requirements: SRS_BSW_00323, SRS_Fls_12134, SRS_Fls_12159
+⌈If development error detection for the module Fls is enabled: the function Fls_Read
+shall check that the read start address (flash memory base address + SourceAd-
+dress) lies within the specified lower and upper flash address boundaries.
+If this
+check fails, the function Fls_Read shall reject the read job, raise development error
+FLS_E_PARAM_ADDRESS and return with E_NOT_OK.⌋
+[SWS_Fls_00098]
+Upstream requirements: SRS_BSW_00323, SRS_Fls_12134, SRS_Fls_12159
+⌈If development error detection for the module Fls is enabled: the function Fls_Read
+shall check that the read length is greater than 0 and that the read end address (read
+start address + length) lies within the specified upper flash address boundary. If this
+check fails, the function Fls_Read shall reject the read job, raise the development
+error FLS_E_PARAM_LENGTH and return with E_NOT_OK.⌋
+[SWS_Fls_00099]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection for the module Fls is enabled: the function Fls_Read
+shall check that the driver has been initialized. If this check fails, the function Fls_-
+Read shall reject the read request, raise the development error FLS_E_UNINIT and
+return with E_NOT_OK.⌋
+[SWS_Fls_00100]
+Upstream requirements: SRS_Fls_12143
+⌈If runtime error detection for the module Fls is enabled: the function Fls_Read shall
+check that the driver is currently not busy. If this check fails, the function Fls_Read
+shall reject the read request, raise the development error FLS_E_BUSY and return with
+E_NOT_OK.⌋
+[SWS_Fls_00158]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection for the module Fls is enabled: the function Fls_Read
+shall check the given data buffer pointer for not being a null pointer. If the data buffer
+pointer is a null pointer, the function Fls_Read shall reject the read request, raise the
+development error FLS_E_PARAM_DATA and return with E_NOT_OK.⌋
+[SWS_Fls_00240]
+Upstream requirements: SRS_BSW_00406
+⌈The FLS module’s environment shall only call the function Fls_Read after the FLS
+module has been initialized.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -136,7 +183,7 @@ Upstream requirements: SRS_Fls_12134
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlashDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlashDriver.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlashDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

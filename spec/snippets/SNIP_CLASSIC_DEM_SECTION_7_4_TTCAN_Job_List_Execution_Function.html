@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_4_TTCAN_Job_List_Execution_Function</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TTCANInterface.pdf</strong> (Seite 16)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_TTCANInterface.pdf#page=16" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TTCANInterface.pdf</a></strong> (Seite 16)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TtCan_00090" class="swsref internal-spec-ref"><code>SWS_TtCan_00090</code></a></span>
         </div>
@@ -99,7 +100,43 @@ Exemplary the JLEF performs the following steps:
 Dem_SetEventStatus(CANIF_TT_E_JLE_SYNC, DEM_-
 EVENT_STATUS_FAILED)
 (b) Terminate the execution of JLEF.
-• Otherwise, the JLEF continues with s</div></section>
+• Otherwise, the JLEF continues with step 2.
+2. Check whether the JLEF was called by start of new Basic cycle.
+• If it is false, continue with step 3.
+• Otherwise check whether the next job is scheduled for this Basic cycle.
+– If it is TRUE, set the interrupt timer to the next job’s start time in order to
+invoke the JLEF again and terminate the execution of JLEF
+– Otherwise terminate execution of JLEF.
+3. If the cycle Time delay compared to the job start time is larger than a maximum
+delay (configuration parameter CanIfTTMaxIsrDelay), the execution of the
+Job List is considered to be asynchronous to the local time and thus the fol-
+lowing actions are performed:
+(a) Call
+Dem_SetEventStatus(CANIF_TT_E_JLE_SYNC, DEM_EVENT_-
+STATUS_FAILED)
+(b) Add some ’safety margin’ (i.e. some timespan which takes jitter into account)
+(c) Search the Job List for the subsequent job, i.e. that job with an invocation
+time greater than the current Local Time + safety margin.
+(d) Search for the next Job List entry, which is valid for the current Basic
+Cycle. If the end of the Job List is reached, wrap around to the next
+Basic Cycle and continue the search for that respective Basic Cycle.
+(e) If the next job is scheduled for this Basic Cycle:
+• Schedule next job, exemplary by using the time mark interrupt
+• Otherwise disable timer interrupt
+(f) Terminate the execution of JLEF.
+Otherwise, the JLEF continues with step 4.
+4. Retrieve the sorted list of Communication Operations of the current Job pointed
+to by the current job pointer and execute the retrieved communication operations
+in the configured order.
+5. Search for the next Job List entry, which is valid for the current Basic Cycle.
+If the end of the Job List is reached, wrap around to the next Basic Cycle
+and continue the search for that respective Basic Cycle.
+6. If the next job is scheduled for this Basic cycle set the interrupt timer to this job’s
+start time Otherwise disable timer interrupt
+7. Call
+Dem_SetEventStatus(CANIF_TT_E_JLE_SYNC, DEM_EVENT_STA-
+TUS_PASSED)
+8. Terminate the execution of JLEF.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -112,7 +149,7 @@ EVENT_STATUS_FAILED)
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TTCANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_TTCANInterface.pdf#page=16" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TTCANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_10_2_6_Configuration_variants</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWGeneral.pdf</strong> (Seite 90)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=90" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></strong> (Seite 90)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_02906" class="swsref internal-spec-ref"><code>SWS_EcuM_02906</code></a></span>
         </div>
@@ -87,11 +88,73 @@ into the ECU.⌋
 Upstream requirements: SRS_BSW_00400, SRS_BSW_00405
 ⌈The EcuM will determine (via a call to EcuM_DeterminePbConfiguration())
 which of these post-build time configuration variants shall be used. Based on the used
-configuration variant, the EcuM will then call the BSW modules’ initialization function</div></section>
+configuration variant, the EcuM will then call the BSW modules’ initialization functions
+([SWS_BSW_00050], [SWS_BSW_00150]) with a pointer to the appropriate post-build
+configuration variant for the particular BSW module.⌋
+Example:
+General Specification of Basic Software Modules
+1
+/* File: ComM_PBcfg.h */
+2
+...
+3
+/* Type declaration of the Configuration Type */
+4
+typedef struct ComM_ConfigType_Tag {
+5
+...
+6
+};
+7
+...
+1
+/* File: ComM_PBcfg.c */
+2
+#include &lt;ComM.h&gt;
+3
+...
+4
+/* post-build time configurable data for predefined variant "VariantA"
+*/
+5
+const ComM_ConfigType ComM_Config_VariantA =
+6
+{
+7
+...
+8
+};
+9
+/* post-build time configurable data for predefined variant "VariantB"
+*/
+10
+const ComM_ConfigType ComM_Config_VariantB =
+11
+{
+12
+...
+13
+};
+14
+...
+1
+/* File: ComM.h */
+2
+#include &lt;ComM_Cfg.h&gt;
+3
+...
+4
+/* Forward declaration: */
+5
+typedef struct ComM_ConfigType_Tag ComM_ConfigType;
+6
+extern void ComM_Init(const ComM_ConfigType * ComMConfigPtr);
+7
+...</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EcuM_DeterminePbConfiguration().</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +163,7 @@ configuration variant, the EcuM will then call the BSW modules’ initialization
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=90" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_4_1_1_Bus_wake_up_inhibition</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 86)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=86" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 86)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_00840" class="swsref internal-spec-ref"><code>SWS_ComM_00840</code></a></span>
         </div>
@@ -91,7 +92,36 @@ diately as soon as mode inhibition is switched off (see [SWS_ComM_00839] and
 [SWS_ComM_00840]).
 [SWS_ComM_00218]
 Upstream requirements: SRS_ModeMgm_09141
-⌈A communication request (COMM_FULL_CO</div></section>
+⌈A communication request (COMM_FULL_COMMUNICATION) by a user shall be inhib-
+ited if the ComM Inhibition status is equal to ComMNoWakeup is set to TRUE (see
+[ECUC_ComM_00569]) for the corresponding channel and the current state of the
+channel is COMM_NO_COMMUNICATION or COMM_SILENT_COMMUNICATION⌋
+Rationale for [SWS_ComM_00218]:
+The inhibition should not get active, if the
+inhibition-status is set but the communication channel is already active.
+[SWS_ComM_00219]
+Upstream requirements: SRS_ModeMgm_09141
+⌈The inhibition shall not get active if the current communication state is COMM_FULL_-
+COMMUNICATION .⌋
+Rationale for [SWS_ComM_00219]: The bus is already awake if the current communi-
+cation state is COMM_FULL_COMMUNICATION.
+[SWS_ComM_00066]
+Upstream requirements: SRS_ModeMgm_09071, SRS_ModeMgm_09141
+⌈The ComM module shall never inhibit the "passive wake-up" capability.⌋
+Rationale for [SWS_ComM_00066]: It must be always possible to react on bus wake
+ups indicated by the EcuM module.
+Comment: Reception is switched off in COMM_NO_COMMUNICATION mode but the
+wake up capability is switched on.
+[SWS_ComM_00157]
+Upstream requirements: SRS_ModeMgm_09089, SRS_ModeMgm_09141
+⌈ComMNoWakeup status must be stored non volatile.⌋
+Rationale for [SWS_ComM_00157]: Information must be available during start-up, be-
+fore the communication is active ("Full Communication" mode entered). Changing or
+query is only possible after start-up with active communication (usually the "master",
+who decides if the inhibition is active or not, is not on the same ECU).
+[SWS_ComM_00625]
+Upstream requirements: SRS_ModeMgm_09155, SRS_ModeMgm_09141
+⌈The status of the user requests shall also be updated if a user releases a request.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +134,7 @@ Upstream requirements: SRS_ModeMgm_09141
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=86" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

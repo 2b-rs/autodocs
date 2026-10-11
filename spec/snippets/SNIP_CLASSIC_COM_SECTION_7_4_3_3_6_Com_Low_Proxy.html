@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_7_4_3_3_6_Com_Low_Proxy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SoftwareClusterConnection.pdf</strong> (Seite 187)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=187" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></strong> (Seite 187)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: SWS_SwCluC_CONSTR_02654</span>
+          <span>Ziel-Element: SWS_SwCluC_CONSTR_02660</span>
         </div>
       </div>
 
@@ -106,11 +107,233 @@ be changed, before the Com API is called.⌋
 The implementation of the Com Low Proxy may provide some basic infrastructure for
 the Com High Proxy in order to be operational. Such generic infrastructure services
 (including the access to COM APIs or the callbacks) can be linked between Appli-
-cation Software Cluster and Host Software</div></section>
+cation Software Cluster and Host Software Clusters by means of a Com
+base socket.
+module
+[SWS_SwCluC_02626]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide for each SwCluCComProxyBaseSocket a
+SwCluC_ComProxy_Init API, to initialize the Com High Proxy of an Applica-
+tion Software Cluster.⌋
+[SWS_SwCluC_02627]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide an instance of all SwCluC_ComProxy_CbkRx-
+Ack notification callbacks, configured via the ComUserCallbackName (See [ECUC_-
+Com_10036]) parameter, with the ComUserCallbackType (See [ECUC_Com_-
+10034]) set to COM_RX_ACK.⌋
+[SWS_SwCluC_CONSTR_02655]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈Each
+notification
+callback,
+where
+the
+parameter
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_RX_ACK,
+shall
+be
+configured
+as
+SwCluC_ComProxy_&lt;BS&gt;_CbkRxAck, where &lt;BS&gt; is the shortName of the
+SwCluCComProxyBaseSocket container⌋
+[SWS_SwCluC_02628]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide an instance of all SwCluC_ComProxy_CbkInv
+notification callbacks, configured on each ComSignal(Group) via the ComUserCall-
+backName (See [ECUC_Com_10036]) parameter, with the ComUserCallbackType
+(See [ECUC_Com_10034]) set to COM_RX_INV.⌋
+[SWS_SwCluC_CONSTR_02656]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈Each
+notification
+callback,
+where
+the
+parameter
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_RX_INV,
+shall
+be
+configured
+as
+SwCluC_ComProxy_&lt;BS&gt;_CbkInv, where &lt;BS&gt; is the shortName of the SwCluC-
+ComProxyBaseSocket container.⌋
+module
+[SWS_SwCluC_02629]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide an instance of all SwCluC_ComProxy_-
+CbkRxTOut timeout notification callbacks configured on each ComSignal(Group), via
+the ComUserCallbackName (See [ECUC_Com_10036]), with the ComUserCall-
+backType (See [ECUC_Com_10034]) set to COM_RX_TOUT.⌋
+[SWS_SwCluC_CONSTR_02657]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈Each
+notification
+callback
+where
+the
+parameter
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_RX_TOUT
+shall
+be
+configured
+as
+SwCluC_ComProxy_&lt;BS&gt;_CbkRxTOut where &lt;BS&gt; is the shortName of the
+SwCluCComProxyBaseSocket container⌋
+[SWS_SwCluC_02630]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide an instance of all SwCluC_ComProxy_CbkTx-
+Ack notification callbacks configured on each ComSignal(Group), via the ComUser-
+CallbackName (See [ECUC_Com_10036]), with the ComUserCallbackType (See
+[ECUC_Com_10034]) set to COM_TX_ACK.⌋
+[SWS_SwCluC_CONSTR_02658]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈Each
+notification
+callback,
+where
+the
+parameter
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_TX_ACK,
+shall
+be
+configured
+as
+SwCluC_ComProxy_&lt;BS&gt;_CbkTxAck, where &lt;BS&gt; is the shortName of the
+SwCluCComProxyBaseSocket container.⌋
+[SWS_SwCluC_02631]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide an instance of all SwCluC_ComProxy_CbkTx-
+Err notification callbacks configured on each ComSignal(Group), via the ComUser-
+CallbackName (See [ECUC_Com_10036]), with the ComUserCallbackType (See
+[ECUC_Com_10034]) set to COM_TX_ERR.⌋
+module
+[SWS_SwCluC_CONSTR_02659]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈Each
+notification
+callback,
+where
+the
+parameter
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_TX_ERR,
+shall
+be
+configured
+as
+SwCluC_ComProxy_&lt;BS&gt;_CbkTxErr, where &lt;BS&gt; is the shortName of the
+SwCluCComProxyBaseSocket container⌋
+[SWS_SwCluC_02632]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The Com Low Proxy shall provide an instance of all SwCluC_ComProxy_Cbk-
+TxTOut notification callbacks configured on each ComSignal(Group), via the Co-
+mUserCallbackName (See [ECUC_Com_10036]), with the ComUserCallback-
+Type (See [ECUC_Com_10034]) set to COM_TX_TOUT.⌋
+[SWS_SwCluC_CONSTR_02660]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈Each
+notification
+callback,
+where
+the
+parameter
+ComUserCallbackType
+(See
+[ECUC_Com_10034])
+is
+set
+to
+COM_TX_TOUT,
+shall
+be
+configured
+as
+SwCluC_ComProxy_&lt;BS&gt;_CbkTxTOut, where &lt;BS&gt; is the shortName of the
+SwCluCComProxyBaseSocket container⌋
+[SWS_SwCluC_02633]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00211
+⌈The
+notification
+callback
+instances
+according
+to
+[SWS_SwCluC_02626],
+[SWS_SwCluC_02627],
+[SWS_SwCluC_02628],
+[SWS_SwCluC_02629],
+[SWS_SwCluC_02630],
+[SWS_SwCluC_02631]
+and
+[SWS_SwCluC_02632]
+are
+provided
+• at the EcucPartition of the SwCluCComProxyBaseSocket referenced
+by the SwCluCComProxyBaseSocket - via SwCluCComProxyUsedSatel-
+liteRef. In this case, the EcucPartition shall be changed, before the call-
+back in the High Proxy is called.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_CONSTR_02654] im Text von SWS_SoftwareClusterConnection.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_CONSTR_02660] im Text von SWS_SoftwareClusterConnection.</p>
       </section>
 
       <section class="snip-card">
@@ -119,7 +342,7 @@ cation Software Cluster and Host Software</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SoftwareClusterConnection.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=187" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -131,7 +354,7 @@ cation Software Cluster and Host Software</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>SWS_SwCluC_CONSTR_02654</td>
+              <td>SWS_SwCluC_CONSTR_02660</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

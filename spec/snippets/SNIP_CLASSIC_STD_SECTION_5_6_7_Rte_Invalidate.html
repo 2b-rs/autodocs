@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_7_Rte_Invalidate</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 709)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=709" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 709)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00021" class="swsref internal-spec-ref"><code>SWS_Std_00021</code></a></span>
         </div>
@@ -104,11 +105,90 @@ idate API may only be used by the runnable that contains the cor-
 responding VariableAccess in the dataSendPoint role⌋
 [SWS_Rte_08582]
 Upstream requirements: SRS_Rte_00249
-⌈The optional OUT parameter transformerError of</div></section>
+⌈The optional OUT parameter transformerError of the API shall
+be generated if the PortPrototype of port &lt;p&gt; is referenced by
+a PortAPIOption which has the attribute errorHandling set to
+transformerErrorHandling.⌋
+Description:
+The Rte_Invalidate API takes the instance handle as input pa-
+rameter. The return value is used to indicate the success, or other-
+wise, of the API call to the caller.
+The OUT parameter transformerError contains the transformer
+error which occured during execution of the transformer chain. See
+chapter 4.10.5.
+Return Value:
+None in case returnValueProvision of the related dataSend-
+Point(s) is set to noReturnValueProvided. Otherwise, the re-
+turn value is used to indicate the “OK” status or errors detected by
+the RTE during execution of the Rte_Invalidate call.
+• [SWS_Rte_01207]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_OK – No error occurred.⌋
+• [SWS_Rte_01339]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_COM_STOPPED – the RTE could not perform the op-
+eration because the communication service is currently not
+available (inter ECU communication only).
+RTE shall return
+RTE_E_COM_STOPPED when:
+– in
+case
+of
+COM
+the
+corresponding
+service
+returns
+COM_SERVICE_NOT_AVAILABLE
+– in case of Large Data Path in COM the corresponding
+Com_Transmit returns E_NOT_OK
+⌋
+• [SWS_Rte_08576]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_HARD_TRANSFORMER_ERROR – The return value of
+one transformer in the transformer chain represented a hard
+transformer error.⌋
+• [SWS_Rte_08577]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_SOFT_TRANSFORMER_ERROR – The return value of at
+least one transformer in the transformer chain was a soft error
+and no hard error occurred in the transformer chain.⌋
+[SWS_Rte_08583]
+Upstream requirements: SRS_Rte_00122
+⌈In
+case
+of
+multiple
+faults
+during
+a
+call
+of
+Rte_Inval-
+idate
+the
+resulting
+return
+value
+shall
+be
+derived
+accord-
+ing to the following priority rules (highest priority first):
+(1)
+RTE_E_HARD_TRANSFORMER_ERROR, (2) RTE_E_COM_STOPPED,
+(3) RTE_E_SOFT_TRANSFORMER_ERROR.⌋
+Notes:
+The API name includes an identifier &lt;p&gt;_&lt;o&gt; that is formed from the
+port and operation item names. See Section 5.2.6.4 for details on the
+naming convention.
+The communication service configuration determines whether the
+signal receiver(s) receive an “invalid signal” notification or whether
+the invalidated signal is silently replaced by the signal’s initial value.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerError().</p>
       </section>
 
       <section class="snip-card">
@@ -117,7 +197,7 @@ Upstream requirements: SRS_Rte_00249
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=709" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

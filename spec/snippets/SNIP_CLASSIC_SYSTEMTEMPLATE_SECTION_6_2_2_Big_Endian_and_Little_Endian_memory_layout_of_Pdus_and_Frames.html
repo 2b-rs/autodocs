@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_6_2_2_Big_Endian_and_Little_Endian_memory_layout_of_Pdus_and_Frames</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SystemTemplate.pdf</strong> (Seite 273)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=273" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></strong> (Seite 273)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01069" class="swsref"><code>TPS_SYST_01069</code></a></span>
         </div>
@@ -88,7 +89,62 @@ i.e. the bit with the greatest numerical value (the most significant bit serves 
 bit).
 In both cases the bit positions in the mapped signals increase with the bit positions in
 the ISignalIPdu such that the bit 20 is mapped to position n in the ISignalIPdu
-and bit 21 is</div></section>
+and bit 21 is mapped to position n+1 and so on.
+Example 6.7 shows the memory layout for Little Endian and Big Endian if an ISig-
+nal with a length of 10 bits is mappped into a Pdu.
+The start bit position is 5.
+Figure 6.7: PackingByteOrder Example
+The following examples are showing the mapping of Pdus into Frames.
+The first example in Figure 6.8 for little endian shows a Frame with four bytes that
+contains a single Pdu that is two bytes long. The PduToFrameMapping.startPo-
+sition is defined with 8 and since the packingByteOrder is set to mostSignif-
+icantByteLast the startPosition denotes the least significant bit of the Pdu in
+the Frame. The bit position of the mapped Pdu increases with the bit positions in the
+Frame such that the bit 20 is mapped to position n in the ISignalIPdu and bit 21 is
+mapped to position n+1 and so on.
+Please note that the Pdus are byte aligned in a Frame and only the values 0, 8, 16,
+24,... (for little endian) and 7, 15, 23, ... (for big endian) for PduToFrameMapping.
+startPosition are allowed.
+Figure 6.8 also shows that the Pdu contains three ISignals. The first ISignal has
+the ISignalToIPduMapping.startPosition defined as 0 and is 5 bits long. The
+bitposition of the second signal is 5 and the length is 10 bits. And the third signal has
+System Template
+the bitposition 15 and is only 1 bit long. Since the ISignalToIPduMapping.pack-
+ingByteOrder is defined with mostSignificantByteLast as well the startPo-
+sition of the ISignals denotes the least significant bit of the ISignal in the Pdu.
+10
+11
+12
+13
+14
+15
+9
+8
+18
+19
+20
+21
+22
+23
+17
+16
+1
+2
+-
+-
+20
+21
+22
+-
+-
+-
+25
+26
+27
+28
+29
+-
+24</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +157,7 @@ and bit 21 is</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=273" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

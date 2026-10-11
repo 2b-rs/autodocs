@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYIF_SECTION_8_3_10_Context_Save_and_Restore</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoServiceManager.pdf</strong> (Seite 79)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=79" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></strong> (Seite 79)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_91106" class="swsref internal-spec-ref"><code>SWS_Csm_91106</code></a></span>
         </div>
@@ -133,7 +134,57 @@ job-
 &gt;jobPrimitiveInputOutput-&gt;mode
 to
 CRYPTO_OPERATIONMODE_SAVE_
-CONTEXT and call CryIf_ProcessJob with the corresponding channelId of thi</div></section>
+CONTEXT and call CryIf_ProcessJob with the corresponding channelId of this
+job and a pointer to the job itself. Any return value from this function call shall be
+provided back to the application.⌋
+[SWS_Csm_91064] Definition of API function Csm_RestoreContextJob ⌈
+Service Name
+Csm_RestoreContextJob
+Syntax
+Std_ReturnType Csm_RestoreContextJob (
+uint32 jobId,
+const uint8* contextBufferPtr,
+uint32 contextBufferLength
+)
+Service ID [hex]
+0x87
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+jobId
+Holds the identifier of the job where context shall be requested
+from.
+contextBufferPtr
+Pointer to the buffer, where the context data are located that shall
+be restored.
+Parameters (in)
+contextBufferLength
+Provides the length of context data that are located in context
+BufferPtr.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: Context data successfully restored.
+E_NOT_OK: Context data could not be restored.
+CRYPTO_E_BUSY: Request failed, service is still busy
+Description
+The Crypto Driver extracts the context data from the contextBuffer and restores the internal
+state so that further crypto operation of this crypto service will continue at the exact point when
+the context was taken.
+Available via
+Csm.h
+⌋
+[SWS_Csm_91068] ⌈If Csm_RestoreContextJob is called and the job is active,
+CSM shall put contextBufferPtr into job.PrimitiveInputOutput.inputPtr
+and contextBufferLength into job.PrimitiveInputOutput.inputLength,
+set job-&gt;jobPrimitiveInputOutput-&gt;mode to CRYPTO_OPERATIONMODE_-
+RESTORE_CONTEXT and call CryIf_ProcessJob with the corresponding chan-
+nelId of this job and a pointer to the job itself. Any return value from this function
+call shall be provided back to the application.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -146,7 +197,7 @@ CONTEXT and call CryIf_ProcessJob with the corresponding channelId of thi</div><
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoServiceManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=79" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

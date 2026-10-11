@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_8_7_2_4_Mode_Ports</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 102)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=102" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 102)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00197" class="swsref internal-spec-ref"><code>SWS_WdgM_00197</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00199" class="swsref internal-spec-ref"><code>SWS_WdgM_00199</code></a></span>
         </div>
       </div>
 
@@ -99,11 +100,50 @@ Variation
 SupervisedEntityName = {ecuc(WdgM/WdgMGeneral/WdgMSupervisedEntity/WdgMSupervised
 EntityId.SHORT-NAME)}
 ⌋
-[SWS_WdgM_00197] ⌈When the Local Supervisio</div></section>
+[SWS_WdgM_00197] ⌈When the Local Supervision Status of a single Supervised En-
+tity changes, the Watchdog Manager module shall report that change via the mode
+port for that Supervised Entity immediately after it has been recognized.⌋
+The Watchdog Manager module provides one mode port for reporting the Global Su-
+pervision Status:
+[SWS_WdgM_00150] Definition of Port globalmode provided by module WdgM
+Upstream requirements: SRS_ModeMgm_09160,
+SRS_ModeMgm_09225,
+SRS_ModeMgm_-
+09162
+⌈
+Name
+globalmode
+Kind
+ProvidedPort
+Interface
+WdgM_GlobalMode
+Description
+–
+Variation
+–
+⌋
+[SWS_WdgM_00198] ⌈When the Global Supervision Status changes, the Watchdog
+Manager module shall report that change via the global mode port.⌋
+[SWS_WdgM_00199] ⌈After computing the Global Supervision Status from all Local
+Supervision Status, the Watchdog Manager module shall report any change in the
+resulting Global Supervision Status only once.⌋
+The resulting behavior is that first all changes in Local Supervision Status are reported.
+Afterwards the Global Supervision Status is reported only once and only if it changed
+due to the individual changes.
+For instance, if in one Supervision Cycle SE1 goes from WDGM_LOCAL_STATUS_OK to
+WDGM_LOCAL_STATUS_FAILED, WDGM_LOCAL_STATUS_FAILED is reported on the
+local mode port for SE1. In the same Supervision Cycle SE2 goes from WDGM_LO-
+CAL_STATUS_OK to WDGM_LOCAL_STATUS_EXPIRED directly, WDGM_LOCAL_STA-
+TUS_EXPIRED is reported on the local mode port for SE2. The resulting Global Su-
+pervision Status in this Supervision Cycle changes from WDGM_GLOBAL_STATUS_OK
+to WDGM_GLOBAL_STATUS_EXPIRED and only WDGM_GLOBAL_STATUS_EXPIRED is
+reported on the global mode port. In that example WDGM_GLOBAL_STATUS_FAILED is
+not reported on the global mode port, because it was only an intermediate state while
+evaluating a subset of Supervised Entities.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_WdgM_00197] im Text von SWS_WatchdogManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_WdgM_00199] im Text von SWS_WatchdogManager.</p>
       </section>
 
       <section class="snip-card">
@@ -112,7 +152,7 @@ EntityId.SHORT-NAME)}
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=102" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -124,7 +164,7 @@ EntityId.SHORT-NAME)}
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00197" class="swsref internal-spec-ref"><code>SWS_WdgM_00197</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00199" class="swsref internal-spec-ref"><code>SWS_WdgM_00199</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

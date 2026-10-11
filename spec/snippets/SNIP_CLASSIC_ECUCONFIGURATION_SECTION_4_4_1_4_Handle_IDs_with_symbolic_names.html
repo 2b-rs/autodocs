@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -89,7 +90,27 @@ from its usage.
 In requirement [ecuc_sws_2107] it is required that the assigned values are stored in
 the XML (latest after module generation) so the assigned values are documented. In
 case the assignment of values has to be performed at a later point in time again (with
-updated input information) the non affected v</div></section>
+updated input information) the non affected values can be preserved. It is also needed
+to support debugging.
+In requirement [ecuc_sws_2108] it is required that the handle Id values are always
+generated into the module’s header ﬁle.
+With this approach it is possible to freely
+choose the conﬁguration approach of the adjacent modules.
+This approach has signiﬁcant effect on the methodology due to the circular depen-
+dencies between the adjacent modules( Com sends to the PduR using PduR handle
+Ids, PduR indicates to Com using Com handle Ids). Therefore the conﬁguration of all
+adjacent modules has to be re-visited in case some handle Id changes happen. This
+contributes to the approach that FIRST the conﬁguration of the stack is performed and
+SECOND the generation is triggered.
+An example of this approach is provided below: By adding the attribute symbol-
+icNameValue=true to the parameter holding the handle ID (in ﬁgure 4.8 this is
+the parameter CanIfTxPduId) the code generator doing the CanIf will generate a
+#define in the CanIf_cfg.h ﬁle. The name of the deﬁne is the module short name
+(&lt;MSN&gt;) of the declaring BSW Module followed by the name of the parent container
+(each container does have a short name) and the value is the actual number assigned
+to that handle ID.
+For example in CanIf_cfg.h:
+#define CanIf_Tx_Pdu_2345634_985_symbol</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LOGANDTRACEPROTOCOL_SECTION_5_1_2_1_2_Description_Format_for_transmitted_Data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>LogAndTraceProtocol.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/FO/AUTOSAR_PRS_LogAndTraceProtocol.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LogAndTraceProtocol.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=PRS_Dlt_00400" class="swsref"><code>PRS_Dlt_00400</code></a></span>
         </div>
@@ -90,7 +91,134 @@ the ARXML System Description the DltMessage consists of an ordered list of
 DltArguments.
 If a DltArgument is a static text, then the DltArgument shall only contain a
 ShortName and a Description.
-If a DltArgument represents a non-static variable then DltAr</div></section>
+If a DltArgument represents a non-static variable then DltArgument.length, the unit
+and the baseType shall be defined.
+[PRS_Dlt_00396] ⌈One log or trace message shall be represented by one
+DltMessage element. ⌋ (RS_LT_00026)
+[PRS_Dlt_00397] ⌈The Message ID shall be set in DltMessage.messageId⌋
+(RS_LT_00026, RS_LT_00027)
+[PRS_Dlt_00398] ⌈The DLT message is described with the following information:
+ Message Type (MSTP) – shall be derived from DltMessage.messageTypeInfo
+ Message Info (MSIN) – DltMessage.messageTypeInfo
+ Application ID (APID) – DltLogChannel.applicationId
+ Context ID (CTID) – DltLogChannel.contextId
+ Source file – DltMessage.messageSourceFile
+ line number – DltMessage.messageLineNumber ⌋
+(RS_LT_00026, RS_LT_00027)
+[PRS_Dlt_00399] ⌈The user data of the log or trace message shall be represented
+by DltArguments that are ordered in the DltMessage. ⌋ (RS_LT_00026)
+Log and Trace Protocol Specification
+AUTOSAR FO  R19-11
+[PRS_Dlt_00400] ⌈If the argument contains only static text, this text shall be placed
+in the DESC element of the DltArgument. In this case the DltArgument.length shall
+be set to zero.⌋ (RS_LT_00025)
+[PRS_Dlt_00401] ⌈If the argument contains non-static data, the data transported in
+the message is described by the DltArgument.length and by the aggregated
+networkRepresentation that defines the unit and the baseType.⌋ (RS_LT_00026)
+The following example shows the description of a sample Dlt message in ARXML:
+&lt;AUTOSAR xmlns="http://autosar.org/schema/r4.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://autosar.org/schema/r4.0
+autosar_00048.xsd"&gt;
+&lt;AR-PACKAGES&gt;
+&lt;AR-PACKAGE&gt;
+&lt;SHORT-NAME&gt;Dlt_Example&lt;/SHORT-NAME&gt;
+&lt;ELEMENTS&gt;
+&lt;DLT-MESSAGE-COLLECTION-SET&gt;
+&lt;SHORT-NAME&gt;
+DltMessageCollectionSetExample
+&lt;/SHORT-NAME&gt;
+&lt;DLT-MESSAGES&gt;
+&lt;DLT-MESSAGE&gt;
+&lt;SHORT-NAME&gt;DltMessageWithID_1&lt;/SHORT-NAME&gt;
+&lt;DLT-ARGUMENTS&gt;
+&lt;DLT-ARGUMENT&gt;
+&lt;SHORT-NAME&gt;
+Temperature_measurement
+&lt;/SHORT-NAME&gt;
+&lt;DESC&gt;
+&lt;L-2 L="EN"&gt;
+Temperature measurement
+&lt;/L-2&gt;
+&lt;/DESC&gt;
+&lt;LENGTH&gt;0&lt;/LENGTH&gt;
+&lt;/DLT-ARGUMENT&gt;
+&lt;DLT-ARGUMENT&gt;
+&lt;SHORT-NAME&gt;measurement_point&lt;/SHORT-NAME&gt;
+&lt;DESC&gt;
+&lt;L-2 L="EN"&gt;
+Temperature measurement
+&lt;/L-2&gt;
+&lt;/DESC&gt;
+&lt;LENGTH&gt;8&lt;/LENGTH&gt;
+&lt;NETWORK-REPRESENTATION&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;BASE-TYPE-REF DEST="SW-BASE-TYPE"&gt;
+/AUTOSAR_Platform/BaseTypes/uint8
+&lt;/BASE-TYPE-REF&gt;
+&lt;UNIT-REF DEST="UNIT"&gt;
+/AUTOSAR/AISpecification/Units/NoUnit
+&lt;/UNIT-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/NETWORK-REPRESENTATION&gt;
+&lt;/DLT-ARGUMENT&gt;
+&lt;DLT-ARGUMENT&gt;
+Log and Trace Protocol Specification
+AUTOSAR FO  R19-11
+&lt;SHORT-NAME&gt;reading&lt;/SHORT-NAME&gt;
+&lt;DESC&gt;&lt;L-2 L="EN"&gt;reading&lt;/L-2&gt;&lt;/DESC&gt;
+&lt;LENGTH&gt;8&lt;/LENGTH&gt;
+&lt;NETWORK-REPRESENTATION&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;BASE-TYPE-REF DEST="SW-BASE-TYPE"&gt;
+/AUTOSAR_Platform/BaseTypes/float32
+&lt;/BASE-TYPE-REF&gt;
+&lt;UNIT-REF DEST="UNIT"&gt;
+/AUTOSAR/AISpecification/Units/Kelvin
+&lt;/UNIT-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/NETWORK-REPRESENTATION&gt;
+&lt;/DLT-ARGUMENT&gt;
+&lt;/DLT-ARGUMENTS&gt;
+&lt;MESSAGE-ID&gt;1&lt;/MESSAGE-ID&gt;
+&lt;MESSAGE-LINE-NUMBER&gt;72&lt;/MESSAGE-LINE-NUMBER&gt;
+&lt;MESSAGE-SOURCE-FILE&gt;
+demo.c
+&lt;/MESSAGE-SOURCE-FILE&gt;
+&lt;MESSAGE-TYPE-INFO&gt;
+DLT_LOG_DEBUG
+&lt;/MESSAGE-TYPE-INFO&gt;
+&lt;/DLT-MESSAGE&gt;
+&lt;/DLT-MESSAGES&gt;
+&lt;/DLT-MESSAGE-COLLECTION-SET&gt;
+&lt;ECU-INSTANCE&gt;
+&lt;SHORT-NAME&gt;TestEcu&lt;/SHORT-NAME&gt;
+&lt;DLT-CONFIG&gt;
+&lt;DLT-ECU-ID&gt;TestEcu&lt;/DLT-ECU-ID&gt;
+&lt;DLT-LOG-CHANNELS&gt;
+&lt;DLT-LOG-CHANNEL&gt;
+&lt;SHORT-NAME&gt;LogChannelCan&lt;/SHORT-NAME&gt;
+&lt;APPLICATION-ID&gt;APPI&lt;/APPLICATION-ID&gt;
+&lt;CONTEXT-ID&gt;CONI&lt;/CONTEXT-ID&gt;
+&lt;DLT-MESSAGE-REFS&gt;
+&lt;DLT-MESSAGE-REF DEST="DLT-MESSAGE"&gt;
+/Dlt_Example/DltMessageCollectionSet/DltMessageWithID_1
+&lt;/DLT-MESSAGE-REF&gt;
+&lt;/DLT-MESSAGE-REFS&gt;
+&lt;/DLT-LOG-CHANNEL&gt;
+&lt;/DLT-LOG-CHANNELS&gt;
+&lt;/DLT-CONFIG&gt;
+&lt;/ECU-INSTANCE&gt;
+&lt;/ELEMENTS&gt;
+&lt;/AR-PACKAGE&gt;
+&lt;/AR-PACKAGES&gt;
+&lt;/AUTOSAR&gt;
+Log and Trace Protocol Specification
+AUTOSAR FO  R19-11</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +231,7 @@ If a DltArgument represents a non-static variable then DltAr</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>LogAndTraceProtocol.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/FO/AUTOSAR_PRS_LogAndTraceProtocol.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LogAndTraceProtocol.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

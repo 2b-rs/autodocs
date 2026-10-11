@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FR_SECTION_8_4_18_Fr_GetGlobalTime</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayDriver.pdf</strong> (Seite 67)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=67" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></strong> (Seite 67)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,69 @@ Fr_CyclePtr and Fr_MacrotickPtr.
 [SWS_Fr_00257] ⌈The function Fr_GetGlobalTime() shall ensure that the time in-
 formation is consistent and valid. This means that the values returned of both param-
 eters (Fr_CyclePtr and Fr_MacrotickPtr) must be taken from a single point in
-t</div></section>
+time. The resulting global time shall always strictly increase over time (until it wraps
+around at the time-boundary).⌋
+[SWS_Fr_00044]
+Upstream requirements: SRS_Fr_05072
+⌈The function Fr_GetGlobalTime() shall ensure that the time information is valid and
+up to date (synchronized CC), - otherwise the output parameters shall not be written
+and E_NOT_OK returned.⌋
+[SWS_Fr_00255]
+⌈If
+the
+function
+Fr_GetGlobalTime()
+is
+able
+to
+and
+detects
+a
+hardware
+error
+while
+performing
+the
+requested
+functionality,
+then
+it
+shall
+call
+Dem_SetEventStatus()
+(FR_E_CTRL_TESTRESULT,
+DEM_EVENT_STATUS_FAILED) and return E_NOT_OK.⌋
+[SWS_Fr_00251] ⌈If development error detection for the Fr module is enabled, and
+if the function Fr_GetGlobalTime() is called before the successful initialization
+of Fr, then the function Fr_GetGlobalTime() shall raise the development error
+FR_E_INIT_FAILED.⌋
+[SWS_Fr_00252] ⌈If development error detection for the Fr module is enabled, then the
+function Fr_GetGlobalTime() shall check the validity of the parameter Fr_CtrlIdx.
+If Fr_CtrlIdx is invalid, then the function Fr_GetGlobalTime() shall raise the de-
+velopment error FR_E_INV_CTRL_IDX.⌋
+[SWS_Fr_00253] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_GetGlobalTime() shall check whether the parameter Fr_CyclePtr
+is a NULL pointer (NULL_PTR). If Fr_CyclePtr is a NULL pointer, the function Fr_
+GetGlobalTime() shall raise the development error FR_E_PARAM_POINTER.⌋
+[SWS_Fr_00254]
+⌈If
+development
+error
+detection
+for
+the
+Fr
+module
+is
+en-
+abled, then the function Fr_GetGlobalTime() shall check whether the parame-
+ter Fr_MacroTickPtr is a NULL pointer (NULL_PTR). If Fr_MacroTickPtr is a
+NULL pointer, the function Fr_GetGlobalTime() shall raise the development error
+FR_E_PARAM_POINTER.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +188,7 @@ t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=67" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

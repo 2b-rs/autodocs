@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_8_4_4_J1939Dcm_StartOfReception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SAEJ1939DiagnosticCommunicationManager.pdf</strong> (Seite 57)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939DiagnosticCommunicationManager.pdf#page=57" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939DiagnosticCommunicationManager.pdf</a></strong> (Seite 57)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Dcm_00102" class="swsref internal-spec-ref"><code>SWS_J1939Dcm_00102</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Dcm_00186" class="swsref internal-spec-ref"><code>SWS_J1939Dcm_00186</code></a></span>
         </div>
       </div>
 
@@ -113,11 +114,77 @@ aborted. bufferSizePtr remains unchanged.
 BUFREQ_E_OVFL: No buffer of the required length can be
 provided; reception is aborted. bufferSizePtr remains unchanged.
 Description
-Thi</div></section>
+This function is called at the start of receiving an N-SDU. The N-SDU might be fragmented into
+multiple N-PDUs (FF with one or more following CFs) or might consist of a single N-PDU (SF).
+The service shall provide the currently available maximum buffer size when invoked with TpSdu
+Length equal to 0.
+Available via
+J1939Dcm.h
+⌋
+Manager for SAE J1939
+[SWS_J1939Dcm_00140]
+Upstream requirements: SRS_BSW_00386
+⌈When the interface J1939Dcm_StartOfReception is called while the J1939Dcm
+is in offline state (refer to J1939Dcm_SetState), the J1939 Diagnostic Commu-
+nication Manager shall reject this command message by returning BUFREQ_E_
+NOT_OK, and shall report the runtime error J1939DCM_E_INVALID_STATE.⌋
+[SWS_J1939Dcm_00152]
+Upstream requirements: SRS_BSW_00386
+⌈If
+the
+configuration
+parameter
+J1939DcmDevErrorDetect
+is
+enabled,
+the
+function
+J1939Dcm_StartOfReception
+shall
+check
+if
+the
+id
+pa-
+rameter
+is
+not
+configured
+(J1939DcmRxPduId)
+on
+any
+DMx
+message
+(
+J1939DcmDiagnosticMessageSupport).
+In case of an error, the function
+J1939Dcm_StartOfReception shall return with BUFREQ_E_NOT_OK and without
+any effect and shall report the error to the Default Error Tracer with the error
+code J1939DCM_E_INVALID_PDU_SDU_ID.⌋
+[SWS_J1939Dcm_00153]
+⌈The
+function
+J1939Dcm_StartOfReception
+shall
+check if the TpSduLength parameter is smaller or equal as the configured buffer
+size (J1939DcmCommonBufferSize). In case of an error, the function J1939Dcm_
+StartOfReception shall return with BUFREQ_E_OVFL.⌋
+[SWS_J1939Dcm_00155]
+Upstream requirements: SRS_BSW_00386
+⌈If the configuration parameter J1939DcmDevErrorDetect is enabled, the function
+J1939Dcm_StartOfReception shall check if the J1939Dcm is the right state to
+receive a command message over TP protocol.
+In case of an error, the function
+J1939Dcm_StartOfReception shall return with BUFREQ_E_NOT_OK without any ef-
+fect, and shall report the runtime error J1939DCM_E_INVALID_STATE.⌋
+[SWS_J1939Dcm_00186] ⌈When the API J1939Dcm_StartOfReception is in-
+voked with TpSduLength equal to 0, the value BUFREQ_E_NOT_OK shall be returned
+and no further action shall be taken.⌋
+Manager for SAE J1939</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_J1939Dcm_00102] im Text von SWS_SAEJ1939DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_J1939Dcm_00186] im Text von SWS_SAEJ1939DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +193,7 @@ Thi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SAEJ1939DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939DiagnosticCommunicationManager.pdf#page=57" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -138,7 +205,7 @@ Thi</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_J1939Dcm_00102" class="swsref internal-spec-ref"><code>SWS_J1939Dcm_00102</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_J1939Dcm_00186" class="swsref internal-spec-ref"><code>SWS_J1939Dcm_00186</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

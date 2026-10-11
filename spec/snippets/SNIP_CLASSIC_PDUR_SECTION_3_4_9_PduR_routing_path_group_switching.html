@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PDUR_SECTION_3_4_9_PduR_routing_path_group_switching</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_ModeManagementGuide.pdf</strong> (Seite 61)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></strong> (Seite 61)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_PduR_00617" class="swsref internal-spec-ref"><code>SWS_PduR_00617</code></a></span>
         </div>
@@ -100,11 +101,124 @@ managed. The exemplary ECU shall have one physical Ethernet channel with two
 VLANs and three partial network clusters.
 The mode request ports for the VLANs are named EthSM_Vlan1 and EthSM_Vlan2,
 the request sources for the partial network clusters are named PNC1, PNC2 and
-PNC3.</div></section>
+PNC3. I-PDUs of PNC1 shall be communicated only over Vlan1. I-PDUs of PNC2
+shall be communicated over Vlan1 and Vlan2. I-PDUs of PNC3 shall be communi-
+cated only over Vlan2. In case of an indication by a bus state manager the BswM shall
+check, which partial network clusters are requested.
+rule activeWakeupVlan1 initially false {
+if ( EthSM_Vlan1 == ETHSM_BSWM_FULL_COMMUNICATION){
+actionlist activeWakeupVlan1Actions
+}
+}
+actions activeWakeupVlan1Actions on condition{
+rule pnc1requested rule pnc2requested
+}
+rule activeWakeupVlan2 initially false{
+if ( EthSM_Vlan2 == ETHSM_BSWM_FULL_COMMUNICATION &amp;&amp;
+PNC2 != PNC_REQUESTED &amp;&amp;
+PNC3 != PNC_REQUESTED ) {
+actionlist activeWakeupVlan2Actions
+}
+Guide to Mode Management
+}
+actions activeWakeupVlan2Actions on condition{
+rule pnc2requested rule pnc3requested
+}
+Listing 3.32: Active wakeup on channel
+If the bus state manager reports that a VLAN is going offline the BswM disable the
+corresponding I-PDU routing path groups. If the channel is part of a partial network the
+whole partial network has to be disabled.
+rule offlineVlan1 initially false {
+if (EthSM_Vlan1 == ETHSM_BSWM_NO_COMMUNICATION){
+actionlist offlineVlan1Actions }
+}
+actions offlineVlan1Actions on condition {
+PduRRoutingPathGroupSwitch{
+init true disable ArMmExample.EcuC.MyPduR.VLAN1_IPDU_ROUTING_PATHS,
+ArMmExample.EcuC.MyPduR.PNC1_IPDU_ROUTING_PATHS, ArMmExample.EcuC.MyPduR
+.PNC2_IPDU_ROUTING_PATHS }
+}
+rule offlineVlan2 initially false {
+if ( EhtSM_Can2 == CANSM_BSWM_NO_COMMUNICATION ) {
+actionlist offlineVlan2Actions
+}
+}
+actions offlineVlan2Actions on condition {
+PduRRoutingPathGroupSwitch {
+init true disable ArMmExample.EcuC.MyPduR.VLAN2_IPDU_ROUTING_PATHS,
+ArMmExample.EcuC.MyPduR. PNC2_IPDU_ROUTING_PATHS, ArMmExample.EcuC.
+MyPduR.PNC3_IPDU_ROUTING_PATHS
+}
+}
+Listing 3.33: EthSM reports NO_COMMUNICATION
+In case that a single partial network cluster is released the I-PDU routing path group
+representing this network has to be disabled.
+rule pnc1nocom initially false {
+if ( PNC1 == PNC_NO_COMMUNICATION ) {
+actionlist pnc1nocomTrueActions
+}
+}
+actions pnc1nocomActions on condition {
+PduRRoutingPathGroupSwitch {
+init true disable ArMmExample.EcuC.MyPduR.PNC1_IPDU_ROUTING_PATHS
+}
+}
+rule pnc2nocom initially false {
+Guide to Mode Management
+if ( PNC2 == PNC_NO_COMMUNICATION ) {
+actionlist pnc2nocomTrueActions
+}
+}
+actions pnc2nocomActions on condition {
+PduRRoutingPathGroupSwitch {
+init true disable ArMmExample.EcuC.MyPduR.PNC2_IPDU_ROUTING_PATHS
+}
+}
+rule pnc3nocom initially false {
+if ( PNC3 == PNC_NO_COMMUNICATION ) {
+actionlist pnc3nocomActions
+}
+}
+actions pnc3nocomActions on condition {
+PduRRoutingPathGroupSwitch {
+init true disable ArMmExample.EcuC.MyPduR.PNC3_IPDU_ROUTING_PATHS
+}
+}
+Listing 3.34: PNC reports NO_COMMUNICATION
+If a partial network cluster is requested the corresponding I-PDU routing path groups
+are enabled.
+rule pnc1requested initially false {
+if ( PNC1 == PNC_REQUESTED ||
+PNC1 == PNC_READY_SLEEP )
+{ actionlist pnc1requestedActions }
+}
+actions pnc1requestedActions on condition {
+PduRRoutingPathGroupSwitch
+{ init true enable ArMmExample.EcuC.MyPduR.PNC1_IPDU_ROUTING_PATHS }
+}
+rule pnc2requested initially false {
+if ( PNC2 == PNC_REQUESTED ||
+PNC2 == PNC_READY_SLEEP )
+{ actionlist pnc2requestedActions }
+}
+actions pnc2requestedActions on condition {
+PduRRoutingPathGroupSwitch
+{ init true enable ArMmExample.EcuC.MyPduR.PNC2_IPDU_ROUTING_PATHS }
+}
+rule pnc3requested initially false
+{ if ( PNC3 == PNC_REQUESTED || PNC3 == PNC_READY_SLEEP ) { actionlist
+pnc3requestedActions }
+}
+actions pnc3requestedActions on condition
+Guide to Mode Management
+{ PduRRoutingPathGroupSwitch { init true enable ArMmExample.EcuC.MyPduR.
+PNC2_IPDU_ROUTING_PATHS }
+}
+Listing 3.35: PNC reports PNC_REQUESTED or PNC_READY_SLEEP</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von PduR_DisableRouting().</p>
       </section>
 
       <section class="snip-card">
@@ -113,7 +227,7 @@ PNC3.</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_ModeManagementGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

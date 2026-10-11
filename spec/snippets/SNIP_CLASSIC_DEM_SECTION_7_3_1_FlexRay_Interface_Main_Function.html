@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_3_1_FlexRay_Interface_Main_Function</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayInterface.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></strong> (Seite 26)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_15120" class="swsref internal-spec-ref"><code>SWS_FrIf_15120</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_95120" class="swsref internal-spec-ref"><code>SWS_FrIf_95120</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,69 @@ current FlexRay Interface State Machine is FRIF_STATE_ONLINE.⌋
 [SWS_FrIf_01124] ⌈If Bus Mirroring is enabled globally (see FrIfBusMirroringSupport),
 then call Fr_GetChannelStatus for all controllers of each FlexRay cluster for which mir-
 roring has been activated with a call to FrIf_EnableBusMirroring(), merge the states
-reported for the controllers of one clust</div></section>
+reported for the controllers of one cluster with a binary OR, and then call Mirror_Re-
+portFlexRayChannelStatus() with the cluster, Fr_ChannelAStatusPtr, and Fr_Channel
+BStatusPtr to report the aggregated channel states to the Bus Mirroring module.⌋
+[SWS_FrIf_25120] ⌈If one of the optional cluster-specific configuration parameters
+FRIF_E_NIT_CH_A, FRIF_E_NIT_CH_B, FRIF_E_SW_CH_A, FRIF_E_SW_CH_B or
+FRIF_E_ACS_CH_A, FRIF_E_ACS_CH_B exists, then call FrIf_GetChannelStatus for
+each FlexRay controller of the cluster and report the status to DEM as described be-
+low.⌋
+[SWS_FrIf_35120] ⌈If the optional configuration parameter FRIF_E_NIT_CH_A ex-
+ists, then the channel status information shall be reported to DEM as Dem_Set
+EventStatus (FRIF_E_NIT_CH_A, DEM_EVENT_STATUS_PREFAILED) when any of
+the error bits of a single controller (Channel A NIT status data vSS!SyntaxError, v
+SS!Bviolation) is set or as Dem_SetEventStatus (FRIF_E_NIT_CH_A, DEM_EVENT_
+STATUS_PREPASSED) when none of these error bits is set.⌋
+[SWS_FrIf_45120] ⌈If the optional configuration parameter FRIF_E_NIT_CH_B ex-
+ists, then the channel status information shall be reported to DEM as Dem_Set
+EventStatus (FRIF_E_NIT_CH_B, DEM_EVENT_STATUS_PREFAILED) when any of
+the error bits of a single controller (Channel B NIT status data vSS!SyntaxError, v
+SS!Bviolation) is set or as Dem_SetEventStatus (FRIF_E_NIT_CH_B, DEM_EVENT_
+STATUS_PREPASSED) when none of these error bits is set.⌋
+[SWS_FrIf_55120] ⌈If the optional configuration parameter FRIF_E_SW_CH_A exists,
+then the channel status information shall be reported to DEM as Dem_SetEventSta-
+tus (FRIF_E_SW_CH_A, DEM_EVENT_STATUS_PREFAILED) when any of the error
+bits of a single controller (Channel A symbol window status data vSS!SyntaxError, v
+SS!Bviolation, vSS!TxConflict) is set or as Dem_SetEventStatus (FRIF_E_SW_CH_A,
+DEM_EVENT_STATUS_PREPASSED) when none of these error bits is set.⌋
+[SWS_FrIf_65120] ⌈If the optional configuration parameter FRIF_E_SW_CH_B exists,
+then the channel status information shall be reported to DEM as Dem_SetEventSta-
+tus (FRIF_E_SW_CH_B, DEM_EVENT_STATUS_PREFAILED) when any of the error
+bits of a single controller (Channel B symbol window status data vSS!SyntaxError, v
+SS!Bviolation vSS!TxConflict) is set or as Dem_SetEventStatus (FRIF_E_SW_CH_B,
+DEM_EVENT_STATUS_PREPASSED) when none of these error bits is set.⌋
+[SWS_FrIf_75120] ⌈If the optional configuration parameter FRIF_E_ACS_CH_A ex-
+ists, then the channel status information shall be reported to DEM as Dem_SetEvent
+Status (FRIF_E_ACS_CH_A , DEM_EVENT_STATUS_PREFAILED) when any of the
+error bits of a single controller (Channel A aggregated channel status vSS!SyntaxEr-
+ror, vSS!ContentError, vSS!Bviolation, vSS!TxConflict) is set or as Dem_SetEventSta-
+tus (FRIF_E_ACS_CH_A, DEM_EVENT_STATUS_PREPASSED) when none of these
+error bits is set.⌋
+[SWS_FrIf_85120] ⌈If the optional configuration parameter FRIF_E_ACS_CH_B ex-
+ists, then the channel status information shall be reported to DEM as Dem_SetEvent
+Status (FRIF_E_ACS_CH_B, DEM_EVENT_STATUS_PREFAILED) when any of the
+error bits of a single controller (Channel B aggregated channel status vSS!SyntaxEr-
+ror, vSS!ContentError, vSS!Bviolation, vSS!TxConflict) is set or as Dem_SetEventSta-
+tus (FRIF_E_ACS_CH_B, DEM_EVENT_STATUS_PREPASSED) when none of these
+error bits is set.⌋
+[SWS_FrIf_95120] ⌈If a loss of the JobList’s synchronization (see JobListAsyncFlag)
+or a miss of execution was detected, the following steps shall be performed:
+1. Get the global time (FrIf_GetGlobalTime())
+• If FrIf_GetGlobalTime() returns E_NOT_OK, stop here
+• If FrIf_GetGlobalTime() returns E_OK, continue with step 2
+2. add some ’time buffer’ (i.e. some timespan which takes jitter into account)
+3. search the FlexRay Job List for the next job, i.e. that job with an invocation time
+greater than the current global time + ’time buffer’.
+4. set the JobListPointer to that job and program the absolute timer with this job’s
+invocation time (now the FlexRay Job List is synchronized again)
+5. clear the JobListAsyncFlag
+6. Enable the absolute timer interrupt
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_FrIf_15120] im Text von SWS_FlexRayInterface.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrIf_95120] im Text von SWS_FlexRayInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -106,7 +165,7 @@ reported for the controllers of one clust</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,7 +177,7 @@ reported for the controllers of one clust</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrIf_15120" class="swsref internal-spec-ref"><code>SWS_FrIf_15120</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrIf_95120" class="swsref internal-spec-ref"><code>SWS_FrIf_95120</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

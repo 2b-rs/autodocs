@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_1_11_5_Ingress_queue_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetInterface.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=42" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></strong> (Seite 42)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00095" class="swsref internal-spec-ref"><code>SWS_Eth_00095</code></a></span>
         </div>
@@ -97,7 +98,67 @@ an CDD or mapped to an Os task)
 3. All ingress queues which have no specific ingress queue handler function config-
 ured, are handled in the context of the EthIf_MainFunctionRx
 The Ethernet driver support to handle specific ingress queues in interrput mode A
-EthIfPhysContr</div></section>
+EthIfPhysControllercould configure multiple Rx mainfunctions to handle spe-
+cific ingress queues by using EthIfPhysCtrlRxMainFunctionIngressProcess-
+ing.
+A EthIfPhysCtrlRxMainFunctionIngressProcessing could reference
+one ingress queue via EthIfCanXLCtrlRxIngressFifoRef or EthIfPhysCtrl-
+RxIngressQueueRef. Along with this reference a specific main function is gener-
+ated (see EthIf_MainFunctionRx_&lt;IngressQueueProcessing ShortName&gt;),
+where the ingress queue handler is implemented.
+[SWS_EthIf_CONSTR_00004]{DRAFT} ⌈If a EthIfPhysController have EthIf-
+PhysCtrlRxMainFunctionIngressProcessing
+configured
+and
+reference
+ingress queues via EthIfPhysCtrlRxIngressQueueRef or EthIfCanXLCtrl-
+RxIngressFifoRef, then the configuration shall be qualified as valid, if the
+referenced ingress queues have neither EthCtrlConfigIngressQueueHandler-
+Function nor EthCtrlEnableIngressQueueInterrupt set to TRUE configured⌋
+(SRS_Eth_00170)
+[SWS_EthIf_CONSTR_00005]{DRAFT} ⌈If a EthIfPhysController have EthIf-
+PhysCtrlRxMainFunctionIngressProcessing configured, then the referenced
+ingress queues via EthIfPhysCtrlRxIngressQueueRef or EthIfCanXLCtrl-
+RxIngressFifoRef shall be handled by the corresponding EthIf_MainFunc-
+tionRx_&lt;IngressQueueProcessing ShortName&gt;⌋(SRS_Eth_00170)
+The generic EthIf_MainFunctionRx could perform a polling for all ingress queues,
+which are not handled by other ingress handler functions. Other ingress queue handler
+functions could be provided by the EthIf or by the Eth driver. The existence of other
+handler functions influences the ingress queue handling of EthIf_MainFunctionRx.
+[SWS_EthIf_00648]{DRAFT} ⌈If EthIf has EthIfEnableRxInterrupt is set to
+FALSE, then the EthIf_MainFunctionRx shall perform the polling for ingress
+queues where all following conditions apply:
+• an
+ingress
+queue
+is
+neither
+referenced
+by
+EthIfPhysCtrlRxIn-
+gressQueueRef nor by EthIfCanXLCtrlRxIngressFifoRef
+• an
+ingress
+queue
+at
+the
+Ethernet
+driver
+has
+EthCtrlEnableIn-
+gressQueueInterrupt set to FALSE
+• an
+ingress
+queue
+at
+the
+Ethernet
+driver
+has
+no
+EthCtrlConfigIn-
+gressQueueHandlerFunction configured
+⌋(SRS_Eth_00170)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -110,7 +171,7 @@ EthIfPhysContr</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=42" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

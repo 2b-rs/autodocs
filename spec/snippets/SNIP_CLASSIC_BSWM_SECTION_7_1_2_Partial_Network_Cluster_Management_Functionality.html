@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_1_2_Partial_Network_Cluster_Management_Functionality</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 32)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 32)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_ComM_CONSTR_00007</span>
         </div>
@@ -93,7 +94,69 @@ the ComM within the dedicated APIs. Each bit in the PNC bit vector represents th
 status of a particular PNC. The bit is called "PNC bit".
 [SWS_ComM_00825]
 Upstream requirements: SRS_ModeMgm_09243
-⌈The</div></section>
+⌈The byteIndex and bitIndex, in which a PNC bit corresponding to one ComMPncId
+resides, shall be determined as follows:
+• byteIndex=(ComMPncId div 8) - &lt;PNC Vector Offset&gt;
+• bitIndex=(ComMPncId mod 8)
+⌋
+Hint: The value of the PNC bit vector length of the corresponding channel can
+be obtained from the configuration of the Network Management module.
+Comment: [SWS_ComM_00825] defines only the calculation of the byteIndex and
+bitIndex, not how it shall be implemented.
+ComM receives the aggregated state of internal and external PNC requests as PNC
+bit vector via the callback function ComM_Nm_UpdateEIRA(&lt;PNC bit vector of internal
+and external PNC requests&gt;).
+[SWS_ComM_01060]
+Upstream requirements: SRS_ModeMgm_09248, SRS_ModeMgm_09250
+⌈If ComM_Nm_UpdateEIRA(&lt;PNC bit vector of EIRA&gt;) is called, then ComM shall
+transfer the content of the given PNC bit vector to the EIRA of ComM with respect to
+the PNC bit vector length configured in NmIf.⌋
+Note for [SWS_ComM_01060]: It is assumed that one buffer for the EIRA PNC bit
+vector per PNC is implemented. The length of this buffer should have the maximum
+length of the configured PNC bit vectors associated with the channels which are refer-
+enced by this PNC. For example, if PNC refer to ComMChannel A and ComMChannel
+B and the PNC bit vector length configured for those channels deviate (ChannelA-
+PncBitVectorLenth = 10Byte and ChannelB-PncBitVectorLength = 20), then one EIRA
+buffer for this PNC shall be available with PNC bit vector length set to 20 byte.
+ComM receives the aggregated state of external PNC requests as PNC bit vector per
+channel via the callback function ComM_Nm_UpdateERA(&lt;Channel&gt;, &lt;PNC bit vector
+of external PNC requests&gt;).
+[SWS_ComM_01061]
+Upstream requirements: SRS_ModeMgm_09248,
+SRS_ModeMgm_09250,
+SRS_ModeMgm_-
+09249
+⌈If
+the
+configuration
+parameter
+ComMPncGatewayEnabled
+(see
+[ECUC_ComM_00887]) is set to TRUE, ComM_Nm_UpdateERA(&lt;channel&gt;, &lt;PNC
+bit vector of ERA&gt;) is called and the parameter ComMPncGatewayType is set for the
+given channel, then ComM shall transfer the content of the given PNC bit vector to
+the ERA of ComM with respect to the given channel and the PNC bit vector length
+configured in NmIf.⌋
+Note:
+• ComM tranfers the EIRA PNC bit vector provided by Nm in one internal EIRA (see
+[SWS_ComM_01060]) and each ERA PNC bit vector in one ERA per ComMChan-
+nel (see [SWS_ComM_01061])
+• Transferring the content of a PNC bit vector result in the internal EIRA / ERA of
+ComM by setting the PNC bit in the internal EIRA / ERA to ’1’ if the corresponding
+PNC bit in the PNC bit vector is set to ’1’ or setting the PNC bit in the internal EIRA
+/ ERA to ’0’ if the corresponding PNC bit in the PNC bit vector is set to ’0’
+[SWS_ComM_01062]
+Upstream requirements: SRS_ModeMgm_09248, SRS_ModeMgm_09250
+⌈The ComM module shall be able to distribute the status of a particular PNC (result of
+the PNC state machine) across the assigned ComM channels. Therefore ComM shall
+forward the aggregated state of internal PNC request per communication channel (e.g.
+bus or network) as PNC bit vector by calling the API Nm_UpdateIRA(&lt;channel&gt;, &lt;PNC
+bit vector of aggregated internal PNC requests&gt;). The IRA PNC bit vector designates
+the status of the internal PNC requests.⌋
+Note:
+• The meaning of the PNC bits is defined in [[SWS_ComM_00825]]
+• Internal PNC requests are based on ComM user PNC requests and/or PNC re-
+quests, due to PNC gateway handling</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -106,7 +169,7 @@ Upstream requirements: SRS_ModeMgm_09243
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

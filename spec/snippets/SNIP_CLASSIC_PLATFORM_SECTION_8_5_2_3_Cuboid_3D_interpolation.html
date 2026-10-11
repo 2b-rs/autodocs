@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_5_2_3_Cuboid_3D_interpolation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IFLLibrary.pdf</strong> (Seite 29)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IFLLibrary.pdf#page=29" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IFLLibrary.pdf</a></strong> (Seite 29)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Ifl_91000" class="swsref internal-spec-ref"><code>SWS_Ifl_91000</code></a></span>
         </div>
@@ -120,7 +121,22 @@ The axis order memory representation is [z][x][y]. This is the column-major orie
 COLUMN_DIR from ASAM standard. The first axis z specifies the selected slice.
 Implementation:
 Linear interpolation along x-axis between the result of two 2D interpolations between
-neighbouring X/Y Maps</div></section>
+neighbouring X/Y Maps.
+num_slice = num_x * num_y
+if(dpResultZ-&gt;Ratio==0.0)
+Result=Ifl_IpoMap_f32
+(dpResultX,
+dpResultY,
+num_y,
+Val_array[num_slice
+*
+dpResultZ-&gt;Index])
+else
+LowerXY=Ifl_IpoMap_f32 (dpResultX, dpResultY, num_y, Val_array[num_slice * dpRe-
+sultZ -&gt;Index])
+UpperXY=Ifl_IpoMap_f32 (dpResultX, dpResultY, num_y, Val_array[num_slice * dpRe-
+sultZ -&gt;Index + 1])
+Result=Ifl_Interpolate_f32 (LowerXY, UpperXY, dpResultZ-&gt;Ratio)⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -133,7 +149,7 @@ neighbouring X/Y Maps</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IFLLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IFLLibrary.pdf#page=29" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IFLLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

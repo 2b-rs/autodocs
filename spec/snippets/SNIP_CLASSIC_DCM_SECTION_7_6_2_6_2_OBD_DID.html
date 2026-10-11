@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dcm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_6_2_6_2_OBD_DID</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 130)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=130" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 130)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01389" class="swsref internal-spec-ref"><code>SWS_Dcm_01389</code></a></span>
         </div>
@@ -88,11 +89,53 @@ shall use the UDS interface.⌋()
 [SWS_Dcm_01197] ⌈If DcmDspEnableObdMirror is set to FALSE, all requests
 within the OBD DID range shall use the UDS interface.⌋()
 If DcmDspEnableObdMirror is set to FALSE ([SWS_Dcm_01197]) or the DID is ex-
-plicitl</div></section>
+plicitly configured inside the OBD PID range (F400-F4FF) ([SWS_Dcm_01195]), the
+access to the OBD data shall be given in the following way:
+[SWS_Dcm_01379] ⌈On reception of an UDS Service ReadDataByIdentifier (0x22) re-
+quest with only ”availability OBDDataIdentifier” as parameter, the Dcm shall respond
+with the corresponding supported (=configured) DIDs in the OBD range (F400-F4FF).⌋
+()
+Manager
+[SWS_Dcm_01380] ⌈On reception of an UDS Service ReadDataByIdentifier (0x22) re-
+quest with only OBDDataIdentifier that are not ”availability OBDDataIdentifier”, the
+Dcm shall obtain the current value of these OBDDataIdentifier by invoking the con-
+figured Xxx_ReadData() functions for every data of the OBDDataIdentifier and shall
+return these values as response to Service 0x22.⌋()
+[SWS_Dcm_01382] ⌈If an OBDDataIdentifier contains support information (presence
+of DcmDspDidDataSupportInfo container), the Dcm shall add the support informa-
+tion in the diagnostic response.⌋()
+[SWS_Dcm_01383] ⌈If an OBDDataIdentifier contains support information (presence
+of DcmDspDidDataSupportInfo container), the Dcm shall calculate the support in-
+formation value according to the available data for this DID: for every DcmDspData
+container existing for this DID, the associated support information bits, referenced in
+DcmDspDidDataSupportInfo, shall be set to one.⌋()
+[SWS_Dcm_01384] ⌈When responding to UDS Service ReadDataByIdentifier (0x22)
+with OBDDataIdentifier, the Dcm shall put fill-bytes between DcmDspData in the OBD-
+DataIdentifier whenever content bytes are missing, in order to fit to the DID size (see
+configuration parameter DcmDspDidSize).⌋()
+[SWS_Dcm_01386] ⌈To serialize the required AUTOSAR data types (signed and
+unsigned integer) into the response message of ReadDataByIdentifier (0x22) OBD-
+DataIdentifier responses the target endianness configured in DcmDspDataEndian-
+ness shall be considered for DcmDspData elements having DcmDspDataUsePort
+set to {USE_DATA_SENDER_RECEIVER, USE_DATA_SENDER_RECEIVER_AS_SER-
+VICE, USE_ECU_SIGNAL}. In case DcmDspDataEndianness is not present, the
+DcmDspDataDefaultEndianness shall be used instead.⌋()
+If DcmDspEnableObdMirror is set to FALSE or the DID is explicitly configured inside
+the OBD InfoType range (F800-F8FF), the access to the OBD data shall be given in the
+following way:
+[SWS_Dcm_01387] ⌈On reception of an UDS Service ReadDataByIdentifier (0x22) re-
+quest with one or more ”availability OBDInfoTypeDataIdentifier” as parameter, the Dcm
+module shall respond with the corresponding supported (=configured) DIDs in the OBD
+range (F800-F8FF).⌋()
+[SWS_Dcm_01389] ⌈On reception of an UDS Service ReadDataByIdentifier (0x22)
+request with an OBDInfoTypeDataIdentifier that is not an ”availability OBDInfoType-
+DataIdentifier”, the Dcm module shall obtain the value of this OBDInfoTypeDataIdenti-
+fier by invoking all the configured Xxx_ReadData() function for every data of this OBD-
+InfoTypeDataIdentifier and shall return the value as response to Service 0x22.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">OBD InfoType DID request execution.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01389] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +144,7 @@ plicitl</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=130" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -117,11 +160,11 @@ plicitl</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

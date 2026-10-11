@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_6_4_Fan_out_control</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ServiceDiscovery.pdf</strong> (Seite 72)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></strong> (Seite 72)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02180" class="swsref"><code>TPS_SYST_02180</code></a></span>
         </div>
@@ -86,7 +87,99 @@ stance independent if the client subscribed with a Consumed Eventgroup unicast e
 point or Consumed Eventgroup multicast endpoint or if the affected SdServerService
 transmit its Events via the Evenhandler multicast endpoint according to the configura-
 tion of SdEventHandlerMulticastThreshold. In any case the Server Service Instance
-must know its subscribed clients with respect to the unica</div></section>
+must know its subscribed clients with respect to the unicast remote address (IP and
+port) of the client.
+[SWS_Sd_00453]
+Upstream requirements: SRS_Eth_00162, SRS_Eth_00077, SRS_Eth_00078
+⌈If SdEventHandlerTCP is configured: For every SubscribeEventgroup entry of this
+Event Handler and the SubscribeEventgroup entry reference an Endpoint Option, the
+following shall be done:
+• The relevant Routing Groups shall be identified by SdEventHandlerTcp.
+• The relevant TCP Socket Connection of this client shall be identified using the
+Address/Port of Endpoint Option (TCP) referenced in the SubscribeEventgroup
+entry and the SdServerServiceTcpRef, or shall be set up, if not existed before.
+• Check state of incoming TCP connection using SoAd_GetSoConMode:
+– If the return mode is SOAD_SOCON_ONLINE, then perform the following
+actions:
+∗Answer this SubscribeEventgroup by using SubscribeEventgroupAck
+entry.
+∗If the client was not subscribed before receiving the aforementioned en-
+try
+· call SoAd_EnableSpecificRouting with SdEventActivationRef and
+the Socket Connection.
+· call SoAd_IfSpecificRoutingGroupTransmit with SdEventTriggering
+Ref and the Socket Connection.
+– If the returned mode is other than SOAD_SOCON_ONLINE, then this shall
+be handled according to [SWS_Sd_00732] or [SWS_Sd_00733] (depend-
+ing on current service state) and answer this SubscribeEventgroup by using
+SubscribeEventgroupNack.
+⌋
+[SWS_Sd_00454]
+Upstream requirements: SRS_Eth_00162, SRS_Eth_00018
+⌈
+If SdEventHandlerUdp is configured: For every SubscribeEventgroup entry of this
+Eventhandler and if the SubscribeEventgroup entry references a Unicast Endpoint Op-
+tion, the following shall be done:
+• The relevant Routing Groups shall be identified by SdEventHandlerUdp.
+• If the relevant UDP Socket Connection of this client shall be identified using
+the Eventgroup unicast endpoint (Address/Port) of Endpoint Option (UDP) ref-
+erenced in the SubscribeEventgroup entry and the SdServerServiceUdpRef, or
+shall be set up (SoAd_SetUniqueRemoteAddr()), if not existed before.
+– If no Wildcard Socket Connection is left, SD_E_OUT_OF_RES shall be re-
+ported.
+• Only if the client was not subscribed before receiving this entry:
+– SoAd_EnableSpecificRouting with SdEventActivationRef and the Socket
+Connection depending on current number of subscribed clients with different
+endpoint information and the SdEventHandlerMulticastThreshold.
+– SoAd_IfSpecificRoutingGroupTransmit with SdEventTriggeringRef and the
+Socket Connection.
+⌋
+[SWS_Sd_00753]
+Upstream requirements: SRS_Eth_00162, SRS_Eth_00018
+⌈If SdEventHandlerUdp is configured: For every SubscribeEventgroup entry of this
+Eventhandler and if the SubscribeEventgroup entry references a Multicast Option, the
+following shall be done:
+• The relevant Routing Groups shall be identified by SdEventHandlerUdp.
+• The relevant UDP Socket Connection of this client shall be identified using the
+Eventgroup multicast endpoint (Address/Port) of the Multicast Option referenced
+in the SubscribeEventgroup entry and the SdServerServiceUdpRef, or shall be
+set up (SoAd_SetUniqueRemoteAddr()), if not existed before.
+– If no Wildcard Socket Connection is left, SD_E_OUT_OF_RES shall be re-
+ported.
+• The following action shall be performed, if no other client has already subscribed
+with the same Comsumed Eventgroup Multicast endpoint information:
+– Call SoAd_EnableSpecificRouting with SdEventActivationRef and the corre-
+sponding Socket Connection. The corresponding Socket Connection shall
+be the configured Socket Connection referenced by SdMulticastEventSo-
+ConRef, if the number of subscribed clients with different endpoint informa-
+tion has reached SdEventHandlerMulticastThreshold. Otherwise the identi-
+fied Socket Connection (described in the previous point)
+• Only if the client was not subscribed before receiving this entry:
+– SoAd_IfSpecificRoutingGroupTransmit with SdEventTriggeringRef and the
+Socket Connection.
+⌋
+Note:
+• SdClientServices which subscribe with the same Consumed Eventgroup multi-
+cast endpoint, share the same SoAdSocketConnection on SdServerService side
+• A SdServiceService could send the same event at the same time to a Consumed
+Eventgroup unicast endpoint or Consumed Eventgroup multicast endpoint. This
+is announced within the SubscriptionEventgroup entry which could reference ei-
+ther a IPv4/IPv6 Endpoint option (unicast endpoint) or via IPv4/IPv6 Multicast
+option (multicast endpoint).
+• Transmission of initial Events (SdEventTriggeringRef is configured) in combinan-
+tion with a subscription using a Consumed Eventgroup multicast endpoint has
+to be used carefully. This has to be ensured by the network communication de-
+sign. Rational: every subscription to the same Consumed Eventgroup multicast
+endpoint would trigger a transmission of an initial Event, which is received by all
+currently subscribed Clients. This could cause misbehavior for communication
+for example which use sequence counters (e.g. E2E communication).
+[SWS_Sd_00754]
+Upstream requirements: SRS_Eth_00162
+⌈Each Eventhandler shall qualify based on the configured SdEventHandlerMulticast-
+Threshold and the number of clients with different endpoint information (either received
+as Eventgroup unicast endpoint or as Eventgroup multicast endpoint), if the threshold
+has been reached to transmit the Events via the configured Evenhandler multicast end-
+point (see SdMulticastEventSoConRef).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -99,7 +192,7 @@ must know its subscribed clients with respect to the unica</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ServiceDiscovery.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

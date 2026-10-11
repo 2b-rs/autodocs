@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANTP_SECTION_7_3_3_Buffer_strategy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANTransportLayer.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTp_00298" class="swsref internal-spec-ref"><code>SWS_CanTp_00298</code></a></span>
         </div>
@@ -89,7 +90,21 @@ frame, with a length of 50 bytes utilizing CAN 2.0 frames.
 Figure 7.4: Example of transmit process
 1: The PduR asks for the transmission of 50 data bytes;
 2: The CanTp asks the PduR for the payload data; the CanTp send the First Frame;
-3: The CanTp send the rest of p</div></section>
+3: The CanTp send the rest of payload data as sequences of Consecutive Frames; 6
+or 7 payload data bytes are copied by the upper layer on each CF;
+4: The CanTp confirms transmission of the payload data.
+The next figure is an example of an N-SDU receiving 49 bytes; the upper layer reports
+25 bytes as available Rx buffer.
+PduR_CanTpStartOfReception (id, length=49, *RemainingRxBuff)
+No buffer
+PduR_CanTpRxIndication (id, OK)
+CanTp_RxIndication (id, *(data, length))
+CanIf
+1
+2
+4
+5
+7</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +117,7 @@ Figure 7.4: Example of transmit process
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

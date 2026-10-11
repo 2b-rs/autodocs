@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: idsm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_IDSM_SECTION_7_5_2_6_ICV_Verification</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverCAN.pdf</strong> (Seite 63)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTSyn_00193" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00193</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_91003" class="swsref internal-spec-ref"><code>SWS_IdsM_91003</code></a></span>
         </div>
       </div>
 
@@ -106,11 +107,99 @@ Upstream requirements: RS_TS_20073
 verification.⌋
 [SWS_CanTSyn_00193]
 Upstream requirements: RS_TS_20073
-⌈If StbM_GetRxFr</div></section>
+⌈If StbM_GetRxFreshness returned a non-recoverable error code (i.e, E_NOT_OK),
+then the Time Slave shall
+• consider the ICV verification of a received FUP message as failed
+• stop the ICV verification,
+• drop the received FUP message,
+• call Det_ReportRuntimeError with the parameter ErrorId set to CANTSYN_
+E_FRESHNESSFAILURE,
+• and call IdsM_SetSecurityEventWithContextData with the parameter
+EventId set to SEV_TSYN_CAN_FRESHNESS_NOT_AVAILABLE.
+⌋
+Refer to the chapter 10.2.5 in [7] for the configuration details of CSM job used for ICV
+verification.
+[SWS_CanTSyn_00194]
+Upstream requirements: RS_TS_20073
+⌈If CanTSynIcvVerificationBase for the Time Domain is configured to ICV_MAC,
+the Time Slave shall call Csm_MacVerify to verify the ICV value.⌋
+[SWS_CanTSyn_00195]
+Upstream requirements: RS_TS_20073
+⌈If CanTSynIcvVerificationBase for the Time Domain is configured to ICV_SIG-
+NATURE, the Time Slave shall call Csm_SignatureVerify to verify the ICV value.⌋
+Note: The mode parameter is intentionally left open for the implementer to choose (i.e.
+CRYPTO_OPERATIONMODE_SINGLECALL would possibly be the best option since it
+does not require further calls to CSM).
+The CSM job used to generate the ICV can be configured to synchronous or asyn-
+chronous behaviour.
+[SWS_CanTSyn_00196]
+Upstream requirements: RS_TS_20073
+⌈The ICV verification timeout observation is disabled, when the CSM job to verify ICV is
+configured in synchronous behaviour. In this case, the CanTSynIcvVerification-
+Timeout shall be set to 0.⌋
+[SWS_CanTSyn_00197]
+Upstream requirements: RS_TS_20073
+⌈If Csm_MacVerify or Csm_SignatureVerify returns E_OK, the Time Slave shall
+start the CanTSynIcvVerificationTimeout.⌋
+[SWS_CanTSyn_00198]
+Upstream requirements: RS_TS_20073
+⌈The CanTSynIcvVerificationTimeout shall be stopped with the notification of
+the CanTSyn_IcvVerificationIndication callback.⌋
+[SWS_CanTSyn_00199]
+Upstream requirements: RS_TS_20073
+⌈When Csm_MacVerify or Csm_SignatureVerify return a recoverable error code
+(e.g., E_BUSY, QUEUE_FULL), then the Time Slave shall
+• consider the verification of received FUP message as failed
+• and increment the authentication build counter for this FUP message.
+⌋
+[SWS_CanTSyn_00200]
+Upstream requirements: RS_TS_20073
+⌈If one of the following conditions is true:
+• the authentication build counter has reached the configuration value CanTSyn-
+RxAuthenticationBuildAttempts,
+• the ICV verification attempt counter has reached the configuration value
+CanTSynIcvVerificationAttempts
+• the verification of the ICV has returned a non-recoverable error such as returning
+E_NOT_OK or KEY_FAILURE,
+• CanTSynIcvVerificationTimeout expires before the notification of the
+CanTSyn_IcvVerificationIndication callback,
+then the Time Slave shall
+• stop the ICV verification and consider the ICV verification as failed,
+• and call IdsM_SetSecurityEventWithContextData with the parameter
+EventId set to SEV_TSYN_CAN_ICV_VERIFICATION_FAILED.
+⌋
+[SWS_CanTSyn_00215]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20073
+⌈For every reception of messages that require ICV verification, the Time Slave shall
+maintain an authentication build counter (refer to CanTSynRxAuthentication-
+BuildAttempts).⌋
+[SWS_CanTSyn_00216]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20073
+⌈Upon the initial processing of messages that require ICV verification (i.e., upon the
+first attempt of a freshness and ICV check for each received message), the Time Slave
+shall set the authentication build counter to 0.⌋
+[SWS_CanTSyn_00217]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20073
+⌈When
+StbM_GetRxFreshness
+returns
+a
+recoverable
+error
+code
+(e.g.,
+STBM_E_BUSY), then the Time Slave shall increment the authentication build
+counter and shall not execute verification of the ICV.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_CanTSyn_00193] im Text von SWS_TimeSyncOverCAN.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von IdsM_SetSecurityEventWithContextData().</p>
       </section>
 
       <section class="snip-card">
@@ -119,11 +208,11 @@ Upstream requirements: RS_TS_20073
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverCAN.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 63</td>
+              <td>Seite 66</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -131,7 +220,7 @@ Upstream requirements: RS_TS_20073
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTSyn_00193" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00193</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_IdsM_91003" class="swsref internal-spec-ref"><code>SWS_IdsM_91003</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -139,7 +228,7 @@ Upstream requirements: RS_TS_20073
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

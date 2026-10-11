@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_6_1_5_Environmental_condition_dependent_execution</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 96)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=96" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 96)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dcm_CONSTR_6089</span>
         </div>
@@ -88,7 +89,113 @@ erenced the DcmLogicalOperator shall not be present and therefore not be used.�
 swModeRef or a DcmSwcModeRef or a DcmSwcSRDataElementRef as external ref-
 erence.⌋()
 [SWS_Dcm_00810] ⌈The DcmSwcModeRef and DcmBswModeRef of DcmModeCon-
-ditions shall evaluate if the referenced M</div></section>
+ditions shall evaluate if the referenced Mode-Declaration is set in case of DcmCondi-
+tionType is set to DCM_EQUALS or is not set in case of DcmConditionType is set
+to DCM_EQUALS_NOT.⌋()
+[SWS_Dcm_01119] Mode condition evaluation ⌈For each mode condition, the Dcm
+shall compare a compare value with a S/R data element. The compare value is pro-
+vided by DcmSwcSRDataElementValueRef or DcmModeConditionConnectionCertifi-
+cateCompareElementRef and the S/R Element is by DcmSwcSRDataElementRef. The
+mode condition is evaluated to true if the S/R data element value is:
+• equal to the compare value in case of DcmConditionType is set to
+DCM_EQUALS
+• unequal to the compare value in case of DcmConditionType is set to
+DCM_EQUALS_NOT
+Manager
+• greater than the compare value in case of DcmConditionType is set to
+DCM_GREATER_THAN
+• greater or equal than the compare value in case of DcmConditionType is set
+to DCM_GREATER_OR_EQUAL
+• less than the compare value in case of DcmConditionType is set to
+DCM_LESS_THAN
+• less or equal than the compare value in case of DcmConditionType is set to
+DCM_LESS_OR_EQUAL.
+⌋()
+[SWS_Dcm_CONSTR_06029]
+⌈The
+values
+DCM_GREATER_THAN,
+DCM_GREATER_OR_EQUAL,
+DCM_LESS_OR_EQUAL
+and
+DCM_LESS_THAN
+shall not used with a Mode reference (DcmBswModeRef or DcmSwcModeRef) .⌋()
+Note: The current mode of the referenced ModeDeclarationGroupPrototypes could
+be read by either the API SchM_Mode (in case of DcmBswModeRef) or by the API
+Rte_Mode (in case of DcmSwcModeRef).
+[SWS_Dcm_00811] ⌈In case multiple DcmModeConditions are referenced within a
+DcmModeRule they shall be evaluated in order of the index attributes of the EcucRef-
+erenceValues for DcmArgumentRef.⌋()
+Note: This implies the priority of NRCs
+[SWS_Dcm_00782] ⌈If a DcmModeRule is not referenced from the DcmDspAuthen-
+ticationConnection, the Dcm shall use the optional parameter DcmModeRuleN-
+rcValue as NegativeResponseCode in case the mode rule is evaluated to false.⌋()
+Mode rules for DcmDspAuthenticationConnection are not part of the NRC eval-
+uation.
+[SWS_Dcm_00812] ⌈In case a nested DcmModeRule contains also a DcmModeRu-
+leNrcValue parameter, this NRC shall be used prior the higher-level NRC.⌋()
+[SWS_Dcm_00813] ⌈In case DcmLogicalOperator is set to DCM_AND, the first
+failed DcmModeRule with an explicit configured NRC (DcmModeRuleNrcValue) shall
+be used to define the NRC for the response message.⌋()
+[SWS_Dcm_00814] ⌈In case DcmLogicalOperator is set to DCM_OR, the last
+failed DcmModeRule with an explicit configured NRC (DcmModeRuleNrcValue) shall
+be used to define the NRC for the response message.⌋()
+Note: The difference in the AND and OR logical operation is to allow an optimized
+implementation.
+[SWS_Dcm_00815] ⌈In case the complete evaluation result in no specific NRC the NRC
+0x22 (ConditionsNotCorrect) shall be used.⌋()
+Manager
+[SWS_Dcm_00942] ⌈The Dcm shall create for commonly used ModeDeclara-
+tionGroupPrototype of each DcmSwcModeRef of DcmModeConditions a required
+mode switch port referencing this ModeDeclarationGroupPrototype. The name pattern
+of this port prototype shall be DcmModeUser_&lt;ModeDeclarationGroupPrototype&gt;" in
+case the ModeDeclarationGroupPrototype shortname is unique. Otherwise the name
+pattern is implementation specific, except the required prefix "DcmModeUser_".⌋()
+Note: ModeDeclarationGroupPrototypes are not necessarily unique, wherefore the ex-
+ception is required to avoid name clashes in the Dcm Service-SWC.
+Examples on using mode dependent request execution:
+General assumptions:
+1. DcmModeRule1 consists of DcmModeCondition1, DcmModeRule2 and Dcm-
+ModeRule3
+2. DcmModeRule1 defines NRC 0x22
+3. DcmModeRule2 and DcmModeRule3 do not have any sub-rules
+4. DcmModeRule2 defines NRC 0x72
+5. DcmModeRule3 does not define a NRC value
+Example 1:
+1) DcmModeRule1 uses an OR combination (DcmModeCondition1 OR Dcm-
+ModeRule2 OR DcmModeRule3)
+a) DcmModeCondition1 is failing
+–&gt; NRC 0x22 is returned
+b) DcmModeRule2 is failing
+–&gt; NRC 0x72 is returned
+c) DcmModeRule3 is failing
+–&gt; NRC 0x22 is returned
+d) DcmModeCondition1, DcmModeRule2 and DcmModeRule3 are failing
+–&gt; NRC 0x72 is returned
+e) DcmModeCondition1 and DcmModeRule3 are failing
+–&gt; NRC 0x22 is returned
+Example 2:
+1) DcmModeRule1 uses an AND combination (DcmModeCondition1 AND Dcm-
+ModeRule2 AND DcmModeRule3)
+a) DcmModeCondition1 is failing
+–&gt; NRC 0x22 is returned
+b) DcmModeRule2 is failing
+–&gt; NRC 0x72 is returned
+c) DcmModeRule3 is failing
+–&gt; NRC 0x22 is returned
+d) DcmModeCondition1, DcmModeRule2 and DcmModeRule3 are failing
+–&gt; NRC 0x22 is returned
+Manager
+e) DcmModeCondition1 and DcmModeRule3 are failing
+–&gt; NRC 0x22 is returned
+e) DcmModeRule2 and DcmModeRule3 are failing
+–&gt; NRC 0x72 is returned
+[SWS_Dcm_CONSTR_06089] Only one compare element ⌈In one DcmModeCon-
+dition only one of the elements DcmSwcSRDataElementRef or DcmModeCondi-
+tionCertificateCompareElementRef shall be configured.⌋(RS_Diag_04232)
+[SWS_Dcm_CONSTR_06090] Use of certificate compare elements ⌈The DcmMod-
+eConditionCertificateCompareElementRef is only allowed, if the parent Dcm-
+ModeRule is referenced from a DcmDspAuthenticationConnection.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +208,7 @@ ditions shall evaluate if the referenced M</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=96" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

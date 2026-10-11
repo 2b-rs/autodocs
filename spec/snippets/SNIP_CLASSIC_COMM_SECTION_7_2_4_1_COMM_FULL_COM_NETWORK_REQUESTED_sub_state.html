@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_4_1_COMM_FULL_COM_NETWORK_REQUESTED_sub_state</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 75)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=74" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 75)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_91001" class="swsref internal-spec-ref"><code>SWS_ComM_91001</code></a></span>
         </div>
@@ -106,7 +107,120 @@ the ComM module shall request Nm_PassiveStartup(&lt;channel&gt;) from the Networ
 Management⌋
 [SWS_ComM_00903]
 Upstream requirements: SRS_ModeMgm_09132
-⌈On entering sub-state COMM_FU</div></section>
+⌈On entering sub-state COMM_FULL_COM_NETWORK_REQUESTED and Nm module
+has
+indicated
+a
+Network
+start,
+ComM_Nm_NetworkStartIndication(&lt;channel&gt;)
+([SWS_ComM_00383]),
+the
+ComM
+module
+shall
+request
+Nm_PassiveStartup(&lt;channel&gt;) from the Network Management⌋
+Comment for [SWS_ComM_00903]:
+This is not a "normal" transition to COMM_FULL_COMMUNICATION, ComM handle
+ComM_Nm_NetworkStartIndication() as "race condition" error (see Chapter 7.7.1)
+[SWS_ComM_00869]
+Upstream requirements: SRS_ModeMgm_00049
+⌈On
+entering
+sub-state
+COMM_FULL_COM_NETWORK_REQUESTED
+from
+another
+state
+or
+substate,
+if
+configuration
+parameter
+ComM-
+NmVariant=FULL
+([ECUC_ComM_00568])
+and
+if
+a
+user
+has
+re-
+quested
+ComM_RequestComMode(&lt;user&gt;,COMM_FULL_COMMUNI-
+CATION)
+([SWS_ComM_00110])
+the
+ComM
+module
+shall
+request
+Nm_NetworkRequest(&lt;channel&gt;) from the Network Management for the corre-
+sponding NM channel.⌋
+Note: Additionally Nm_NetworkRequest may be invoked due to [SWS_ComM_00980].
+[SWS_ComM_00870]
+Upstream requirements: SRS_ModeMgm_00049
+⌈On entering sub-state COMM_FULL_COM_NETWORK_REQUESTED, if configuration pa-
+rameter ComMNmVariant=FULL ([ECUC_ComM_00568]) and the DCM has indicated
+ComM_DCM_ActiveDiagnostic(&lt;channel&gt;) ([SWS_ComM_00873]), the ComM mod-
+ule shall request Nm_NetworkRequest(&lt;channel&gt;) from the Network Management for
+the corresponding NM channel.⌋
+[SWS_ComM_00889] ⌈In sub-state COMM_FULL_COM_NETWORK_REQUESTED and
+configuration
+parameter
+ComMNmVariant=LIGHT|NONE
+([ECUC_ComM_00568])
+and
+timer
+for
+ComMTMinFullComModeDuration([ECUC_ComM_00557])
+has
+expired
+and
+no
+user
+request
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION)
+and
+the
+DCM
+does
+not
+indicate
+ComM_DCM_ActiveDiagnostic(&lt;channel&gt;)([SWS_ComM_00873]), the ComM chan-
+nel state machine shall switch to sub-state COMM_FULL_COM_READY_SLEEP.⌋
+Rationale for [SWS_ComM_00889]:
+As long as timer for ComMTMinFullComModeDuration has not expired the sub-state
+shall be kept, to prevent toggling.
+[SWS_ComM_00888] ⌈In sub-state COMM_FULL_COM_NETWORK_REQUESTED and
+configuration parameter ComMNmVariant=FULL (see [ECUC_ComM_00568]) and
+no user request ComM_RequestComMode(&lt;user&gt;,COMM_FULL_COMMUNICATION)
+and the DCM does not indicate ComM_DCM_ActiveDiagnostic(&lt;channel&gt;)(see
+[SWS_ComM_00873]), the ComM channel state machine shall switch to sub-state
+COMM_FULL_COM_READY_SLEEP.⌋
+Rationale for [SWS_ComM_00888]:
+No timer needed if AUTOSAR NM is used. This avoids redundant functionality because
+AUTOSAR NM also ensures this functionality
+[SWS_ComM_01017]
+Upstream requirements: SRS_ModeMgm_09266
+⌈In sub-state COMM_FULL_COM_NETWORK_REQUESTED and configuration parame-
+ter ComMNmVariant=SLAVE_ACTIVE ([ECUC_ComM_00568]) and no user request
+ComM_RequestComMode(&lt;user&gt;,COMM_FULL_COMMUNICATION), the ComM chan-
+nel state machine shall switch to sub-state COMM_FULL_COM_READY_SLEEP.⌋
+[SWS_ComM_00915]
+Upstream requirements: SRS_ModeMgm_09267
+⌈In sub-state COMM_FULL_COM_NETWORK_REQUESTED and configuration parameter
+ComMNmVariant=PASSIVE | SLAVE_PASSIVE ([ECUC_ComM_00568]), the ComM
+channel state machine shall switch to sub-state COMM_FULL_COM_READY_SLEEP.⌋
+[SWS_ComM_00890]
+Upstream requirements: SRS_ModeMgm_09071, SRS_ModeMgm_09087
+⌈In sub-state COMM_FULL_COM_NETWORK_REQUESTED and the DCM does not indi-
+cate ComM_DCM_ActiveDiagnostic(&lt;channel&gt;)(see [SWS_ComM_00873]) and com-
+munication limitation is requested (see section [REF]), ComM channel state machine
+shall immediately switch to sub-state COMM_FULL_COM_READY_SLEEP and cancel the
+timer for ComMTMinFullComModeDuration.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -119,7 +233,7 @@ Upstream requirements: SRS_ModeMgm_09132
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=74" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

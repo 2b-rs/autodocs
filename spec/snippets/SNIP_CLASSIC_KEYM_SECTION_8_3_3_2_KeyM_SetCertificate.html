@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_8_3_3_2_KeyM_SetCertificate</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 65)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 65)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,40 @@ stored with the KeyM_ServiceCertificate(). This can be done, for example, throug
 proprietary operations during the manufacturing process. At least it is necessary for a
 proper operation, that the root certificate is available.
 [SWS_KeyM_00115]
-Upstrea</div></section>
+Upstream requirements: SRS_CryptoStack_00111
+⌈If all parameters are accepted the function shall store the provided certificate data in
+an internal memory that is assigned to the certificate slot referenced by the given Cert
+Id, typically in RAM. Once the certificate is provided the certificate submodule will start
+parsing the certificate.⌋
+The parsing of a certificate can either be done directly within this function or can be
+operated in the background or main function.
+Note: Setting the certificate and parsing it successfully does not necessarily imply that
+the certificate is validated in its chain of trust. The parsing is merely a pre-requisite to
+perform a certificate validation which is requested with another function.
+[SWS_KeyM_00116]
+Upstream requirements: SRS_CryptoStack_00096
+⌈The function returns E_OK if the certificate was basically accepted. Any other re-
+turn value indicates that the certificate was not accepted. No parsing and validation
+operation can be performed on this certificate until a new certificate is provided and
+accepted.⌋
+Info: The status of the certificate if it is parsed or validated successfully can be checked
+with KeyM_CertGetStatus().
+[SWS_KeyM_00166]
+Upstream requirements: SRS_CryptoStack_00118, SRS_CryptoStack_00096
+⌈If the storage class of the certificate referenced by the container KeyMCertificate//Key
+MCertificateStorage is set to KEYM_STORAGE_IN_CSM or KEYM_STORAGE_IN_
+NVM a development error KEYM_E_CONFIG_FAILURE shall be generated. If devel-
+opment mode is disabled the value E_NOT_OK shall be returned.⌋
+[SWS_KeyM_00141]
+Upstream requirements: SRS_CryptoStack_00096, SRS_CryptoStack_00115
+⌈The status of a certificate can be reset by calling KeyM_SetCertificate() with the cor-
+responding certificate ID but with length information 0. The function will return E_OK
+and will reset the status of the certificate to KEYM_CERTIFICATE_NOT_AVAILABLE
+(see KeyM_CertGetStatus()).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +159,7 @@ Upstrea</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

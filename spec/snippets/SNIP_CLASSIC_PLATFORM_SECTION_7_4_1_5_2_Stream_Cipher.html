@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_4_1_5_2_Stream_Cipher</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_Cryptography.pdf</strong> (Seite 59)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=59" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_Cryptography.pdf</a></strong> (Seite 59)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CRYPT_01658" class="swsref internal-spec-ref"><code>SWS_CRYPT_01658</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CRYPT_01662" class="swsref internal-spec-ref"><code>SWS_CRYPT_01662</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,137 @@ Note, that the above requirement applies only to block-wise modes when the user
 supplied input data that is not a multiple of the block-size. In this case the last data
 chunk, which cannot be processed because it is less than the block-size, must be
 cached until the next data processing call adds sufficient data to complete the block-
-size (and continue proce</div></section>
+size (and continue processing).
+[SWS_CRYPT_01659]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::SetKey shall configure this context for encryption or decryption according
+to the provided ara::crypto::CryptoTransform and ensure that the provided
+ara::crypto::cryp::SymmetricKey is used for the following en/decryption.
+• SetKey shall return a kIncompatibleObject error, if the provided Symmet-
+ric Key belongs to a different ara::crypto::cryp::CryptoProvider in-
+stance.
+• SetKey shall return a kUsageViolation error, if the provided transforma-
+tion direction (CryptoTransform::kEncrypt or CryptoTransform::kDe-
+crypt) does not match the ara::crypto::AllowedUsageFlags (kAllow-
+DataEncryption or kAllowDataDecryption) of the provided Symmetric
+Key.
+• SetKey shall return a kInvalidArgument error, if the provided transformation
+direction is not allowed in StreamCipher algorithm context.
+⌋(RS_CRYPTO_02201)
+[SWS_CRYPT_01660]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::GetTransformation shall return the ara::crypto::CryptoTrans-
+form that was provided in the last valid call to ara::crypto::cryp::StreamCi-
+pherCtx::SetKey.
+• GetTransformation shall return a CryptoErrorDomain::kUninitial-
+izedContext error, if ara::crypto::cryp::StreamCipherCtx::SetKey
+was never called.
+⌋(RS_CRYPTO_02201)
+[SWS_CRYPT_01661]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::IsBytewiseMode shall return TRUE, if the algorithm specified during
+context creation supports updating data byte-wise. It shall return FALSE, if the al-
+gorithm can process only data in multiples of the block-size.⌋(RS_CRYPTO_02201)
+Some operation modes of specific Stream Ciphers are seekable, e.g., [17, CTR],
+[18, Salsa20], or [19, Trivium], and others are not. Seekable means that the user
+can efficiently seek to any position in the data stream in constant time. If the user
+needs such functionality and it is unclear if the chosen algorithm provides this kind of
+functionality, the support of such a mode can be queried.
+[SWS_CRYPT_01662]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::IsSeekableMode shall return TRUE, if the algorithm specified during
+context creation supports seek operations.⌋(RS_CRYPTO_02201)
+[SWS_CRYPT_01653]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::Seek shall increment/decrement the position of the next byte to process
+according to the provided offset.
+If the second and optional boolean parameter
+equals TRUE, offset shall be counted from the start of the stream.
+• Seek shall return a CryptoErrorDomain::kUnsupported error, if this con-
+text does not support seeking.
+• Seek shall return a CryptoErrorDomain::kProcessingNotStarted error,
+if processing was not started by successfully calling Start or has already been
+terminated by successfully calling FinishBytes.
+• Seek shall return a CryptoErrorDomain::kBelowBoundary error, if the ab-
+solute seek position is negative.
+• Seek shall return a CryptoErrorDomain::kInvalidArgument error, if the
+interface ara::crypto::cryp::StreamCipherCtx::IsBytewiseMode re-
+turns FALSE and the offset is not aligned on the block boundary.
+⌋(RS_CRYPTO_02201)
+[SWS_CRYPT_01654]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::Start shall initialize the context either with an optional ara::crypto::
+ReadOnlyMemRegion or a mandatory ara::crypto::cryp::SecretSeed. If the
+size of initialization data is larger than required by the context, only the leading bytes
+shall be used.
+• Start shall return a CryptoErrorDomain::kUninitializedContext er-
+ror, if SetKey was never called on this context.
+• Start shall return a CryptoErrorDomain::kInvalidInputSize error, if
+not enough initialization data has been provided.
+• Start shall return a CryptoErrorDomain::kUnsupported error, if the algo-
+rithm selected during context creation does not support initialization but initializa-
+tion data has been provided nonetheless.
+• Start shall return a CryptoErrorDomain::kUsageViolation error, if the
+transformation direction provided by a call to ara::crypto::cryp::Stream-
+CipherCtx::SetKey (CryptoTransform::kEncrypt or CryptoTrans-
+form::kDecrypt) does not match the ara::crypto::AllowedUsageFlags
+(kAllowDataEncryption or kAllowDataDecryption) of the provided
+ara::crypto::cryp::SecretSeed.
+⌋(RS_CRYPTO_02201)
+Start can be called even if processing has already been started by calling for exam-
+ple ProcessBlocks. In this case Start will cancel the previous transformation and
+discard the intermediate result, and re-initialize the context for the new transformation.
+Note: ara::crypto::cryp::StreamCipherCtx::Start must be called even if
+the selected algorithm does not support initialization. In this case an empty ara::
+crypto::ReadOnlyMemRegion must be provided.
+[SWS_CRYPT_01655]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::ProcessBlocks shall apply the configured transformation (encryption or
+decryption) to the provided data. If the data has been provided as a ara::crypto::
+ReadOnlyMemRegion, ProcessBlock shall return the processed data. If the data
+was provided as a ara::crypto::ReadWriteMemRegion, the input data shall be
+overwritten with the processed data. Note: the size of the input or input and output
+buffer must be a multiple of the block-size.
+• ProcessBlock
+shall
+return
+a
+CryptoErrorDomain::kIn-
+validUsageOrder error, if this interface is called after ara::crypto::
+cryp::StreamCipherCtx::ProcessBytes has been called.
+• ProcessBlock shall return a CryptoErrorDomain::kInvalidInputSize
+error, if the size of the input buffer is not a multiple of the block-size.
+• ProcessBlock shall return a CryptoErrorDomain::kProcessingNot-
+Started error, if processing was not started by successfully calling Start or
+has already been terminated by successfully calling FinishBytes.
+⌋(RS_CRYPTO_02201)
+[SWS_CRYPT_01656]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::ProcessBytes shall apply the configured transformation (encryption or
+decryption) to the provided data and return the result.
+Note: the size of the input
+buffer does not need to be a multiple of the block-size. Therefore, if IsBytewiseMode
+equals FALSE, ProcessBytes shall keep an internal buffer equal in size to the block-
+size and only process full blocks of data. If a call to this interface left unprocessed data
+in the buffer, the subsequent call’s input data shall continue filling the buffer until it can
+be processed.
+• ProcessBlock shall return a CryptoErrorDomain::kProcessingNot-
+Started error, if processing was not started by successfully calling Start or
+has already been terminated by successfully calling FinishBytes.
+⌋(RS_CRYPTO_02201)
+[SWS_CRYPT_01657]{DRAFT} ⌈The interface ara::crypto::cryp::StreamCi-
+pherCtx::FinishBytes shall apply the configured transformation (encryption or
+decryption) to the provided data for the last and final time, and return the result. If
+IsBytewiseMode equals FALSE and the provided data is insufficient to end process-
+ing with a completely filled internal block-size buffer (cache), then padding shall be
+applied according to the algorithm selected when creating this context. For decryption
+the padding shall be removed before returning the processed data.
+• FinishBytes
+shall
+return
+a
+CryptoErrorDomain::kProcessingNot-
+Started error, if processing was not started by successfully calling Start or
+has already been terminated by successfully calling FinishBytes.
+⌋(RS_CRYPTO_02201)
+Some Stream Cipher need an exact multiple of the block length in byte. If the length
+of the data to be encrypted is not an exact multiple, it must be padded to make it so.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_CRYPT_01658] im Text von SWS_Cryptography.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CRYPT_01662] im Text von SWS_Cryptography.</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +227,7 @@ size (and continue proce</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_Cryptography.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=59" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_Cryptography.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -112,7 +239,7 @@ size (and continue proce</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CRYPT_01658" class="swsref internal-spec-ref"><code>SWS_CRYPT_01658</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CRYPT_01662" class="swsref internal-spec-ref"><code>SWS_CRYPT_01662</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

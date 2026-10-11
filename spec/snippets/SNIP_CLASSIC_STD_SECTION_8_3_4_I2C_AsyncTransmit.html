@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_4_I2C_AsyncTransmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_I2CDriver.pdf</strong> (Seite 23)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_I2CDriver.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_I2CDriver.pdf</a></strong> (Seite 23)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,85 @@ Status:
 DRAFT
 Upstream requirements: CP_RS_I2C_00007, CP_RS_I2C_00017, CP_RS_I2C_00006
 ⌈When the function I2C_AsyncTransmit is called and any other Sequence on the
-same I2CChannel is in state I2C_SEQ_PENDING, the I2C Driver shall</div></section>
+same I2CChannel is in state I2C_SEQ_PENDING, the I2C Driver shall queue in FIFO
+the request, set the state I2C_SEQ_QUEUED, and return E_OK.⌋
+[CP_SWS_I2C_82306] Another transmission with a shared Job is ongoing
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007, CP_RS_I2C_00017, CP_RS_I2C_00006
+⌈When the function I2C_AsyncTransmit is called and the requested Sequence
+shares on the same I2CChannel a Job (i.e. reference to the same I2CJob) in an-
+other Sequence which is in state I2C_SEQ_PENDING, the I2C Driver shall reject the
+request and return E_NOT_OK.⌋
+[CP_SWS_I2C_82311] High priority transmission
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007, CP_RS_I2C_00017, CP_RS_I2C_00006
+⌈When the function I2C_AsyncTransmit is called and another Sequence on the
+same I2CChannel is in state I2C_SEQ_PENDING and has a Job with a higher
+I2CJobPriority, the I2C Driver shall either:
+• if I2CSeqInterruptible set to true, the I2C Driver shall interrupt the current
+Sequence with the higher prior Sequence. After this Sequence is transmitted
+the interrupted Sequence shall be finished.
+• if I2CSeqInterruptible set to false, the I2C Driver shall transmit the higher-
+prior Sequence immediately after the current Sequence has finished.
+Finally it shall return E_OK.
+Note: A Job is atomic and cannot be interrupted.⌋
+Figure 8.1: Interruptable sequences
+[CP_SWS_I2C_82305] The same transmission is ongoing
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007
+⌈When the function I2C_AsyncTransmit is called and the requested Sequence is
+already in state I2C_SEQ_PENDING, the I2C Driver shall not take this new request
+into account. In that case, the function shall return with value E_NOT_OK.⌋
+[CP_SWS_I2C_82307] Multiple Jobs
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007, SRS_SPAL_00157
+⌈If the I2CSequence consisting of multiple Jobs (I2CAssignedJob), the function
+I2C_AsyncTransmit shall transmit from the first Job up to the last Job in the Se-
+quence. Further it shall be assured that the first message transmission is using the
+START condition (S) and all subsequent Jobs in the sequence the repeated START
+condition (Sr). After the last job is executed or if any error occurred, the I2C driver shall
+set the state to
+• I2C_SEQ_FAILED, if any failure occurred
+• I2C_SEQ_NACK, if a NACK message was received
+• I2C_SEQ_OK, if everything was successfully executed.
+and afterwards invoke the sequence notification callback function I2C_SeqEndNoti-
+fication.
+⌋
+[CP_SWS_I2C_82308] Continuation with Queued Elements
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007, SRS_SPAL_00157, CP_RS_I2C_00017, CP_RS_-
+I2C_00006
+⌈After the last job is executed and FIFO queue is not empty (i.e. any other Sequence on
+the same I2CChannel is in state I2C_SEQ_QUEUED), the I2C driver shall transmit
+the next FIFO element similar to [CP_SWS_I2C_82303] and remove this element from
+the queue.⌋
+[CP_SWS_I2C_82309] Development Error Detection
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007
+⌈If development error detection is enabled (I2CDevErrorDetect == True), the func-
+tion I2C_AsyncTransmit shall raise the development error I2C_E_PARAM_SE-
+QUENCE if the function I2C_SetupEB is a not called once in advance for all Jobs
+in the Sequence.⌋
+Note: I2C_SetupEB does not need to be called every time before a call to I2C_-
+AsyncTransmit, e.g. if the EB parameter have not changed a single call of I2C_
+SetupEB is enough.
+[CP_SWS_I2C_00310] Development Error Detection
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00007
+⌈If development error detection is enabled (I2CDevErrorDetect == True), the func-
+tion I2C_AsyncTransmit shall raise the development error I2C_E_PARAM_SE-
+QUENCE if SequenceId is invalid (i.e. is not configured in I2CSequenceId).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +204,7 @@ same I2CChannel is in state I2C_SEQ_PENDING, the I2C Driver shall</div></section
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_I2CDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_I2CDriver.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_I2CDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

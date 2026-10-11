@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MEMIF_SECTION_6_2_2_BSW_Scheduler_Name_Prefix_and_Section_Name_Prefix</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 872)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=868" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 872)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_BSWMDT_04020" class="swsref"><code>TPS_BSWMDT_04020</code></a></span>
         </div>
@@ -115,7 +116,110 @@ ExecutableEntity
 minimumStartInterval: TimeValue [0..1]
 +
 reentrancyLevel: ReentrancyLevelEnum [0..1]
-ARElement</div></section>
+ARElement
+Implementation
+BswImplementation
++
+arReleaseVersion: RevisionLabelString [0..1]
++
+vendorApiInfix: Identifier [0..1]
+«atpVariation,atpSplitable»
++schedulerNamePrefix
+0..*
+«atpVariation,atpSplitable»
++memorySection
+0..*
+«atpSplitable»
++resourceConsumption
+0..1
+«atpVariation,atpSplitable»
++issuedTrigger
+0..*
+«atpVariation,atpSplitable»
++sectionNamePrefix
+0..*
+«atpVariation,atpSplitable»
++managedModeGroup
+0..*
+«atpVariation,atpSplitable»
++runsInside
+0..*
++implementedEntry
+0..1
+«atpVariation,atpSplitable»
++canEnter
+0..*
++behavior
+0..1
++prefix
+0..1
+«atpVariation,atpSplitable»
++exclusiveArea
+0..*
+«atpVariation,atpSplitable»
++accessedModeGroup
+0..*
++executableEntity
+0..*
++schedulerNamePrefix
+0..1
+«atpVariation,atpSplitable»
++entity
+0..*
+Figure 6.1: BswSchedulerNamePrefix and SectionNamePrefix
+In several requirements of this specification the Module Prefix is required and deter-
+mined as follows:
+[SWS_Rte_07593]
+Upstream requirements: SRS_Rte_00148
+⌈The BSW Scheduler Name Prefix &lt;bsnp&gt; of the calling BSW module shall
+be derived from the BswModuleDescription shortName if no BswScheduler-
+NamePrefix is defined for the BswModuleEntity using the related Basic Software
+Scheduler API.⌋
+[SWS_Rte_07594]
+Upstream requirements: SRS_Rte_00148
+⌈The BSW Scheduler Name Prefix &lt;bsnp&gt; shall be the value of the symbol at-
+tribute of the BswSchedulerNamePrefix of the BswModuleEntity if a BswSched-
+ulerNamePrefix is defined for the BswModuleEntity using the related Basic Soft-
+ware Scheduler API.⌋
+Please note that no matter if the &lt;bsnp&gt; is derived via BswModuleDescription.
+shortName (see [SWS_Rte_07593]) or via BswSchedulerNamePrefix.symbol
+(see [SWS_Rte_07594]) [TPS_BSWMDT_04008] always applies.
+That means, ex-
+cept for the potential vendor infix, the BswModuleEntry.shortName is always equal
+to the C function name.
+And therefore the BswModuleEntry.shortName is al-
+ways prefixed by the &lt;bsnp&gt;. For regular BSWMs this also means that the &lt;bsnp&gt;
+will always be equal to the BswModuleDescription.shortName, if a BswSched-
+ulerNamePrefix.symbol exists or not. Only for BSWMs being ICC2 clusters the
+BswModuleDescription.shortName will typically be different to the prefix of the
+BswModuleEntry.shortName because the BswModuleEntrys they implement are
+originally defined in different BSWMs. The definition of a BswSchedulerNamePrefix
+is then necessary to define where the prefix of the C symbol of the BswModuleEntry
+ends and the &lt;name&gt; part starts (see figure 6.2).
+Further on the Memory Mapping inside one cluster can either keep or abolish the ICC3
+borders. For some cases (e.g. Entry Point Prototype) the RTE has to know the used
+prefixes for the Memory Allocation Keywords as well.
+In the Meta Model these prefixes are expressed with the meta class Section-
+NamePrefix. Further information can be found in document [9].
+[SWS_Rte_07595]
+Upstream requirements: SRS_Rte_00148
+⌈If no SectionNamePrefix is defined for the BswModuleEntity implementing the re-
+lated BswModuleEntry, the Section Name Prefix &lt;snp&gt; shall be formed as follow:
+&lt;Ma&gt;[_&lt;vi&gt;_&lt;ai&gt;] where
+&lt;Ma&gt; is the Module abbreviation (in uppercase letters) of the BSW module derived
+from the BswModuleDescription’s shortName,
+&lt;vi&gt; is the vendorId (in uppercase letters) of the BSW module, and
+&lt;ai&gt; is the vendorApiInfix (in uppercase letters) of the BSW module.
+The sub part in squared brackets [_&lt;vi&gt;_&lt;ai&gt;] is omitted if no vendorApiInfix
+is defined for the Basic Software Module.
+⌋
+[SWS_Rte_07596]
+Upstream requirements: SRS_Rte_00148
+⌈The Section Name Prefix &lt;snp&gt; shall be the symbol of the SectionNamePrefix of
+the MemorySection associated to the BswModuleEntity implementing the related
+BswModuleEntry if a SectionNamePrefix is defined for the BswModuleEntity
+implementing the related BswModuleEntry.⌋
+For instance the following input configuration</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -128,7 +232,7 @@ ARElement</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=868" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

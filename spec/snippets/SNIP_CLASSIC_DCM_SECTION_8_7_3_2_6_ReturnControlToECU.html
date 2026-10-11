@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_8_7_3_2_6_ReturnControlToECU</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 316)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=316" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 316)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,96 @@ Variation
 Ref-&gt; DcmDspDidInfo/DcmDspDidControl/DcmDspDidControl
 Mask)} == DCM_CONTROLMASK_EXTERNAL) &amp;&amp; ({ecuc(Dcm/
 DcmConfigSet/DcmDsp/DcmDspDid/DcmDspDidInfoRef-&gt;Dcm
-DspDidInfo/DcmDspDidContro</div></section>
+DspDidInfo/DcmDspDidControl/DcmDspDidControlMaskSize)}
+&lt;= 0x04)
+controlMask
+–
+Type
+uint8*
+Variation
+({ecuc(Dcm/DcmConfigSet/DcmDsp/DcmDspData.DcmDspData
+UsePort)} == (USE_DATA_SYNCH_CLIENT_SERVER || USE_
+DATA_ASYNCH_CLIENT_SERVER || USE_DATA_ASYNCH_
+CLIENT_SERVER_ERROR)) &amp;&amp; ({ecuc(Dcm/DcmConfigSet/
+DcmDsp/DcmDspDid/DcmDspDidInfoRef-&gt; DcmDspDidInfo/Dcm
+DspDidControl/DcmDspDidControlMask)} == DCM_
+CONTROLMASK_EXTERNAL)&amp;&amp; ({ecuc(Dcm/DcmConfigSet/
+DcmDsp/DcmDspDid/DcmDspDidInfoRef-&gt;DcmDspDidInfo/Dcm
+DspDidControl/DcmDspDidControlMaskSize)} =&gt; 0x05)
+Parameters (inout)
+None
+Parameters (out)
+ErrorCode
+If the operation Xxx_ReturnControlToECU returns value E_NOT_
+OK, the DCM module shall send a negative response with NRC
+code equal to the parameter ErrorCode parameter value.
+Return value
+Std_ReturnType
+E_OK: Request was successful.
+E_NOT_OK: Request was not successful.
+Description
+This function requests to the application to return control to ECU of an IOControl.
+Available via
+Dcm_Externals.h
+⌋
+Note: Square brackets [] indicate that an argument is optional.
+If DcmDspDataUsePort is set to USE_DATA_SYNCH_FNC_PROXY or USE_DATA_-
+ASYNCH_FNC_PROXY, the following definition is used:
+[SWS_Dcm_91098]
+Definition of configurable interface Xxx_ReturnControlTo
+ECU
+Status:
+DRAFT
+Upstream requirements: RS_Diag_04254
+⌈
+Service Name
+Xxx_ReturnControlToECU (draft)
+Syntax
+Std_ReturnType Xxx_ReturnControlToECU (
+uint8* controlMask,
+uint8 controlMaskLength,
+Dcm_NegativeResponseCodeType ErrorCode
+)
+Service ID [hex]
+0x8e
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+Variation
+({ecuc(Dcm/DcmConfigSet/DcmDsp/DcmDspData.DcmDspDataUsePort)}== (USE_DATA_
+SYNCH_FNC_PROXY || USE_DATA_ASYNCH_FNC_PROXY) ) &amp;&amp; ({ecuc(Dcm/DcmConfig
+Set/DcmDsp/DcmDspDid/DcmDspDidInfoRef -&gt; DcmDspDidInfo/DcmDspDidControl)} !=
+NULL)
+Parameters (in)
+controlMask
+Control enable mask
+▽
+Manager
+△
+controlMaskLength
+Control enable mask length in byte
+Parameters (inout)
+None
+Parameters (out)
+ErrorCode
+If the operation Xxx_ReturnControlToECU returns value E_NOT_
+OK, the DCM module shall send a negative response with NRC
+code equal to the parameter ErrorCode parameter value.
+Return value
+Std_ReturnType
+E_OK: Request was successful.
+E_NOT_OK: Request was not successful.
+Description
+This function requests to the application to return control to ECU of an IOControl.
+Tags: atp.Status=draft
+Available via
+Dcm_Externals.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +215,7 @@ DspDidInfo/DcmDspDidContro</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=316" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_7_2_3_2_Logical_Supervision_Algorithm</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 49)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 49)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00296" class="swsref internal-spec-ref"><code>SWS_WdgM_00296</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00331" class="swsref internal-spec-ref"><code>SWS_WdgM_00331</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,108 @@ Checkpoints with which a Graph can start.
 To notify reaching a Checkpoint, a Supervised Entity invokes the function WdgM_
 CheckpointReached, which results with execution of Logical Supervision algorithm.
 To verify if transitions are valid, the algorithm needs to store the most recently reached
-Checkpoint. For every External Graph and Internal Graph, t</div></section>
+Checkpoint. For every External Graph and Internal Graph, the Watchdog
+Manager stores the most recently reached Checkpoint.
+Because a Checkpoint can belong to multiple Graphs, the function WdgM_Check-
+pointReached has to be able to identify to which Graph(s) a Checkpoint belongs.
+[SWS_WdgM_00295]
+Status:
+DRAFT
+Upstream requirements: SRS_ModeMgm_09221, SRS_ModeMgm_09222
+⌈The Watchdog Manager module shall identify to which Graph(s) each Checkpoint
+belongs.⌋
+[SWS_WdgM_00246]
+Status:
+DRAFT
+Upstream requirements: SRS_ModeMgm_09221, SRS_ModeMgm_09222
+⌈The function WdgM_CheckpointReached shall store the Checkpoint that has
+been most recently reported by a Supervised Entity, for each Graph (see WdgM_-
+CheckpointReached [SWS_WdgM_00263]).
+If the Activity Flag for a Graph is true, the function WdgM_CheckpointReached
+checks for each new Checkpoint if the Transition between the stored Checkpoint
+and the newly reported Checkpoint is allowed.⌋
+[SWS_WdgM_00274]
+Upstream requirements: SRS_ModeMgm_09221, SRS_ModeMgm_09222
+⌈The function WdgM_CheckpointReached [SWS_WdgM_00263] shall verify if the
+reported Checkpoint belonging to an Internal Graph is a correct one by the
+following checks:
+1. If the Activity Flag for the Graph of the reported Checkpoint is false, then:
+• If the Checkpoint is an Initial Checkpoint (WdgMInternalCheckpoin-
+tInitialRef) the result of Logical Supervision for the Supervised Entity is
+correct, otherwise incorrect.
+2. Else if Activity Flag is true and all previously called Checkpoints of this Graph
+were called in the right sequence, then:
+• If the reported Checkpoint is a successor of the stored Check-
+point within the Graph of the reported Checkpoint (this means there
+is an WdgMInternalTransition with WdgMInternalTransition-
+SourceRef and WdgMInternalTransitionDestRef), then the result of
+this Logical Supervision of the Supervised Entity is correct, otherwise
+incorrect.
+3. Else (i.e. Activity Flag is true, but at least one Checkpoint in this Graph was
+previously called in a wrong sequence):
+• The result of this Logical Supervision of the Supervised Entity keeps in-
+correct.
+⌋
+A similar check takes place for Checkpoints belonging to External Graphs.
+[SWS_WdgM_00252]
+Upstream requirements: SRS_ModeMgm_09221, SRS_ModeMgm_09222
+⌈The function WdgM_CheckpointReached [SWS_WdgM_00263] shall verify if the
+reported Checkpoint belonging to an External Graph is a correct one by the
+following checks:
+1. If the Activity Flag for the Graph of the reported Checkpoint is false, then:
+• If the Checkpoint is an Initial Checkpoint (WdgMExternalCheckpoin-
+tInitialRef), then the result of this Logical Supervision within the Super-
+vised Entity of the reported Checkpoint is correct, otherwise incor-
+rect.
+2. Else if Activity Flag is true and all previously called Checkpoints of this Graph
+were called in the right sequence, then:
+• If the reported Checkpoint is a successor of the stored Check-
+point within the Graph of the reported Checkpoint (this means there
+is an WdgMExternalTransition with WdgMExternalTransition-
+SourceRef and WdgMExternalTransitionDestRef), then the result of
+this Logical Supervision for Supervised Entity of the reported Checkpoint
+is correct, otherwise incorrect.
+3. Else (i.e. Activity Flag is true, but at least one Checkpoint in this Graph was
+previously called in a wrong sequence):
+• The result of this Logical Supervision of the Supervised Entity keeps incor-
+rect.
+The above requirement means that in case of an incorrect External Transition, the
+Supervised Entity that is considered as erroneous is the one that reported the incor-
+rect Checkpoint.⌋
+If a Checkpoint is one of the initial Checkpoints of a Graph, then the Graph is set
+as active.
+[SWS_WdgM_00273]
+Upstream requirements: SRS_ModeMgm_09221, SRS_ModeMgm_09222
+⌈If the function WdgM_CheckpointReached determines that the result of the Logical
+Supervision for the given Checkpoint is correct, and the Checkpoint is defined as
+an initial one, then the function WdgM_CheckpointReached shall set the Activity Flag
+of the corresponding Graph to true.⌋
+The reverse applies for the Final Checkpoint.
+[SWS_WdgM_00331]
+Upstream requirements: SRS_ModeMgm_09221, SRS_ModeMgm_09222
+⌈If the function WdgM_CheckpointReached determines that the result of the Logical
+Supervision for the given Checkpoint is correct, and the Checkpoint is defined as
+a final one, then the function WdgM_CheckpointReached shall set the Activity Flag
+of the corresponding Graph to false.⌋
+As a result, after the report from a Final Checkpoint, the correct reports within
+the same Graph are only from Initial Checkpoints (Note: for an evaluation of the
+Graph, any reports from the Checkpoints not belonging to the Graph are ignored,
+see [SWS_WdgM_00297]).
+A Checkpoint can belong to multiple Graphs (can be a combination of Inter-
+nal Graphs and External Graphs). This means that both the check defined in
+[SWS_WdgM_00274] and the one in [SWS_WdgM_00252] can be executed simul-
+taneously, and also means that, in any execution of WdgM_CheckpointReached
+and if the reported Checkpoint belongs to any Internal Graphs or External
+Graphs, the function can set the result of Logical Supervision for each corresponding
+Supervised Entity to correct (for all belonging Graphs) or incorrect (for all or a
+part of belonging Graphs).
+If the reported Checkpoint does not belong to any Graph, then the result of Logical
+Supervision is not be updated. This is because the Checkpoint may be used by other
+Supervision Functions (Alive or Deadline).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_WdgM_00296] im Text von SWS_WatchdogManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_WdgM_00331] im Text von SWS_WatchdogManager.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +199,7 @@ Checkpoint. For every External Graph and Internal Graph, t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +211,7 @@ Checkpoint. For every External Graph and Internal Graph, t</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00296" class="swsref internal-spec-ref"><code>SWS_WdgM_00296</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00331" class="swsref internal-spec-ref"><code>SWS_WdgM_00331</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

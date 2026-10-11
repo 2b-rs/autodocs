@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_8_Mode_switch_acknowledgment</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 438)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=438" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 438)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01555" class="swsref"><code>TPS_SWCT_01555</code></a></span>
         </div>
@@ -91,7 +92,44 @@ ment occurs or when a timeout was detected by the Basic Software Scheduler.
 [SWS_Rte_02587].⌋
 The related Entry Point Prototype is defined in [SWS_Rte_04542].
 Requirement [SWS_Rte_02679] and [SWS_Rte_07559] merely affects when the runn-
-a</div></section>
+able is activated. The Rte_SwitchAck and SchM_SwitchAck shall still be created,
+according to requirement [SWS_Rte_02678] and [SWS_Rte_07558] to actually read
+the acknowledgment.
+[SWS_Rte_02730]
+Upstream requirements: SRS_Rte_00051, SRS_Rte_00018, SRS_Rte_00143
+⌈A ModeSwitchedAckEvent that references a RunnableEntity and is referenced
+by a WaitPoint shall be an invalid configuration which is rejected by the RTE gener-
+ator.⌋
+The attributes ModeSwitchedAckRequest and BswModeSwitchAckRequest allow
+to specify a timeout.
+[SWS_Rte_07056]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00143
+⌈If ModeSwitchedAckRequest or BswModeSwitchAckRequest with a timeout
+greater than zero is specified, the RTE shall ensure that timeout monitoring is per-
+formed, regardless of the receive mode of the acknowledgment.⌋
+[SWS_Rte_07060]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00143
+⌈Regardless of an occurred timeout during a mode transition the RTE shall complete
+the transition of a mode machine instance as defined in [SWS_Rte_02665].⌋
+If a WaitPoint is specified to collect the acknowledgment, two timeout values have to
+be specified, one for the ModeSwitchedAckRequest and one for the WaitPoint.
+[SWS_Rte_07057]
+Upstream requirements: SRS_Rte_00018, SRS_Rte_00143
+⌈The RTE generator shall reject configuration violating [constr_4012] in software com-
+ponent template [2].⌋
+[SWS_Rte_07058]
+Upstream requirements: SRS_Rte_00143
+⌈The status information about the success or failure of the mode transition shall be
+buffered with last-is-best semantics. When a new mode switch notification is
+sent or when the mode switch notification was completed after a timeout, the status
+information is overwritten.⌋
+[SWS_Rte_07058] implies that once the ModeSwitchedAckEvent or BswMod-
+eSwitchedAckEvent has occurred, repeated API calls (Rte_SwitchAck or SchM_
+SwitchAck to retrieve the acknowledgment can return different values.
+[SWS_Rte_07059]
+Upstream requirements: SRS_Rte_00069, SRS_Rte_00143
+⌈If the timeout value of the ModeSwitchedAckRequest or BswModeSwitchAck-
+Request is 0, no timeout monitoring shall be performed.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +142,7 @@ a</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=438" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

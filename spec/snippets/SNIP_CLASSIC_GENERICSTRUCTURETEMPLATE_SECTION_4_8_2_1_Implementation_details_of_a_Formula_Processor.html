@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -97,7 +98,146 @@ result so that the total result cannot be changed anymore by the second operand
 Generic Structure Template
 R4.0 Rev 3
 defined(sysc(SY_COUNT)) &amp;&amp; sysc(SY_COUNT) &gt; 1
-since here, if SY_COUNT is not deﬁned, the check for "&gt; 1" is not carrie</div></section>
+since here, if SY_COUNT is not deﬁned, the check for "&gt; 1" is not carried out and
+an unwanted error message is thus avoided. ⌋
+• [TPS_GST_0003] true and false ⌈Like in C a integer "0" respectively ﬂoating
+point "0.0" is interpreted as false. Every other value is treated as true within
+boolean expressions.
+The language also provides the literals "true" yielding 1 respectively "false"
+yielding 0 to express literal boolean values in expressions. ⌋
+• [TPS_GST_0004] Priority of Operations ⌈
+The priority rules of C++1 apply and are modeled in the grammar: multiplica-
+tion and division take precedence over addition and subtraction. The exponent
+operator (**) has priority over these other mathematical operators.
+The unary minus has greater precedence than all other operators. For a complete
+list of the priorities please refer to [11].
+Example:
+– -2**3 becomes
+-8 = (-2)**3
+– -log(2.718281828)**2 corresponds to (-log(2.718281828))**2
+and therefore is equal to +1.
+⌋
+• [TPS_GST_0005] left-to-right evaluation ⌈Binary operators shall be evaluated
+from left to right (left-to-right associativity). For example 2 == 2 == 2 shall be
+evaluated as (2 == 2) == 2. ⌋
+• [TPS_GST_0006] Associativity of XOR ⌈Boolean XOR operatorˆˆis an addi-
+tional operator which has no counterpart in C. The result of a boolean XOR is "1"
+if one of the operands is interpreted as false and the other as true. The result
+of a boolean XOR is "0" if both operands have the same value independent of
+whether the value is true or false. Other than boolean AND (&amp;&amp;) and boolean OR
+(||), boolean XOR always evaluates both operands. This is because the result of
+a boolean XOR cannot be determined by only evaluating e.g. the ﬁrst operand.
+Hint: In hardware circuits sometimes an XOR gate with more than two inputs
+is used. For such a hardware XOR gate the output is "1" if and only if one of
+the inputs is "1" and all other inputs are "0". The XOR operator within arithmetic
+expressions is a binary operator and therefore behaves different than hardware
+XOR gates. This means in particular that according to left-to-right associativity
+e.g.
+1ˆˆ1ˆˆ1 is interpreted as (1ˆˆ1)ˆˆ1 which yields "1". ⌋
+1Note that XOR is not deﬁned in C++.
+Generic Structure Template
+R4.0 Rev 3
+• [TPS_GST_0007] Shift operation ⌈
+When the shift operation is performed, the ﬁrst or the last bit (depending on the
+direction of the shift) is ﬁlled with "0".
+Shift left means that the bits are shifted towards the higher values. Shift right
+means that the bits are shifted towards the lower values.
+Example:
+– 0b0001 &lt;&lt; 1 returns 0b0010
+– 0b1111 &gt;&gt; 1 returns 0b0111
+– 0b1111 &lt;&lt; 1 returns 0b1110
+– 0b1111 &lt;&lt; 2 returns 0b1100
+⌋
+• [TPS_GST_0008] Types in Formula Expressions ⌈
+The type of an arithmetic expression is one of
+– Integer in the range -429496295 to +4294967295
+– Float (internally represented by double)
+It will be determined by the types of its sole parts. For the result type of a function
+or operand see 4.8.2.2. ⌋
+• [TPS_GST_0009] Keyword ’epsilon’ ⌈
+epsilon represents an implementation speciﬁc constant intended to support
+the comparison of ﬂoat values. It represents the smallest increment which can be
+expressed by the given implementation.
+For example instead of comparing a ﬂoat with zero, one should use
+abs(sysc(x)&lt; epsilon) ? 0 : 1
+⌋
+• [TPS_GST_0010] Keyword ’undeﬁned’ ⌈
+undefined represents a sub term which is undeﬁned. It is subject to be replaced
+in further process steps. The main purpose is to denote blueprints of expressions.
+The result of undefined is the same as an undeﬁned operand. Usually it yields
+a runtime error. The following expressions hold true:
+defined(undefined) = false
+true &amp;&amp; undefined = error
+false &amp;&amp; undefined = false
+undefined = error
+And consequently for OR it is
+true || undefined = true
+false || undefined = error
+Generic Structure Template
+R4.0 Rev 3
+⌋
+• [TPS_GST_0011] Functions round, ceil, floor ⌈
+These act as ’Integer-Cast’ with rounding. The following applies:
+– round
+rounds positive and negative numbers to the next whole number.
+Ex. : round(4.4) = 4
+round(-4.4) = -4
+round(4.7) = 5
+round(-4.7) = -5
+round(4.5) = 5
+round(-4.5) = -5
+– floor
+rounds positive and negative numbers down to the next whole number.
+Ex. : floor(4.4) = 4
+floor(-4.4) = -5
+floor(4.7) = 4
+floor(-4.7) = -5
+floor(4.0) = 4
+floor(-4.0) = -4
+– ceil
+rounds positive and negative numbers up to the next whole number.
+Ex. : ceil(4.4)
+= 5
+ceil(-4.4)
+= -4
+ceil(4.7)
+= 5
+ceil(-4.7)
+= -4
+ceil(4.0)
+= 4
+ceil(-4.0)
+= -4
+⌋
+• [TPS_GST_0013] Function defined ⌈defined(reference) returns 1 if the
+reference passed as a parameter is deﬁned. Note that for example SwSystem-
+constValue can be deﬁned using a formula. Such a ’redeﬁned’ SwSystem-
+const is always treated as ’deﬁned’ even if its formula refers to an undeﬁned
+SwSystemconst (See TURBO2 in the example below).
+defined(stringReference) yields 1 if the reference passed as parameter
+can yield a string. For example in case of SystemConstDependantFormula if
+the referenced SystemConst refers a CompuMethod of category TEXTTABLE.
+Example:
+suppose
+sysc(ZYL_ZA) is set to
+4
+sysc(ZYLZA2) is set to
+sysc(ZYLZA)+2
+sysc(TURBO)
+is left undefined
+sysc(TURBO2) is set to
+sysc(TURBO)+2
+then
+defined(sysc(ZYL_ZA))
+yields 1
+defined(sysc(ZYL_ZA2)) yields 1
+defined(sysc(TURBO))
+yields 0
+defined(sysc(TURBO2))
+yields 1
+(TURBO2 is defined, even if
+the referenced TURBO
+is undefined.)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

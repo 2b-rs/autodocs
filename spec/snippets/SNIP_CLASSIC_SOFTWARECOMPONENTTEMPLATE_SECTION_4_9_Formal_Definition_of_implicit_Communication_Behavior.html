@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -91,7 +92,134 @@ partly updated values.
 tencyNeeds ⌈The meaning of the term stability is that the values of a group of Vari-
 ableDataPrototypes shall not change values during the execution of a group of
 RunnableEntitys. ⌋(RS_SWCT_03065)
-[TPS_SWCT_01482] The meaning of t</div></section>
+[TPS_SWCT_01482] The meaning of the term coherence with respect to Consis-
+tencyNeeds ⌈The meaning of the term coherence means that the values of a group of
+VariableDataPrototypes shall not be read by receiving RunnableEntitys until
+all the producing RunnableEntitys are terminated. ⌋(RS_SWCT_03065)
+In response to these goals the meta-model provides means to express the correlation
+between a group of RunnableEntitys and a group of DataPrototypes. These
+groups might be defined hierarchically.
+The information (in terms of ConsistencyNeeds) can be defined primarily during the
+design of an AtomicSwComponentType but it is just as well possible to specify this
+ConsistencyNeeds during the definition of CompositionSwComponentTypes.
+For example, the existence of stable data is typically expected for the execution of
+RunnableEntitys of several AtomicSwComponentTypes.
+Software Component Template
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+SwComponentType
+AtpBlueprint
+AtpBlueprintable
+Identifiable
+ConsistencyNeeds
+«atpVariation» Tags:
+vh.latestBindingTime =
+preCompileTime
+AtpStructureElement
+Identifiable
+RunnableEntityGroup
+AtpStructureElement
+Identifiable
+DataPrototypeGroup
+«atpVariation» Tags:
+vh.latestBindingTime =
+preCompileTime
+AtpStructureElement
+ExecutableEntity
+RunnableEntity
++
+canBeInvokedConcurrently  :Boolean
++
+symbol  :CIdentifier
+AutosarDataPrototype
+VariableDataPrototype
+DataInterface
+SenderReceiverInterface
+DataInterface
+NvDataInterface
++dataElement
+1..*
++nvData
+1..*
+«instanceRef»
++dataPrototypeGroup 0..*
+«instanceRef»
++implicitDataAccess
+0..*
+«instanceRef»
++runnableEntity
+0..*
+«instanceRef»
++runnableEntityGroup 0..*
+«atpVariation,atpSplitable»
++dpgDoesNotRequireCoherency
+0..*
+«atpVariation,atpSplitable»
++dpgRequiresCoherency
+0..*
+«atpVariation,atpSplitable»
++regDoesNotRequireStability
+0..*
+«atpVariation,atpSplitable»
++regRequiresStability
+0..*
+«atpVariation,atpSplitable»
++consistencyNeeds
+0..*
+Figure 4.47: Formal definition of implicit communication behavior
+Please note that the two aspects stability and coherence are not necessarily con-
+nected to each other. It is possible to require stability without coherence and vice
+versa. For this purpose the roles dpgDoesNotRequireCoherency and regDoes-
+NotRequireStability are needed.
+[TPS_SWCT_01480] Stability and/or coherence is not required ⌈In order to be
+able to clearly separate the aspect of stability from coherence it is possible to use the
+roles dpgDoesNotRequireCoherency to express that a group of VariableDat-
+aPrototypes explicitly does not require consistency.
+Likewise, regDoesNotRequireStability can be used to express that for a group
+of RunnableEntitys stability with respect to data access is not required. ⌋()
+Software Component Template
+[TPS_SWCT_01479] Applicability of ConsistencyNeeds ⌈ConsistencyNeeds
+can only be applied to RunnableEntitys that make use of “implicit” communication.
+⌋(RS_SWCT_03065)
+[TPS_SWCT_01466] ConsistencyNeeds applied on RunnableEntitys that
+do not use implicit communication ⌈If a ConsistencyNeeds is applied on
+RunnableEntitys that do not use implicit communication it shall be ignored.
+⌋
+(RS_SWCT_03065)
+The formal definition of the implicit communication behavior foresees the grouping of
+model elements in order to indicate their relevance for consistent implicit communica-
+tion.
+[TPS_SWCT_01470] RunnableEntityGroup ⌈A RunnableEntitys belongs to
+a specific RunnableEntityGroup if it is associated either directly with the given
+RunnableEntityGroup or if the RunnableEntityGroup the RunnableEntity
+belongs to is eventually (there can be more than one nesting level) referenced by the
+given RunnableEntityGroup. ⌋(RS_SWCT_03065)
+[TPS_SWCT_01471] DataPrototypeGroup ⌈A VariableDataPrototypes be-
+longs to a specific DataPrototypeGroup if it is associated either directly with the
+given DataPrototypeGroup or if the DataPrototypeGroup the VariableDat-
+aPrototype belongs to is eventually (there can be more than one nesting level) ref-
+erenced by the given DataPrototypeGroup. ⌋(RS_SWCT_03065)
+[constr_1231] ConsistencyNeeds aggregated by CompositionSwComponent-
+Type ⌈If ConsistencyNeeds are aggregated by a CompositionSwComponent-
+Type the associations stereotyped ≪instanceRef≫may only refer to context and
+target elements within the context of this CompositionSwComponentType. ⌋()
+For clarification, [constr_1231] includes VariableDataPrototypes owned by del-
+egation PortPrototypes of the owning CompositionSwComponentType, Vari-
+ableDataPrototypes in delegation PortPrototypes of CompositionSwCompo-
+nentType instantiated in the enclosing CompositionSwComponentType, or Vari-
+ableDataPrototypes in PortPrototypes owned by AtomicSwComponentTypes
+instantiated inside the context of the enclosing CompositionSwComponentType.
+[constr_1232] ConsistencyNeeds aggregated by AtomicSwComponentType ⌈If
+ConsistencyNeeds are aggregated by a AtomicSwComponentType the associa-
+tions stereotyped ≪instanceRef≫may only refer to context and target elements
+within the context of this AtomicSwComponentType. ⌋()
+Strictly speaking, these are the RunnableEntitys and PortPrototypes of this
+particular AtomicSwComponentType or RunnableEntityGroups and DataPro-
+totypeGroups which are owned by the same AtomicSwComponentType.
+Please note that pre-defined values for the category of RunnableEntityGroup
+and DataPrototypeGroup are described in [1].</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

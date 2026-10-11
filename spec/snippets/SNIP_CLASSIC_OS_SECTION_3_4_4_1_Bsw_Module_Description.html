@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_3_4_4_1_Bsw_Module_Description</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 101)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=101" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 101)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08404" class="swsref internal-spec-ref"><code>SWS_Rte_08404</code></a></span>
         </div>
@@ -92,7 +93,60 @@ The reference from the BswModuleDependency to the BswModuleEntry shall be in
 the role implementedEntry. The calling Basic Software Module is specified in the
 attribute targetModuleId of the BswModuleDependency.⌋
 For all the APIs the RTE code is invoking in other Basic Software Modules the depen-
-dencies are described via req</div></section>
+dencies are described via requirement [SWS_Rte_05180].
+[SWS_Rte_05180]
+Upstream requirements: SRS_Rte_00233
+⌈The RTE Generator in Generation Phase shall provide the BswModuleDependency
+in the BswModuleDescription with the role bswModuleDependency for each API
+called by the RTE in another Basic Software Module. The reference from the BswMod-
+uleDependency to the BswModuleEntry shall be in the role implementedEntry.
+The called Basic Software Module is specified in the attribute targetModuleId of the
+BswModuleDependency.⌋
+[SWS_Rte_07085]
+Upstream requirements: SRS_Rte_00233
+⌈If the Basic Software Module Description for the generated RTE depends from el-
+ements in Basic Software Module Descriptions of other Basic Software Modules the
+RTE Generator shall use the full qualified path name to this elements according the
+rules in "Identifying M1 elements in packages" of the document AUTOSAR Generic
+Structure Template [10].⌋
+For instance the description of the hook function
+1
+void Rte_Dlt_Task_Activate(TaskType task)
+for the Dlt needs the ImplementationDataType "TaskType" from the OS in order to
+describe the data type of the SwServiceArg "task" in the description of the related
+BswModuleEntry.
+In this case the full qualified path name to the ImplementationDataType "Task-
+Type" shall be
+1
+/AUTOSAR_OS/ImplementationDataTypes/TaskType
+The full example about the description is given below:
+&lt;AR-PACKAGE&gt;
+&lt;SHORT-NAME&gt;AUTOSAR_RTE&lt;/SHORT-NAME&gt;
+&lt;AR-PACKAGES&gt;
+&lt;AR-PACKAGE&gt;
+&lt;SHORT-NAME&gt;BswModuleEntrys&lt;/SHORT-NAME&gt;
+&lt;ELEMENTS&gt;
+&lt;BSW-MODULE-ENTRY&gt;
+&lt;SHORT-NAME&gt;Rte_Dlt_Task_Activate&lt;/SHORT-NAME&gt;
+&lt;ARGUMENTS&gt;
+&lt;SW-SERVICE-ARG&gt;
+&lt;SHORT-NAME&gt;task&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;TYPE_REFERENCE&lt;/CATEGORY&gt;
+&lt;SW-DATA-DEF-PROPS&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-
+DATA-TYPE"&gt;/AUTOSAR/Os/
+ImplementationDataTypes_Blueprint/TaskType&lt;/
+IMPLEMENTATION-DATA-TYPE-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/SW-DATA-DEF-PROPS&gt;
+&lt;/SW-SERVICE-ARG&gt;
+&lt;/ARGUMENTS&gt;
+&lt;/BSW-MODULE-ENTRY&gt;
+&lt;/ELEMENTS&gt;
+&lt;/AR-PACKAGE&gt;</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +159,7 @@ dencies are described via req</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=101" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

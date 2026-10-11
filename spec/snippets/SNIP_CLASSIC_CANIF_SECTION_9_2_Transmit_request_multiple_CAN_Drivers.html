@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_9_2_Transmit_request_multiple_CAN_Drivers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 154)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=153" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 154)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_CP_CAN_00001</span>
         </div>
@@ -125,7 +126,61 @@ requested L-SDU. The service performs following steps:
 • definition of the CAN Controller to be used (here:
 Can_99_Ext1)
 The second parameter *PduInfoPtr is a pointer on the structure
-with</div></section>
+with transmit L-SDU related data such as SduLength and
+*SduDataPtr.
+Start transmission
+CanIf_Transmit() requests a transmission and calls the
+CanDrv Can_99_Ext1 service Can_Write_99_Ext1() with
+corresponding processing of the HTH.
+Hardware request
+Can_Write_99_Ext1() writes all L-PDU data in the CAN
+Hardware of Controller A (if it is free) and sets the hardware
+request for transmission.
+E_OK from Can_Write
+service
+Can_Write_99_Ext1() returns E_OK to CanIf_Transmit().
+CAN_BUSY from Can_Write
+service
+If CanDrv Can_99_Ext1 detects, there are no free hardware
+objects available, it returns CAN_BUSY to CanIf.
+Copying into the buffer
+The L-PDU of the rejected transmit request will be inserted in the
+transmit buffers of CanIf until the next transmit confirmation.
+E_OK from CanIf
+CanIf_Transmit() returns E_OK to the upper layer.
+Second transmit request:
+Activity
+Description
+Transmission request B
+The upper layer initiates a transmit request via the service
+CanIf_Transmit(). The parameter CanTxPduId identifies the
+requested L-SDU. The service performs following steps:
+• validation of the input parameter
+• definition of the CAN Controller to be used (here:
+Can_99_Ext2)
+The second parameter *PduInfoPtr is a pointer on the structure
+with transmit L-SDU related data such as SduLength and
+*SduDataPtr.
+Start transmission
+CanIf_Transmit() starts a transmission and calls the CanDrv
+Can_99_Ext2 service Can_Write_99_Ext2() with
+corresponding processing of the HTH.
+Hardware request
+Can_Write_99_Ext2() writes all L-PDU data in the CAN
+Hardware of Controller B (if it is free) and sets the hardware
+request for transmission.
+E_OK from Can_Write
+service
+Can_Write_99_Ext2() returns E_OK to CanIf_Transmit().
+CAN_BUSY from Can_Write
+service
+If CanDrv Can_99_Ext2 detects, there are no free hardware
+objects available, it returns CAN_BUSY to CanIf.
+Copying into the buffer
+The L-PDU of the rejected transmit request will be inserted in the
+transmit buffers of CanIf until the next transmit confirmation.
+E_OK from CanIf
+CanIf_Transmit() returns E_OK to the upper layer.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -138,7 +193,7 @@ with</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=153" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

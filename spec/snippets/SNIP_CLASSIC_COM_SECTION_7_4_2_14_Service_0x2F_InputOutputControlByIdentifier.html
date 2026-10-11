@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_7_4_2_14_Service_0x2F_InputOutputControlByIdentifier</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 177)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=177" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 177)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01661" class="swsref internal-spec-ref"><code>SWS_Dcm_01661</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06084</span>
         </div>
       </div>
 
@@ -123,11 +124,129 @@ freezeCurrentState
 03
 shortTermAdjustment
 ⌋
-[SWS_D</div></section>
+[SWS_Dcm_01554] IOControl DID authentication check
+Upstream requirements: RS_Diag_04218
+⌈On reception of the UDS Service InputOutputControlByIdentifier (0x2F), the Dcm shall
+check if the control access to the requested DID is authenticated and control the IO only
+if:
+• for that IO control a role is configured via DcmDspDidControlRoleRef and the
+verification according to [SWS_Dcm_01522] was successful or
+• the active white list on that connection has for the requested DID one entry with
+control access that matches that DID.
+⌋
+According to [SWS_Dcm_01522] the authentication checks are only executed if
+DcmDspAuthentication is configured. In case of a failed authentication the NRC
+handling is according to [SWS_Dcm_01544] and [SWS_Dcm_01551] applies.
+Manager
+[SWS_Dcm_00563]
+Upstream requirements: RS_Diag_04218
+⌈On reception of the UDS Service InputOutputControlByIdentifier (0x2F), the Dcm mod-
+ule shall check if the DID is supported (see configuration parameter DcmDspDid) If
+not, the Dcm module shall send NRC 0x31 (Request out of range).⌋
+[SWS_Dcm_00564]
+Upstream requirements: RS_Diag_04218
+⌈If a DID is set as unused (DcmDspDidUsed set to FALSE), the Dcm shall consider the
+DID as not supported (according to [SWS_Dcm_00563])⌋
+[SWS_Dcm_00565]
+Upstream requirements: RS_Diag_04218
+⌈On reception of the UDS Service InputOutputControlByIdentifier (0x2F), the Dcm mod-
+ule shall check if the DID has a Control access configured (see configuration parame-
+ter DcmDspDidControl in DcmDspDidInfo). If not, the Dcm module shall send NRC
+0x31 (Request out of range).⌋
+[SWS_Dcm_00566] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID can be control in the current session (see
+configuration parameter DcmDspDidControlSessionRef). If not, the Dcm module
+shall send a NRC 0x31 (Request Out of Range).⌋
+[SWS_Dcm_00567] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID can be control in the current security
+level (see configuration parameter DcmDspDidControlSecurityLevelRef). If not,
+the Dcm module shall send NRC 0x33 (Security access denied).⌋
+[SWS_Dcm_00823] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID can be control in the current mode
+condition (see configuration parameter DcmDspDidControlModeRuleRef). If not,
+the Dcm module shall send the calculated negative response code of the referenced
+DcmModeRule.⌋
+[SWS_Dcm_01600] CEMR on SR interface for DIDs with no CEMR in the UDS re-
+quest
+Upstream requirements: RS_Diag_04218
+⌈If the IOC DID has no CEMR in the UDS request message, the Dcm shall use a Dcm_
+Cemr_Type that has a bit for each DcmDspData of the DID on the interface IOCon-
+trolRequest that has each bit set to 1.⌋
+[SWS_Dcm_00580]
+Upstream requirements: RS_Diag_04218
+⌈On reception of a request for UDS Service InputOutputControlByIdentifier (0x2F)
+,
+if
+all
+verifications
+have
+been
+successfully
+done
+(see
+[SWS_Dcm_00563],
+Manager
+[SWS_Dcm_00565], [SWS_Dcm_00566], [SWS_Dcm_00567] ) and if the data is con-
+figured as a "ECU signal" of the IoHwAb (parameter DcmDspDataUsePort), the Dcm
+shall call the Api IoHwAb_Dcm_&lt;symbolic name of ECU signal (parameter DcmD-
+spDataEcuSignal)&gt;() with InputOutputControlParameter for the ’action’ parameter
+and in case of InputOutputControlParameter is set to ’shortTermAdjustment’ the signal
+value for the "signal" parameter. In this case the requirements [SWS_Dcm_00396],
+[SWS_Dcm_00397], [SWS_Dcm_00398] and [SWS_Dcm_00399] doesn’t apply.⌋
+[SWS_Dcm_00581]
+Upstream requirements: RS_Diag_04218
+⌈In case of more than one supported I/O signal per DataIdentifier and the configuration
+parameter DcmDspDidControlMask is set to DCM_CONTROLMASK_INTERNAL, the
+Dcm shall internally consider the parameter controlEnableMaskRecord and control only
+the included signals in the request message.⌋
+[SWS_Dcm_CONSTR_06051] ⌈The configuration parameter DcmDspDidControl-
+MaskSize shall be only present if DcmDspDidControlMask is equal to DCM_-
+CONTROLMASK_EXTERNAL or DCM_CONTROLMASK_INTERNAL.⌋
+[SWS_Dcm_01273]
+Upstream requirements: RS_Diag_04218
+⌈If
+the
+configuration
+parameter
+DcmDspDidControlMask
+is
+set
+to
+DCM_-
+CONTROLMASK_EXTERNAL or DCM_CONTROLMASK_INTERNAL, or the DcmDspDid el-
+ement used in service 0x2F is configured to have an atomic S/R interface, the Dcm
+shall reject requests without included control enable mask record with the NRC 0x13
+(incorrectMessageLengthOrInvalidFormat).⌋
+[SWS_Dcm_01274]
+Upstream requirements: RS_Diag_04218
+⌈If
+the
+configuration
+parameter
+DcmDspDidControlMask
+is
+set
+to
+DCM_CONTROLMASK_NO, the Dcm shall reject request with included control
+enable mask record with the NRC 0x13 (incorrectMessageLengthOrInvalidFormat).⌋
+[SWS_Dcm_CONSTR_06084] Sender-receiver communication for IOControls is
+limited to atomic S/R interfaces
+Upstream requirements: RS_Diag_04218
+⌈If
+a
+DID
+has
+a
+configured
+DcmDspDidUsePort
+=
+USE_DATA_ELEMENT_-
+SPECIFIC_INTERFACES, the possible values of DcmDspDataUsePort are limited
+to non S/R interfaces.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01661] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06084] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -136,7 +255,7 @@ shortTermAdjustment
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=177" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -148,7 +267,7 @@ shortTermAdjustment
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01661" class="swsref internal-spec-ref"><code>SWS_Dcm_01661</code></a></td>
+              <td>SWS_Dcm_CONSTR_06084</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

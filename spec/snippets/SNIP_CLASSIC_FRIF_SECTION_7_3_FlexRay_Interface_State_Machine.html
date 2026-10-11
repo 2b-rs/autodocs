@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_7_3_FlexRay_Interface_State_Machine</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayInterface.pdf</strong> (Seite 25)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></strong> (Seite 25)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05755" class="swsref internal-spec-ref"><code>SWS_FrIf_05755</code></a></span>
         </div>
@@ -99,7 +100,32 @@ with parameter FrIf_StateTransition = FRIF_GOTO_ONLINE and if the current state 
 the requested cluster is FRIF_STATE_OFFLINE, the FrIf module shall take the current
 state of the requested cluster to FRIF_STATE_ONLINE.".
 If the FrIf module’s environment calls the function FrIf_SetState with parameter FrIf_
-StateTransition = FRIF_GOTO_ OFFLINE and if the current state for the reques</div></section>
+StateTransition = FRIF_GOTO_ OFFLINE and if the current state for the requested
+cluster is FRIF_STATE_ONLINE, the FrIf module shall take the current state of the
+requested cluster to FRIF_STATE_OFFLINE.".
+Otherwise, do not perform a state transition.⌋
+For details see Figure 7.4 and Table 7.2
+Transition Name
+Transitions
+(see Figure 7.4)
+Description
+FRIF_GOTO_ONLINE
+(2)
+Transition resulting in FrIf_State FRIF_
+STATE_ONLINE
+FRIF_GOTO_OFFLINE
+(3)
+Transition resulting in FrIf_State FRIF_
+STATE_OFFLINE
+Table 7.2: FlexRay State Machine Transitions (2)
+[SWS_FrIf_05501] ⌈If the API FrIf_SetState with parameter FRIF_STATE_OFFLINE
+is called, the FlexRay Interface module shall check the parameter "TxConfCounter"
+for every PDU. If the value for the corresponding PDU is greater than 0, the FlexRay
+Interface shall call the upper layer using the API LSduR_FrIfConfirmation(id, E_NOT_
+OK).⌋
+Note: It has to be ensured that the FlexRay Interface does not lose the TxConfCounter
+values at the point in time the API FrIf_SetState with parameter FRIF_STATE_OF-
+FLINE is called.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -112,7 +138,7 @@ StateTransition = FRIF_GOTO_ OFFLINE and if the current state for the reques</di
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

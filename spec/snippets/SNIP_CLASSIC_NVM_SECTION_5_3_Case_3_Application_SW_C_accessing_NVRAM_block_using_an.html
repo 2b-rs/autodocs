@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_5_3_Case_3_Application_SW_C_accessing_NVRAM_block_using_an</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_NVDataHandling.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_NVDataHandling.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_NVDataHandling.pdf</a></strong> (Seite 37)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01144" class="swsref"><code>TPS_SWCT_01144</code></a></span>
         </div>
@@ -89,7 +90,151 @@ read data from the NVRAM, it fetches/updates the RAM block via callbacks
 (Rte_GetMirror/Rte_SetMirror) which are implemented in RTE.
 Additionally, if the User has a need to provide temporary RAM blocks even though
 mirrors are configured in the system, NvM_ReadBlock/NvM_WriteBlock API are
-used to provide the temporary RAM</div></section>
+used to provide the temporary RAM block address and in that case NvM uses
+the RAM block argument instead of the mirror.
+Such API’s have precedence over
+NvM_ReadPRAMBlock/NvM_WritePRAMBlock.
+Note: Implicit synchronization is not recommendable while using NvBlockSwCompo-
+nentType.
+Figure 5.10 provides an overview of memory allocation in Application and NvM as per
+this use case. For details about interaction between these modules refer figure 16 to
+23.
+Figure 5.10: Overview of memory allocation for use case 3
+Figure 5.11 shows port configuration used to access NvM interfaces by user (SWC1 /
+SWC2 / SWC3), here NvM is configured as NvBlockSwComponent.
+NV Data Handling Guideline
+Figure 5.11: Port configuration for use case 3
+Refer section 5.1.1 for details with respect to operations provided by the Client
+Server Interfaces for ports NvMService,
+NvMAdmin,
+NvM_NotifyInitBlock and
+NvM_NotifyJobFinished.
+Note: Mapping between NVRAM BlockId of NvM and NvBlockDescriptor is done using
+configuration parameters RteNvmBlockRef and RteSwNvBlockDescriptorRef of RteN-
+vRamAllocation container in RTE.
+NV Data mapping considered in the above example is described in below table.
+NV Data Handling Guideline
+nvData Element
+RAM Block
+Element
+User
+NvBlockDescrip-
+tor
+Description
+nvData0
+rb0
+SWC1
+NvBlockDescrip-
+tor0
+nvData0 is completely mapped to
+rb0
+nvData2.b
+rb1.x(4:1)
+SWC2
+NvBlockDescrip-
+tor1
+Bits 0 to 3 of variable b are mapped
+to Bits 4 to 1 of element x of rb1.
+nvData1.a
+rb1.x(0)
+SWC2
+NvBlockDescrip-
+tor1
+Boolean variable a is mapped to Bit
+0 of element x of rb1.
+nvData4.d
+rb1.x(0)
+SWC3
+NvBlockDescrip-
+tor1
+Boolean variable d is mapped to Bit
+0 of element x of rb1.
+nvData3.c
+rb1.y
+SWC3
+NvBlockDescrip-
+tor1
+Variable c is completely mapped
+element y of rb1.
+• Applicability:
+This use case gives advantage over other use cases as one RAM block can be
+shared between multiple SW-C’s or BSW, completely or partially and thus reduce
+resource overhead. Also Data mapping allows accessing NV data without need
+of additional buffers.
+Different writing strategies which define the frequency of writing NV data to NV
+memory are possible and RTE is responsible to handle this writing operations.
+It is the responsibility of the RTE to ensure data consistency while NV Data is
+accessed.
+• Configuration:
+Configuration for NvData ports is shown below:
+User
+User Data
+User Port
+AccessType
+NvBlock-
+De-
+scrip-
+tor
+Intermediate
+mapped NvData
+Mapping to Ram
+Block
+SWC1
+NvD_str0_0
+PR_NvIf_strSig
+Write/Read
+NvBD_0
+NvD_str0_0
+NVBD_0.RAMBlock =
+NvD_str0_0
+SWC2
+NvD_flag0_0
+R_NvIf_flagSig
+Read
+NvBD_1
+NvD_8bit_0.b(0)
+NVBD_1.RAMBlock.x
+= NvD_8bit_0
+SWC2
+NvD_4bit_0
+PR_NvIf_4bitSig
+Write/Read
+NvBD_1
+NvD_8bit_0.b(4:1)
+NVBD_1.RAMBlock.x
+= NvD_8bit_0
+SWC3
+NvD_16bit_0
+PR_NvIf_16bitSig
+Write/Read
+NvBD_1
+NvD_16bit_0
+NVBD_1.RAMBlock.y
+= NvD_16bit_0
+SWC3
+NvD_flag0_0
+P_NvIf_flagSig
+Write
+NvBD_1
+NvD_8bit_0.b(0)
+NVBD_1.RAMBlock.x
+= NvD_8bit_0
+Data
+Type
+NvD_str0_0
+struct {uint32 a; uint8 b;}
+NvD_flag0_0
+boolean
+NvD_4bit_0
+uint8
+NvD_16bit_0
+uin16
+NvD_8bit_0
+uint8
+NVBD_0.RAMBlock
+struct {uint32 a; uint8 b;}
+NVBD_1.RAMBlock
+struct {uint16 x; uint8 y;}</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +247,7 @@ used to provide the temporary RAM</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_NVDataHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_NVDataHandling.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_NVDataHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

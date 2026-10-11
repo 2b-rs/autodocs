@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_8_8_7_Definition_of_the_ECU_Manager_Service</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 164)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=164" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 164)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04111" class="swsref internal-spec-ref"><code>SWS_EcuM_04111</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_91008" class="swsref internal-spec-ref"><code>SWS_EcuM_91008</code></a></span>
         </div>
       </div>
 
@@ -105,11 +106,153 @@ ProvidedPort
 Interface
 EcuM_BootTarget
 Description
-Provides an interface to SW-Cs to select a new boot target and query the current boot t</div></section>
+Provides an interface to SW-Cs to select a new boot target and query the current boot target.
+Variation
+UserName = {ecuc(EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUserConfig/Ecu
+MFlexUser.SHORT-NAME)}
+⌋
+[SWS_EcuM_03017]
+Definition of Port AlarmClock_{UserName} provided by
+module EcuM
+Upstream requirements: SRS_ModeMgm_00016
+⌈
+Name
+AlarmClock_{UserName}
+Kind
+ProvidedPort
+Interface
+EcuM_AlarmClock
+Description
+Provides to SW-Cs an alarm clock. The EcuM_AlarmClock port uses port-defined argument values
+to identify the user that manages its alarm clock.
+Type
+EcuM_UserType
+Port Defined
+Argument Value(s)
+Value
+{ecuc(EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUser
+Config/EcuMFlexUser.value)}
+Variation
+{ecuc(EcuM/EcuMFlexGeneral/EcuMAlarmClockPresent)} == true
+UserName = {ecuc(EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMAlarm
+Clock.SHORT-NAME)}
+⌋
+[SWS_EcuM_04113] Definition of Port time provided by module EcuM
+Upstream requirements: SRS_ModeMgm_00015
+⌈
+Name
+time
+Kind
+ProvidedPort
+Interface
+EcuM_Time
+Description
+Provides the EcuM’s time service to SWCs
+Variation
+–
+⌋
+[SWS_EcuM_04135] Definition of Port StateRequest_{UserName} provided by
+module EcuM
+Upstream requirements: SRS_ModeMgm_00010,
+SRS_ModeMgm_00009,
+SRS_ModeMgm_-
+00011
+⌈
+Name
+StateRequest_{UserName}
+Kind
+ProvidedPort
+Interface
+EcuM_StateRequest
+Description
+Provides an interface to SW-Cs to request state changes of the ECU state. The port uses
+port-defined argument values to identify the user.
+Type
+EcuM_UserType
+Port Defined
+Argument Value(s)
+Value
+{ecuc(EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUser
+Config/EcuMFlexUser.value)}
+Variation
+UserName = {ecuc(EcuM/EcuMConfiguration/EcuMFlexConfiguration/EcuMFlexUserConfig/Ecu
+MFlexUser.SHORT-NAME)}
+⌋
+[SWS_EcuM_04112] Definition of Port currentMode provided by module EcuM
+Upstream requirements: SRS_ModeMgm_00010,
+SRS_ModeMgm_00009,
+SRS_ModeMgm_-
+00011
+⌈
+Name
+currentMode
+Kind
+ProvidedPort
+Interface
+EcuM_CurrentMode
+Description
+–
+Variation
+–
+⌋
+The EcuM provides the following types:
+[SWS_EcuM_91004] Definition of ImplementationDataType EcuM_UserType
+Upstream requirements: SRS_BSW_00307,
+SRS_ModeMgm_00010,
+SRS_ModeMgm_00009,
+SRS_ModeMgm_00011
+⌈
+Name
+EcuM_UserType
+Kind
+Type
+Derived from
+uint8
+Description
+Unique value for each user.
+Variation
+–
+Available via
+Rte_EcuM_Type.h
+⌋
+[SWS_EcuM_04102] Definition of ImplementationDataType EcuM_TimeType
+Upstream requirements: SRS_BSW_00307, SRS_ModeMgm_00015, SRS_ModeMgm_00016
+⌈
+Name
+EcuM_TimeType
+Kind
+Type
+Derived from
+uint32
+Description
+This data type represents the time of the ECU Manager module.
+Variation
+–
+Available via
+Rte_EcuM_Type.h
+⌋
+[SWS_EcuM_91008]
+Definition of ImplementationDataType EcuM_BootTarget
+Type
+Upstream requirements: SRS_BSW_00307, SRS_ModeMgm_00022
+⌈
+Name
+EcuM_BootTargetType
+Kind
+Type
+Derived from
+uint8
+ECUM_BOOT_TARGET_
+APP
+0
+The ECU will boot into the
+application
+ECUM_BOOT_TARGET_
+OEM_BOOTLOADER</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_04111] im Text von SWS_ECUStateManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_91008] im Text von SWS_ECUStateManager.</p>
       </section>
 
       <section class="snip-card">
@@ -118,7 +261,7 @@ Provides an interface to SW-Cs to select a new boot target and query the current
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=164" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -130,7 +273,7 @@ Provides an interface to SW-Cs to select a new boot target and query the current
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04111" class="swsref internal-spec-ref"><code>SWS_EcuM_04111</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_91008" class="swsref internal-spec-ref"><code>SWS_EcuM_91008</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_7_3_ISO15118Chrg_Connection_Setup</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ISO15118Charging.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ISO15118Charging.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ISO15118Charging.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00520" class="swsref internal-spec-ref"><code>SWS_SoAd_00520</code></a></span>
         </div>
@@ -103,7 +104,131 @@ with
 set to ’ISO15118_START’,
 then, the ISO15118Chrg shall move to the state Assigning IP Address by
 calling SoAd_RequestIpAddrAssignment with parameters SoConId which the
-ISO15118Chrg shal</div></section>
+ISO15118Chrg shall get from ISO15118ChrgSoAdSocketConnectionRef, Type,
+LocalIpAddrPtr, Netmask and DefaultRouterPtr.
+The ISO15118Chrg shall start the
+timer V2G_EVCC_CommunicationSetup_Timer.⌋
+[CP_SWS_ISO15118Chrg_00018] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00001, CP_RS_ChrgM_00002
+⌈While the ISO15118Chrg is in the state Assigning IP Address, if:
+• ISO15118Chrg_V2GTpLocalIpAddrAssignmentChg
+returns
+’TCPIP_IPADDR_STATE_ASSIGNED’,
+then, the ISO15118Chrg shall move to the state Discovering SECC by calling
+SoAd_OpenSoCon to open a UDP socket and wait for the response toSoAd-
+SoConModeChg.
+If
+SoAdSoConModeChg
+returns
+’SOAD_SOCON_ONLINE’,
+then
+the
+ISO15118Chrg
+shall
+send
+a
+SDP
+request
+message
+using
+the
+source
+port
+as
+V2G_UDP_SDP_CLIENT
+and
+the
+destination
+port
+as
+V2G_UDP_SDP_SERVER. The socket connection referenced by the parame-
+ter ISO15118ChrgV2GUdpSdpClientRef shall be configured with the ports
+V2G_UDP_SDP_CLIENT, V2G_UDP_SDP_SERVER as per [2, ISO 15118-2].⌋
+[CP_SWS_ISO15118Chrg_00076] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00002
+⌈The ISO15118Chrg shall use a separate UDP packet for each request message.⌋
+[CP_SWS_ISO15118Chrg_00019] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00002
+⌈The ISO15118Chrg shall wait for at least 250ms after sending each SDP request
+message, the timer ISO15118Chrg_SDPTimer shall be implemented for this. After
+this timer expires, a new SDP request message shall be sent and the counter shall be
+incremented.⌋
+[CP_SWS_ISO15118Chrg_00020] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00001
+⌈While the ISO15118Chrg is in the state Assigning IP Address, if:
+• SoAdSoConModeChg Returns ’SOAD_SOCON_OFFLINE’
+• ISO15118Chrg_V2GTpLocalIpAddrAssignmentChg
+Does
+not
+return
+’TCPIP_IPADDR_STATE_ASSIGNED’, or
+• V2G_EVCC_CommunicationSetup_Timer
+Exceeds
+the
+V2G_EVCC_-
+CommunicationSetup_Timeout, or
+• ISO15118Chrg_DataLinkIndication States ’ETHTRCV_LINK_STATE_INACTIV’,
+or
+• Operation SetCpLineStatus returns ’INACTIVE’, or
+then, the ISO15118Chrg shall stop the charging process and move to the state Init.
+The ISO15118Chrg shall also inform the upper layer with an error message.⌋
+[CP_SWS_ISO15118Chrg_00021] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00002, CP_RS_ChrgM_00003
+⌈While the ISO15118Chrg is in the state Discovering SECC, if:
+• A valid SECC IP address and Port Number are received
+then, the ISO15118Chrg shall move to the state Establishing TCP-TLS by call-
+ing SoAd_OpenSoCon to open a TCP socket and wait for the response to SoAdSo-
+ConModeChg. If, SoAdSoConModeChg returns ’SOAD_SOCON_ONLINE’, then the
+ISO15118Chrg shall establish a TLS connection over this TCP socket and close the
+previous UDP connection by calling SoAd_CloseSoCon.⌋
+[CP_SWS_ISO15118Chrg_00022] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00002
+⌈While the ISO15118Chrg is in the state Discovering SECC, if:
+• A valid SECC IP address and Port Number are not received, or
+• SDP header checks fail, or
+• TLS versions are not compatible, or
+• V2G_EVCC_CommunicationSetup_Timer
+Exceeds
+the
+V2G_EVCC_-
+CommunicationSetup_Timeout, or
+• ISO15118Chrg_DataLinkIndication States ’ETHTRCV_LINK_STATE_INACTIV’,
+or
+• Operation SetCpLineStatus returns ’INACTIVE’, or
+then, the ISO15118Chrg shall:
+• Close the UDP socket by calling SoAd_CloseSoCon,
+• Release the IP address by calling SoAd_ReleaseIpAddrAssignment,
+• Stop the charging process by going to the state Init,
+• Inform the upper layer with an error message
+⌋
+[CP_SWS_ISO15118Chrg_00078] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00003
+⌈The ISO15118Chrg shall only support the message set EIM if TLS is not available.
+TLS comptibility can be checked in the SDP response message.⌋
+[CP_SWS_ISO15118Chrg_00023] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00003
+⌈While the ISO15118Chrg is in the state Establishing TCP-TLS, if:
+• TCP-TLS connection was succesfully established,
+then, then the ISO15118Chrg shall trigger the message ’SupportedAppProtocolReq’
+to initiate the establishment of the V2G session and go to the state Establishing
+V2G Session. The ISO15118Chrg shall start the timer ISO15118ChrgV2G_EVCC_
+Msg_Timer when this message is triggered.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -116,7 +241,7 @@ ISO15118Chrg shal</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ISO15118Charging.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ISO15118Charging.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ISO15118Charging.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

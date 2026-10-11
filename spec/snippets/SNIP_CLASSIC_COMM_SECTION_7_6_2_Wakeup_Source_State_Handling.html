@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_6_2_Wakeup_Source_State_Handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 63)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 63)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04091" class="swsref internal-spec-ref"><code>SWS_EcuM_04091</code></a></span>
         </div>
@@ -115,7 +116,27 @@ EcuM_ClearWakeupEvent(sources)
 Timer Expired
 EcuM_SetWakeupEvent(sources)
 [No Validation]
-Figure 7.15:</div></section>
+Figure 7.15: Wakeup Source States
+[SWS_EcuM_04003]
+Upstream requirements: SRS_ModeMgm_00004, SRS_BSW_00375
+⌈When an ECU Manager action causes the state of a wakeup source to change, the
+ECU Manager module shall issue a mode request to the BswM to change the wakeup
+source’s mode to the new the wakeup source state.⌋
+For the communication of these wakeup source states the type EcuM_WakeupSta-
+tusType (see SWS_ECUM_04041) is used.
+When the ECU Manager module is in the UP phase, wakeup events do not usually
+trigger state changes. They trigger the end of the Halt and Poll Sub-Phases, however.
+The ECU Manager module then executes the WakeupRestart Sequence automatically
+and returns thereafter to the UP phase.
+It is up to the integrator to configure rules in the BswM so that the ECU reacts correctly
+to the wakeup events, as the reaction depends fully on the current ECU (not ECU
+Management) state.
+If the wakeup source is valid, the BswM returns the ECU to its RUN state. If all wakeup
+events have gone back to NONE or EXPIRED, the BswM prepares the BSW for SLEEP
+or OFF again and invokes EcuM_GoDownHaltPoll.
+Summarizing: every pending event is validated independently (if configured) and the
+EcuM publishes the result as a mode request to the BswM, which in turn can trigger
+state changes in the EcuM.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -128,7 +149,7 @@ Figure 7.15:</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

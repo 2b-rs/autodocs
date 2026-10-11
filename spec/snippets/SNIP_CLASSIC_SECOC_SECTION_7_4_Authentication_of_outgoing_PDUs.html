@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: secoc</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SecureOnboardCommunication.pdf</strong> (Seite 40)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SecureOnboardCommunication.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SecureOnboardCommunication.pdf</a></strong> (Seite 40)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00252" class="swsref internal-spec-ref"><code>SWS_SecOC_00252</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00270" class="swsref internal-spec-ref"><code>SWS_SecOC_00270</code></a></span>
         </div>
       </div>
 
@@ -98,11 +99,86 @@ and thus serves all lower layer requests to provide information on or to copy da
 Secured I-PDU.
 6. Finally, the confirmation of the successful or unsuccessful transmission of the Secured
 I-PDU are provided to the upper layer communication module as confirmation of the
-successful</div></section>
+successful or unsuccessful transmission of the Authentic I-PDU
+Note: For each Authentic I-PDU, the upper layer communication module shall be configured in such a
+way that it calls the PduR module as it normally does for a direct transmission request. In this case,
+the upper layer is decoupled from TriggerTransmit and TP behavior by means of the SecOC module.
+To initiate the transmission of an Authentic I-PDU, the upper layer module always
+(and independent of the bus interface that is used for the concrete transmission) calls
+the PduR module through PduR_&lt;Up&gt;Transmit. The PduR routes this request to
+the SecOC module so that the SecOC module has immediate access to the
+Authentic I-PDU in the buffer of the upper layer communication module.
+[SWS_SecOC_00252]⌈
+The SecOC module shall copy the complete Authentic I-PDU to its internal memory
+before starting transmission of the corresponding Secured I-PDU.
+⌋ (SRS_SecOC_00032)
+Note: This means there is no dependency between the IF/TP configuration of Up versus Lower PDU
+interfaces.
+[SWS_SecOC_00201]⌈
+If SecOCTxSecuredPduCollection is used, then SecOC shall transmit the
+Secured I-PDU as two messages: The original Authentic I-PDU and a separate
+Cryptographic I-PDU. The Cryptographic I-PDU shall contain all Authentication
+Information of the Secured I-PDU, so that the Authentic I-PDU and the Cryptographic
+I-PDU contain all information necessary to reconstruct the Secured I-PDU.
+⌋(SRS_SecOC_00026)
+Note: This applies to all instances when a Secured I-PDU is transmitted by SecOC to the PduR. There
+is no further distinction made throughout this document to avoid duplication and clutter.
+[SWS_SecOC_00202]⌈
+SecOC shall transmit an Authentic I-PDU and its corresponding Cryptographic I-PDU
+within the same main function cycle.
+⌋(SRS_SecOC_00026)
+[SWS_SecOC_00209]⌈
+If SecOCTxSecuredPduCollection is used then SecOC shall repeat a part of the
+Authentic I-PDU inside the Cryptographic I-PDU as Message Linker and the
+Cryptographic I-PDU shall be constructed as
+Cryptographic I-PDU =Authentication Data | Message Linker
+⌋(SRS_SecOC_00028)
+Note: “|” denotes concatenation.
+[SWS_SecOC_00210]⌈
+If SecOCUseMessageLink is used then SecOC shall use the value at bit position
+SecOCMessageLinkPos of length SecOCMessageLinkLen bits inside the
+Authentic I-PDU as the Message Linker.
+⌋(SRS_SecOC_00028)
+[SWS_SecOC_00270]⌈
+If SecOCTxSecuredPduCollection is used, the SecOC shall forward the
+TxConfirmation to the upper layer if the SecOC_TxConfirmation was called for the
+Authentic I-PDU and the Cryptographic I-PDU. The reult parameter of the upper layer
+TxConfirmation call shall only be E_OK if the result parameters for both
+TxConfirmation calls were E_OK, Otherwise the result parameter shall be E_NOT_OK.
+⌋()
+[SWS_SecOC_00057]⌈
+The SecOC module shall provide sufficient buffer capacities to store the incoming
+Authentic I-PDU, the outgoing Secured I-PDU and all intermediate data of the
+authentication process according to the process described in SWS_SecOC_00031.
+⌋(SRS_SecOC_00006)
+[SWS_SecOC_00146]⌈
+The SecOC module shall provide separate buffers for the Authentic I-PDU and the
+Secured I-PDU.
+⌋(SRS_SecOC_00006)
+[SWS_SecOC_00110]⌈
+Any transmission request from the upper layer communication module shall overwrite
+the buffer that contains the Authentic I-PDU without affecting the buffer of the
+respective Secured I-PDU.
+⌋(SRS_BSW_00426)
+Thus, upper layer updates for Authentic I-PDUs could be processed without affecting
+ongoing transmission activities of Secured I-PDUs with the lower layer
+communication module.
+[SWS_SecOC_00262]⌈
+For a Tx Secured I-PDU with SecOCAuthPduHeaderLength &gt; 0, the SecOC module
+shall add the Secured I-PDU Header to the Secured I-PDU with the length of the
+Authentic I-PDU within the Secured I-PDU, to handle dynamic Authentic I-PDU.
+Note: Primary purpose of this Header is to indicate the position of Freshness Value and Authenticator
+in Secured I-PDUs with dynamic length Authentic I-PDU.Also some buses which cannot select
+arbitrary length of L-PDU (e.g. CAN FD and FlexRay) require this Header, because the position of
+Freshness Value and Authenticator is not always at the end of the Secured I-PDU, as lower layer
+modules (e.g. CanIf and FrIf) may add bus-specific padding bytes after processing at SecOC (then the
+L-PDU containing the Secured I-PDU with padding will be: Secured I-PDU = Secured I-PDU Header |
+Authentic I-PDU | Freshness Value | Authenticator | Bus-specific padding).
+⌋(SRS_SecOC_00006)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Copying Authentic I-PDU before transmission.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SecOC_00270] im Text von SWS_SecureOnboardCommunication.</p>
       </section>
 
       <section class="snip-card">
@@ -111,7 +187,7 @@ successful</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SecureOnboardCommunication.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SecureOnboardCommunication.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SecureOnboardCommunication.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -123,15 +199,15 @@ successful</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SecOC_00252" class="swsref internal-spec-ref"><code>SWS_SecOC_00252</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SecOC_00270" class="swsref internal-spec-ref"><code>SWS_SecOC_00270</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

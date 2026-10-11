@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_6_5_10_SchM_SwitchAck</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 911)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=911" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 911)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,47 @@ be used by BswModuleEntitys that describe its usage ⌈The
 SchM_SwitchAck API may only be used by BswModuleEntitys
 that contain a corresponding managedModeGroup association⌋
 Description:
-The SchM_SwitchAck API takes no par</div></section>
+The SchM_SwitchAck API takes no parameters – the return value
+is used to indicate the acknowledgement status to the caller.
+Return Value:
+The return value is used to indicate the “status” status and errors
+detected by the Basic Software Scheduler during execution of the
+Rte_SwitchAck call.
+• [SWS_Rte_07560]
+Upstream requirements: SRS_Rte_00213, SRS_Rte_00122
+⌈SCHM_E_NO_DATA – (non-blocking read) no error is occurred
+when the SchM_SwitchAck read was attempted.⌋
+• [SWS_Rte_07561]
+Upstream requirements: SRS_Rte_00213, SRS_Rte_00122
+⌈SCHM_E_TRANSMIT_ACK
+–
+For
+communication
+of
+mode
+switches, this indicates, that the BswSchedulableEntitys on
+the transition have been executed and the mode disablings have
+been switched to the new mode (see [SWS_Rte_02587]).⌋
+• [SWS_Rte_07055]
+Upstream requirements: SRS_Rte_00213, SRS_Rte_00122
+⌈SCHM_E_TIMEOUT The configured timeout exceeds before the
+mode transition was completed.⌋
+The SCHM_E_TRANSMIT_ACK return value is not considered to be
+an error but rather indicates correct operation of the API call.
+When SCHM_E_NO_DATA occurs, a Basic Software Module is free to
+reinvoke SchM_SwitchAck and thus repeat the attempt to read the
+mode switch acknowledgment status.
+Notes:
+If multiple transmissions on the same provided (providedMode-
+Group) ModeDeclarationGroupPrototype are outstanding it is
+not possible to determine which is acknowledged first. If this is im-
+portant, transmissions should be serialized with the next occurring
+only when the previous transmission has been acknowledged or has
+timed out.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +162,7 @@ The SchM_SwitchAck API takes no par</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=911" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

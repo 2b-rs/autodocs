@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_2_4_11_11_Rte_Rips_NotifyStartOfReception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 1010)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1010" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 1010)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_91130" class="swsref internal-spec-ref"><code>SWS_Rte_91130</code></a></span>
         </div>
@@ -111,7 +112,78 @@ indicates the available receive buffer; reception is continued. If no
 buffer of the requested size is available, a receive buffer size of 0
 shall be indicated by bufferSizePtr.
 BUFREQ_E_NOT_OK: Connection has been rejected; reception is
-aborted.</div></section>
+aborted. bufferSizePtr remains unchanged.
+BUFREQ_E_OVFL: No buffer of the required length can be
+provided; reception is aborted. bufferSizePtr remains unchanged.
+Description
+Rte_Rips_NotifyStartOfReception will be called to notify the RTE Implementation Plug-In of the
+start of reception of an N-SDU for the LdCom signal used for the Data Communication Graph
+requiring transformation.This function is designed to be a plug-in proxy for the LdCom TP Rte_
+LdComCbkStartOfReception callback. See requirement [SWS_Com_00691] for more details
+on the functionality of this callback.
+Available via
+Rte_Rips_&lt;PlugIn&gt;.h
+⌋
+[SWS_Rte_05329]
+Upstream requirements: SRS_Rte_00300, SRS_Rte_00301, SRS_Rte_00312, SRS_Rte_00317
+⌈The associated Local Software Cluster Communication Plug-In shall
+provide the Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt; Service for
+each
+• dataElement instance in an AbstractProvidedPortPrototype of an
+Atomic Software Component
+• operation instance in a PortPrototype of an Atomic Software Compo-
+nent
+• trigger instance in an AbstractProvidedPortPrototype of an Atomic
+Software Component
+IF
+• for the related Communication Graph the RTE Implementation Plug-In
+support is enabled
+AND
+• a transformation is configured according to [SWS_Rte_08794].
+AND
+• the Communication Graph references a ComIPdu which has its ComIPdu-
+Type parameter set to TP [SWS_COM_00919].
+⌋
+[SWS_Rte_05330]
+Upstream requirements: SRS_Rte_00312
+⌈The RTE shall call all Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt;
+Services from the Rte_COMCbkStartOfReception callback for Communication
+Graphs where
+• The communication graph references a ComIPdu which has its ComIPduDirec-
+tion parameter set to COM_RECEIVE [SWS_COM_00919]
+AND
+• for the related Communication Graph the RTE Implementation Plug-In support is
+enabled
+AND
+• a transformation is configured according to [SWS_Rte_08794].
+⌋
+[SWS_Rte_05331]
+Upstream requirements: SRS_Rte_00312
+⌈When a call to an Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt; API
+exists within an Rte_COMCbkStartOfReception callback, the RTE shall pass
+through the following IN parameters from the outer callback function context as pa-
+rameters to the Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt; call:
+• info
+• TpSduLength
+The variables passed to the Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_
+&lt;CGI&gt; shall be unchanged from the parameters passed to the Rte_COM-
+CbkStartOfReception callback.⌋
+[SWS_Rte_05332]
+Upstream requirements: SRS_Rte_00312
+⌈When a call to an Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt; API
+exists within an Rte_COMCbkStartOfReception callback, the RTE shall pass
+through the following OUT parameters from the outer callback function context as pa-
+rameters to the Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt; call:
+• bufferSizePtr
+⌋
+[SWS_Rte_05333]
+Upstream requirements: SRS_Rte_00312
+⌈When a call to an Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_&lt;CGI&gt; API
+exists within an Rte_COMCbkStartOfReception callback, the RTE shall ensure
+that the return value from the Rte_Rips_&lt;PlugIn&gt;_NotifyStartOfReception_
+&lt;CGI&gt; call is returned unchanged from the Rte_COMCbkStartOfReception call-
+back.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -124,7 +196,7 @@ aborted.</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1010" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

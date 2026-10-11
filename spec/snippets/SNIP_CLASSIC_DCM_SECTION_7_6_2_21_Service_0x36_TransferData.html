@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dcm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_6_2_21_Service_0x36_TransferData</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 190)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=190" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 191)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01620" class="swsref internal-spec-ref"><code>SWS_Dcm_01620</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91085" class="swsref internal-spec-ref"><code>SWS_Dcm_91085</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,67 @@ Manager
 Write Data calls are realized and return the NRC 0x73 if the block sequence counter of
 the request is wrong.⌋()
 [SWS_Dcm_00503] Processing transfer data write without RTE ⌈On reception of
-the UDS Service TransferData (0x36), if a download process is runn</div></section>
+the UDS Service TransferData (0x36), if a download process is running (RequestDown-
+load service has been previously received), the request format is correct and DcmD-
+spMemoryTransferUsePort is set to FALSE, the Dcm module shall call the callout
+Dcm_ProcessTransferDataWrite.⌋(RS_Diag_04033)
+[SWS_Dcm_00504] Processing transfer data read without RTE ⌈On reception of
+the UDS Service TransferData (0x36), if an upload process is running (RequestUpload
+service has been previously received),the request format is correct and DcmDspMem-
+oryTransferUsePort is set to FALSE, the Dcm module shall call the callout Dcm_-
+ProcessTransferDataRead.⌋(RS_Diag_04033)
+[SWS_Dcm_01444] ⌈On reception of the UDS Service TransferData (0x36), if a file
+download is running (RequestFileTransfer service has been previously received with
+0x01 (AddFile) or 0x03 (ReplaceFile)) and the request format is correct, the Dcm mod-
+ule shall call the callout Dcm_WriteFile().⌋()
+[SWS_Dcm_01445] ⌈On reception of the UDS Service TransferData (0x36), if a file
+or directory information upload is running (RequestFileTransfer service has been pre-
+viously received with 0x04 (ReadFile) or 0x05 (ReadDir)) and the request format is
+correct, the Dcm module shall call the callout Dcm_ReadFileOrDir().⌋()
+[SWS_Dcm_01173] ⌈NRCs described in [SWS_Dcm_01665] shall be the responsibil-
+ity of the callout function.⌋()
+[SWS_Dcm_01665] NRC managed by callout function for service 0x36 ⌈
+NRC
+Use Case
+0x24 - requestSequenceError
+only for the following conditions:
+If the RequestDownload or RequestUpload service
+is active, but the server has already received all
+data as determined by the memorySize parameter
+in the active RequestDownload or RequestUpload
+service
+0x31 - requestOutOfRange
+Only for the following conditions:
+The transferRequestParameterRecord contains
+additional control parameters (e.g. additional
+address information) and this control information is
+invalid. The transferRequestParameterRecord is
+not consistent with the server’s memory alignment
+constraints
+0x71 - transferDataSuspended
+The data transfer operation was halted due to
+some fault.
+0x72 - generalProgrammingFailure
+If the server detects an error when finalizing the
+data transfer between the client and server (e.g.,
+via an integrity check).
+0x92 - voltageTooHigh
+The voltage measured is higher than the maximum
+acceptable voltage for downloading data.
+0x93 - voltageTooLow
+The voltage measured is under the minimum
+acceptable voltage for downloading data.
+Manager
+NRC
+Use Case
+Table 7.26: NRC managed by callout function for service 0x36
+⌋()
+Note: the callout function can, if needed, return also other NRCs but the ones above
+won’t be treated by the Dcm module.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01620] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dcm_ReadFileOrDir().</p>
       </section>
 
       <section class="snip-card">
@@ -100,11 +157,11 @@ the UDS Service TransferData (0x36), if a download process is runn</div></sectio
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=190" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 190</td>
+              <td>Seite 191</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -112,7 +169,7 @@ the UDS Service TransferData (0x36), if a download process is runn</div></sectio
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01620" class="swsref internal-spec-ref"><code>SWS_Dcm_01620</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dcm_91085" class="swsref internal-spec-ref"><code>SWS_Dcm_91085</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -120,7 +177,7 @@ the UDS Service TransferData (0x36), if a download process is runn</div></sectio
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

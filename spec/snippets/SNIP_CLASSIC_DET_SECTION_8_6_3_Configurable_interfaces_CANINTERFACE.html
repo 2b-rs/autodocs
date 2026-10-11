@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: det</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_8_6_3_Configurable_interfaces_CANINTERFACE</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 139)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=139" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 139)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00564" class="swsref internal-spec-ref"><code>SWS_CANIF_00564</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00659" class="swsref internal-spec-ref"><code>SWS_CANIF_00659</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,125 @@ EcuM_WakeupSourceType sources
 Sync/Async
 Synchronous
 Reentrancy
-Non Reentrant (defin</div></section>
+Non Reentrant (defined within providing upper layer module)
+Parameters (in)
+sources
+Validated CAN wakeup events. Every CAN controller or CAN
+transceiver can be a separate wakeup source.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+This service indicates if a wake up event initiated from the wake up source (CAN controller or
+transceiver) after a former request to the CAN Driver or CAN Transceiver Driver module is valid.
+Available via
+Configuration parameter CanIfPublicCddHeaderFile
+⌋
+Note: This callback service is mainly implemented in and used by the ECU State Man-
+ager module (see [13, Specification of ECU State Manager]).
+Note: The CanIf calls this callback service. It is implemented by the configured up-
+per layer module. It is called only during the call of CanIf_CheckValidation() if
+a first CAN L-PDU reception event after a wake up event has been occurred at the
+corresponding CAN Controller.
+Note: The call context of &lt;User_ValidateWakeupEvent&gt;() is either on interrupt
+level (interrupt mode) or on task level (polling mode).
+Note: The callback service &lt;User_ValidateWakeupEvent&gt;() is in general re-
+entrant for multiple CAN Controller usage, but not for the same CAN Controller
+[SWS_CANIF_00659] ⌈Configuration of &lt;User_ValidateWakeupEvent&gt;(): If no
+validation is needed, this API can be omitted by disabling CanIfPublicWake-
+upCheckValidSupport.⌋
+[SWS_CANIF_00456] ⌈Configuration of &lt;User_ValidateWakeupEvent&gt;(): The
+upper layer module which provides this callback service has to be configured by Can-
+IfDispatchUserValidateWakeupEventUL, but:
+• If no upper layer modules are configured for wake up notification using &lt;User_-
+ValidateWakeupEvent&gt;(), no wake up notification needs to be configured.
+CanIfDispatchUserValidateWakeupEventUL needs not to be configured.
+• If wake up is not supported (CanIfCtrlWakeupSupport and CanIfTr-
+cvWakeupSupport equal FALSE, CanIfDispatchUserValidateWakeu-
+pEventUL is not configurable.
+⌋
+[SWS_CANIF_00563] ⌈Configuration of &lt;User_ValidateWakeupEvent&gt;():
+If
+CanIfDispatchUserValidateWakeupEventUL
+is
+set
+to
+ECUM,
+CanIfDis-
+patchUserValidateWakeupEventName
+must
+be
+EcuM_ValidateWakeu-
+pEvent.⌋
+[SWS_CANIF_00564] ⌈Configuration of &lt;User_ValidateWakeupEvent&gt;():
+If
+CanIfDispatchUserValidateWakeupEventUL is set to CDD the name of the API
+has to be configured via parameter CanIfDispatchUserValidateWakeupEvent-
+Name.⌋
+8.6.3.2
+&lt;User_ControllerBusOff&gt;
+[SWS_CANIF_00014] Definition of configurable interface &lt;User_ControllerBus
+Off&gt;
+Upstream requirements: SRS_Can_01029
+⌈
+Service Name
+&lt;User_ControllerBusOff&gt;
+Syntax
+void &lt;User_ControllerBusOff&gt; (
+uint8 ControllerId
+)
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant (defined within providing upper layer module)
+Parameters (in)
+ControllerId
+Abstracted CanIf ControllerId which is assigned to a CAN
+controller, at which a BusOff occurred.
+▽
+△
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+This service indicates a bus-off event to the corresponding upper layer module (mainly the CAN
+State Manager module).
+Available via
+Configuration parameter CanIfPublicCddHeaderFile
+⌋
+Note: This callback service is mainly implemented in and used by CanSm (see [3,
+Note: This callback service is called by CanIf and implemented by the configured up-
+per layer module. It is called in case of a BusOff notification via CanIf_Controller-
+BusOff() of the CanDrv. The delivered parameter ControllerId of the service
+CanIf_ControllerBusOff() is passed to the upper layer module.
+Note: The call context of &lt;User_ControllerBusOff&gt;() is either on interrupt level
+(interrupt mode) or on task level (polling mode).
+Note: The callback service &lt;User_ControllerBusOff&gt;() is in general re-entrant
+for multiple CAN Controller usage, but not for the same CAN Controller.
+Note: Before re-initialization/restart during BusOff recovery is executed &lt;User_Con-
+trollerBusOff&gt;() is performed only once in case of multiple BusOff events at CAN
+Controller.
+Configuration of &lt;User_ControllerBusOff&gt;()
+[SWS_CANIF_00450] ⌈Configuration of &lt;User_ControllerBusOff&gt;(): The upper
+layer module which provides this callback service has to be configured by CanIfDis-
+patchUserCtrlBusOffUL.⌋
+[SWS_CANIF_00558] ⌈Configuration of &lt;User_ControllerBusOff&gt;(): The name
+of the API &lt;User_ControllerBusOff&gt;() which will be called by CanIf shall be
+configured for CanIf by parameter CanIfDispatchUserCtrlBusOffName.⌋
+[SWS_CANIF_00524] ⌈Configuration of &lt;User_ControllerBusOff&gt;(): At least
+one upper layer module and hence an API of &lt;User_ControllerBusOff&gt;() has
+mandatorily to be configured, which CanIf can call in case of an occurred call of
+CanIf_ControllerBusOff().⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Configuration of User_ValidateWakeupEvent for CDD</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CANIF_00659] im Text von SWS_CANInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -108,7 +223,7 @@ Non Reentrant (defin</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=139" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -120,15 +235,15 @@ Non Reentrant (defin</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CANIF_00564" class="swsref internal-spec-ref"><code>SWS_CANIF_00564</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CANIF_00659" class="swsref internal-spec-ref"><code>SWS_CANIF_00659</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

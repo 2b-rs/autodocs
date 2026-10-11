@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: tcpip</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_7_8_2_TCP_IP_Stack_state_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TcpIp.pdf</strong> (Seite 60)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></strong> (Seite 60)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TCPIP_00086" class="swsref internal-spec-ref"><code>SWS_TCPIP_00086</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TcpIp_00400" class="swsref internal-spec-ref"><code>SWS_TcpIp_00400</code></a></span>
         </div>
       </div>
 
@@ -110,11 +111,157 @@ TcpIp_Init()
 /Up_LocalIpAddrAssignmentChg
 (TCPIP_IPADDR_STATE_ASSIGNED)
 TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
-/immediately releas</div></section>
+/immediately release the resources
+do not inform EthSM  upon entering state TCPIP_STATE_OFFLINE
+start assigning the resources after TCPIP_STATE_OFFLINE was
+entered and proceed to TCPIP_STATE_STARTUP
+TcpIp_RequestComMode
+(TCPIP_STATE_OFFLINE)
+/abort IP assignment
+Figure 7.2: Ctrl state machine of the TcpIp
+[SWS_TcpIp_00083] ⌈The TcpIp module shall maintain a separate state for each EthIf
+controller used by the TcpIp module, store the latest state request and distinguish
+at least the following states:
+TCPIP_STATE_OFFLINE, TCPIP_STATE_STARTUP,
+TCPIP_STATE_ONLINE, TCPIP_STATE_ONHOLD, and TCPIP_STATE_SHUTDOWN.⌋
+[SWS_TcpIp_00136] ⌈The TcpIp module shall initiate according actions to achieve the
+requested state if the stored state request is not the active state.⌋
+[SWS_TcpIp_00084] ⌈After each transition the TcpIp module shall report the new state
+to EthSM via EthSM_TcpIpModeIndication().⌋
+[SWS_TcpIp_00075] ⌈If TCPIP_STATE_ONLINE is requested for an EthIf controller
+and the current state is TCPIP_STATE_OFFLINE for that EthIf controller, the TcpIp
+module shall
+• enable all IP address assignments according to the configured assignment
+methods (TcpIpAssignmentMethod) and triggers (TcpIpAssignmentTrig-
+ger) for that EthIf controller. (Note: If the assignment trigger is configured to
+TCPIP_MANUAL no assignment is actually performed but initiation by the upper
+layer enabled) and
+• enter the state TCPIP_STATE_STARTUP for the EthIf controller.
+⌋
+[SWS_TcpIp_00127] ⌈In case multiple IP address assignment methods are configured
+and a new address from an assignment method with a higher priority (1 is highest)
+becomes available, TcpIp shall use the new IP address and release the IP address
+previously assigned by an assignment method with a lower priority.⌋
+[SWS_TcpIp_00088] ⌈If TCPIP_STATE_OFFLINE is requested for an EthIf controller
+and the current state is TCPIP_STATE_STARTUP for that EthIf controller, the TcpIp
+module shall
+• abort all ongoing IP address assignment actions appropriate and
+• enter the state TCPIP_STATE_OFFLINE for the EthIf controller.
+⌋
+[SWS_TcpIp_00085] ⌈If at least one IP address has been successfully assigned to
+an EthIf controller and the current state is TCPIP_STATE_STARTUP for that EthIf con-
+troller, the TcpIp module shall enter the state TCPIP_STATE_ONLINE for the EthIf
+controller.⌋
+Note: After successfully assignment of an IP address to the EthIf controller the upper
+layer module will be notified via &lt;Up_LocalIpAddrAssignmentChg&gt;() with State
+TCPIP_IPADDR_STATE_ASSIGNED.
+[SWS_TcpIp_00076] ⌈If TCPIP_STATE_ONHOLD is requested for an EthIf controller
+and the current state is TCPIP_STATE_ONLINE for that EthIf controller, the TcpIp mod-
+ule shall
+• notify the upper layer via &lt;Up_LocalIpAddrAssignmentChg&gt;() with State
+TCPIP_IPADDR_STATE_ONHOLD for all assigned IP addresses of the related
+EthIf controller, and
+• deactivate the communication within the TcpIp module for the related EthIf con-
+troller, and
+• enter the state TCPIP_STATE_ONHOLD for the EthIf controller.
+⌋
+[SWS_TcpIp_00086] ⌈If TCPIP_STATE_ONLINE is requested for an EthIf controller
+and the current state is TCPIP_STATE_ONHOLD for that EthIf controller, the TcpIp mod-
+ule shall
+• reactivate the communication within the TcpIp module for the related EthIf con-
+troller,
+• call
+&lt;Up_LocalIpAddrAssignmentChg&gt;()
+with
+State
+TCPIP_IPADDR_STATE_ASSIGNED for all assigned IP addresses of the
+related EthIf controller, and
+• enter the state TCPIP_STATE_ONLINE for the EthIf controller.
+⌋
+[SWS_TcpIp_00077]
+An
+offline
+request
+for
+an
+online
+state
+⌈If
+TCPIP_STATE_OFFLINE is requested or all assigned IP addresses have been
+released for an EthIf controller and the current state is TCPIP_STATE_ONLINE for
+that EthIf controller, the TcpIp module shall
+• call
+&lt;Up_LocalIpAddrAssignmentChg&gt;()
+with
+state
+TCPIP_IPADDR_STATE_UNASSIGNED for all assigned IP addresses of the
+related EthIf controller,
+• deactivate the communication (requests from and to the upper layer) within the
+TcpIp module for the related EthIf controller,
+• in regards to [SWS_TcpIp_00072] request releasing related resources, i.e. any
+socket using the EthIf controller shall start closing procedure (TCP) or be closed
+(UDP) and after sockets are closed, any IP address assigned to the EthIf con-
+troller shall be unassigned,
+• in case no EthIf controller is assigned any more, all unbound sockets shall be
+released as well, and
+• enter the state TCPIP_STATE_SHUTDOWN for the EthIf controller.
+⌋
+[SWS_TcpIp_00397]
+An
+offline
+request
+for
+an
+onhold
+state
+⌈If
+TCPIP_STATE_OFFLINE is requested or all assigned IP addresses have been
+released for an EthIf controller and the current state is TCPIP_STATE_ONHOLD for
+that EthIf controller, the TcpIp module shall
+• call
+&lt;Up_LocalIpAddrAssignmentChg&gt;()
+with
+state
+TCPIP_IPADDR_STATE_UNASSIGNED for all assigned IP addresses of the
+related EthIf controller,
+• in regards to [SWS_TcpIp_00072] and [SWS_TcpIp_00074] request releasing
+related resources, i.e. any socket using the EthIf controller shall be closed and
+thereafter any IP address assigned to the EthIf controller shall be unassigned,
+• in case no EthIf controller is assigned any more, all unbound sockets shall be
+released as well, and
+• enter the state TCPIP_STATE_SHUTDOWN for the EthIf controller.
+⌋
+[SWS_TcpIp_00398]
+TCP sockets immediate release in an onhold state ⌈If
+TCPIP_STATE_OFFLINE is requested and the current state of that EthIf controller
+is TCPIP_STATE_ONHOLD, the TcpIp module shall in regards to [SWS_TcpIp_00074]
+immediately release TCP sockets without any transmission.⌋
+[SWS_TcpIp_00399]
+TCP sockets release with handshake in an online state
+⌈If TCPIP_STATE_OFFLINE is requested, the current state of that EthIf controller is
+TCPIP_STATE_ONLINE and TCP sockets are in one of the states SYN-RECEIVED,
+FIN-WAIT-1, FIN-WAIT-2, LAST-ACK, TIME-WAIT, CLOSING, CLOSE-WAIT or
+ESTABLISHED, the TcpIp module shall release TCP sockets with handshake as de-
+fined in IETF RFC 793.⌋
+[SWS_TcpIp_00400]
+TCP sockets immediate release in an online state ⌈If
+TCPIP_STATE_OFFLINE is requested, the current state of that EthIf controller is
+TCPIP_STATE_ONLINE and TCP sockets are in the state SYN-SENT or LISTEN, the
+TcpIp module shall immediately release TCP sockets without handshake as defined in
+IETF RFC 793.⌋
+[SWS_TcpIp_00372] ⌈If TCPIP_STATE_ONLINE is requested and the current state of
+an EthIf controller is TCPIP_STATE_SHUTDOWN, then TcpIp module shall
+• immediately finish releasing all related resources stated in [SWS_TcpIp_00077],
+• TCP connections shall be aborted and the ones that are still in one of the states
+(SYN-RECEIVED, CLOSE-WAIT, FIN-WAIT-1, FIN-WAIT-2) shall transmit a
+RST-segment to inform a remote host as soon as possible that the connection
+was closed,
+• enter the state TCPIP_STATE_OFFLINE for the EthIf controller without indication
+this state to the EthSM,</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Reactivation of communication upon online request</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_TcpIp_00400] im Text von SWS_TcpIp.</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +270,7 @@ TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TcpIp.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -135,15 +282,15 @@ TcpIp_RequestComMode(TCPIP_STATE_ONLINE)
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_TCPIP_00086" class="swsref internal-spec-ref"><code>SWS_TCPIP_00086</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_TcpIp_00400" class="swsref internal-spec-ref"><code>SWS_TcpIp_00400</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

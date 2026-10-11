@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_8_3_2_EthSwt_SetSwitchPortMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetSwitchDriver.pdf</strong> (Seite 76)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetSwitchDriver.pdf#page=76" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetSwitchDriver.pdf</a></strong> (Seite 76)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthTrcv_00042" class="swsref internal-spec-ref"><code>SWS_EthTrcv_00042</code></a></span>
         </div>
@@ -114,7 +115,32 @@ EthSwt.h
 [SWS_EthSwt_00019] ⌈The function EthSwt_SetSwitchPortMode shall put the in-
 dexed port of the switch into the specified mode. If EthSwtPort references an EthTrcv
 then the function EthTrcv_SetTransceiverMode of the Ethernet Transceiver Driver
-shall additionally be called with t</div></section>
+shall additionally be called with the corresponding transceiver mode.⌋(SRS_Eth_-
+00118)
+[SWS_EthSwt_00396] ⌈When calling the function EthSwt_SetSwitchPortMode
+with mode ETH_MODE_DOWN, the EthSwt shall disable the Ethernet switch port directly
+for reduction of power consumption, if it is possible.⌋()
+[SWS_EthSwt_00397] ⌈When calling the function EthSwt_SetSwitchPortMode,
+the function shall check the access to the Ethernet switch driver. If the check fails,
+the function shall raise the extended production error ETHSWT_E_ACCESS and return
+E_NOT_OK, otherwise pass the extended production error ETHSWT_E_ACCESS and re-
+turn E_OK.⌋()
+[SWS_EthSwt_00398] ⌈If EthSwtPort does not references an EthTrcv, EthSwt shall
+indicate a mode of the port by the API EthIf_SwitchPortModeIndication latest
+during the next EthSwt_MainFunction.⌋(SRS_Eth_00118)
+[SWS_EthSwt_00022] ⌈The function EthSwt_SetSwitchPortMode shall be pre
+compile
+time
+configurable
+On/Off
+by
+the
+configuration
+parameter:
+EthSwt-
+SetSwitchPortModeApi.⌋(SRS_BSW_00171)
+[SWS_EthSwt_00023] ⌈If the switch is already in the requested mode E_OK shall be
+returned and no development error shall be raised.⌋(SRS_Eth_00118)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -127,7 +153,7 @@ shall additionally be called with t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetSwitchDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetSwitchDriver.pdf#page=76" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetSwitchDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

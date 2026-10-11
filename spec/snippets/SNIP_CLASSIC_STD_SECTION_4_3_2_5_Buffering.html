@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_2_5_Buffering</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 359)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=358" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 358)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_02529" class="swsref internal-spec-ref"><code>SWS_Rte_02529</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07008" class="swsref internal-spec-ref"><code>SWS_Rte_07008</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,38 @@ keep the response on the client side in a queue with queue length 1.
 Note: The data that shall be buffered is implementation specific but at least RTE
 should store the IN/OUT parameters, the OUT parameters and the error code.⌋
 [SWS_Rte_02314] ⌈The RTE shall determine the queue length for the server side
-according to the following</div></section>
+according to the following priority rules (highest priority first):
+1. value of the ECU-C parameter RteServerQueueLength
+2. value of the queueLength attribute of the ServerComSpec
+⌋
+[SWS_Rte_02315] ⌈The Basic Software Scheduler shall take the queue length for the
+server from the ECU-C parameter RteBswServerQueueLength.⌋
+[SWS_Rte_02325]
+Upstream requirements: SRS_Rte_00033, SRS_Rte_00110, SRS_Rte_00018
+⌈The RTE generator shall reject an input configuration where neither a queueLength
+attribute of a ServerComSpec nor an RteServerQueueLength is defined for a
+ClientServerOperation in a PPortPrototype with an RunnableEntity being
+triggered by an OperationInvokedEvent that references the ClientServerOp-
+eration.⌋
+[SWS_Rte_02529]
+Upstream requirements: SRS_Rte_00033, SRS_Rte_00110, SRS_Rte_00018
+⌈The RTE generator shall reject an input configuration where the derived queue length
+for the server side (see [SWS_Rte_02314]) has a value equal to 0.⌋
+[SWS_Rte_02530]
+Upstream requirements: SRS_Rte_00033, SRS_Rte_00110
+⌈The RTE shall use the queue of requests to call serialise access to a server.⌋
+A buffer overflow of the server is not reported to the client. The client will receive a time
+out.
+[SWS_Rte_07008]
+Upstream requirements: SRS_Rte_00033, SRS_Rte_00110
+⌈If a server call is implemented by direct function call the RTE shall not create any copy
+for parameters passed by reference.⌋
+Therefore, it is the responsibility of the application to provide consistency mechanisms
+for referenced parameters if necessary.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">rejection of server queue length zero</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07008] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -102,11 +130,11 @@ according to the following</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=358" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 359</td>
+              <td>Seite 358</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -114,15 +142,15 @@ according to the following</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_02529" class="swsref internal-spec-ref"><code>SWS_Rte_02529</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_07008" class="swsref internal-spec-ref"><code>SWS_Rte_07008</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

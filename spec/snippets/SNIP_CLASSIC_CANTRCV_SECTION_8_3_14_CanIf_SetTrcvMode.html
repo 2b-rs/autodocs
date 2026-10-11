@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: cantrcv</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANTRCV_SECTION_8_3_14_CanIf_SetTrcvMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 96)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=95" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 96)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTrcv_00002" class="swsref internal-spec-ref"><code>SWS_CanTrcv_00002</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_00009" class="swsref internal-spec-ref"><code>SWS_Det_00009</code></a></span>
         </div>
       </div>
 
@@ -112,11 +113,35 @@ Note: The parameters of the service CanTrcv_SetOpMode() are of type:
 [SWS_CANIF_00538]
 Upstream requirements: SRS_BSW_00323
 ⌈If parameter TransceiverId of CanIf_SetTrcvMode() has an invalid value, the
-CanIf shall report</div></section>
+CanIf shall report development error code CANIF_E_PARAM_TRCV to the Det_Re-
+portError service of the DET, when CanIf_SetTrcvMode() is called.⌋
+Note: The mode of a transceiver can only be changed to CANTRCV_TRCVMODE_-
+STANDBY, when the former mode of the transceiver has been CANTRCV_TRCVMODE_
+NORMAL (see [2]). But this is not checked by the CanIf.
+Note: The mode of a transceiver can only be changed to CANTRCV_TRCVMODE_-
+SLEEP, when the former mode of the transceiver has been CANTRCV_TRCVMODE_
+STANDBY (see [2]). But this is not checked by the CanIf.
+[SWS_CANIF_00648]
+Upstream requirements: SRS_BSW_00323
+⌈If parameter TransceiverMode of CanIf_SetTrcvMode() has an invalid value
+(not CANTRCV_TRCVMODE_STANDBY, CANTRCV_TRCVMODE_SLEEP or CANTRCV_-
+TRCVMODE_NORMAL), the CanIf shall report development error code CANIF_E_-
+PARAM_TRCVMODE to the Det_ReportError service of the DET module, when
+CanIf_SetTrcvMode() is called.⌋
+Note:
+The function CanIf_SetTrcvMode() should be applicable to all CAN
+transceivers with all values of TransceiverMode independent, if the transceiver hard-
+ware supports these modes or not. This is to ease up the view of the CanIf to the
+assigned physical CAN channel.
+[SWS_CANIF_00362] ⌈Configuration of CanIf_SetTrcvMode(): The number of
+supported transceiver types for each network is set up in the configuration phase (see
+CanIfTrcvCfg and CanIfTrcvDrvCfg). If no transceiver is used, this function may
+be omitted. Therefore, if no transceiver is configured in LT or PB class the API shall
+return with E_NOT_OK.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">CanIf_SetTrcvMode calls CanTrcv_SetOpMode</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Det_ReportError().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +150,7 @@ CanIf shall report</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=95" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -137,15 +162,15 @@ CanIf shall report</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTrcv_00002" class="swsref internal-spec-ref"><code>SWS_CanTrcv_00002</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Det_00009" class="swsref internal-spec-ref"><code>SWS_Det_00009</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

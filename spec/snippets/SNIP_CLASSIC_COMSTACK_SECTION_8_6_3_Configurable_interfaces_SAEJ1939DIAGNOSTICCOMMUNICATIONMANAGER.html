@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_8_6_3_Configurable_interfaces_SAEJ1939DIAGNOSTICCOMMUNICATIONMANAGER</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SAEJ1939DiagnosticCommunicationManager.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939DiagnosticCommunicationManager.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939DiagnosticCommunicationManager.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Dcm_91005" class="swsref internal-spec-ref"><code>SWS_J1939Dcm_91005</code></a></span>
         </div>
@@ -129,7 +130,160 @@ const PduInfoType info,
 const RetryInfoType* retry,
 PduLengthType* availableDataPtr
 )
-Sync/Async</div></section>
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+dmId
+Number of the J1939 diagnostic message
+channel
+Channel on which the message is transmitted
+info
+Provides the destination buffer (SduDataPtr) and the number of
+bytes to be copied (SduLength). If not enough transmit data is
+available, no data is copied by the upper layer module and
+BUFREQ_E_BUSY is returned. The lower layer module may
+retry the call. An SduLength of 0 can be used to indicate state
+changes in the retry parameter or to query the current amount of
+available data in the upper layer module. In this case, the Sdu
+DataPtr may be a NULL_PTR.
+Parameters (in)
+retry
+This parameter is used to acknowledge transmitted data or to
+retransmit data after transmission problems.
+If the retry parameter is a NULL_PTR, it indicates that the
+transmit data can be removed from the buffer immediately after it
+has been copied. Otherwise, the retry parameter must point to a
+valid RetryInfoType element.
+If TpDataState indicates TP_CONFPENDING, the previously
+copied data must remain in the TP buffer to be available for error
+recovery. TP_DATACONF indicates that all data that has been
+copied before this call is confirmed and can be removed from the
+TP buffer. Data copied by this API call is excluded and will be
+confirmed later. TP_DATARETRY indicates that this API call shall
+copy previously copied data in order to recover from an error. In
+this case TxTpDataCnt specifies the offset in bytes from the
+current data copy position.
+Parameters (inout)
+None
+Parameters (out)
+availableDataPtr
+Indicates the remaining number of bytes that are available in the
+upper layer module’s Tx buffer. availableDataPtr can be used by
+TP modules that support dynamic payload lengths (e.g. FrIsoTp)
+to determine the size of the following CFs.
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Data has been copied to the transmit buffer
+completely as requested.
+BUFREQ_E_BUSY: Request could not be fulfilled, because the
+required amount of Tx data is not available. The lower layer
+module may retry this call later on. No data has been copied.
+BUFREQ_E_NOT_OK: Data has not been copied. Request failed.
+▽
+Manager for SAE J1939
+△
+Description
+This function is called to acquire the transmit data of a diagnostic message segment. Each call
+to this function provides the next part of the diagnostic message data unless retry-&gt;TpData
+State is TP_DATARETRY. In this case the function restarts to copy the data beginning at the
+offset from the current position indicated by retry-&gt;TxTpDataCnt. The size of the remaining
+data is written to the position indicated by availableDataPtr.
+Available via
+J1939Dcm.h
+⌋
+8.6.3.3
+&lt;GenericDMxTxConfirmation&gt;
+[SWS_J1939Dcm_91003]
+Definition of configurable interface &lt;GenericDMxTx
+Confirmation&gt;
+Upstream requirements: RS_Diag_04241
+⌈
+Service Name
+&lt;GenericDMxTxConfirmation&gt;
+Syntax
+void &lt;GenericDMxTxConfirmation&gt; (
+uint8 dmId,
+NetworkHandleType channel,
+Std_ReturnType result
+)
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+dmId
+Number of the J1939 diagnostic message.
+channel
+Channel on which the message is transmitted.
+Parameters (in)
+result
+E_OK: The PDU was transmitted. E_NOT_OK: Transmission of
+the PDU failed.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+Called after a diagnostic message has been transmitted, the result indicates whether the
+transmission was successful or not.
+Available via
+J1939Dcm.h
+⌋
+Manager for SAE J1939
+8.6.3.4
+&lt;GenericDMxStartOfReception&gt;
+[SWS_J1939Dcm_91004] Definition of configurable interface &lt;GenericDMxStart
+OfReception&gt;
+Upstream requirements: RS_Diag_04241
+⌈
+Service Name
+&lt;GenericDMxStartOfReception&gt;
+Syntax
+BufReq_ReturnType &lt;GenericDMxStartOfReception&gt; (
+uint8 mId,
+NetworkHandleType channel,
+PduLengthType length,
+PduLengthType bufferSizePtr,
+uint8 sourceAddress,
+uint8 priority
+)
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+mId
+Number of the J1939 diagnostic message.
+channel
+Channel on which the message is received.
+length
+Total length of the diagnostic message to be received.
+sourceAddress
+Address of the node that sent the diagnostic message.
+Parameters (in)
+priority
+Priority of the diagnostic message.
+Parameters (inout)
+None
+Parameters (out)
+bufferSizePtr
+Available receive buffer.
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Connection has been accepted. bufferSizePtr
+indicates the available receive buffer; reception is continued. If no
+buffer of the requested size is available, a receive buffer size of 0
+shall be indicated by bufferSizePtr. BUFREQ_E_NOT_OK:
+Connection has been rejected; reception is aborted. bufferSizePtr
+remains unchanged. BUFREQ_E_OVFL: No buffer of the required
+length can be provided; reception is aborted. bufferSizePtr
+remains unchanged.
+Description
+This function is called at the start of receiving an diagnostic message.
+Available via
+J1939Dcm.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -142,7 +296,7 @@ Sync/Async</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SAEJ1939DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SAEJ1939DiagnosticCommunicationManager.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

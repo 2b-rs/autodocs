@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_8_4_25_GetSpinlock</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 199)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=199" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 199)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00791" class="swsref internal-spec-ref"><code>SWS_Os_00791</code></a></span>
         </div>
@@ -114,11 +115,36 @@ Upstream requirements: SRS_Os_80021
 pied the function shall busy wait until the spinlock becomes available.⌋
 [SWS_Os_00688]
 Upstream requirements: SRS_Os_80021
-⌈The function GetS</div></section>
+⌈The function GetSpinlock shall return E_OK if no error was detected. The spinlock
+is now occupied by the calling Task/Category 2 ISR on the calling core.⌋
+[SWS_Os_00689]
+Upstream requirements: SRS_Os_80021
+⌈The function GetSpinlock shall return E_OS_ID if the parameter SpinlockID refers
+to a spinlock that does not exist.⌋
+[SWS_Os_00690]
+Upstream requirements: SRS_Os_80021
+⌈The function GetSpinlock shall return E_OS_INTERFERENCE_DEADLOCK if the
+spinlock referred by the parameter SpinlockID is already occupied by a Task/Cate-
+gory 2 ISR on the same core.⌋
+[SWS_Os_00691]
+Upstream requirements: SRS_Os_80021
+⌈The function GetSpinlock shall return E_OS_NESTING_DEADLOCK if the sequence
+by which multiple spinlocks are occupied at the same time on one core do not comply
+with the configured order.⌋
+[SWS_Os_00692]
+Upstream requirements: SRS_Os_80021
+⌈The function GetSpinlock shall return E_OS_ACCESS if the accessing OS-
+Application was not listed in the configuration (OsSpinlock).⌋
+[SWS_Os_00693]
+Upstream requirements: SRS_Os_80021
+⌈It shall be allowed to call the function GetSpinlock while interrupts are disabled.⌋
+[SWS_Os_00694]
+Upstream requirements: SRS_Os_80021
+⌈It shall be allowed to call the function GetSpinlock while a Resource is occupied.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von SpinlockIdType().</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +153,7 @@ Upstream requirements: SRS_Os_80021
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=199" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

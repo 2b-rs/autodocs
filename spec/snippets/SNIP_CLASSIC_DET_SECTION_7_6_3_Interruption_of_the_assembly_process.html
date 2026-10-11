@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_6_3_Interruption_of_the_assembly_process</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SOMEIPTransportProtocol.pdf</strong> (Seite 34)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SOMEIPTransportProtocol.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransportProtocol.pdf</a></strong> (Seite 34)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SomeIpTp_00096" class="swsref internal-spec-ref"><code>SWS_SomeIpTp_00096</code></a></span>
         </div>
@@ -94,7 +95,101 @@ Upstream requirements: RS_SOMEIP_00010
 ⌈If the SOME/IP TP module interrupts the assembly process because of a detected
 error, the SOME/IP TP module shall consider the following points:
 • call PduR_SomeIpTpRxIndication() with result set to E_NOT_OK for the PDU ID
-that refers to t</div></section>
+that refers to the used SomeIpTpRxNSdu of the affected SomeIpTpRxChannel.
+• Set the corresponding SomeIpTpRxNSdu to state NSDU_AVAILABLE, after
+PduR_SomeIpTpRxIndication() returns.
+• The Rx timeout time defined by SomeIpTpRxTimeoutTime shall be canceled (if
+still running) for this assembly process that corresponds to the PDU ID and its
+identified transmission source (see [SWS_SomeIpTp_00096]).
+⌋
+Note: The possible reasons for interruptions are listed below.
+[SWS_SomeIpTp_00062]
+Handling if inconsistency of received SOME/IP TP
+headers is detected
+Upstream requirements: RS_SOMEIP_00010
+⌈If the SOME/IP TP module detects an inconsistency of the received SOME/IP TP
+headers (i.e.: Request ID, Protocol Version, Interface Version, Message Type or Re-
+turn Code are not equal for all received segments) per identified transmission source
+([SWS_SomeIpTp_00096]),
+• The current assembly process for the affected PDU of the corresponding identi-
+fied transmission source ([SWS_SomeIpTp_00096]) shall be interrupted as de-
+fined by [SWS_SomeIpTp_00054].
+Specification on SOME/IP Transport Protocol
+• The API Det_ReportRuntimeError() shall be called with the runtime error code
+SOMEIPTP_E_INCONSISTENT_HEADER.
+⌋
+[SWS_SomeIpTp_00045] Handling if received SOME/IP TP header has set TP-
+Flag to ’0’ for an currently active session
+Upstream requirements: RS_SOMEIP_00010
+⌈If the API SomeIpTp_RxIndication() is called and a session for the affected PDU of
+the identified transmission source ([SWS_SomeIpTp_00096]) is currently active, the
+SOME/IP TP module shall check if the TP-Flag of the Message Type is set to ’1’. If the
+TP-Flag is not set to ’1’,
+• The current assembly process for the affected PDU of the corresponding identi-
+fied transmission source ([SWS_SomeIpTp_00096]) shall be interrupted as de-
+fined by [SWS_SomeIpTp_00054].
+• The API Det_ReportRuntimeError() shall be called with the runtime error code
+SOMEIPTP_E_MESSAGE_TYPE.
+⌋
+[SWS_SomeIpTp_00080] Header Inconsistency check before TP-Flag check
+Upstream requirements: RS_SOMEIP_00010
+⌈
+Before checking the TP-Flag of the Message, as a condition to interrupt the as-
+sembly process, (see [SWS_SomeIpTp_00045]), the SOME/IP TP module shall
+check for inconsistencies of the received SOME/IP TP headers according to
+[SWS_SomeIpTp_00062].⌋
+[SWS_SomeIpTp_00063] The SomeIpTp module, shall check received SOME/IP
+TP segments with More Segment Flag set ’1’, whether the length of the received
+payload is divisible by 16
+Upstream requirements: RS_SOMEIP_00010, RS_SOMEIP_00051
+⌈If the API SomeIpTp_RxIndication() is called, the SOME/IP TP module shall check the
+affected PDU per identified transmission source ([SWS_SomeIpTp_00096]) whether
+the length of received payload is divisible by 16 in case the More Segment Flag is set
+to ’1’.
+If the received payload bytes are not divisible by 16 in this case,
+• The current assembly process for the affected PDU of the corresponding identi-
+fied transmission source ([SWS_SomeIpTp_00096]) shall be interrupted as de-
+fined by SWS_SomeIpTp_00054.
+• The API Det_ReportRuntimeError() shall be called with the runtime error code
+SOMEIPTP_E_ASSEMBLY_INTERRUPT.
+Specification on SOME/IP Transport Protocol
+⌋
+[SWS_SomeIpTp_00064] Handling if value of the received Offset Value in units of
+16 bytes do not match to the sum of the received Payload bytes of the previous
+SOME/IP TP segments
+Upstream requirements: RS_SOMEIP_00010, RS_SOMEIP_00051
+⌈If the API SomeIpTp_RxIndication() is called, the SOME/IP TP module shall check the
+value of the Offset Field at the corresponding PDU per identified transmission source
+([SWS_SomeIpTp_00096]. If the Offset Value in units of 16 bytes does not match to
+the sum of the received Payload bytes of the previous SOME/IP segments,
+• The current assembly process for the affected PDU of the corresponding identi-
+fied transmission source ([SWS_SomeIpTp_00096]) shall be interrupted as de-
+fined by SWS_SomeIpTp_00054.
+• The API Det_ReportRuntimeError() shall be called with the runtime error code
+SOMEIPTP_E_INCONSISTENT_SEQUENCE.
+⌋
+[SWS_SomeIpTp_00048] Handling if value of the received Offset Value equals ’0’
+while the received Payload bytes of the previous SOME/IP segments is greater
+than ’0’
+Upstream requirements: RS_SOMEIP_00010, RS_SOMEIP_00051
+⌈If the API SomeIpTp_RxIndication() is called, the SOME/IP TP module shall check
+the value of the Offset Field at corresponding PDU per identified transmission source
+([SWS_SomeIpTp_00096]). If the received Offset Value equals ’0’ while the received
+Payload bytes of the previous SOME/IP segments is greater than ’0’, the SOME/IP TP
+module shall perform the following steps in the following order:
+• The current assembly process for the affected PDU of the corresponding identi-
+fied transmission source ([SWS_SomeIpTp_00096]) shall be interrupted as de-
+fined by SWS_SomeIpTp_00054.
+• The API Det_ReportRuntimeError() shall be called with the runtime error code
+SOMEIPTP_E_INCONSISTENT_SEQUENCE.
+• Start the assembly process according to chapter 7.3.1 SOME/IP segment re-
+ceived with Offset 0
+⌋
+[SWS_SomeIpTp_00049] Handling if provided Rx buffer size is smaller than the
+required size
+Upstream requirements: RS_SOMEIP_00010
+⌈If the bufferSizePtr provided by the API PduR_SomeIpTpStartOfReception()or PduR_
+SomeIpTpCopyRxData()is smaller than the sum of the received and the added SOME/</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +202,7 @@ that refers to t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SOMEIPTransportProtocol.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SOMEIPTransportProtocol.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransportProtocol.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

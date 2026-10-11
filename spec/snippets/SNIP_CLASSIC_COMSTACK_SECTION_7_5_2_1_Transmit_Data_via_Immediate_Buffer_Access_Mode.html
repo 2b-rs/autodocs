@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comstack</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_5_2_1_Transmit_Data_via_Immediate_Buffer_Access_Mode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayISOTransportLayer.pdf</strong> (Seite 39)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=39" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></strong> (Seite 39)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTp_01123" class="swsref internal-spec-ref"><code>SWS_FrTp_01123</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTp_01200" class="swsref internal-spec-ref"><code>SWS_FrTp_01200</code></a></span>
         </div>
       </div>
 
@@ -112,11 +113,111 @@ steps which are necessary to transmit data via FrTp.
 Step 1 - 4
 [SWS_FrTp_00136]FrTp transmit initiation by upper layer ⌈Sending Fr N-SDU data
 shall always be initiated by the service primitive call of FrTp_Transmit.⌋
-[SWS_FrTp_01043] Detection for transmission with unkn</div></section>
+[SWS_FrTp_01043] Detection for transmission with unknown or known message
+length ⌈The FrTp module shall evaluate the value of PduInfoType.SduLength:
+9Figure 7.6 depicts only the overview of data transmission for a single channel without further func-
+tionality (e.g. transmit cancellation) or internal behaviour (e.g. internal control data handling, return
+values, etc.). Also a schedule for data transfer in concurrent channels is not described here.
+10Buffer access mode is configured for each N-PDU and is referenced via the PDU-Pool.
+• SduLength = 0: Transmission with unknown message length is requested
+• SduLength̸ = 0: Transmission with known message length is requested.
+⌋
+[SWS_FrTp_01044] Handling of TX SDU unknown message length flag ⌈If sup-
+port unknown message length is configured the FrTp module shall set the flag
+TX_SDU_UNKNOWN_MSG_LENGTH according to the result of [SWS_FrTp_01043].⌋
+[SWS_FrTp_01134] Handling of development error for unknown message length
+⌈The FRTP module shall raise an development error FRTP_E_UMSG_LENGTH_ERROR
+when
+1. a transmission with unknown message length is detected and
+2. support of unknown message legth is not configured and
+3. development error detection is enabled for the FrTp module.
+⌋
+The service primitive parameter TxPduId shall be used to select the correct connection.
+This shall be done by searching for the correct entry within the FrTpConnection
+container (FrTpConnection.FrTpTxSduId). If a valid parameter TxPduId is given,
+the FrTp module shall search for a free channel resource (FrTpTxChannelState = Idle)
+and allocate them to control the requested Tx data transfer.
+[SWS_FrTp_01038] TX SDU available flag ⌈An ongoing data transfer shall be sig-
+nalled by the flag TX_SDU_AVAILABLE.⌋
+[SWS_FrTp_01039] Handling of TX SDU available flag ⌈The service primitive shall
+set the flag TX_SDU_AVAILABLE only, if
+• the requested TxPduId is valid
+• a free channel resource is available (FrTpTxChannelState = Idle)
+⌋
+[SWS_FrTp_01040] Reject transmission request when TX PDU ID is not valid ⌈If
+the current parameter TxPduId is not supported the service primitive FrTp_Transmit
+• shall be terminated and the return value shall be set to E_NOT_OK and
+• the FrTp module shall raise an development error FRTP_E_INVALID_PDU_-
+SDU_ID when development error detection for the FrTp module is enabled.
+⌋
+[SWS_FrTp_01041] Reject transmission request when no free channel is avail-
+able ⌈If no free channel is available (FrTpTxChannelState != Idle) the service primi-
+tive FrTp_Transmit shall be terminated and the return value shall be set to E_NOT_
+OK11.⌋
+[SWS_FrTp_01185] Runtime error FRTP_E_NO_CHANNEL ⌈The FrTp module shall
+raise a runtime error FRTP_E_NO_CHANNEL.⌋
+[SWS_FrTp_01200] Reject transmission request when another transmission for
+the specified address information is active ⌈If the request for a message trans-
+mission has not been accepted due to another transmission for the specified address
+information is active; then FrTp_Transmit shall return E_NOT_OK.⌋
+Step 5 - 10
+If the TX_SDU_AVAILABLE flag is set, the FrTp module has to evaluate the
+length of the currently available FrTp N-SDU data by calling the service primitive
+PduR_FrTpCopyTxData()12 a first time. With knowledge of the available data size FrTp
+module scans the FrTpTxPduPool and allocates the first free FrTpPdu for that data
+transfer. Depending on the available FrTp-N-SDU length and the FrTpTxPduPool’s
+free FrTpPdu length the FrTp module decides whether segmentation is necessary or
+not for that N-SDU transfer. By calling the service primitive PduR_FrTpCopyTxData
+the data shall be copied to the corresponding buffer. In a next step the corresponding
+Address Information and PCI are prepared and the service primitive LSduR_FrTp-
+Transmit is called with the corresponding TxPduId.
+[SWS_FrTp_01042] Start copy TX data when SDU available flag is set ⌈If the
+TX_SDU_AVAILABLE flag is set, the FrTp module shall call the service primitive
+PduR_FrTpCopyTxData to get the currently available FrTp N-SDU Length informa-
+tion.⌋
+[SWS_FrTp_01045] Allocate first free TX PDU in a pool ⌈The FrTp module shall
+always allocate the first free FrTpTxPdu while scanning the corresponding FrTpTx-
+PduPool.⌋
+11This scenario could occur on gateways, if communication via more connections is requested than
+channels resources are configured.
+12The available data length evaluation depends on different scenarios the FrTp is used in.
+– In case of a normal ECU which transfers data with unknown message lengths it is necessary to
+evalueate the length of the currently stored FrTp-N-SDU.
+– In case an ECU transmits data with known message length the Tx data length is given by the parameter
+of the FrTp_Transmit service primitive. An additional evaluation by calling PduR_FrTpCopyTxData(..)
+is possible to have equal evaluation sequences for known and unknown message length transfers but
+could be skipped by runtime optimizations (implementation dependency).
+– In case of a Gateway which routes N-SDUs of different bus systems it is necessary to get the currently
+available (received) data length in the gateway buffer.
+[SWS_FrTp_01046] Usage of free TX PDU to continue transmission ⌈If a free
+FrTpTxPdu is identified, the FrTp module shall use this FrTpTxPdu to continue cur-
+rent transmission process.⌋
+[SWS_FrTp_01047] Postpone processing of transmission in case no free TX PDU
+is available ⌈If no free FrTpTxPdu is identified, the FrTp module shall postpone pro-
+cessing for the corresponding connection till the next main function call.⌋
+Note: FrTp module shall postpone the processing for the corresponding connection
+until either free FrTpTxPdu is identified according to [SWS_FrTp_01046] or a timeout
+occurs (see Chapter 7.5.8).
+[SWS_FrTp_01048] Segmentation decision for N-SDU transfer ⌈The FrTp module
+shall decide whether segmentation for the requested N-SDU transfer is required or
+not depending on the length information of the first allocated FrTpTxPdu from an
+FrTpTxPduPool for the currently processed FrTpConnection.⌋
+Note: Decision of segmentation as specified in [SWS_FrTp_01048] is shown in Figure
+7.7.
+Figure 7.7: Segmentation decision
+Note: The decision whether segmentation is possible or not depends also on the con-
+nection mode (1:1 or 1:n).
+[SWS_FrTp_01123] Call copy TX data with according length ⌈The FrTp module
+shall call the service primitive PduR_FrTpCopyTxData to copy the currently available
+FrTp N-SDU data with a length of FrTpTxPdu length to the corresponding transmit
+buffer.⌋
+[SWS_FrTp_01049] Address Information and PCI preparation ⌈The FrTp mod-
+ule shall prepare the Address Information and PCI according to the result of
+[SWS_FrTp_01048] as defined in specification [1].⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Calling PduR_FrTpCopyTxData for buffer data</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrTp_01200] im Text von SWS_FlexRayISOTransportLayer.</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +226,7 @@ shall always be initiated by the service primitive call of FrTp_Transmit.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayISOTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=39" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -137,15 +238,15 @@ shall always be initiated by the service primitive call of FrTp_Transmit.⌋
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrTp_01123" class="swsref internal-spec-ref"><code>SWS_FrTp_01123</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrTp_01200" class="swsref internal-spec-ref"><code>SWS_FrTp_01200</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_9_10_Start_CAN_network</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 156)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=156" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 156)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -272,11 +273,91 @@ CanIf_SetControllerMode returns with E_OK()
 CanIf_SetControllerMode returns with E_NOT_OK()
 CanIf_ControllerModeIndication()
 &lt;User_ControllerModeIndication&gt;(uint8,
-Can_ControllerSta</div></section>
+Can_ControllerStateType)
+CanIf_ControllerModeIndication(uint8,
+Can_ControllerStateType)
+CanIf_ControllerMode returns with E_OK()
+&lt;User_ControllerModeIndication&gt;()
+CanIf_ControllerModeIndication()
+&lt;User_ControllerModeIndication&gt;()
+&lt;User_ControllerModeIndication&gt;()
+CanIf_ControllerModeIndication()
+CanIf_SetControllerMode returns with E_OK()
+Can_SetControllerMode returns with E_OK()
+Figure 9.10: Start CAN network
+This sequence diagram resembles "Stop CAN network" or "Sleep CAN network".
+Activity
+Description
+Loop requesting CAN
+controller mode
+consecutively.
+The Can_MainFunction_Mode() is triggered consecutively. It
+checks the HW if a controller mode has changed. If so, it is notified
+via a function call of CanIf_ControllerModeIndication
+(Controller, ControllerMode).
+The upper layer requests "
+STARTED" mode of the
+desired CAN controller
+The upper layer calls CanIf_SetControllerMode
+(ControllerId, CAN_CS_STARTED) to request STARTED
+mode for the requested CAN controller.
+CanDrv disables wake up
+interrupts, if supported
+This is only done in case of requesting "STARTED" mode. If "
+SLEEP" mode of CAN controller is requested, here the wake up
+interrupts are enabled. In case of "STOPPED", nothing happens.
+CanDrv requests the CAN
+controller to transition into
+the requested mode (CAN_
+CS_STARTED).
+During function call Can_SetControllerMode(Controller,
+Can_ControllerStateType), the CanDrv enters the request
+into the hardware of the CAN controller. This may mean that the
+controller mode transitions directly, but it could mean that it takes a
+few milliseconds until the controller changes its state. It depends
+on the controllers.
+The following reaction depends on the controller and its current operation mode
+CAN controller was in
+STOPPED mode
+The former request Can_SetControllerMode() returns and
+informs CanIf about a successful request which in turn returns the
+upper layer request CanIf_SetControllerMode(). The Can_
+MainFunction_Mode() detects the successful mode transition
+of the CAN controller and inform the CanIf asynchronously via
+CanIf_ControllerModeIndication(Controller, CAN_
+CS_STARTED).
+CAN controller was in
+STOPPED mode and the
+CAN controller transitions
+very fast so that mode
+indication is called during
+transition request
+During the former request Can_SetControllerMode() the
+function CanIf_ControllerModeIndication(Controller,
+CAN_CS_STARTED) is called to inform the CanIf directly about the
+successful mode transition. When CanIf_
+ControllerModeIndication(Controller, CAN_CS_
+STARTED) returned, the request Can_SetControllerMode()
+returns and informs CanIf about a successful request which in turn
+returns the upper layer request CanIf_SetControllerMode().
+CAN controller was in
+STARTED mode
+During the former request Can_SetControllerMode() the
+function CanIf_ControllerModeIndication(Controller,
+CAN_CS_STARTED) is called to inform the CanIf directly about the
+successful mode transition (because the mode was already
+started). When CanIf_ControllerModeIndication
+(Controller, CAN_CS_STARTED) returned, the request Can_
+SetControllerMode() returns and informs CanIf about a
+successful request which in turn returns the upper layer request
+CanIf_SetControllerMode().
+CAN controller was in
+SLEEP mode
+This transition is not allowed -&gt; E_NOT_OK.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -285,7 +366,7 @@ Can_ControllerSta</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=156" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

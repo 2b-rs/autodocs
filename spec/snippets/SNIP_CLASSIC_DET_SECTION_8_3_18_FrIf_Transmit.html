@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_8_3_18_FrIf_Transmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayInterface.pdf</strong> (Seite 71)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></strong> (Seite 71)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05318" class="swsref internal-spec-ref"><code>SWS_FrIf_05318</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05757" class="swsref internal-spec-ref"><code>SWS_FrIf_05757</code></a></span>
         </div>
       </div>
 
@@ -110,11 +111,41 @@ Det_ReportError service of the DET module.⌋
 and/or if the parameter FrIfImmediate is set to true for the passed TxPduId, the passed
 SduDataPtr in parameter PduInfoPtr of FrIf_Transmit shall be checked for NULL_PTR
 in case development error detection is enabled (i.e. FrIfDevErrorDetect equals ON). If
-in this case the passed SduDataPtr equals NULL_PTR, the function FrIf_T</div></section>
+in this case the passed SduDataPtr equals NULL_PTR, the function FrIf_Transmit shall
+report the development error code FRIF_E_PARAM_POINTER to the Det_ReportError
+service of the DET module.
+In case of decoupled transmission the PDU with index TxPduId is not yet passed
+to the underlying FlexRay Driver module for transmission. FrIf only remembers the
+PDU’s transmission request (increment TrigTxCounter 5) This decoupling mechanism
+between the call of FrIf_Transmit() and the execution of the FrIfCommunicationAction
+(see [ECUC_FrIf_06067]) has some implications:
+• The upper layer BSW module may operate asynchronously to the FlexRay Com-
+munication System and thus may call FrIf_Transmit() at any point in time.
+• The upper layer BSW module must permanently buffer the PDU’s payload date
+and must be able to handle a call of its LSduR_FrIfTriggerTransmit() API service
+at (from the BSW’s point of view) any arbitrary point in time.
+⌋
+[SWS_FrIf_05208] ⌈In case of immediate transmission the function FrIf_Transmit shall
+pass the PDU (single PDU, no Update bit) to the underlying FlexRay Driver module
+immediately for transmission.⌋
+[SWS_FrIf_05757] ⌈"If parameter TxPduId is configured for an immediate PDU, and
+if configuration parameter FrIfAllowDynamicLSduLength is set to FALSE, the pro-
+vided length in PduInfoPtr shall be compared with the static configured length (see
+[ECUC_FrIf_06054]).
+If the length information does not match, FrIf_Transmit() shall return E_NOT_OK and
+shall not perform the immediate PDU transmission. If development error detection is
+enabled (i.e. FrIfDevErrorDetect equals ON), the function FrIf_Transmit() shall report
+5Limited by static configuration see FrIfCounterLimit
+development error code FRIF_E_INV_PDULENGTH to the Det_ReportError service of
+the DET module.⌋
+[SWS_FrIf_05209] ⌈Caveats of FrIf_Transmit:
+The FlexRay Interface module has
+to be initialized with a call of FrIf_Init() before this API service may be called, see
+[SWS_FrIf_05003]⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_FrIf_05318] im Text von SWS_FlexRayInterface.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrIf_05757] im Text von SWS_FlexRayInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +154,7 @@ in this case the passed SduDataPtr equals NULL_PTR, the function FrIf_T</div></s
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -135,7 +166,7 @@ in this case the passed SduDataPtr equals NULL_PTR, the function FrIf_T</div></s
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrIf_05318" class="swsref internal-spec-ref"><code>SWS_FrIf_05318</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrIf_05757" class="swsref internal-spec-ref"><code>SWS_FrIf_05757</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

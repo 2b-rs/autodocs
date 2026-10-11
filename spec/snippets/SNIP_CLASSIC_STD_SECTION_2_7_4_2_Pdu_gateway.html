@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_2_7_4_2_Pdu_gateway</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_BSWDistributionGuide.pdf</strong> (Seite 55)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_BSWDistributionGuide.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_BSWDistributionGuide.pdf</a></strong> (Seite 55)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_PduR_00881" class="swsref internal-spec-ref"><code>SWS_PduR_00881</code></a></span>
         </div>
@@ -87,7 +88,14 @@ where the PduR must call the transmit API for the buffered PDU.
 Pdu gateway routings with TriggerTransmit handling need to be managed in a slightly
 different way as the PDU is provided to the lower layer Interface module in the context
 of the PduR TriggerTransmit callback.
-Due to this pattern the PduR needs to buffer the received PDU in any case,</div></section>
+Due to this pattern the PduR needs to buffer the received PDU in any case, even so
+the routing takes place within one network type.
+Therefore, the required extension is limited to routings between different network types
+assigned to different EcuC partitions. In this case the PduR needs to switch the context
+from source to target, before calling the transmit API in addition to the normal routing
+mechanisms and take care to store the buffer in a shared memory area, which can be
+accessed from both contexts. The PduR needs to apply appropriate data protection
+mechanisms to guarantee data consistency even in a multi-core setup.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +108,7 @@ Due to this pattern the PduR needs to buffer the received PDU in any case,</div>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_BSWDistributionGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_BSWDistributionGuide.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_BSWDistributionGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

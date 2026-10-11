@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -126,7 +127,176 @@ System
 Configuration
 Complex generation step:
 complex algorithm or engineering work
-Inf</div></section>
+Information / Database (no files)
+per ECU
+Basic SW
+Module A
+extract of
+ECU config
+Basic SW
+Module A
+extract of
+ECU config
+decisions
+(e.g. mapping)
+decisions
+(e.g. scheduling,
+...)
+Component
+API
+Generator
+Component
+API
+e.g.
+app.h
+list of
+inplementations
+of SW
+Components
+AUTOSAR
+RTE
+Generator
+Generator for
+OS, COM, ...
+Other Basic
+SW Generator
+MCAL-
+Generator
+Figure 1.2: AUTOSAR Methodology
+The System Template deﬁnes ﬁve major elements: Topology, Software, Communica-
+tion, Mapping and Mapping Constraints, which will be deﬁned in detail in the following
+chapters. Figure 1.3 gives an overview how these are used in the two different descrip-
+tions.
+System Template
+R4.0 Rev 3
+Topology (untouched by System Generator)
+•which ECUs
+•how connected
+Software (untouched by System Generator)
+•which application SW Component
+Communication
+• Communication Matrix
+• Frames, Signals
+• Gateway Tables
+• Communication Protocols
+Mapping
+• which SW on which ECU
+• Which Data in which Frame/Signal/Protocol
+Mapping Constraints
+–
+• what must be mapped together, what separated
+etc (untouched, not relevant for ECU
+Config
+Generator)
+AUTOSAR System Generator
+SW-Components
+ECU Resource
+System Constraints
+System Configuration
+AUTOSAR ECU Config
+Generator (per ECU)
+Topology
+• which ECUs
+• how connected
+Software
+• which Application SW
+-C
+•(optional) Communication
+• Communication Matrix
+• Frames, Signals
+• Gateway tables
+• Communication Protocols
+(optional) Mapping
+• if already defined
+• which SW -C on which ECU
+• Which data in which
+Frame/Signal
+Mapping Constraints
+§what must be mapped
+Topology (untouched by System Generator)
+•which ECUs
+•how connected
+Software (untouched by System Generator)
+•which application SW Component
+Communication
+• Communication Matrix
+• Frames, Signals, Timing
+• Gateway Tables
+Mapping
+• which SW on which ECU
+• Which Data in which Frame/Signal/Protocol
+Mapping Constraints
+• what must be mapped together, what separated
+etc (untouched, not relevant for ECU Config
+Generator)
+AUTOSAR System Generator
+SW-Components
+ECU Resource
+System Constraints
+System Configuration
+AUTOSAR ECU Config
+Generator (per ECU)
+Topology
+• which ECUs
+• how connected
+Software
+• which Application SW-C
+•(optional) Communication
+• Communication Matrix
+• Frames, Signals, Timing
+• Gateway tables
+(optional) Mapping
+•
+if already defined
+• which SW-C on which ECU
+-
+• Which data in which
+Frame/Signal
+Mapping Constraints
+what must be mapped
+together, what separated etc
+Figure 1.3: Scope of System Constraint Description and System Conﬁguration Descrip-
+tion
+On Figure 1.3 some of the elements are marked optional for the System Constraint
+Description. If one starts with a new AUTOSAR project, these elements may not be
+present in the System Constraint Description. No (at least partial) functionality has
+been mapped yet, thus the communication matrix is not populated. But in most cases,
+many functional mappings are already predeﬁned and contribute to the population of
+the communication matrix with their associated signals, thus being present in the Sys-
+tem Constraint Description.
+Reasons for such a predeﬁnition are manifold. In some cases, hardware setup dictates
+where certain functionality resides, in some cases, a partial or complete communi-
+cation matrix and/or completely conﬁgured ECUs (HW and SW) of another system
+(vehicle) has to be taken over. This approach is eased by the fact that System Conﬁgu-
+ration and System Constraint Description use the same format. That way it is possible
+to reuse parts of a System Conﬁguration Description of the other system/vehicle in the
+actual System Constraint Description.
+Furthermore, in the ﬁgure some of the elements are marked untouched for the Sys-
+tem Conﬁguration Description. This can have two reasons:
+• The System Generator does not modify neither the Topology (networked ECUs)
+nor the Software, so these parts are just moved from System Constraint Descrip-
+tion to System Conﬁguration Description during the generation step.
+• In a completed System Conﬁguration Description, all SW components and all
+ECU-to-ECU communication have been mapped. Thus mapping constraints that
+limit the ﬂexibility in the mapping phase of the system generator are obsolete
+System Template
+R4.0 Rev 3
+and will not be used in subsequent generator steps. They may however still be
+present for documentation and validation reasons.
+Even if the communication matrix is determined as the result of the system conﬁgu-
+ration, the ECUs still have to be conﬁgured. This is done by the ECU conﬁguration
+generator, which takes the System Conﬁguration description as input and generates
+the ECU conﬁguration description. The following guiding principles have been used to
+determine which information must be part of the System Conﬁguration Description and
+which goes into the ECU Conﬁguration Description:
+• Information that is common for several ECUs and has to be agreed, must be
+part of the System Conﬁguration Description and is thus covered by the System
+Template.
+• Information, that only has ECU-local relevance is part of the ECU Conﬁguration
+Description.
+Thus the ECU Conﬁguration Description will include the OS-schedule, the RTE-
+conﬁguration and last but not least the conﬁguration of the ECU basic software in-
+cluding the concrete communication drivers on that ECU.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

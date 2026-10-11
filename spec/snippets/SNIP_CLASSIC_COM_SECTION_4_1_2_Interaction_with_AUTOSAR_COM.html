@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_1_2_Interaction_with_AUTOSAR_COM</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>RS_RTE.pdf</strong> (Seite 19)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_RS_RTE.pdf#page=16" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_RTE.pdf</a></strong> (Seite 19)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_06013" class="swsref internal-spec-ref"><code>SWS_Rte_06013</code></a></span>
         </div>
@@ -104,7 +105,144 @@ Prevent infinite blocking of receivers.
 Dependencies:
 [SRS_Rte_00147]
 Use Case:
-A Runnable Entity pe</div></section>
+A Runnable Entity performs a blocking "read" of a data item. A blocking read
+will wait forever if no data arrives unless a timeout is applied.
+Supporting
+Material:
+components to prevent infinite blocking and thus apply both to inter-ECU
+communication (that uses COM or Efficient COM for large data) and intra-ECU
+communication (that may or may not use COM or Efficient COM for large data).
+⌋
+[SRS_Rte_00073] Atomic transport of Data Elements ⌈
+Description:
+The RTE shall ensure that the transmission and reception of data elements
+(regardless whether they are simple or composite), and all arguments of a
+single RTE operation are treated as atomic units.
+Where a parameter is passed by reference rather than by value the RTE is
+forced to rely on the component not modifying the target of the reference while
+the parameter is in use by the RTE.
+Rationale:
+–
+Dependencies:
+[SRS_Rte_00032] - data consistency.
+This should not be read as requiring COM to treat the transmission as atomic -
+it (or a lower layer in the COM stack) shall remain free to split across multiple
+(network) frames as long as the split is not visible to the RTE.
+Use Case:
+Elements of a record cannot be handled separately by the Application Software
+Component but, instead, the whole record should be treated as a single atomic
+unit.
+Supporting
+Material:
+Software Component Template [4]
+⌋
+[SRS_Rte_00082] Standardized communication protocol ⌈
+Description:
+The RTE shall define and implement the protocol (e.g. message sequences)
+for inter-ECU client-server communication.
+For communication mechanisms that are not directly provided by the
+AUTOSAR COM layer (e.g. client-server communication) a standardized
+protocol that is implemented by every AUTOSAR RTE has to be defined.
+Rationale:
+This ensures that RTEs of different vendors are interoperable.
+Dependencies:
+[SRS_Rte_00062]
+Use Case:
+If C/S is mapped to paired COM or Efficient COM for large data message
+channels then both RTEs shall implement the same mapping to be compatible.
+Supporting
+Material:
+[SRS_Rte_00091] - common protocol for COM or Efficient COM for large data
+transmissions.
+⌋
+[SRS_Rte_00091] Inter-ECU Marshalling ⌈
+Description:
+The RTE shall use a common format for transmitting/receiving data elements or
+parameters of operations between ECUs. On transmission the (target specific)
+signal data shall be converted to the common format and the reverse operation
+performed on reception.
+It shall be possible to exchange record types between components written in
+different programming languages.
+Rationale:
+The RTE is responsible for ensuring that data elements or parameters of
+operations (e.g. records, parameter lists, .) can be sent between ECUs. Since
+each ECU may define signals differently in memory a straight transmission
+cannot be performed and, instead, the sender shall convert the data elements
+or parameters to a common format before transmission and the reverse
+transformation shall be performed by the receiving RTE.
+A common communication protocol enables RTEs from different vendors to
+interoperate.
+Dependencies:
+[SRS_Rte_00082] - defines common message sequence for client-server.
+Use Case:
+–
+Supporting
+Material:
+Software Component Template [4]
+The term "Marshalling" is used synonymously to "Serialization".
+⌋
+[SRS_Rte_00181] Conversion between internal and network data types
+Upstream requirements: RS_BRF_01376
+⌈
+Description:
+The RTE shall generate conversion routines - when configured - for different
+data types for data elements used in sender-receiver communication within one
+ECU (high resolution) and data elements used between ECUs (low resolution)
+to save serial data link bandwidth and non-productive development work.
+Rationale:
+Save bandwidth in inter-ECU communication.
+Dependencies:
+–
+Use Case:
+Within one ECU the SWCs want to use data types with high resolutions in
+computations to get a small epsilon (computational deviation). When the same
+data is transported to another ECU it is converted into the network
+representation on the sender side (with loss of precision). On the receiver side
+the data is converted back to the original type.
+Supporting
+Material:
+–
+⌋
+[SRS_Rte_00246] Support of Efficient COM for large data
+Upstream requirements: RS_BRF_01649
+⌈
+Description:
+RTE shall support more than one Interaction layer module. Currently COM and
+Efficient COM for large data are supported.
+Rationale:
+Besides the "traditional" COM a lean module shall be supported giving the
+option to omit either of them in case they are not needed.
+Dependencies:
+–
+Use Case:
+An ECU has many Signals of large and dynamic size. The usage of Efficient
+COM for large data will save resources in the communication stack (e.g.
+buffers).
+Another ECU has only large and dynamic signals being transmitted on request.
+This ECU may omit COM if no use case out of COM is needed.
+Supporting
+Material:
+–
+⌋
+[SRS_Rte_00251] Array based signal group handling with Com
+Upstream requirements: RS_BRF_01316, RS_BRF_01560
+⌈
+Description:
+The Rte shall use the uint8-array API to pass the serialized representation of a
+composite data to COM when this configured.
+Rationale:
+The AUTOSAR transformer chain provides means to serialize composite data
+into a uint8-array representation. This serialized uint8-array shall be passed as
+one entity to COM.
+Dependencies:
+–
+Use Case:
+Usage of transformer with Com-based serialization and Com Interaction to
+enable the communication with a fixed communication matrix.
+Supporting
+Material:
+–
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -117,7 +255,7 @@ A Runnable Entity pe</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>RS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_RS_RTE.pdf#page=16" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

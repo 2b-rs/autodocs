@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayStateManager.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayStateManager.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayStateManager.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrSM_00209" class="swsref internal-spec-ref"><code>SWS_FrSM_00209</code></a></span>
         </div>
@@ -161,7 +162,183 @@ if the event in column "Event [Condition]" occurs, then the actions in column "A
 shall be executed and afterwards the FrSM module shall change its state to the target
 state of the transition in column "Transition" as defined in [SWS_FrSM_00093].
 In case different actions have to be performed in a transition T, there can be multiple
-rows in the table. The rows are denoted as</div></section>
+rows in the table. The rows are denoted as T (a), T (b) etc. in this case. Note that the
+conditions ensure that only one of the possibilities matches.
+[SWS_FrSM_00093] ⌈The FrSM shall execute the actions of the transition in the order
+that is defined in the table within [SWS_FrSM_00105].⌋
+[SWS_FrSM_00145] ⌈After every transition to a different state, the FrSM shall inform
+the BswM by calling BswM_FrSM_CurrentState.⌋
+[SWS_FrSM_00105] ⌈
+Transi-
+tion
+Event [Condition]
+Actions
+T00
+FrSM_Init()
+FE_CONFIG
+T01 (a)
+[ reqComMode = FullCom
+∧FrSMIsWakeupEcu
+∧WUReason = NO_WU_BY_BUS
+∧¬ FrSMIsDualChannelNode
+]
+FE_TRCV_NORMAL
+startupCounter := 1
+wakeupType := SingleChannelWakeup
+wakeupTransmitted := false
+FE_WAKEUP
+start t1
+start t3
+T01 (b)
+[ reqComMode = FullCom
+∧FrSMIsWakeupEcu
+∧WUReason = NO_WU_BY_BUS
+∧FrSMIsDualChannelNode
+]
+FE_TRCV_NORMAL
+startupCounter := 1
+wakeupType := DualChannelWakeup
+FE_SET_WU_CHANNEL_INITIAL
+wakeupTransmitted := false
+FE_WAKEUP
+start t3
+start t4
+T01 (c)
+[ reqComMode = FullCom
+∧FrSMIsWakeupEcu
+∧WUReason = PARTIAL_WU_BY_BUS
+]
+FE_TRCV_NORMAL
+startupCounter := 1
+wakeupType := DualChannelWakeupForward
+FE_SET_WU_CHANNEL_FORWARD
+FE_WAKEUPwakeupTransmitted := false
+FE_WAKEUP
+start t3
+T02 (a)
+[ reqComMode = FullCom
+∧( ¬ FrSMIsWakeupEcu
+∨WUReason = ALL_WU_BY_BUS
+)
+∧¬ FrSMDelayStartupWithoutWakeup
+]
+FE_TRCV_NORMAL
+startupCounter := 1
+wakeupType := NoWakeup
+FE_START
+FE_ALLOW_COLDSTART
+start t2
+start t3
+T02 (b)
+[ reqComMode = FullCom
+∧( ¬ FrSMIsWakeupEcu
+∨WUReason = ALL_WU_BY_BUS
+)
+∧FrSMDelayStartupWithoutWakeup
+]
+FE_TRCV_NORMAL
+startupCounter := 1
+wakeupType := NoWakeup
+FE_START
+start t1
+start t2
+start t3
+T03 (a)
+[ wakeupFinished
+∧reqComMode = FullCom
+∧FrSMNumWakeupPatterns = 1
+∧wakeupType = SingleChannelWakeup
+]
+FE_START
+cancel t1
+start t1
+start t2
+▽
+△
+Transi-
+tion
+Event [Condition]
+Actions
+T03 (b)
+[ wakeupFinished
+∧reqComMode = FullCom
+∧FrSMNumWakeupPatterns &gt; 1
+∧wakeupTransmitted
+∧wakeupType = SingleChannelWakeup
+]
+FE_START
+start t2
+IF t1_IsActive: cancel t1
+ELSE: FE_ALLOW_COLDSTART
+T03 (c)
+[ wakeupFinished
+∧reqComMode = FullCom
+∧FrSMNumWakeupPatterns &gt; 1
+∧¬ wakeupTransmitted
+∧wakeupType = SingleChannelWakeup
+]
+FE_START
+start t2
+T03 (d)
+[ wakeupFinished
+∧reqComMode = FullCom
+∧wakeupType = DualChannelWakeup
+∧wakeupTransmitted
+∧¬ busTrafficDetected
+]
+FE_START
+start t2
+T03 (e)
+[ wakeupFinished
+∧reqComMode = FullCom
+∧wakeupType =
+DualChannelWakeupForward
+]
+FE_START
+FE_ALLOW_COLDSTART
+start t2
+cancel t4
+T04 (a)
+t1 [
+reqComMode = FullCom
+∧vPOC!State̸ = Normal Active
+]
+FE_ALLOW_COLDSTART
+T04 (b)
+t4 [
+reqComMode = FullCom
+∧wakeupType = DualChannelWakeup
+∧vPOC!State̸ = Normal Active
+]
+FE_ALLOW_COLDSTART
+T05
+t2 [
+startupCounter ≤
+FrSMStartupRepetitionsWithWakeup
+∧reqComMode = FullCom
+∧wakeupType̸ = NoWakeup
+∧vPOC!State̸ = Normal Active]
+FE_CONFIG
+FE_WAKEUP
+startupCounter := startupCounter + 1
+start t4 (dual channel node only)
+T06
+t2 [ (
+FrSMStartupRepetitionsWithWakeup &lt;
+startupCounter
+∧wakeupType = NoWakeup
+)
+∧startupCounter ≤FrSMStartup
+Repetitions
+∧reqComMode = FullCom
+∧vPOC!State̸ = Normal Active
+]
+FE_CONFIG
+FE_START
+FE_ALLOW_COLDSTART
+startupCounter := startupCounter + 1
+start t2
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -174,7 +351,7 @@ rows in the table. The rows are denoted as</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayStateManager.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

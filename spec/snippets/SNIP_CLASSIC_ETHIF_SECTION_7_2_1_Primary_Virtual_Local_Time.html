@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_2_1_Primary_Virtual_Local_Time</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SynchronizedTimeBaseManager.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SynchronizedTimeBaseManager.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SynchronizedTimeBaseManager.pdf</a></strong> (Seite 37)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_StbM_00515" class="swsref internal-spec-ref"><code>SWS_StbM_00515</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_StbM_00539" class="swsref internal-spec-ref"><code>SWS_StbM_00539</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,46 @@ Note: Depending on the HW reference clock one way of extending the range is to
 count overflows of the HW reference clock.
 [SWS_StbM_00178]
 Upstream requirements: RS_TS_00008, RS_TS_00002
-⌈If EthI</div></section>
+⌈If EthIfGlobalTimeSupport is set to TRUE for a Synchronized Time Base, then
+the StbM shall get the current value of the Virtual Local Time from the freerun-
+ning HW counter of the corresponding Ethernet Controller via EthIf_GetCurrent-
+TimeTuple.
+If EthIf_GetCurrentTimeTuple returns either ETH_UNCERTAIN or ETH_INVALID
+for member timeQuality of parameter currentTimeTuplePtr, the StbM shall ig-
+nore the time value timestampClockValue returned by EthIf_GetCurrentTime-
+Tuple.⌋
+[SWS_StbM_00539]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20070, RS_TS_00008
+⌈If CanIfGlobalTimeSupport is set to TRUE for a Synchronized Time Base, then
+the StbM shall derive the current value of the Virtual Local Time (see StbM_Virtu-
+alLocalTimeType) from the freerunning HW counter from the corresponding CAN
+Controller via CanIf_GetCurrentTime.
+If CanIf_GetCurrentTime returns E_NOT_OK, the time value returned by CanIf_
+GetCurrentTime shall be ignored.⌋
+Note:
+If CanIf_GetCurrentTime or EthIf_GetCurrentTimeTuple fail, this
+means the corresponding Virtual Local Time is not available. Hence, related Time
+Bases cannot be interpolated anymore (unless a Fallback Virtual Local Time is
+configured and available). APIs for Time Bases, which depend on that Virtual Local
+Time, would return E_NOT_OK.
+Note: EthIfGlobalTimeSupport and CanIfGlobalTimeSupport may be ref-
+erenced via StbMLocalTimeHardware, if set to EthTSynGlobalTimeDomain or
+CanTSynGlobalTimeDomain, respectively.
+[SWS_StbM_00437]
+Upstream requirements: RS_TS_00006, RS_TS_00008, RS_TS_00033
+⌈StbM_GetCurrentVirtualLocalTime shall return the value of the Primary Vir-
+tual Local Time of the associated Time Base.
+If the Virtual Local Time could not be determined (e.g., the underlying hardware
+counter has not been activated yet), then StbM_GetCurrentVirtualLocalTime
+shall return E_NOT_OK.⌋
+Note: StbM_GetCurrentVirtualLocalTime is called by the Timesync modules
+with an established protection against interruptions.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_StbM_00515] im Text von SWS_SynchronizedTimeBaseManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_StbM_00539] im Text von SWS_SynchronizedTimeBaseManager.</p>
       </section>
 
       <section class="snip-card">
@@ -106,7 +142,7 @@ Upstream requirements: RS_TS_00008, RS_TS_00002
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SynchronizedTimeBaseManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SynchronizedTimeBaseManager.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SynchronizedTimeBaseManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,7 +154,7 @@ Upstream requirements: RS_TS_00008, RS_TS_00002
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_StbM_00515" class="swsref internal-spec-ref"><code>SWS_StbM_00515</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_StbM_00539" class="swsref internal-spec-ref"><code>SWS_StbM_00539</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

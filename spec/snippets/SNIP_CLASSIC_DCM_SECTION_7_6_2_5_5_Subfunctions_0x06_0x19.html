@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dcm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_6_2_5_5_Subfunctions_0x06_0x19</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 114)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=114" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 115)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01547" class="swsref internal-spec-ref"><code>SWS_Dcm_01547</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91017" class="swsref internal-spec-ref"><code>SWS_Dem_91017</code></a></span>
         </div>
       </div>
 
@@ -90,11 +91,84 @@ dling is according to [SWS_Dcm_01485] and [SWS_Dcm_01544] applies.
 [SWS_Dcm_00386] ⌈Upon reception of UDS Service 0x019 with subfunction 0x06 or
 0x19, the Dcm shall retrieve from the Dem the stored extended data records for the
 requested DTC and origin.⌋()
-[SWS_Dcm_00295] ⌈When responding to UDS Service 0x19 with subf</div></section>
+[SWS_Dcm_00295] ⌈When responding to UDS Service 0x19 with subfunction
+0x06 or 0x19, the Dcm module shall calculate the statusOfDTC by first calling
+Dem_SelectDTC() with the parameters values set according to [SWS_Dcm_01649]
+and then Dem_GetStatusOfDTC() with ClientId = Client Id for this Dcm instance (see
+DcmDemClientRef).⌋(RS_Diag_04058)
+[SWS_Dcm_01649] Dem_SelectDTC() parameters values for subfunctions 0x06
+and 0x19 ⌈
+reportDTCExtendedData
+RecordByDTCNumber
+reportUserDefMemoryDTC
+ExtDataRecord
+ByDTCNumber
+0x06
+0x19
+ClientId
+Client Id for this Dcm instance
+(see DcmDemClientRef)
+Client Id for this Dcm instance
+(see DcmDemClientRef)
+DTC
+DTCMaskRecord from
+request
+DTCMaskRecord from
+request
+DTCOrigin
+PRIMARY_MEMORY
+MemorySelection from
+request + 0x0100
+Table 7.11: Dem_SelectDTC() parameters values for subfunctions 0x06 and 0x19
+⌋()
+[SWS_Dcm_00841] ⌈If Dem_GetNextExtendedDataRecord() returns E_OK and Buf-
+Size 0 (empty buffer), the Dcm module shall omit the DTCExtendedDataRecordNumber
+for the related record in the response of service 0x19 0x06/0x19.⌋()
+[SWS_Dcm_00382] ⌈When responding to UDS Service 0x19 with subfunction 0x06
+or 0x19, the Dcm module shall calculate the DTCExtendedDataRecord by first call-
+ing Dem_SelectExtendedDataRecord() with the parameter values set according to
+[SWS_Dcm_01650] and then call Dem_GetNextExtendedDataRecord() repeatedly un-
+til DEM_NO_SUCH_ELEMENT is returned.⌋()
+[SWS_Dcm_01650]
+Dem_SelectExtendedDataRecord() parameters values for
+subfunctions 0x06 and 0x19 ⌈
+report
+DTCExtendedDataRecord
+ByDTCNumber
+reportUserDefMemory
+DTCExtDataRecord
+ByDTCNumber
+0x06
+0x19
+ClientId
+Client Id for this Dcm instance
+(see DcmDemClientRef)
+Client Id for this Dcm instance
+(see DcmDemClientRef)
+DTC
+DTCMaskRecord from
+request
+DTCMaskRecord from
+request
+Manager
+DTCOrigin
+PRIMARY_MEMORY
+Memory Selection from
+request + 0x0100
+ExtendedDataNumber
+DTCExtendedData
+RecordNumber from request
+DTCExtendedData
+RecordNumber from request
+Table 7.12: Dem_SelectExtendedDataRecord() parameters values for subfunctions 0x06
+and 0x19
+⌋()
+The Dcm module shall obtain the size of the extended data record by using
+Dem_GetSizeOfExtendedDataRecordSelection().</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01547] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SelectExtendedDataRecord().</p>
       </section>
 
       <section class="snip-card">
@@ -103,11 +177,11 @@ requested DTC and origin.⌋()
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=114" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 114</td>
+              <td>Seite 115</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -115,7 +189,7 @@ requested DTC and origin.⌋()
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01547" class="swsref internal-spec-ref"><code>SWS_Dcm_01547</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_91017" class="swsref internal-spec-ref"><code>SWS_Dem_91017</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -123,7 +197,7 @@ requested DTC and origin.⌋()
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

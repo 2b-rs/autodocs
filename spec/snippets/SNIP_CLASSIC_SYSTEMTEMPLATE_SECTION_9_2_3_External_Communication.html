@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -88,7 +89,63 @@ ECU. VariableDataPrototypes and ClientServerOperations of these dele-
 gated ports are mapped to System Signals. The original instance references indicating
 the mapped AutosarDataPrototype need to be adjusted to the new “ﬂat” location
 in the ECU ﬂat view.
-While for the System Conﬁguration Description it is sufﬁcient to describe D</div></section>
+While for the System Conﬁguration Description it is sufﬁcient to describe DataMap-
+pings only on the provider side, the ECU extract additionally requires such DataMap-
+pings on the requiring side’s ports. In this case, a new DataMapping maps to the
+existing SystemSignal, previously deﬁned in the System Conﬁguration Description
+on the provider side. This is explained in more detail in the following example, that is a
+continuation of the example from ﬁgure 8.3 in chapter 8.2:
+Figure 9.2 shows how the ECU extract for ECU A of the SW composition that is de-
+ﬁned in ﬁgure 8.3 would look like: Only those atomic SW components are included that
+are mapped to ECU A. The hierarchy present in the System Conﬁguration Description
+has been ﬂattened into CompositionSwComponentType ‘EcuAFlatView’, including
+newly created SwComponentPrototype ‘A1E’, ‘A2E’, ‘B1E’ and ‘C1E’ for the compo-
+nent instances mapped to ECU A.
+SW-C
+A2E
+R
+SW-C
+A1E
+P
+SW-C
+B1E
+P
+Mapped to
+PDU_X,
+SignalX1
+Mapped to
+PDU_Y,
+SignalY1
+Mapped to
+PDU_X,
+SignalX2
+EcuAFlatView
+P
+P
+R
+P
+SW-C
+C1E
+R
+Mapped to
+PDU_Z,
+SignalZ1
+R
+Figure 9.2: Example ECU extract for ECU A of above introduced composition
+The connectors to the outside ports (ECUFlatView composition ports) and connectors
+that represent intra-ECU communication (in our example, only ‘A1E’ to ‘A2E’) are in-
+cluded. The VariableDataPrototypes and ClientServerOperations in the
+outside ports are mapped to SystemSignals. This data mapping and the communi-
+cation description is used to identify the source/destination of that data.
+Furthermore, the relevant topology information and communication matrix have to be
+included, but they are out of scope of this example.
+The problem that new mapping rules have to be added arises with the mapping to
+‘PDU_Y’, ‘SignalY1’: Since SW component ‘A3’, which was referenced in the original
+mapping, is no longer included, the data mapping needs a new data element in a port
+to reference to. In the example, the data of the required port of ‘B1E’ is referenced, so
+that the ECU generator has the information that ‘B1E’ receives the data via ‘PDU_Y’.
+System Template
+R4.0 Rev 3</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

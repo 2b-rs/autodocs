@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -130,7 +131,253 @@ ModeDeclaration::
 ModeDeclaration
 +
 value:  PositiveInteger [0..1]
-ModeDrivenTr</div></section>
+ModeDrivenTransmissionModeCondition
++modeDrivenFalseCondition
+0..*
++transmissionModeDeclaration
+0..1
++cyclicTiming 0..1
++eventControlledTiming 0..1
++iSignalInIPdu
+1
++dataFilter 1
+1..*
++iSignal
+0..1
++transmissionModeTrueTiming
+0..1
++initialMode
+1
++modeDrivenTrueCondition
+0..*
++transmissionModeCondition
+0..*
++iSignalToPduMapping
+0..*
+«atpVariation»
++iPduTimingSpecification
+0..1
+«atpVariation»
++modeDeclaration
+1..*
++modeDeclaration
+1..*
++transmissionModeFalseTiming
+0..1
+Figure 5.19: IPdu Timing
+As Transmission mode selector the signal content can be evaluated via transmis-
+sionModeCondition or mode conditions can be deﬁned with the modeDriven-
+TrueCondition or modeDrivenFalseCondition. The mode evaluation and the
+signal content evaluation shall not be used in the same IPdu. A mix of these two types
+is not allowed.
+System Template
+R4.0 Rev 3
+To use the signal content evaluation a TransmissionModeCondition can be at-
+tached to each signal within an I-PDU. Each TransmissionModeCondition con-
+tains a reference to a signal and to an assigned ﬁlter. The ﬁlter condition is used for
+the selection of the transmission mode. If at least one condition in the signal content
+evaluation is true, Transmission Mode "TRUE" shall be used for this I-Pdu. In all other
+cases, the Transmission Mode "FALSE" shall be used. More details can be found in
+the COM Speciﬁcation [19].
+In the mode driven evaluation ModeDeclarations are evaluated. The transmis-
+sionModeFalseTiming is activated if all deﬁned modeDrivenFalseConditions
+evaluate to true and the transmissionModeTrueTiming is activated if all deﬁned
+modeDrivenTrueConditions evaluate to true. Each condition that is deﬁned by
+ModeDrivenTransmissionModeCondition evaluates to true if one of the refer-
+enced ModeDeclarations is active.
+COM
+Transmission
+Modes
+Description
+realization in System Tem-
+plate
+Periodic
+Transmissions occur indeﬁ-
+nitely with a ﬁxed period be-
+tween them
+CyclicTiming
+Direct/n-times
+Event
+driven
+transmission
+with n-1 repetitions
+EventControlledTiming
+Mixed
+Periodic
+transmission
+with
+direct/n-times transmissions
+in between
+EventControlledTiming
+and CyclicTiming
+None
+No transmission
+no timing assigned
+Table 5.89: COM Transmission Modes
+The TransmissionModeDeclaration element aggregates the Transmission-
+ModeTiming in two different roles: transmissionModeTrueTiming and trans-
+missionModeFalseTiming. The available COM Transmission Mode Timings can
+be described by the CyclicTiming and EventControlledTiming elements (see
+Table 5.89) that are aggregated by the TransmissionModeTiming class.
+System Template
+R4.0 Rev 3
+Class
+TransmissionModeDeclaration
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication::
+Timing
+Note
+AUTOSAR COM provides the possibility to deﬁne two different TRANSMISSION
+MODES (True and False) for each I-PDU.
+As TransmissionMode selector the signal content can be evaluated via
+transmissionModeCondition (implemented directly in the COM module) or mode
+conditions can be deﬁned with the modeDrivenTrueCondition or
+modeDrivenFalseCondition (evaluated by BswM and invoking
+Com_SwitchIpduTxMode COM API). If modeDrivenTrueCondition and
+modeDrivenFalseCondition are deﬁned they shall never evaluate to true both at the
+same time.
+The mixing of Transmission Mode Switch via API and signal value is not allowed.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+modeDrive
+nFalseCon
+dition
+ModeDrivenTra
+nsmissionMode
+Condition
+*
+aggr
+Deﬁnes the trigger for the
+Com_SwitchIpduTxMode Transmission Mode
+switch. Only if all deﬁned
+modeDrivenFalseConditions evaluate to true (AND
+associated) the transmissionModeFalseTiming
+shall be activated. modeDrivenTrueCondition and
+modeDrivenFalseCondition shall never evaluate to
+true both at the same time.
+modeDrive
+nTrueCond
+ition
+ModeDrivenTra
+nsmissionMode
+Condition
+*
+aggr
+Deﬁnes the trigger for the
+Com_SwitchIpduTxMode Transmission Mode
+switch. Only if all deﬁned
+modeDrivenTrueConditions evaluate to true (AND
+associated) the transmissionModeTrueTiming
+shall be activated. modeDrivenTrueCondition and
+modeDrivenFalseCondition shall never evaluate to
+true both at the same time.
+transmissi
+onModeCo
+ndition
+TransmissionM
+odeCondition
+*
+aggr
+The Transmission Mode Selector evaluates the
+conditions for a subset of signals and decides
+which transmission mode should be used. In case
+only one transmission mode is used there is no
+need for the "TransmissionModeCondition" and its
+sub-structure. In case the transmission mode shall
+be switched using the COM-API
+"Com_SwitchIpduTxMode" there is no need for
+the´"TransmissionModeCondition" and its
+sub-structure.
+transmissi
+onModeFal
+seTiming
+TransmissionM
+odeTiming
+0..1
+aggr
+Timing Speciﬁcation if the COM Transmission
+Mode is false. The Transmission Mode Selector is
+deﬁned to be false, if all Conditions evaluate to
+false.
+transmissi
+onModeTr
+ueTiming
+TransmissionM
+odeTiming
+0..1
+aggr
+Timing Speciﬁcation if the COM Transmission
+Mode is true. The Transmission Mode Selector is
+deﬁned to be true, if at least one Condition
+evaluates to true.
+Table 5.90: TransmissionModeDeclaration
+System Template
+R4.0 Rev 3
+Class
+TransmissionModeCondition
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication::
+Timing
+Note
+Possibility to attach a condition to each signal within an I-PDU.
+If at least one condition evaluates to true, TRANSMISSION MODE True shall be used
+for this I-Pdu. In all other cases, the TRANSMISSION MODE FALSE shall be used.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+dataFilter
+DataFilter
+1
+aggr
+Possibilities to deﬁne conditions
+iSignalInIP
+du
+ISignalToIPduM
+apping
+1
+ref
+Reference to a signal to which a condition is
+attached.
+Table 5.91: TransmissionModeCondition
+Class
+ModeDrivenTransmissionModeCondition
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication::
+Timing
+Note
+The condition deﬁned by this class evaluates to true if one of the referenced
+modeDeclarations (OR associated) is active. All referenced modeDeclarations shall
+be from the same ModeDeclarationGroup.
+The condition is used to deﬁne which TransmissionMode shall be activated using
+Com_SwitchIpduTxMode.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+modeDecl
+aration
+ModeDeclaratio
+n
+1..*
+ref
+Reference to one modeDeclaration which is OR
+associated in the context of the
+ModeDrivenTransmissionModeCondition.
+Table 5.92: ModeDrivenTransmissionModeCondition
+The ModeDeclaration and the ModeDeclarationGroup is described in more de-
+tail in the Software Component Template Speciﬁcation [4].</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

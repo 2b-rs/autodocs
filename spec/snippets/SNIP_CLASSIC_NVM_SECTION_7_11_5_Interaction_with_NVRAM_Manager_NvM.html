@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: nvm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_7_11_5_Interaction_with_NVRAM_Manager_NvM</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 238)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=236" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 238)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00460" class="swsref internal-spec-ref"><code>SWS_NvM_00460</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00461" class="swsref internal-spec-ref"><code>SWS_NvM_00461</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,63 @@ CRC in the NvM.
 Upstream requirements: SRS_Mem_08549
 ⌈If the NVM module was not able to read some nonvolatile data of the Dem module,
 the Dem module shall initialize all non-volatile data with their initial values.⌋
-Note: To avoid inconsistencies between readable blocks and errone</div></section>
+Note: To avoid inconsistencies between readable blocks and erroneous blocks, all
+nonvolatile data are initialized. The initialization is done to allow the fault detection
+mechanism of the NvM module, to report the respective reading error(s) to the Dem
+module (refer to Dem_SetEventStatus). These errors denote the defective NVRAM.
+[SWS_Dem_00340]
+Upstream requirements: SRS_BSW_00101
+⌈After the API Dem_Init has finished, the Dem shall be fully operational.⌋
+[SWS_Dem_01237] Immediate storage of event related data at first occurrence
+Upstream requirements: RS_Diag_04211
+⌈If a DTC is configured with DemNvStorageStrategy = IMMEDIATE_AT_FIRST_-
+OCCURRENCE, the Dem shall trigger the storage of its event related data to NvM when
+the configured trigger DemEventMemoryEntryStorageTrigger to store the data occurs
+the first time.⌋
+Note: For DTCs that are stored immediately at first occurrence, it is necessary to
+ensure data consistency (e.g. with the UDS status byte) during Dem_Init.
+Note: Following the storage at first occurrence, any further changes in the event related
+data will be stored during shutdown (refer to [SWS_Dem_00341])
+[SWS_Dem_01238] Storage of event related data at shutdown
+Upstream requirements: RS_Diag_04211
+⌈If a DTC is configured with DemNvStorageStrategy = DURING_SHUTDOWN or Dem-
+NvStorageStrategy is not configured, the Dem shall trigger the storage of the event
+related data to NvM only during shutdown. (refer to [SWS_Dem_00341])⌋
+[SWS_Dem_00102]
+Upstream requirements: SRS_BSW_00336
+⌈The API Dem_Shutdown shall finalize all pending operations in the Dem module to
+prepare the internal states and data for transfer to the NVRAM. The event memory
+shall be locked and not modified until the API Dem_Init is recalled.⌋
+[SWS_Dem_00341]
+Upstream requirements: SRS_BSW_00336, RS_Diag_04211
+⌈The Dem shall trigger the storage of its changed nonvolatile data to NVRAM during
+Dem_Shutdown.⌋
+Based on the Dem configuration and implementation, the copying process to NVRAM
+of those Demrelated NvMblocks to be stored after Dem_Shutdown, is performed by
+the API NvM_WriteAll called by the ECU State Manager.
+If the ECU power supply is disconnected before the NvM has finished copying all data
+to NVRAM, these data will be incomplete/inconsistent or not stored. At next startup, the
+events of the last operating cycle could not be found anymore. Therefore, the NVRAM
+Manager configuration provides mechanisms for data consistency, like redundant data
+blocks.
+[SWS_Dem_00164]
+Upstream requirements: RS_Diag_04077
+⌈The Dem module shall use the APIs NvM_WriteBlock and NvM_ReadBlock of the
+NVRAM Manager, if there is the necessity to store and restore data between Dem_-
+Init and Dem_Shutdown.⌋
+Note: The NvM module realizes a retry mechanism for block reading and writing.
+Therefore, the Dem module does not implement any retry mechanism for its nonvolatile
+blocks.
+[SWS_Dem_00579]
+Upstream requirements: SRS_BSW_00171
+⌈If the NVM module was not able to write (some) nonvolatile data of the Dem module,
+the Dem module shall ignore the reported negative return values by the NvM.⌋
+Note: If writing of nonvolatile Dem data fails, the Dem module is not able to perform
+any adequate reaction.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_WriteAll().</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +154,7 @@ Note: To avoid inconsistencies between readable blocks and errone</div></section
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=236" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +166,7 @@ Note: To avoid inconsistencies between readable blocks and errone</div></section
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_NvM_00460" class="swsref internal-spec-ref"><code>SWS_NvM_00460</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_NvM_00461" class="swsref internal-spec-ref"><code>SWS_NvM_00461</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -121,7 +174,7 @@ Note: To avoid inconsistencies between readable blocks and errone</div></section
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

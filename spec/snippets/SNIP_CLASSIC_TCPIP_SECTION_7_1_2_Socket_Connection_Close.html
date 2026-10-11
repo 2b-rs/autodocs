@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: tcpip</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_7_1_2_Socket_Connection_Close</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 25)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00642" class="swsref internal-spec-ref"><code>SWS_SoAd_00642</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00688" class="swsref internal-spec-ref"><code>SWS_SoAd_00688</code></a></span>
         </div>
       </div>
 
@@ -96,11 +97,96 @@ shall call &lt;Up&gt;_[SoAd][Tp]TxConfirmation() with parameter result set to
 transmitted, and
 2. E_NOT_OK for any other cause.
 ⌋
-[SWS_</div></section>
+[SWS_SoAd_00641] ⌈To notify the upper layer about the termination of an active TP
+reception on closing a socket connection within SoAd_MainFunction(), SoAd shall
+call &lt;Up&gt;_[SoAd][Tp]RxIndication() with parameter result set to
+1. E_OK if disconnection is caused by SoAd_CloseSoCon() and all received data
+was correctly delivered to the upper layer, and
+2. E_NOT_OK for any other cause.
+⌋
+[SWS_SoAd_00642] ⌈To close related TcpIp sockets on closing a socket connection
+within SoAd_MainFunction(), SoAd shall perform the following actions:
+1. In case of a TCP socket connection:
+(a) Close the related socket by calling TcpIp_Close() with parameter abort set
+to the same value as provided by SoAd_CloseSoCon() or set to FALSE in
+case closing was not initiated by SoAd_CloseSoCon().
+(b) If all socket connections of a TCP socket connection group have been
+closed by SoAd_CloseSoCon(): Close the related Listen-Socket by call-
+ing TcpIp_Close() with parameter abort set to the same value as provided
+by SoAd_CloseSoCon() or set to FALSE in case closing was not initiated by
+SoAd_CloseSoCon().
+2. In case of a UDP socket connection:
+(a) If the socket connection is NOT part of a socket connection group (i.e. there
+is only one socket connection in the socket connection group configuration
+container): Close the related socket by calling TcpIp_Close() with param-
+eter abort set to the same value as provided by SoAd_CloseSoCon() or set
+to FALSE in case closing was not initiated by SoAd_CloseSoCon().
+(b) If all socket connections of a UDP socket connection group have been
+closed by SoAd_CloseSoCon(): Close the related UDP socket by calling
+TcpIp_Close() with parameter abort set to the same value as provided by
+SoAd_CloseSoCon()or set to FALSE in case closing was not initiated by
+SoAd_CloseSoCon().
+⌋
+[SWS_SoAd_00643]
+⌈Within
+SoAd_TcpIpEvent()
+with
+Event
+set
+to
+TCPIP_UDP_CLOSED, SoAd shall
+1. remove the assignment of the TcpIp socket identified by SocketId from the
+related UDP socket connection group and
+2. close all socket connections of the related socket connection group that are in
+SOAD_SOCON_ONLINE (i.e. perform the specified closing actions with the excep-
+tion of closing related TcpIp sockets)
+⌋
+[SWS_SoAd_00645]
+⌈Within
+SoAd_TcpIpEvent()
+with
+Event
+set
+to
+TCPIP_TCP_CLOSED for a Listen-Socket, SoAd shall remove the assignment of
+the TcpIp socket identified by SocketId from the related TCP socket connection
+group.⌋
+[SWS_SoAd_00646]
+⌈Within
+SoAd_TcpIpEvent()
+with
+Event
+set
+to
+TCPIP_TCP_CLOSED or TCPIP_TCP_RESET, SoAd shall
+1. remove the assignment of the TcpIp socket identified by SocketId from the
+related socket connection and
+2. close the socket connection if it is in SOAD_SOCON_ONLINE (i.e. perform the
+specified closing actions with the exception of closing related TcpIp socket).
+⌋
+[SWS_SoAd_00688]
+⌈If
+SoAd_TcpIpEvent()
+is
+called
+with
+Event
+set
+to
+TCPIP_TCP_FIN_RECEIVED,
+SoAd
+shall
+perform
+the
+closure
+according
+to
+[SWS_SoAd_00637]. SoAd shall close the related socket by calling TcpIp_Close()
+with parameter abort set FALSE.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Closing related TcpIp sockets</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00688] im Text von SWS_SocketAdaptor.</p>
       </section>
 
       <section class="snip-card">
@@ -109,11 +195,11 @@ transmitted, and
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 26</td>
+              <td>Seite 25</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -121,15 +207,15 @@ transmitted, and
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00642" class="swsref internal-spec-ref"><code>SWS_SoAd_00642</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00688" class="swsref internal-spec-ref"><code>SWS_SoAd_00688</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

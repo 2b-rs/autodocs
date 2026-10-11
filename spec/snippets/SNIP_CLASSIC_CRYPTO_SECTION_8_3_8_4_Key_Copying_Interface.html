@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYPTO_SECTION_8_3_8_4_Key_Copying_Interface</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoServiceManager.pdf</strong> (Seite 62)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=62" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></strong> (Seite 62)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_01032" class="swsref internal-spec-ref"><code>SWS_Csm_01032</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_91025" class="swsref internal-spec-ref"><code>SWS_Csm_91025</code></a></span>
         </div>
       </div>
 
@@ -122,11 +123,156 @@ This function shall copy a key elements from one key to a target key.
 Available via
 Csm.h
 ⌋
-[SWS_Csm_01032] ⌈If no errors are detected by Csm and</div></section>
+[SWS_Csm_01032] ⌈If no errors are detected by Csm and the keyId and tar-
+getKeyId are located in different Crypto Drivers, the service Csm_KeyElementCopy
+shall call CryIf_KeyElementCopy and pass on the return value.⌋
+[SWS_Csm_01034] Definition of API function Csm_KeyCopy ⌈
+Service Name
+Csm_KeyCopy
+Syntax
+Std_ReturnType Csm_KeyCopy (
+uint32 keyId,
+uint32 targetKeyId
+)
+Service ID [hex]
+0x73
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant but not for same keyId
+keyId
+Holds the identifier of the key whose key element shall be the
+source element.
+Parameters (in)
+targetKeyId
+Holds the identifier of the key whose key element shall be the
+destination element.
+Parameters (inout)
+None
+Parameters (out)
+None
+▽
+△
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, Crypto Driver Object is busy
+CRYPTO_E_KEY_NOT_AVAILABLE: Request failed, the
+requested key element is not available
+CRYPTO_E_KEY_READ_FAIL: Request failed, not allowed to
+extract key element
+CRYPTO_E_KEY_WRITE_FAIL: Request failed, not allowed to
+write key element
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, key element
+sizes are not compatible
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+This function shall copy all key elements from the source key to a target key.
+Available via
+Csm.h
+⌋
+[SWS_Csm_01035] ⌈If no errors are detected by Csm, the service Csm_KeyCopy
+shall call CryIf_KeyCopy and pass on the return value.⌋
+Note: Because there are no checks by Csm and CryIf intended related to key elements
+during Csm_KeyCopy (e.g.
+• sizes of target key elements are greater or equal to the sizes of the corresponding
+source key elements
+• access rights of source and target key elements are allowing a copy between
+different Crypto drivers via Crypto_KeyElementGet and Crypto_KeyEle-
+mentGet)
+inconsistent states of target keys are possible in case of an inappropriate configura-
+tion. Those inconsistencies have to be identified during development, and should be
+addressed by configuration.
+[SWS_Csm_91025] Definition of API function Csm_KeyElementCopyPartial ⌈
+Service Name
+Csm_KeyElementCopyPartial
+Syntax
+Std_ReturnType Csm_KeyElementCopyPartial (
+uint32 keyId,
+uint32 keyElementId,
+uint32 keyElementSourceOffset,
+uint32 keyElementTargetOffset,
+uint32 keyElementCopyLength,
+uint32 targetKeyId,
+uint32 targetKeyElementId
+)
+Service ID [hex]
+0x79
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant, but not for the same keyId
+Parameters (in)
+keyId
+Holds the identifier of the key whose key element shall be the
+source element for copy operation.
+▽
+△
+keyElementId
+Holds the identifier of the key element which shall be the source
+for the copy operation.
+keyElementSourceOffset
+This is the offset of the source key element indicating the start
+index of the copy operation.
+keyElementTargetOffset
+This is the offset of the destination key element indicating the
+start index of the copy operation.
+keyElementCopyLength
+Specifies the number of bytes that shall be copied.
+targetKeyId
+Holds the identifier of the key whose key element shall be the
+destination element.
+targetKeyElementId
+Holds the identifier of the key element which shall be the
+destination for the copy operation.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, Crypto Driver Object is busy
+CRYPTO_E_KEY_NOT_AVAILABLE: Request failed, the
+requested key element is not available
+CRYPTO_E_KEY_READ_FAIL: Request failed, not allowed to
+extract key element
+CRYPTO_E_KEY_WRITE_FAIL: Request failed, not allowed to
+write key element
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, key element
+sizes are not compatible
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Copies a key element to another key element in the same crypto driver. The keyElementSource
+Offset and keyElementCopyLength allows to copy just a part of the source key element into the
+destination. The offset into the target key is also specified with this function.
+Available via
+Csm.h
+⌋
+Note:
+A Concatenation of partial keys into one key element is possible by call-
+ing Csm_KeyElementCopyPartial multiple times and adjusting keyElement-
+TargetOffset properly.
+[SWS_Csm_91019] ⌈If no errors are detected by Csm shall call CryIf_KeyEle-
+mentCopyPartial and pass on the return value.⌋
+[SWS_Csm_91020] ⌈If the current length of the target key element is greater or equal
+than (keyElementTargetOffset + keyElementCopyLength), the key element
+length remains unchanged and the target data is overwritten with the contents of the
+source data.⌋
+[SWS_Csm_91021] ⌈If the current length of the target key element is lower than (
+keyElementTargetOffset + keyElementCopyLength) and the maximum length
+of the key element is greater or equal than (keyElementTargetOffset + keyEle-
+mentCopyLength), then the source data shall be copied into the target key element
+and the length shall be set to (keyElementTargetOffset + keyElementCopy-
+Length).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Csm_01032] im Text von SWS_CryptoServiceManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Csm_91025] im Text von SWS_CryptoServiceManager.</p>
       </section>
 
       <section class="snip-card">
@@ -135,7 +281,7 @@ Csm.h
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoServiceManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=62" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -147,7 +293,7 @@ Csm.h
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Csm_01032" class="swsref internal-spec-ref"><code>SWS_Csm_01032</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Csm_91025" class="swsref internal-spec-ref"><code>SWS_Csm_91025</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

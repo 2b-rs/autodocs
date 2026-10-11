@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_7_4_3_2_3_Configuration_ID_check</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SoftwareClusterConnection.pdf</strong> (Seite 159)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=156" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></strong> (Seite 156)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00460" class="swsref internal-spec-ref"><code>SWS_NvM_00460</code></a></span>
+          <span>Ziel-Element: SWS_SwCluC_CONSTR_02160</span>
         </div>
       </div>
 
@@ -87,11 +88,100 @@ tion Software Cluster.
 Since the NvM High Proxy cannot directly interfere with the NvM_ReadAll execu-
 tion it has to implement its configuration ID checking in the execution of the NvM_Read-
 RamBlockFromNvm triggered by the execution of the multi block request triggered by
-NvM_ReadAll. This configuration ID</div></section>
+NvM_ReadAll. This configuration ID check is only active after the initialization
+of the NvM Proxy till the NvM_ReadAll multi block request is successfully finished.
+The NvM Proxy gets informed about the successful finish of NvM_ReadAll by the
+call of SwCluC_NvMProxy_MultiBlockReadAllJobFinished from BswM via an
+appropriately configured action list.
+The time span between NvM Proxy initialization and the call of SwCluC_NvMProxy_
+MultiBlockReadAllJobFinished is called NvM startup phase.
+To ensure a working behavior of the NvM Proxy in the SwCluC, the NVRAM Man-
+ager of the Host Software Cluster has to treat all NvBlocks of an Application
+Software Cluster as NvMResistantToChangedSw == TRUE. This behavior can
+be ensured by the appropriate configuration of the NVRAM Manager.
+module
+[SWS_SwCluC_CONSTR_02145] Application Software Cluster’s NvBlocks
+are treated as ’resistant to changed SW’ by NvM in Host Software Cluster
+Upstream requirements: SRS_SwCluC_00206, SRS_BSW_00167
+⌈For any NVRAM Block belonging to an Application Software Cluster (NvM
+Low Proxy of the SwCluC occurs as block user) the parameter NvMResistant-
+ToChangedSw shall be set to TRUE in the Host Software Cluster.⌋
+Note: This includes the NVRAM Blocks used to store the configuration ID of a specific
+Application Software Cluster
+In addition, the NvBlocks in the Host Software Cluster have to be configured
+such, that the Configuration ID block of an Application Software Clus-
+ter is restored before the regular NvBlocks of that Application Software Clus-
+ter. Since the NvM ensures the processing order of NvM Blocks during a NvM_-
+ReadAll job by the Block Id ([SWS_NvM_00244]). This enables that the NvM High
+Proxy can process its Config Block ID handling before that recovery of the regular
+NvBlocks.
+[SWS_SwCluC_CONSTR_02146] Block IDs of Application Software Clus-
+ter’s Configuration ID blocks in Host Software Cluster
+Upstream requirements: SRS_SwCluC_00206, SRS_BSW_00167
+⌈In the NvM module of the Host Software Cluster the Configuration ID
+block of an Application Software Cluster shall be configured with a lower
+block ID than all the other NvBlocks of the identical Application Software Clus-
+ter.⌋
+Please note, that the configured Block IDs of an Application Software Clus-
+ter’s NvBlock can differ in the configuration in the NvM High Proxy and the NvM of
+the Host Software Cluster.
+The Block ID numbers are translated during the API calls from Application Soft-
+ware Cluster to the Host Software Cluster.
+Hence, a valid configuration of Block IDs in the Host Software Cluster can look
+like following example as shown in figure 7.12.
+module
+Figure 7.12: Example configuration of NvBlocks used by Application Software Clusters
+[SWS_SwCluC_02147]
+Upstream requirements: SRS_SwCluC_00206
+⌈The NvM High Proxy of a specific Application Software Cluster shall en-
+able the configuration ID check, if the parameter NvMDynamicConfigura-
+tion is set to TRUE in this Application Software Cluster.⌋
+Note: The parameter NvMDynamicConfiguration is set in the NvM module config-
+uration of the respective Application Software Cluster.
+Like in the configuration of the NvM module in the Host Software Cluster, the
+block ID 1 is reserved for the Configuration ID block in each Application
+Software Cluster. This Configuration ID block to contain the stored NVRAM
+configuration ID.
+module
+[SWS_SwCluC_CONSTR_02148] Configuration ID block uses always block
+ID 1
+Upstream requirements: SRS_SwCluC_00206
+⌈In the configuration of the NvM High Proxy, the NVRAM block with the block ID 1
+shall be reserved for the Configuration ID block to contain the stored NVRAM
+configuration ID.⌋
+[SWS_SwCluC_02149]
+Upstream requirements: SRS_SwCluC_00206
+⌈The NvM High Proxy of a specific Application Software Cluster shall im-
+plement the Configuration ID block as redundant type with CRC32.⌋
+[SWS_SwCluC_CONSTR_02160] NvBlock configuration of Application Soft-
+ware Cluster’s Configuration ID blocks in Host Software Cluster
+Upstream requirements: SRS_SwCluC_00206
+⌈In the NvM module of the Host Software Cluster the Configuration ID
+block of an Application Software Cluster shall be configured with NvM-
+BlockManagementType == NVM_BLOCK_REDUNDANT and NvMBlockCrcType ==
+NVM_CRC32.⌋
+[SWS_SwCluC_02150]
+Upstream requirements: SRS_SwCluC_00206
+⌈The job of the function NvM_WriteBlock for the Configuration ID block shall
+write the compiled NVRAM configuration ID to the stored NVRAM configura-
+tion ID (in the Configuration ID blocks) of this Application Software
+Cluster.⌋
+[SWS_SwCluC_02151]
+Upstream requirements: SRS_SwCluC_00206
+⌈The job of the function NvM_WritePRAMBlock for the Configuration ID block
+shall write the compiled NVRAM configuration ID to the stored NVRAM configu-
+ration ID (in the Configuration ID blocks) of this Application Software
+Cluster.⌋
+[SWS_SwCluC_02152]
+Upstream requirements: SRS_SwCluC_00206
+⌈The NvM_ReadRamBlockFromNvm call for the Configuration ID block shall
+validate the configuration ID by comparing the stored NVRAM configuration ID of
+this Application Software Cluster vs. the compiled NVRAM configuration
+ID of this Application Software Cluster.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_CONSTR_02160] im Text von SWS_SoftwareClusterConnection.</p>
       </section>
 
       <section class="snip-card">
@@ -100,11 +190,11 @@ NvM_ReadAll. This configuration ID</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SoftwareClusterConnection.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=156" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 159</td>
+              <td>Seite 156</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -112,7 +202,7 @@ NvM_ReadAll. This configuration ID</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_NvM_00460" class="swsref internal-spec-ref"><code>SWS_NvM_00460</code></a></td>
+              <td>SWS_SwCluC_CONSTR_02160</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

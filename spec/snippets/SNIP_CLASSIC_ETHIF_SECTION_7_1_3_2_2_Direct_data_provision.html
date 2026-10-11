@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_1_3_2_2_Direct_data_provision</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WirelessEthernetDriver.pdf</strong> (Seite 18)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_WirelessEthernetDriver.pdf#page=18" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WirelessEthernetDriver.pdf</a></strong> (Seite 18)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WEth_00313" class="swsref internal-spec-ref"><code>SWS_WEth_00313</code></a></span>
+          <span>Ziel-Element: SWS_WEth_CONSTR_00311</span>
         </div>
       </div>
 
@@ -88,11 +89,140 @@ mission buffer configured, then the Ethernet driver shall perform the following 
 dition checks in the following order:
 1. If the Ethernet frame, which is requested to be transmitted, matches the config-
 ured priority of the transmission buffer at the given CtrlIdx, then skip the next
-precondition check and proceed. Ot</div></section>
+precondition check and proceed. Otherwise report runtime error WETH_E_UN-
+KNOWN_EGRESS_PRIORITY and procceed.
+2. If the Ethernet frame could be enqueued in a transmission buffer at the given
+CtrlIdx where no priority is configured (i.e. try to enqueue the Ethernet frame
+in a default transmission queue (see [SWS_WEth_CONSTR_00311])), then pro-
+ceed. Otherwise return with E_NOT_OK.
+3. If on transmission buffer is available, then proceed. Otherwise report an runtime
+error error code WETH_E_EGRESS_QUEUE_OCCUPIED and return with E_NOT_-
+OK
+If all precondition checks passed successfully, then proceed with the evaluation of the
+Ethernet frame.⌋
+[SWS_WEth_00314] Evaluation of an Ethernet frame given with WEth_Immedi-
+ateTransmit transmit request
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00190, SRS_BSW_00350, SRS_BSW_00386
+⌈If WEth_ImmediateTransmit has been called, a transmission buffer is reserved
+and the Wireless Ethernet driver is requested to evaluate the given Ethernet frame
+parts (according to [SWS_WEth_00313]), then the Wireless Ethernet driver shall eval-
+uate the given single linked list given with HeaderListPtr and the payload Pay-
+loadPtr and payload length PayloadLength by considering the following steps:
+1. Traverse the single linked list given with HeaderListPtr by starting with the first
+element HeaderListPtr and continue with next element of the single linked list
+given with NextListElemPtr until an element of the single linked list is reached
+where NextListElemPtr is set to NULL_PTR. Perform the following action at
+each element of the single linked list:
+• Store the the given data location (DataPtr) and the given data length (
+DataLength)
+• accumulate the DataLength)
+2. calculate the overall length by considering accumulated DataLength of all single
+linked list elements and the length of payload given with PayloadLength
+If the calculated Ethernet frame length is larger then the available egress queue ele-
+ment, then abort the evaluation and return with E_NOT_OK, or if WEthDevErrorDe-
+tect is set to TRUE, WEth driver shall call Det_ReportError with the error code
+WETH_E_EXCEED_EGRESS_QUEUE_ELEMENT. Otherwise proceed with construction of
+the Ethernet frame.⌋
+[SWS_WEth_00315] Construction of an Ethernet frame given with WEth_Imme-
+diateTransmit transmit request and WEthCtrlEnableEgressHardwareSup-
+portedDataTransfer is set to FALSE
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00190, SRS_BSW_00350, SRS_BSW_00386
+⌈If WEth_ImmediateTransmit has been called, a transmission buffer is reserved,
+the Wireless Ethernet driver is requested to construct the Ethernet frame (according
+to [SWS_WEth_00314]) and WEthCtrlEnableEgressHardwareSupportedData-
+Transfer is set to FALSE, then the Ethernet driver shall consider the following con-
+struction steps:
+• iterate over the stored list of header pointers (see [SWS_WEth_00314]) and per-
+form for each header the following step:
+– Copy data from the given data location (DataPtr) with respect to the given
+data length (DataLength) to the next available position in reserved trans-
+mission buffer element in consecutive order without gaps and continue
+• copy payload data from the given location PayloadPtr with respect to the given
+length (PayloadLength) to the next available position in the transmission buffer
+in consecutive order without gaps
+• trigger a transmission for content of this transmission buffer
+• store the given TxHandleId with the used transmission buffer index and the
+given CtrlIdx
+⌋
+[SWS_WEth_00316] Construction of an Ethernet frame given with WEth_Imme-
+diateTransmit transmit request and WEthCtrlEnableEgressHardwareSup-
+portedDataTransfer is set to TRUE
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00190, SRS_BSW_00350, SRS_BSW_00386
+⌈If WEth_ImmediateTransmit has been called, a transmission buffer is reserved,
+the Wireless Ethernet driver is requested to construct the Ethernet frame (according
+to [SWS_WEth_00314]) and WEthCtrlEnableEgressHardwareSupportedData-
+Transfer is set to TRUE, then the Wireless Ethernet driver shall consider the following
+construction steps:
+• iterate over the stored list of header pointers (see [SWS_WEth_00314])and per-
+form for each header to the following steps:
+– if the given header length (DataLength) of a list element exceeds
+the configured WEthCtrEgressHardwareSupportedDataTransfer-
+Threshold, then the Ethernet driver shall prepare a hardware supported
+transfer with respect to the given header length (DataLength) and header
+location (DataPtr), trigger the data transfer and reserve space according
+the given DataLength in the reserved transmission buffer element, store
+the data transfer session handle (by considering given TxHandleId, Ctr-
+lIdx and transmission buffer index) and continue at next available position
++ DataLength + 1 of the transmission buffer
+– if the given length (DataLength) is equal or smaller than the configured
+WEthCtrEgressHardwareSupportedDataTransferThreshold, then
+the Ethernet driver shall copy data from the given header location (Dat-
+aPtr) with respect to the given header length (DataLength) to the next
+available position in reserved transmission buffer element in consecutive or-
+der and continue
+• check the payload length given with (PayloadLength)
+– if the given payload length (PayloadLength) of a list element exceeds
+the configured WEthCtrEgressHardwareSupportedDataTransfer-
+Threshold, then the Wireless Ethernet driver shall prepare a hard-
+ware supported transfer with respect to the given payload length (Pay-
+loadLength) and payload location (PayloadPtr), trigger the data transfer
+and reserve space according the given PayloadLengthin the transmission
+buffer, store the data transfer session handle (by considering given TxHan-
+dleId, CtrlIdx and transmission buffer index)
+– if the given payload length (PayloadLength) is equal or smaller than
+the configured WEthCtrEgressHardwareSupportedDataTransfer-
+Threshold, then the Ethernet driver shall copy the payload from the given
+payload location (PayloadPtr) with respect to the given payload length (
+PayloadLength) to the next available position in reserved transmission
+buffer element in consecutive order
+• store the given TxHandleId with the used transmission buffer index and the
+given CtrlIdx
+⌋
+Note: The mapping of TxHandleId with the used transmission buffer index and the
+given CtrlIdx are used to identify the provided TxHandleId, which is needed if
+confirmation of the transmission has to be indicated via WEth_TxConfirmation.
+All sessions for hardware supported data transfer which relate to the same transmis-
+sion buffer need to be confirmed by hardware. Therefore the Ethernet driver needs
+to supervise the state of triggered hardware supported data transfer in relation to the
+affected TxHandleId, CtrlIdx and transmission buffer index. After all data transfers
+which relate to the same transmission buffer have been finalized, the transmission for
+this transmission buffer can be triggered.
+[SWS_WEth_00317] Handling if a hardware supported data transfer for a specific
+transmission request has been finalized
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00189, SRS_BSW_00350, SRS_BSW_00386
+⌈If WEth_ImmediateTransmit has been called, WEthCtrlEnableEgressHard-
+wareSupportedDataTransfer is set to TRUE and all data transfer sessions have
+confirmed successful transfer for a specific transmission buffer, then the Wireless Eth-
+ernet driver shall perform the following actions:
+• remove all data transfer session handles which are associated with this transmis-
+sion buffer
+• trigger a transmission of the content of this transmission buffer0311
+⌋
+Please note: Mapping of the transmission buffer index and the given CtrlIdx to
+TxHandleId is needed for asynchronous check in the EthIf_MainFunctionTx or
+within an interrupt.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_WEth_00313] im Text von SWS_WirelessEthernetDriver.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_WEth_CONSTR_00311] im Text von SWS_WirelessEthernetDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +231,7 @@ precondition check and proceed. Ot</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WirelessEthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_WirelessEthernetDriver.pdf#page=18" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WirelessEthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +243,7 @@ precondition check and proceed. Ot</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_WEth_00313" class="swsref internal-spec-ref"><code>SWS_WEth_00313</code></a></td>
+              <td>SWS_WEth_CONSTR_00311</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

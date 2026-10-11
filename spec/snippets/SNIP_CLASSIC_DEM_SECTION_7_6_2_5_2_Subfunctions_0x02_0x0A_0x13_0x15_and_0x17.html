@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_6_2_5_2_Subfunctions_0x02_0x0A_0x13_0x15_and_0x17</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 109)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=109" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 109)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01644" class="swsref internal-spec-ref"><code>SWS_Dcm_01644</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_00215" class="swsref internal-spec-ref"><code>SWS_Dem_00215</code></a></span>
         </div>
       </div>
 
@@ -100,11 +101,212 @@ access to the selected user defined memory in parameter MemorySelection is authe
 ticated and read the DTC information only if:
 • for that user defined fault memory the DcmDspReadDTCInformationUserDe-
 finedFaultMemoryRoleId matching the MemorySelection and a role is configured
-via Dcm</div></section>
+via DcmDspReadDTCInformationUserDefinedFaultMemoryRoleRef and
+the verification according to [SWS_Dcm_01479] was successful or
+• the active white list on that connection has for that requested user defined mem-
+ory selection one entry.
+⌋(RS_Diag_04233)
+According to [SWS_Dcm_01545] the authentication checks are only executed if
+DcmDspAuthentication is configured. In case of a failed authentication the NRC han-
+dling is according to [SWS_Dcm_01544] and [SWS_Dcm_01551] applies.
+[SWS_Dcm_00008] ⌈On reception of a UDS Service 0x19 request with subfunction
+0x02 and 0x13 and if the result of the bitwise AND operation between the DTCSta-
+tusMask received within the request message and the DTCStatusAvailabilityMask re-
+ported by the DEM is equal to 0, the Dcm module shall answer positively with 0 DTC.⌋
+()
+[SWS_Dcm_00378] ⌈When responding to UDS Service 0x19 with subfunctions 0x02,
+0x0A, 0x13, 0x15 or 0x17, the Dcm module shall obtain the records with DTCs (and
+their associated status) by repeatedly calling Dem_GetNextFilteredDTC() after having
+configured the filter with Dem_SetDTCFilter() using the parameter values according to
+[SWS_Dcm_01645].⌋(RS_Diag_04058, RS_Diag_04067)
+[SWS_Dcm_01645]
+Dem_SetDTCFilter() parameters values for subfunctions
+0x02, 0x0A, 0x13, 0x15 and0x17 ⌈
+reportDTC
+ByStatus
+Mask
+report
+Supported
+DTCs
+report
+Emissions
+Related
+OBDDTC
+ByStatus
+Mask
+report
+DTCWith
+Permanent
+Status
+report
+UserDef
+Memory
+DTCBy
+StatusMask
+0x02
+0x0A
+0x13
+0x15
+0x17
+ClientId
+Client Id for
+this Dcm
+instance (see
+DcmDem-
+ClientRef)
+Client Id for
+this Dcm
+instance (see
+DcmDem-
+ClientRef)
+Client Id for
+this Dcm
+instance (see
+DcmDem-
+ClientRef)
+Client Id for
+this Dcm
+instance (see
+DcmDem-
+ClientRef)
+Client Id for
+this Dcm
+instance (see
+DcmDem-
+ClientRef)
+DTCStatus
+Mask
+DTCStatus
+Mask from
+request
+0x00
+DTCStatus
+Mask from
+request
+0x00
+DTCStatus
+Mask from
+request
+DTCFormat
+DEM_DTC_
+FOR-
+MAT_UDS
+DEM_DTC_
+FOR-
+MAT_UDS
+DEM_DTC_
+FOR-
+MAT_UDS
+DEM_DTC_
+FOR-
+MAT_UDS
+DEM_DTC_
+FOR-
+MAT_UDS
+Manager
+reportDTC
+ByStatus
+Mask
+report
+Supported
+DTCs
+report
+Emissions
+Related
+OBDDTC
+ByStatus
+Mask
+report
+DTCWith
+Permanent
+Status
+report
+UserDef
+Memory
+DTCBy
+StatusMask
+DTCOrigin
+PRIMARY_
+MEMORY
+PRIMARY_
+MEMORY
+DEM_DTC_
+ORIGIN_
+OBD_
+RELEVANT_
+MEMORY
+PERMA
+NENT_
+MEMORY
+Memory
+Selection from
+request +
+0x0100
+FilterWith
+Severity
+NO
+NO
+NO
+NO
+NO
+DTCSeverity
+Mask
+Not relevant
+Not relevant
+Not relevant
+Not relevant
+Not relevant
+FilterForFault
+Detection
+Counter
+NO
+NO
+NO
+NO
+NO
+Table 7.7: Dem_SetDTCFilter() parameters values for subfunctions 0x02, 0x0A, 0x13,
+0x15 and0x17
+⌋()
+Note:
+• The Dcm module can get an indication of the number of records that will be found
+using Dem_GetNextFilteredDTC() by using Dem_GetNumberOfFilteredDTC().
+This allows the implementation to calculate the total size of the response before
+cycling through the DTCs.
+• The value 0x00 used as DTCStatusMask for the subfunctions 0x0A and 0x15
+disables the status byte filtering in Dem_SetDTCFilter().
+[SWS_Dcm_00828] ⌈In case of paged buffer support is disabled, the Dcm module shall
+not insert zero-padded DTCs to the response of UDS Service 0x19 with subfunctions
+0x02, 0x0A, 0x13, 0x15 or 0x17.⌋()
+When using paged buffer mechanism, in some case, it’s possible that the number of
+DTC matching the filter change between the calculation of the total size, needed for
+the first page transmission, and the sending of the further pages. For this reason, the
+following requirement apply :
+[SWS_Dcm_00587] ⌈In case of paged buffer support is enabled, The Dcm shall limit
+the response size to the size calculated when sending the first page. If more DTCs
+match the filter after this sending, the additional DTCs shall not be considered.⌋()
+[SWS_Dcm_00588] ⌈In case of paged buffer support is enabled,The Dcm shall pad the
+response with the size calculated when sending the first page. If less DTC match the
+filter after this sending, the missing DTCs shall be padded with 0 value as defined in
+15031-6 [16].⌋()
+Manager
+[SWS_Dcm_01229]
+⌈If
+Dem_GetNextFilteredDTC()
+returns
+DEM_NO_SUCH_ELEMENT and at least one matching element could be re-
+trieved before, the Dcm shall send a positive response including these data elements.⌋
+()
+[SWS_Dcm_01230]
+⌈If
+Dem_GetNextFilteredDTC()
+returns
+DEM_NO_SUCH_ELEMENT and at no matching element could be retrieved be-
+fore, the Dcm shall send a positive response only for service and subservice and
+additional parameters required within a positive response.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01644] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_GetNextFilteredDTC().</p>
       </section>
 
       <section class="snip-card">
@@ -113,7 +315,7 @@ via Dcm</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=109" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -125,7 +327,7 @@ via Dcm</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01644" class="swsref internal-spec-ref"><code>SWS_Dcm_01644</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_00215" class="swsref internal-spec-ref"><code>SWS_Dem_00215</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -133,7 +335,7 @@ via Dcm</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

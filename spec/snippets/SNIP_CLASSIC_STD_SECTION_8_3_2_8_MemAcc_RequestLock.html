@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_2_8_MemAcc_RequestLock</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MemoryAccess.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MemoryAccess.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MemoryAccess.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -119,11 +120,72 @@ Upstream requirements: SRS_MemHwAb_14038
 ⌈MemAcc_RequestLock shall lock all memory accesses of the Mem driver referenced
 by the addressAreaId, address and length parameter.
 If an upper layer calls a MemAcc service function for an address area which is locked
-for direct memory a</div></section>
+for direct memory access, MemAcc shall still accept the memory access request for
+the address area but shall not forward the access request to the corresponding Mem
+driver until the lock request is released by the MemAcc_ReleaseLock service.⌋
+[SWS_MemAcc_00116]
+Upstream requirements: SRS_MemHwAb_14055
+⌈MemAcc shall wait until the address area referenced by addressAreaId is idle be-
+fore it calls the lock notification function referenced by lockNotificationFctPtr
+to notify the upper layer module that the lock of the address area was successfully
+acquired.⌋
+[SWS_MemAcc_00099]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection is enabled by MemAccDevErrorDetect, the ser-
+vice MemAcc_RequestLock shall check that the MemAcc module has been initial-
+ized.
+If this check fails, MemAcc_RequestLock shall raise the development error
+MEMACC_E_UNINIT.⌋
+[SWS_MemAcc_00071]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection is enabled by MemAccDevErrorDetect, the service
+MemAcc_RequestLock shall check that the provided addressAreaId is consistent
+with the configuration. If this check fails, MemAcc_RequestLock shall raise the devel-
+opment error MEMACC_E_PARAM_ADDRESS_AREA_ID.⌋
+[SWS_MemAcc_00072]
+Upstream requirements: SRS_BSW_00323
+⌈If
+development
+error
+detection
+is
+enabled
+by
+MemAccDevErrorDetect,
+the
+service
+MemAcc_RequestLock
+shall
+raise
+the
+development
+error
+MEMACC_E_PARAM_POINTER if the lockNotificationFctPtr argument is a
+NULL pointer.⌋
+[SWS_MemAcc_00073]
+Upstream requirements: SRS_BSW_00323
+⌈If
+development
+error
+detection
+is
+enabled
+by
+MemAccDevErrorDetect,
+the
+service
+MemAcc_RequestLock
+shall
+raise
+the
+development
+error
+MEMACC_E_PARAM_ADDRESS_LENGTH if the address range defined by address and
+length is invalid, i.e. not mapped to a specific Mem driver.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -132,7 +194,7 @@ for direct memory a</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MemoryAccess.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MemoryAccess.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MemoryAccess.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

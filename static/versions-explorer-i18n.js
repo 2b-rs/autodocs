@@ -273,7 +273,7 @@ window.VE_I18N = {
   "snip_nf_status": "nicht vergleichbar",
   "snip_nf_page": "Abschnittsüberschrift im PDF dieses Releases nicht gefunden – kein Vergleich möglich.",
   "snip_nf_none": "Kein PDF-Text für dieses Release – kein Vergleich möglich.",
-  "snip_cut": "gekürzt auf 1.500 Zeichen"
+  "snip_cut": "gekürzt"
  },
  "en": {
   "thumb_none": "no preview image in the catalog",
@@ -547,7 +547,7 @@ window.VE_I18N = {
   "snip_nf_status": "not comparable",
   "snip_nf_page": "Section heading not found in this release’s PDF – no comparison possible.",
   "snip_nf_none": "No PDF text for this release – no comparison possible.",
-  "snip_cut": "shortened to 1,500 characters"
+  "snip_cut": "shortened"
  },
  "es": {
   "thumb_none": "sin imagen de vista previa en el catálogo",
@@ -821,7 +821,7 @@ window.VE_I18N = {
   "snip_nf_status": "no comparable",
   "snip_nf_page": "No se encontró el encabezado de la sección en el PDF de esta release: no es posible comparar.",
   "snip_nf_none": "No hay texto PDF para esta release: no es posible comparar.",
-  "snip_cut": "acortado a 1.500 caracteres"
+  "snip_cut": "acortado"
  },
  "pt": {
   "thumb_none": "sem imagem de pré-visualização no catálogo",
@@ -1095,7 +1095,7 @@ window.VE_I18N = {
   "snip_nf_status": "não comparável",
   "snip_nf_page": "Título da seção não encontrado no PDF desta release – comparação impossível.",
   "snip_nf_none": "Sem texto PDF para esta release – comparação impossível.",
-  "snip_cut": "reduzido a 1.500 caracteres"
+  "snip_cut": "reduzido"
  },
  "fr": {
   "thumb_none": "pas d’aperçu dans le catalogue",
@@ -1369,7 +1369,7 @@ window.VE_I18N = {
   "snip_nf_status": "non comparable",
   "snip_nf_page": "Titre de section introuvable dans le PDF de cette release – aucune comparaison possible.",
   "snip_nf_none": "Pas de texte PDF pour cette release – aucune comparaison possible.",
-  "snip_cut": "raccourci à 1 500 caractères"
+  "snip_cut": "raccourci"
  },
  "ru": {
   "thumb_none": "нет изображения в каталоге",
@@ -1643,7 +1643,7 @@ window.VE_I18N = {
   "snip_nf_status": "несравнимо",
   "snip_nf_page": "Заголовок раздела в PDF этого релиза не найден — сравнение невозможно.",
   "snip_nf_none": "Нет текста PDF для этого релиза — сравнение невозможно.",
-  "snip_cut": "сокращено до 1500 символов"
+  "snip_cut": "сокращено"
  },
  "ar": {
   "thumb_none": "لا توجد صورة معاينة في الفهرس",
@@ -1917,7 +1917,7 @@ window.VE_I18N = {
   "snip_nf_status": "غير قابل للمقارنة",
   "snip_nf_page": "لم يُعثر على عنوان القسم في ملف PDF لهذا الإصدار – لا يمكن المقارنة.",
   "snip_nf_none": "لا يوجد نص PDF لهذا الإصدار – لا يمكن المقارنة.",
-  "snip_cut": "مختصر إلى 1500 حرف"
+  "snip_cut": "مختصر"
  },
  "hi": {
   "thumb_none": "कैटलॉग में पूर्वावलोकन छवि नहीं",
@@ -2191,7 +2191,7 @@ window.VE_I18N = {
   "snip_nf_status": "तुलनीय नहीं",
   "snip_nf_page": "इस रिलीज़ के PDF में अनुभाग शीर्षक नहीं मिला – तुलना संभव नहीं।",
   "snip_nf_none": "इस रिलीज़ के लिए PDF पाठ नहीं – तुलना संभव नहीं।",
-  "snip_cut": "1,500 अक्षरों तक छोटा किया गया"
+  "snip_cut": "छोटा किया गया"
  },
  "ko": {
   "thumb_none": "카탈로그에 미리보기 이미지 없음",
@@ -2465,7 +2465,7 @@ window.VE_I18N = {
   "snip_nf_status": "비교 불가",
   "snip_nf_page": "이 릴리스의 PDF에서 섹션 제목을 찾지 못해 비교할 수 없습니다.",
   "snip_nf_none": "이 릴리스의 PDF 텍스트가 없어 비교할 수 없습니다.",
-  "snip_cut": "1,500자로 줄임"
+  "snip_cut": "줄임"
  },
  "zh": {
   "thumb_none": "目录中无预览图",
@@ -2739,7 +2739,7 @@ window.VE_I18N = {
   "snip_nf_status": "不可比较",
   "snip_nf_page": "在此版本的 PDF 中未找到章节标题——无法比较。",
   "snip_nf_none": "此版本没有 PDF 文本——无法比较。",
-  "snip_cut": "截短至 1500 个字符"
+  "snip_cut": "已截短"
  },
  "nl": {
   "thumb_none": "geen voorbeeldafbeelding in de catalogus",
@@ -3013,6 +3013,6 @@ window.VE_I18N = {
   "snip_nf_status": "niet vergelijkbaar",
   "snip_nf_page": "Sectiekop niet gevonden in de PDF van deze release – vergelijken niet mogelijk.",
   "snip_nf_none": "Geen PDF-tekst voor deze release – vergelijken niet mogelijk.",
-  "snip_cut": "ingekort tot 1.500 tekens"
+  "snip_cut": "ingekort"
  }
 };

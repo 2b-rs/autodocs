@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: tcpip</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_8_6_3_Configurable_interfaces</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 93)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=87" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 87)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00567" class="swsref internal-spec-ref"><code>SWS_SoAd_00567</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00663" class="swsref internal-spec-ref"><code>SWS_SoAd_00663</code></a></span>
         </div>
       </div>
 
@@ -104,11 +105,187 @@ Parameters (inout)
 None
 Parameters (out)
 None
-Re</div></section>
+Return value
+None
+Description
+Indication of a received PDU from a lower layer communication interface module.
+Available via
+&lt;none&gt;
+⌋
+8.6.3.2
+&lt;Up&gt;_[SoAd][If]TriggerTransmit
+[SWS_SoAd_00663] Definition of configurable interface &lt;Up&gt;_[SoAd][If]Trigger
+Transmit ⌈
+Service Name
+&lt;Up&gt;_[SoAd][If]TriggerTransmit
+Syntax
+Std_ReturnType &lt;Up&gt;_[SoAd][If]TriggerTransmit (
+PduIdType TxPduId,
+PduInfoType* PduInfoPtr
+)
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant for different PduIds. Non reentrant for the same PduId.
+Parameters (in)
+TxPduId
+ID of the SDU that is requested to be transmitted.
+Parameters (inout)
+PduInfoPtr
+Contains a pointer to a buffer (SduDataPtr) to where the SDU
+data shall be copied, and the available buffer size in SduLengh.
+On return, the service will indicate the length of the copied SDU
+data in SduLength.
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: SDU has been copied and SduLength indicates the
+number of copied bytes.
+E_NOT_OK: No SDU data has been copied. PduInfoPtr must not
+be used since it may contain a NULL pointer or point to invalid
+data.
+Description
+Within this API, the upper layer module (called module) shall check whether the available data
+fits into the buffer size reported by PduInfoPtr-&gt;SduLength. If it fits, it shall copy its data into the
+buffer provided by PduInfoPtr-&gt;SduDataPtr and update the length of the actual copied data in
+PduInfoPtr-&gt;SduLength. If not, it returns E_NOT_OK without changing PduInfoPtr.
+Available via
+&lt;none&gt;
+⌋
+8.6.3.3
+&lt;Up&gt;_[SoAd][If]TxConfirmation
+[SWS_SoAd_00107] Definition of configurable interface &lt;Up&gt;_[SoAd][If]TxCon-
+firmation ⌈
+Service Name
+&lt;Up&gt;_[SoAd][If]TxConfirmation
+Syntax
+void &lt;Up&gt;_[SoAd][If]TxConfirmation (
+PduIdType TxPduId,
+Std_ReturnType result
+)
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant for different PduIds. Non reentrant for the same PduId.
+TxPduId
+ID of the PDU that has been transmitted.
+Parameters (in)
+result
+E_OK: The PDU was transmitted. E_NOT_OK: Transmission of
+the PDU failed.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+The lower layer communication interface module confirms the transmission of a PDU, or the
+failure to transmit a PDU.
+Available via
+&lt;none&gt;
+⌋
+8.6.3.4
+&lt;Up&gt;_[SoAd][Tp]StartOfReception
+[SWS_SoAd_00138] Definition of configurable interface &lt;Up&gt;_[SoAd][Tp]StartOf
+Reception ⌈
+Service Name
+&lt;Up&gt;_[SoAd][Tp]StartOfReception
+Syntax
+BufReq_ReturnType &lt;Up&gt;_[SoAd][Tp]StartOfReception (
+PduIdType id,
+const PduInfoType* info,
+PduLengthType TpSduLength,
+PduLengthType* bufferSizePtr
+)
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+id
+Identification of the I-PDU.
+info
+Pointer to a PduInfoType structure containing the payload data
+(without protocol information) and payload length of the first
+frame or single frame of a transport protocol I-PDU reception, and
+the MetaData related to this PDU. If neither first/single frame data
+nor MetaData are available, this parameter is set to NULL_PTR.
+Parameters (in)
+TpSduLength
+Total length of the N-SDU to be received.
+Parameters (inout)
+None
+Parameters (out)
+bufferSizePtr
+Available receive buffer in the receiving module. This parameter
+will be used to compute the Block Size (BS) in the transport
+protocol module.
+▽
+△
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Connection has been accepted. bufferSizePtr
+indicates the available receive buffer; reception is continued. If no
+buffer of the requested size is available, a receive buffer size of 0
+shall be indicated by bufferSizePtr.
+BUFREQ_E_NOT_OK: Connection has been rejected; reception is
+aborted. bufferSizePtr remains unchanged.
+BUFREQ_E_OVFL: No buffer of the required length can be
+provided; reception is aborted. bufferSizePtr remains unchanged.
+Description
+This function is called at the start of receiving an N-SDU. The N-SDU might be fragmented into
+multiple N-PDUs (FF with one or more following CFs) or might consist of a single N-PDU (SF).
+The service shall provide the currently available maximum buffer size when invoked with TpSdu
+Length equal to 0.
+Available via
+&lt;none&gt;
+⌋
+8.6.3.5
+&lt;Up&gt;_[SoAd][Tp]CopyRxData
+[SWS_SoAd_00139] Definition of configurable interface &lt;Up&gt;_[SoAd][Tp]Copy
+RxData ⌈
+Service Name
+&lt;Up&gt;_[SoAd][Tp]CopyRxData
+Syntax
+BufReq_ReturnType &lt;Up&gt;_[SoAd][Tp]CopyRxData (
+PduIdType id,
+const PduInfoType* info,
+PduLengthType* bufferSizePtr
+)
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+id
+Identification of the received I-PDU.
+Parameters (in)
+info
+Provides the source buffer (SduDataPtr) and the number of bytes
+to be copied (SduLength). An SduLength of 0 can be used to
+query the current amount of available buffer in the upper layer
+module. In this case, the SduDataPtr may be a NULL_PTR.
+Parameters (inout)
+None
+Parameters (out)
+bufferSizePtr
+Available receive buffer after data has been copied.
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Data copied successfully
+BUFREQ_E_NOT_OK: Data was not copied because an error
+occurred.
+Description
+This function is called to provide the received data of an I-PDU segment (N-PDU) to the upper
+layer. Each call to this function provides the next part of the I-PDU data. The size of the
+remaining buffer is written to the position indicated by bufferSizePtr.
+Available via
+&lt;none&gt;
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Calls configured &lt;Up&gt;_[SoAd][If]RxIndication callback</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00663] im Text von SWS_SocketAdaptor.</p>
       </section>
 
       <section class="snip-card">
@@ -117,11 +294,11 @@ Re</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=87" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 93</td>
+              <td>Seite 87</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -129,15 +306,15 @@ Re</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00567" class="swsref internal-spec-ref"><code>SWS_SoAd_00567</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00663" class="swsref internal-spec-ref"><code>SWS_SoAd_00663</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

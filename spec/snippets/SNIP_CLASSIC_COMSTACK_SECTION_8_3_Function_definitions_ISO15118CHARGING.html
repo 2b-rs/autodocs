@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_8_3_Function_definitions_ISO15118CHARGING</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ISO15118Charging.pdf</strong> (Seite 90)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ISO15118Charging.pdf#page=89" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ISO15118Charging.pdf</a></strong> (Seite 90)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthSM_00109" class="swsref internal-spec-ref"><code>SWS_EthSM_00109</code></a></span>
         </div>
@@ -139,7 +140,129 @@ Tags: atp.Status=draft
 Available via
 ISO15118Chrg.h
 ⌋
-[CP_SWS_ISO15118Chrg_00131] Definition of</div></section>
+[CP_SWS_ISO15118Chrg_00131] Definition of callback function ISO15118Chrg_
+V2GTpCopyRxData
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00310
+⌈
+Service Name
+ISO15118Chrg_V2GTpCopyRxData (draft)
+Syntax
+BufReq_ReturnType ISO15118Chrg_V2GTpCopyRxData (
+PduIdType id,
+const PduInfoType* info,
+PduLengthType* bufferSizePtr
+)
+Service ID [hex]
+0x44
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+id
+Identification of the received I-PDU.
+Parameters (in)
+info
+Provides the source buffer (SduDataPtr) and the number of bytes
+to be copied (SduLength). An SduLength of 0 can be used to
+query the current amount of available buffer in the upper layer
+module. In this case, the SduDataPtr may be a NULL_PTR.
+Parameters (inout)
+None
+Parameters (out)
+bufferSizePtr
+Available receive buffer after data has been copied.
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Data copied successfully
+BUFREQ_E_NOT_OK: Data was not copied because an error
+occurred.
+Description
+This function is called to provide the received data of an I-PDU segment (N-PDU) to the upper
+layer. Each call to this function provides the next part of the I-PDU data. The size of the
+remaining buffer is written to the position indicated by bufferSizePtr.
+Tags: atp.Status=draft
+Available via
+ISO15118Chrg.h
+⌋
+[CP_SWS_ISO15118Chrg_00125] Definition of callback function ISO15118Chrg_
+V2GTpCopyTxData
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00310
+⌈
+Service Name
+ISO15118Chrg_V2GTpCopyTxData (draft)
+Syntax
+BufReq_ReturnType ISO15118Chrg_V2GTpCopyTxData (
+PduIdType id,
+const PduInfoType* info,
+const RetryInfoType* retry,
+PduLengthType* availableDataPtr
+)
+Service ID [hex]
+0x43
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+Parameters (in)
+id
+Identification of the transmitted I-PDU.
+▽
+△
+info
+Provides the destination buffer (SduDataPtr) and the number of
+bytes to be copied (SduLength). If not enough transmit data is
+available, no data is copied by the upper layer module and
+BUFREQ_E_BUSY is returned. The lower layer module may
+retry the call. An SduLength of 0 can be used to indicate state
+changes in the retry parameter or to query the current amount of
+available data in the upper layer module. In this case, the Sdu
+DataPtr may be a NULL_PTR.
+retry
+This parameter is used to acknowledge transmitted data or to
+retransmit data after transmission problems.
+If the retry parameter is a NULL_PTR, it indicates that the
+transmit data can be removed from the buffer immediately after it
+has been copied. Otherwise, the retry parameter must point to a
+valid RetryInfoType element.
+If TpDataState indicates TP_CONFPENDING, the previously
+copied data must remain in the TP buffer to be available for error
+recovery. TP_DATACONF indicates that all data that has been
+copied before this call is confirmed and can be removed from the
+TP buffer. Data copied by this API call is excluded and will be
+confirmed later. TP_DATARETRY indicates that this API call shall
+copy previously copied data in order to recover from an error. In
+this case TxTpDataCnt specifies the offset in bytes from the
+current data copy position.
+Parameters (inout)
+None
+Parameters (out)
+availableDataPtr
+Indicates the remaining number of bytes that are available in the
+upper layer module’s Tx buffer. availableDataPtr can be used by
+TP modules that support dynamic payload lengths (e.g. FrIsoTp)
+to determine the size of the following CFs.
+Return value
+BufReq_ReturnType
+BUFREQ_OK: Data has been copied to the transmit buffer
+completely as requested.
+BUFREQ_E_BUSY: Request could not be fulfilled, because the
+required amount of Tx data is not available. The lower layer
+module may retry this call later on. No data has been copied.
+BUFREQ_E_NOT_OK: Data has not been copied. Request failed.
+Description
+This function is called to acquire the transmit data of an I-PDU segment (N-PDU). Each call to
+this function provides the next part of the I-PDU data unless retry-&gt;TpDataState is TP_
+DATARETRY. In this case the function restarts to copy the data beginning at the offset from the
+current position indicated by retry-&gt;TxTpDataCnt. The size of the remaining data is written to
+the position indicated by availableDataPtr.
+Tags: atp.Status=draft
+Available via
+ISO15118Chrg.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -152,7 +275,7 @@ ISO15118Chrg.h
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ISO15118Charging.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ISO15118Charging.pdf#page=89" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ISO15118Charging.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_20_CanXL_Write</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANXLDriver.pdf</strong> (Seite 40)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANXLDriver.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANXLDriver.pdf</a></strong> (Seite 40)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -113,11 +114,102 @@ Types:
 • 01h (content based CAN XL frames)
 • 03h (tunneled CAN 2.0/FD frames)
 • further SDU Types defined in [2, CiA611-1]
-SDU Type 05h</div></section>
+SDU Type 05h (mapped tunneled 802.3 Ethernet frames) is not supported by this func-
+tion and is exclusively used by CanXL_Transmit().
+Specification for CAN XL Driver
+For CAN 2.0 and CAN FD frames, a CanHardwareObject is configured as CAN HTH,
+while for CAN XL frames a CanXLHardwareObject is configured as CAN XL HTHs.
+A CanHardwareObject and a CanXLHardwareObject may share the same hardware
+queue.
+[CP_SWS_CanXL_00121]
+Upstream requirements: SRS_Can_02001
+⌈When CanXL_Write() is called for transmitting a tunneled CAN 2.0/FD frame (SDU
+Type 03h), it is responsible to prepare the LLC data. Refer to [2, CiA611-1] for the
+structure. The LLC data byte 1 shall be assembled from:
+• ESI is always error active
+• BRS is always disabled
+• DLC of tunneled CAN 2.0/FD frame
+⌋
+For other SDU Types the SDU data is transferred directly to hardware.
+[CP_SWS_CanXL_00126] ⌈CanXL_Write() shall accept a null pointer as SDU (
+Can_PduType.Can_SduPtrType = NULL) if the trigger transmit API is enabled for
+this hardware object (CanTriggerTransmitEnable = TRUE).⌋
+[CP_SWS_CanXL_00127]
+⌈If
+the
+trigger
+transmit
+API
+is
+enabled
+for
+the
+hardware
+object,
+CanXL_Write()
+shall
+interpret
+a
+null
+pointer
+as
+SDU
+(
+Can_PduType.Can_SduPtrType = NULL) as request for using the trigger transmit
+interface. If so and the hardware object is free, CanXL_Write() shall call CanIf_
+TriggerTransmit() with the total size of the allocated message buffer to acquire
+the PDU’s data.⌋
+The function first checks if the hardware transmit object that is identified by the HTH is
+free and if another transmission request is ongoing for the same HTH.
+[CP_SWS_CanXL_00103] ⌈The function shall perform no actions if the hardware
+transmit object is busy with another transmit request for an L-PDU and shall return
+CAN_BUSY.⌋
+[CP_SWS_CanXL_00104]
+Upstream requirements: SRS_BSW_00312
+⌈The function shall return CAN_BUSY if a preemptive call of CanXL_Write() has
+been issued, that could not be handled reentrant (i.e. a call with the same HTH).⌋
+[CP_SWS_CanXL_00106]
+Upstream requirements: SRS_BSW_00369
+⌈If development error detection is enabled: CanXL_Write() shall raise the error
+CANXL_E_UNINIT if the driver is not yet initialized.⌋
+Specification for CAN XL Driver
+[CP_SWS_CanXL_00107]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled: The function shall raise the error CANXL_
+E_PARAM_HANDLE if the parameter Hth is not a configured CAN XL Hardware Transmit
+Handle.⌋
+[CP_SWS_CanXL_00109]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled: The function shall raise the error CANXL_
+E_INV_PARAM if the given SduType has the value 05h.⌋
+[CP_SWS_CanXL_00108]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled: If SDU Type has another value than 03h,
+the function shall raise the error CANXL_E_PARAM_DATA_LENGTH if the length is 0 or
+exceeding 2048.⌋
+[CP_SWS_CanXL_00116]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled: The function shall raise the error CANXL_
+E_INV_PARAM if the PduInfo is inconsistent according to CiA 611-1 SDU types chap-
+ter 5.⌋
+[CP_SWS_CanXL_00119]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled: The function shall raise the error CANXL_
+E_INV_PARAM if PduInfo-&gt;XLParams-&gt;Vcid is larger than 255.⌋
+[CP_SWS_CanXL_00110]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled:
+The function shall raise CANXL_E_-
+PARAM_POINTER if the parameter PduInfo is a null pointer.⌋
+[CP_SWS_CanXL_00112]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00369
+⌈If development error detection is enabled:
+The function shall raise CANXL_E_-
+PARAM_POINTER if the XLParams pointer is a null pointer.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +218,7 @@ SDU Type 05h</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANXLDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANXLDriver.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANXLDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

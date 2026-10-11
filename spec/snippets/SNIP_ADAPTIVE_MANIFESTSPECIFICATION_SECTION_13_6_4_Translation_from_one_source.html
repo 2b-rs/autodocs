@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_ADAPTIVE_MANIFESTSPECIFICATION_SECTION_13_6_4_Translation_from_one_source</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ManifestSpecification.pdf</strong> (Seite 700)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=700" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></strong> (Seite 700)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_03040" class="swsref"><code>TPS_SYST_03040</code></a></span>
         </div>
@@ -87,7 +88,36 @@ the event uv2. The event is part of a ServiceInterface that types the RPort-
 Prototype which defines the ara::com API at that RPortPrototype.
 It is the job of the application component code to use the ara::com API and fetch
 the information from the RPortPrototype and forward it to the PPortPrototype.
-In this exampl</div></section>
+In this example, it is not further defined how that forwarding is implemented, but for
+such a simple use-case the usage of a PassThroughSwConnector could be used to
+express the desired forwarding. For further details on this approach, refer to section
+13.7. Of course, also a custom code implementation can be used to fetch the data and
+forward it.
+At the PPortPrototype a ServiceInterface with an event uv3 is defined. This
+is the basis to provide the information is a service-oriented manner to further software
+components. What kind of network binding is used for the transport of the PPort-
+Prototype payload is not in scope of this example. However, the PPortPrototype
+could be mapped to any available kind of network binding available (SOME/IP, DDS,
+IPC, or even another service-signal-translation).
+Translation Executable
+Signal-Service-Translation
+Application
+Component
+P
+R
+Event uv2 {
+u : uint8
+v : sint16
+}
+Event uv3 {
+u : uint8
+v : uint16
+}
+ISignalIPdu uv1 {
+Signal u : uint8
+Signal v : sint16
+}
+Figure 13.22: Example signal-service-translation and forwarding from one source</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +130,7 @@ In this exampl</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=700" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

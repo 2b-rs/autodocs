@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_10_Distributed_Shared_Mode_Queues</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 442)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=442" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 442)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_06838" class="swsref internal-spec-ref"><code>SWS_Rte_06838</code></a></span>
+          <span>Ziel-Element: SWS_Rte_CONSTR_09102</span>
         </div>
       </div>
 
@@ -85,11 +86,120 @@ switches in the order they have been requested. As a result, it is required to h
 mechanism to define a FIFO order for the mode switches of at least a subset of the
 mode machine machines in the ECU.
 A similar issue occurs in multi core systems in which user components on multiple
-cores hav</div></section>
+cores have to react directly or indirectly on a mode switch. On one side it is already
+clear that in case mode disabling dependencies exist on multiple cores, to fulfill the
+requirements about the synchronous switching of these disabling dependencies, it
+is necessary to have one mode switch task per partition having mode disabling de-
+pendencies. But also in case there are SwcModeSwitchEvents in components of
+different partitions which react on switches of the same mode machine instance
+there have to be multiple tasks performing these switches as it is not legal to execute
+RunnableEntitys of a software component assigned to one partition in tasks be-
+longing to another partition. To avoid that one partition is already in the new state while
+the other one didn’t even start the transition, it is also necessary to synchronize the
+mode switch tasks of multiple partitions, especially if they reside on different cores.
+This is important for the same reason as above. A component might expect a certain
+behavior of the system in a certain state. If now one partitions is still in the old state
+while another one is already in the new state, the expectation does not match reality
+with the consequence of functional misbehavior.
+A distributed shared mode queue is characterized by a set of mode machine
+instances and a set of OsTasks in which the mode switches of the participating
+mode state machines will be executed.
+[SWS_Rte_06832]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈The RTE Generator shall retrieve the set of mode machine instances belong-
+ing to one distributed shared mode queue from the set of RteDSMQModeMa-
+chineInstanceRef.⌋
+[SWS_Rte_06833]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈The RTE Generator shall retrieve the set of DSMQ transition OsTasks belonging to
+one distributed shared mode queue from the set of RteDSMQOsTaskRefs.⌋
+The OsTasks participating in a single distributed shared mode queue may or
+may not belong to a separate partition. If such OsTasks are belonging to OsAppli-
+cations executed on the same micro controller core such DSMQ transition OsTasks
+have to be chained via the EcuC configuration. But not necessarily each partition will
+have an OsTask participating in a distributed shared mode queue.
+The OsTasks participating in a single distributed shared mode queue will only
+contain ExecutableEntitys mapped to this OsTasks via SwcModeSwitchEvents,
+BswModeSwitchEvents, ModeSwitchedAckEvents or BswModeSwitchedAck-
+Events referencing one of the mode machine instance participating in this dis-
+tributed shared mode queue.
+[SWS_Rte_CONSTR_09102] Exclusive usage of OsTasks used for distributed
+shared mode queue ⌈An OsTask belonging to a distributed shared mode
+queue shall have only mapped on-entry ExecutableEntitys, on-transition
+ExecutableEntitys,
+on-exit ExecutableEntitys,
+and
+ModeSwitchAck
+ExecutableEntitys to it which are triggered by mode machine instances be-
+longing to the identical distributed shared mode queue.⌋
+Thereby [SWS_Rte_06839] constraints the order of the event to task mappings.
+Similar to the behavior defined in [SWS_Rte_02665] the execution of the mode switch
+may be triggered for each partition in parallel. If the partitions are executed on the
+same micro controller core the order depends on the priorities of the OsTasks or on a
+configured task chaining. In case partitions are executed on different micro controller
+cores, execution of the on-entry ExecutableEntitys, on-transition Exe-
+cutableEntitys, and on-exit ExecutableEntitys may run concurrently.
+[SWS_Rte_06834]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈The RTE shall trigger all OsTasks belonging to a distributed shared mode
+queue simultaneously, except the ones which are chained after another OsTask be-
+longing to this distributed shared mode queue.⌋
+[SWS_Rte_06835]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈The RTE shall execute the mode switches of the mode machine instances par-
+ticipating in a distributed shared mode queue in the order of the calls of the
+related Rte_Switch or SchM_Switch APIs.⌋
+Thereby the queued mode switches of the mode machine instances of the same
+distributed shared mode queue are processed one after the other according
+the FIFO principle.
+[SWS_Rte_06838]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈The RTE shall switch at most one mode machine instance of the set of mode
+machine instances participating in a distributed shared mode queue at the
+same time into transition.⌋
+The implementation of the behavior defined in [SWS_Rte_06835] requires a single
+mode queue which handles the queuing of the mode switches for all mode machine
+instances.
+In opposite to the mode machine instance local queues such a
+shared queue has to memorize which transition in which mode machine instance
+was notified.
+[SWS_Rte_06836]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈The size of the mode queue of the distributed shared mode queue shall be
+the sum of the individual queue lengths of all mode machine instances participating in
+this distributed shared mode queue.⌋
+Nevertheless the RTE has still to check the individual queue sizes of each mode ma-
+chine instances. This ensures, that each mode manager can always enqueue
+the maximum number of mode switch notifications reserved for this mode
+machine instances.
+[SWS_Rte_06840]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈If a new mode switch notification is received the RTE shall check if not
+more mode switch notifications of a particular mode machine instance
+are queued than the queue size of this particular mode machine instance sup-
+ports. If the queue size would be exceeded, the RTE shall discard the received notifi-
+cation.⌋
+In this case, Rte_Switch will return an error, see [SWS_Rte_02675].
+The behavior described in [SWS_Rte_02665] has the consequence, that RTE / Ba-
+sic Software Scheduler deactivates the previous mode disablings asynchronous on
+each core. But one major use case of distributed shared mode queues is the
+synchronization of activities across partitions. Therefore previous mode disablings de-
+activated by RTE after all on-exit ExecutableEntitys are executed.
+[SWS_Rte_06837]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00310
+⌈During a transition of a mode machine instance belonging to one distributed
+shared mode queue following steps are applicable:
+1. [SWS_Rte_02661],
+2. [SWS_Rte_07152]
+3. [SWS_Rte_02562],
+4. [SWS_Rte_07153],
+5. [SWS_Rte_02707],
+6. [SWS_Rte_02708],
+7. [SWS_Rte_02564],</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">single transition active in distributed queue</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_CONSTR_09102] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -98,7 +208,7 @@ cores hav</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=442" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -110,15 +220,15 @@ cores hav</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_06838" class="swsref internal-spec-ref"><code>SWS_Rte_06838</code></a></td>
+              <td>SWS_Rte_CONSTR_09102</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

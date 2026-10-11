@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_4_3_8_Service_08_Request_Control_of_On_Board_System_Test_or_Component</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 235)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=235" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 235)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_01130" class="swsref"><code>TPS_DEXT_01130</code></a></span>
         </div>
@@ -87,7 +88,22 @@ To provide OBD Service $08, the Dcm relies on external functions configured per 
 [SWS_Dcm_00418] ⌈On reception of an OBD Service $08 request with one or more
 "availability TIDs" as parameter, the Dcm module shall respond with the corresponding
 supported (=configured) TIDs.⌋
-[SWS_Dcm_00947] ⌈On reception of an OBD Service $08 request "availability TIDs"</div></section>
+[SWS_Dcm_00947] ⌈On reception of an OBD Service $08 request "availability TIDs"
+together with other TIDs as parameter, the Dcm module shall ignore the request.⌋
+Manager
+[SWS_Dcm_00419] ⌈On reception of an OBD Service $08 request with a TID that is not
+an "availability TID", the Dcm module shall invoke the configured Xxx_RequestControl()
+function with the following parameters values: InBuffer: data contained in the OBD
+request (the size of which must correspond to the size configured in the Dcm module’s
+configuration) OutBuffer: space in which the RequestControl function can store its
+result (the size of the buffer is taken from the Dcm module’s configuration)⌋
+[SWS_Dcm_00420] ⌈After the execution of [SWS_Dcm_00419], the Dcm module shall
+respond to the service request using the data stored by the RequestControl function in
+the OutBuffer.⌋
+[SWS_Dcm_00948] ⌈As specified in [4, SAE J1979], unused data bytes shall be filled
+with $00.⌋
+[SWS_Dcm_01192] ⌈If Xxx_RequestControl() doesn’t return E_OK, the Dcm shall re-
+turn NRC 0x22.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +116,7 @@ supported (=configured) TIDs.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=235" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANTRCV_SECTION_8_3_4_CanTrcv_GetBusWuReason</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANTransceiverDriver.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANTransceiverDriver.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransceiverDriver.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -117,11 +118,31 @@ The ability to detect and differentiate the possible wake up reasons depends str
 on the CAN transceiver hardware.
 Be aware if more than one bus is available, each bus may report a different wake up
 reason. E.g. if an ECU has CAN, a wake up by CAN may occur and the incoming data
-may cause</div></section>
+may cause an internal wake up for another CAN bus.
+The CAN transceiver driver has a "per bus" view and does not vote the more important
+reason or sequence internally. The same may be true if e.g. one transceiver controls
+the power supply and the other is just powered or un-powered.
+The number of supported busses is statically set in the configuration phase.
+[SWS_CanTrcv_00116] ⌈If there is no/incorrect communication to the transceiver, the
+function CanTrcv_GetBusWuReason shall report the runtime error code CANTRCV_
+E_NO_TRCV_CONTROL to the Default Error Tracer and return E_NOT_OK.⌋
+[SWS_CanTrcv_00125] ⌈If development error detection for the module CanTrcv is
+enabled:
+If called before the CanTrcv module has been initialized, the function
+CanTrcv_GetBusWuReason shall raise development error CANTRCV_E_UNINIT oth-
+erwise (if DET is disabled) return E_NOT_OK.⌋
+[SWS_CanTrcv_00130] ⌈If development error detection for the module CanTrcv is en-
+abled: If called with an invalid Transceiver number, the function CanTrcv_Get-
+BusWuReason shall raise development error CANTRCV_E_INVALID_TRANSCEIVER
+otherwise (if DET is disabled) return E_NOT_OK.⌋
+[SWS_CanTrcv_00133] ⌈If development error detection for the module CanTrcv is en-
+abled: If called with reason = NULL, the function CanTrcv_GetBusWuReason shall
+raise the development error CANTRCV_E_PARAM_POINTER otherwise (if DET is dis-
+abled) return E_NOT_OK.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -130,7 +151,7 @@ may cause</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANTransceiverDriver.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

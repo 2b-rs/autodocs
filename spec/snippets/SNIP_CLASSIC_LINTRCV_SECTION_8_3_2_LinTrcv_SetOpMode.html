@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LINTRCV_SECTION_8_3_2_LinTrcv_SetOpMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINTransceiverDriver.pdf</strong> (Seite 25)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINTransceiverDriver.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINTransceiverDriver.pdf</a></strong> (Seite 25)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -115,11 +116,71 @@ TRCV_MODE_SLEEP.⌋
 state of channel LinNetwork to the value of LINTRCV_TRCV_MODE_STANDBY if
 one of the following conditions is fulfilled:
 a) the channel LinNetwork is in mode LINTRCV_TRCV_MODE_SLEEP and the op-
-tion</div></section>
+tional transition from this mode to LINTRCV_TRCV_MODE_STANDBY is enabled.
+b) the channel LinNetwork is in mode LINTRCV_TRCV_MODE_NORMAL and the
+optional transition from this mode to LINTRCV_TRCV_MODE_STANDBY is enabled.⌋
+[SWS_LinTrcv_00110] ⌈The function LinTrcv_SetOpMode shall switch the internal
+state of channel LinNetwork to the value of LINTRCV_TRCV_MODE_SLEEP if one
+of the following conditions is fulfilled:
+a) the channel LinNetwork is in mode LINTRCV_TRCV_MODE_NORMAL
+b) the channel LinNetwork is in mode LINTRCV_TRCV_MODE_STANDBY and the
+optional transition from this mode to LINTRCV_TRCV_MODE_SLEEP is enabled.⌋
+[SWS_LinTrcv_00147] ⌈The function LinTrcv_SetOpMode shall switch the internal
+state of channel LinNetwork to the value of LINTRCV_TRCV_MODE_NORMAL if
+one of the following conditions is fulfilled:
+a) the channel LinNetwork is in mode LINTRCV_TRCV_MODE_SLEEP
+b) the channel LinNetwork is in mode LINTRCV_TRCV_MODE_STANDBY and the
+optional transition from this mode to LINTRCV_TRCV_MODE_NORMAL is enabled.⌋
+[SWS_LinTrcv_00111] ⌈This API is applicable to each transceiver with each value
+for parameter LinTrcv_SetOpMode regardless of whether the transceiver hardware
+supports these modes or not. This is to simplify the view of the LinIf to the assigned
+bus.⌋
+[SWS_LinTrcv_00112] ⌈If the requested mode is not supported by the underlying
+transceiver hardware, the function LinTrcv_SetOpMode shall return E_NOT_OK.⌋
+[SWS_LinTrcv_00113] ⌈If there is no / incorrect communication to the transceiver, the
+function LinTrcv_SetOpMode shall return E_NOT_OK.⌋
+[SWS_LinTrcv_00114] ⌈If development error detection for the module LinTrcv is en-
+abled:
+If the function LinTrcv_SetOpMode is called with OpMode == LINTRCV_TRCV_
+MODE_STANDBY and the channel LinNetwork is in mode LINTRCV_SLEEP but
+the optional transition from LINTRCV_SLEEP to LINTRCV_STANDBY is not enabled,
+the function LinTrcv_SetOpMode shall report the development error LINTRCV_E_
+INVALID_TRCV_OPMODE.⌋
+[SWS_LinTrcv_00148] ⌈If development error detection for the module LinTrcv is en-
+abled:
+If the function LinTrcv_SetOpMode is called with OpMode == LINTRCV_TRCV_
+MODE_STANDBY and the channel LinNetwork is in mode LINTRCV_NORMAL
+but the optional transition from LINTRCV_NORMAL to LINTRCV_STANDBY is not
+enabled, the function LinTrcv_SetOpMode shall report the development error
+LINTRCV_E_INVALID_TRCV_OPMODE.⌋
+[SWS_LinTrcv_00115] ⌈If development error detection for the module LinTrcv is en-
+abled:
+If optional transition from LINTRCV_STANDBY to LINTRCV_SLEEP is not enabled
+and the function LinTrcv_SetOpMode is called with OpMode == LINTRCV_TRCV_
+MODE_SLEEP and the channel LinNetwork is not in mode LINTRCV_TRCV_
+MODE_NORMAL, the function LinTrcv_SetOpMode shall report the development
+error LINTRCV_E_TRCV_NOT_NORMAL.⌋
+[SWS_LinTrcv_00149] ⌈If development error detection for the module LinTrcv is en-
+abled:
+If optional transition from LINTRCV_STANDBY to LINTRCV_NORMAL is not enabled
+and the function LinTrcv_SetOpMode is called with OpMode == LINTRCV_TRCV_
+MODE_NORMAL and the channel LinNetwork is not in mode LINTRCV_TRCV_
+MODE_SLEEP, the function LinTrcv_SetOpMode shall report the development er-
+ror LINTRCV_E_TRCV_NOT_SLEEP.⌋
+[SWS_LinTrcv_00116] ⌈If development error detection for the module LinTrcv is en-
+abled:
+If called before the LinTrcv module has been initialized, the function LinTrcv_SetOp-
+Mode shall report the development error LINTRCV_E_UNINIT.⌋
+[SWS_LinTrcv_00117] ⌈If development error detection for the module LinTrcv is en-
+abled:
+If called with an invalid network number LinNetwork, the function LinTrcv_SetOp-
+Mode shall report the development error LINTRCV_E_INVALID_LIN_NETWORK.⌋
+[SWS_LinTrcv_00157] ⌈A mode request of the current mode is allowed and shall not
+lead to an error even if DET is enabled.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -128,7 +189,7 @@ tion</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINTransceiverDriver.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

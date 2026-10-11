@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_7_3_4_2_Requirements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 79)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=79" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 79)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00368" class="swsref internal-spec-ref"><code>SWS_Os_00368</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00369" class="swsref internal-spec-ref"><code>SWS_Os_00369</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,40 @@ Category 2 ISR ends with locked interrupts or allocated resources
 Upstream requirements: SRS_BSW_00323
 ⌈If a Category 2 ISR calls DisableAllInterrupts / SuspendAllInterrupts /
 SuspendOSInterrupts and ends (returns) without calling the corresponding En-
-ableAllInterrupts / ResumeAllInterrupts / ResumeOSInter</div></section>
+ableAllInterrupts / ResumeAllInterrupts / ResumeOSInterrupts, the Op-
+erating System module shall perform the missing service and shall call the ErrorHook
+(if configured) with the status E_OS_DISABLEDINT.⌋
+[SWS_Os_00369]
+Upstream requirements: SRS_BSW_00323
+⌈If a Category 2 ISR calls GetResource and ends (returns) without calling the corre-
+sponding ReleaseResource, the Operating System module shall perform the Re-
+leaseResource call and shall call the ErrorHook (if configured) with the status
+E_OS_RESOURCE.⌋
+PostTaskHook called during ShutdownOS
+[SWS_Os_00071]
+Upstream requirements: SRS_Os_00097
+⌈If the PostTaskHook is configured, the Operating System module shall not call the
+hook if ShutdownOS is called.⌋
+Tasks/ISRs calls EnableAllInterrupts/ResumeAllInterrupts/ResumeOSIn-
+terrupts without a corresponding disable
+[SWS_Os_00092]
+Upstream requirements: SRS_Os_11009
+⌈If EnableAllInterrupts / ResumeAllInterrupts / ResumeOSInterrupts
+are called and no corresponding DisableAllInterrupts / SuspendAllInter-
+rupts / SuspendOSInterrupts was done before, the Operating System module
+shall not perform this Operating System service.⌋
+Tasks/ISRs calling OS services when DisableAllInterupts/SuspendAllInterrupts/
+SuspendOSInterrupts called
+[SWS_Os_00093]
+Upstream requirements: SRS_Os_11009, SRS_Os_11013
+⌈If interrupts are disabled/suspended by a Task/ISR/Hook and the Task/ISR/Hook
+calls any Operating System service (excluding the interrupt services) then the Operat-
+ing System module shall ignore the service AND shall return E_OS_DISABLEDINT if
+the service returns a StatusType value.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Os_00368] im Text von SWS_OS.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Os_00369] im Text von SWS_OS.</p>
       </section>
 
       <section class="snip-card">
@@ -108,7 +138,7 @@ ableAllInterrupts / ResumeAllInterrupts / ResumeOSInter</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=79" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -120,7 +150,7 @@ ableAllInterrupts / ResumeAllInterrupts / ResumeOSInter</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Os_00368" class="swsref internal-spec-ref"><code>SWS_Os_00368</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00369" class="swsref internal-spec-ref"><code>SWS_Os_00369</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

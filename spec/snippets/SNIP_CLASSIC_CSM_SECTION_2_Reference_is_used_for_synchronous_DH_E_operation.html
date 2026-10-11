@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_2_Reference_is_used_for_synchronous_DH_E_operation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TcpIp.pdf</strong> (Seite 45)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=44" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></strong> (Seite 45)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_05031" class="swsref"><code>TPS_SYST_05031</code></a></span>
         </div>
@@ -92,7 +93,120 @@ shake/ TcpIpTlsCsmKeyExchangeSignatureGenerateKeyRef holding a refer-
 ence to the certificate private key. If the key is not statically assigned to the job it
 must be copied accordingly (see Example #1). The resulting data is sent to the TLS
 client, who verifies the certificate and uses the key of the certificate to verify the pro-
-vided ECDSA signature</div></section>
+vided ECDSA signature from the server using TcpIpTlsHandshake/ TcpIpTlsC-
+smKeyExchangeSignatureVerifyKeyRef. Afterwards, if successful, calculates its
+own DH parameter and provides this to the server. Both, TLS client and server will
+then calculate the pre-master secret using Csm_KeyExchangeCalcSecret().
+Example #3:
+The selected ciphersuite defines a pre-shared key according to IETF RFC 4279. The
+server provides the psk_identity_hint in the ServerKeyExchange message. This can ei-
+ther be derived from the TcpIpTlsPskIdentity/ TcpIpTlsPresharedKeyIden-
+tityHint or, if not specified, it can be queried from the user callback TcpIpTlsP-
+skGetKeyIdentityHintFunc. The TLS client uses the hint to select a pre-shared
+key that is known by both the TLS Client and this TLS Server. If one key can uniquely
+be identified with the identity hint, then the TcpIpTlsPskIdentity configuration can
+be used as an alternative to the callback functions. In this case, the selected key
+can be determined by TcpIpTlsPresharedKeyIdentityHint and the TcpIpTl-
+sPresharedKeyIdentity with TcpIpTlsPresharedKeyCsmKeyRef can be used
+further. A more flexible solution provides the usage of the callback TcpIpTlsPskGet-
+ClientKeyIdentityFunc that allows the selection of a key with its identity at run-
+time. After the key and its identity has been selected on the client side, the psk_identity
+will be provided back to the TLS server through the ClientKeyExchange message. On
+the TLS server side, the corresponding key can be identified in the same way, either
+through the static configuration of TcpIpTlsPskIdentity/ TcpIpTlsPreshared-
+KeyIdentity or can be queried through a callback function determined by TcpIpTl-
+sPskGetServerKeyIdentityFunc on server side. After the key has been selected,
+the master secret can be determined with the corresponding CSM jobs that are allo-
+cated in the TcpIpTlsHandshake container.
+[SWS_TcpIp_00341]
+⌈TLS
+shall
+use
+TcpIpTlsHandshake
+/TcpIpTlsC-
+smHashVerifyJobRef to calculate the hash over the handshake messages
+which is provided with the finish handshake message.⌋
+[SWS_TcpIp_00347] ⌈TLS shall use TcpIpTlsCsmPrfMacJobRef to calculate the
+master secret. The configuration item TcpIpTlsCsmPRFSupportType shall specify
+how the CSM job supports the generation of the master secret.⌋
+If TcpIpTlsCsmPRFSupportType is set to TLS_PRF_CSM_NO_SUPPORT then
+TcpIpTlsCsmPrfMacJobRef
+references
+a
+job
+for
+MAC
+generation.
+If
+it
+is
+set
+to
+TLS_PRF_CSM_INOUT_REDIRECT_SUPPORT,
+then
+the
+re-direction
+support
+mentioned
+below
+shall
+be
+used.
+If
+the
+configuration
+is
+set
+to
+TLS_PRF_CSM_FULL_SUPPORT then the CSM job will generate the master se-
+cret completely on its own. The TLS just need to call the job and the master secret
+will be available in the element ID #1 of TcpIpTlsCsmMasterSecretKeyRef. A key
+distribution to the worker jobs must be done in any case.
+It is recommended to use input and output re-direction for the TcpIpTlsCsmPrf-
+MacJobRef, that was introduced in CSM with AUTOSAR V4.4.
+This allows to
+leave the master secret and intermediate results of the calculation within the crypto
+driver (e.g.
+in HSM). The key elements of TcpIpTlsCsmPrfMacKeyRef is used
+for input and TcpIpTlsCsmMasterSecretKeyRef as output reference for this job.
+Csm_KeyElementSet() is used for initial value settings, Csm_KeyCopy() and Csm_
+KeyElementCopyPartial() are used to set-up the input values for the job opera-
+tion. Csm_KeyElementCopyPartial() is finally used to distribute the master secret
+results to the TcpIpTlsCiphersuiteWorker key references that are used by the
+worker jobs during application data transmission.
+[SWS_TcpIp_00312] ⌈If TcpIpTlsServerNameIdentification is configured for
+a TLS connection the configured name shall be added to the Client Hello message as
+the server name identification (SNI).⌋
+[SWS_TcpIp_00313] ⌈If a TLS server receives a ClientHello message that contains
+a server name identification with length greater than 0 the server shall search in
+TcpIpTlsCertificateIdentity for a matching identity reference and shall pro-
+vide the certificate that is located in this container during the handshake.⌋
+[SWS_TcpIp_00314] ⌈The time stamp information that is contained in the ClientHello
+message shall be provided through the configured TcpIpTlsConnectionGetTime-
+Func callout function.⌋
+[SWS_TcpIp_00325]
+Upstream requirements: SRS_Eth_00141, SRS_Eth_00137
+⌈If a ciphersuite is used for pre-shared keys and TcpIpTlsUsePresharedKeys is set
+to TRUE, callback functions shall provide the necessary information on the TLS client
+and the TLS server side to select the pre-shared keys according to IETF RFC 4279.
+The callbacks are used to provide the identity hint and eventually the key identification
+during the handshake. The callback functions are used to select the CSM key that is
+used for further processing. Alternatively, if callback functions are not configured, the
+static parameter configuration from TcpIpTlsPskIdentity can be used.⌋
+[SWS_TcpIp_00326]
+Upstream requirements: SRS_Eth_00135
+⌈TLS shall be able to open and maintain a maximum number of connections as defined
+in TcpIpTlsMaxConnections.⌋
+[SWS_TcpIp_00327]
+Upstream requirements: SRS_Eth_00136
+⌈TCP data streams shall be segmented by TLS into fragments. The maximum size of
+a fragment shall be used as configured in TcpIpTlsMaxFragmentLength. A TCP
+socket must be able to transmit at least such a fragment within one segment.⌋
+[SWS_TcpIp_00348] ⌈On reception of a TLS "close_notify" message the TLS connec-
+tion shall be closed and all security related resources shall be destroyed. It shall not be
+possible to perform further plain text communication through TCP on this socket after
+the TLS connection was closed. Thus, it is recommended to close the TCP socket,
+too.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +219,7 @@ vided ECDSA signature</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TcpIp.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=44" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

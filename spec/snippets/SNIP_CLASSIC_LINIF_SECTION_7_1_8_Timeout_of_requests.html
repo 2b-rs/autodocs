@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LINIF_SECTION_7_1_8_Timeout_of_requests</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINStateManager.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINStateManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINStateManager.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_LinSM_00175" class="swsref internal-spec-ref"><code>SWS_LinSM_00175</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_LinSM_00304" class="swsref internal-spec-ref"><code>SWS_LinSM_00304</code></a></span>
         </div>
       </div>
 
@@ -86,11 +87,48 @@ tionTimeout shall have a time that is either 0 or divisible by the LinSM_MainFun
 [SWS_LinSM_00100] ⌈Before the LinSM calls LinIf_Wakeup on a channel it shall start
 a wakeup confirmation timer for the according channel with the configured timeout
 parameter LinSMConfirmationTimeout if LinSMConfirmationTimeout &gt; 0.⌋
-[SWS_LinSM_00154] ⌈If LinSM_WakeupConfirmation is called on a channe</div></section>
+[SWS_LinSM_00154] ⌈If LinSM_WakeupConfirmation is called on a channel before
+the wakeup confirmation timer has expired on the according channel LinSM shall stop
+the timer.⌋
+[SWS_LinSM_00102] ⌈If a wakeup confirmation timer elapses (i.e. no wakeup con-
+firmation occurred) and the maximum number of retries (LinSMModeRequestRepeti-
+tionMax) has been reached and LinSMDevErrorDetect (ECUC_LinSM_00206) is set to
+TRUE, the LinSM module shall report LINSM_E_CONFIRMATION_TIMEOUT to DET.⌋
+Making the timeout optional enhances implementation size, if the timeout is not re-
+quired:
+Note: If the configuration parameter LinSMConfirmationTimeout is set to zero the
+wakeup confirmation timer is not used, and hence a timeout cannot occur. This means
+that requirement [SWS_LinSM_00102] will not happen.
+[SWS_LinSM_00304] ⌈If a wakeup confirmation timer elapses (i.e. no wakeup con-
+firmation occurred), LinSMNodeType is set to MASTER and ComM request is still
+COMM_FULL_COMMUNICATION then LinIf_Wakeup shall be called.⌋
+Note:
+LinSM stops to retry when confirmation callback LinSM_WakeupConfirma-
+tion (SWS_LinSM_00132) occurs or timeout parameter LinSMConfirmationTimeout
+(ECUC_LinSM_00144) is expired and ComM requests COMM_NO_COMMUNICA-
+TION.
+[SWS_LinSM_00235] ⌈If a wakeup confirmation timer elapses (i.e. no wakeup con-
+firmation occurred), the maximum number of retries (LinSMModeRequestRepetition
+Max) has not been reached, LinSMNodeType is set to Slave and ComM request is still
+COMM_FULL_COMMUNICATION then LinIf_Wakeup shall be called.⌋
+[SWS_LinSM_00236] ⌈If a wakeup confirmation timer elapses (i.e. no wakeup con-
+firmation occurred), the maximum number of retries (LinSMModeRequestRepetition
+Max) has been reached, LinSMNodeType is set to Slave then LinSM shall wait the
+silence-after-wakeup time (LinSMSilenceAfterWakeupTimeout) and afterwards restart
+the wakeup process by
+• calling LinIf_Wakeup if ComM request is still COMM_FULL_COMMUNICATION.
+• resetting the counter for maximum number of retries.
+⌋
+[SWS_LinSM_00237] ⌈If a wakeup confirmation timer elapses (i.e. no wakeup confir-
+mation occurred), the maximum number of retries (LinSMModeRequestRepetitionMax)
+has been reached, LinSMNodeType is set to Slave, the silence-after-wakeup time (Lin
+SMSilenceAfterWakeupTimeout) has not expired and ComM requests COMM_FULL_
+COMMUNICATION then the call of LinIf_Wakeup shall be delayed to the expiration of
+the silence-after-wakeup time.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_LinSM_00175] im Text von SWS_LINStateManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_LinSM_00304] im Text von SWS_LINStateManager.</p>
       </section>
 
       <section class="snip-card">
@@ -99,7 +137,7 @@ parameter LinSMConfirmationTimeout if LinSMConfirmationTimeout &gt; 0.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINStateManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -111,7 +149,7 @@ parameter LinSMConfirmationTimeout if LinSMConfirmationTimeout &gt; 0.⌋
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_LinSM_00175" class="swsref internal-spec-ref"><code>SWS_LinSM_00175</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_LinSM_00304" class="swsref internal-spec-ref"><code>SWS_LinSM_00304</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

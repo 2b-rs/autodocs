@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_10_1_De_authentication</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 145)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=145" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 145)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dcm_CONSTR_6095</span>
         </div>
@@ -89,7 +90,33 @@ is travelled.
 The unit of the distance is project specific, the Dcm only compares a
 distance provided by a data element to an internal configured value. The general idea
 is to reuse the same distance information that is also provided to the Dem to calculate
-certain PIDs values. It is recommended to use a defin</div></section>
+certain PIDs values. It is recommended to use a definition that is compatible to SAE
+J1979-DA. AUTOSAR does not define a unit or resolution for the value retrieved by
+DcmDspAuthenticationMileageInformation. This is intentionally left open as
+integration aspect, so it allows the Dcm to adapt to any existing distance information.
+The offset limit defined by DcmDspAuthenticationMileageOffsetLimit needs
+to take the current resolution into account.
+[SWS_Dcm_01566]Authentication distance supervision ⌈If DcmDspAuthentica-
+tionMileageOffsetLimit is configured and DcmDspAuthenticationPersist-
+StateModeRuleRef is evaluated to false, the Dcm shall monitor the travelled dis-
+tance with active authenticated state and return to de-authenticated state if the current
+DcmDspAuthenticationMileageInformation is greater than the DcmDspAu-
+thenticationMileageInformation when the authenticated state was reached
+plus the value of DcmDspAuthenticationMileageOffsetLimit.⌋
+[SWS_Dcm_CONSTR_06114] Complete distance offset configuration ⌈The pa-
+rameters DcmDspAuthenticationMileageOffsetLimit and DcmDspAuthen-
+ticationMileageInformation are always needed together, thus if one of the pa-
+rameters is configured both parameters are required.⌋
+Manager
+[SWS_Dcm_CONSTR_06115] Limiting data configuration for distance informa-
+tion ⌈A DcmDspData that is referred by DcmDspAuthenticationMileageInfor-
+mation shall have the following restricted settings:
+• DcmDspDataConditionCheckReadFnc not configured
+• DcmDspDataConditionCheckReadFncUsed not configured
+• DcmDspDataType set to UINT32
+• DcmDspDataUsePort set to USE_DATA_SENDER_RECEIVER, USE_DATA_-
+SYNCH_CLIENT_SERVER, USE_DATA_SYNCH_FNC or USE_ECU_SIGNAL
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +129,7 @@ certain PIDs values. It is recommended to use a defin</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=145" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

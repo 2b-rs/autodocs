@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: keym</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_8_3_2_3_KeyM_Update</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 55)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 52)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00077" class="swsref internal-spec-ref"><code>SWS_KeyM_00077</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00156" class="swsref internal-spec-ref"><code>SWS_KeyM_00156</code></a></span>
         </div>
       </div>
 
@@ -121,11 +122,114 @@ E_BUSY: Service could not be accepted because another
 operation is already ongoing. Try next time.
 KEYM_E_PARAMETER_MISMATCH: Parameter do not match with
 expected value.
-KEYM_E_KEY_CERT_SIZE_MISMATCH: Parameter</div></section>
+KEYM_E_KEY_CERT_SIZE_MISMATCH: Parameter size doesn’t
+match
+Description
+This function is used to initiate the key generation or update process.
+Available via
+KeyM.h
+⌋
+By the call of this function a key update operation is requested.
+[SWS_KeyM_00091]
+Upstream requirements: SRS_CryptoStack_00113,
+SRS_CryptoStack_00105,
+SRS_Cryp-
+toStack_00027, SRS_CryptoStack_00010
+⌈If a KeyName is provided the Key Manager shall search for an element in the container
+that matches /KeyMCryptoKey/KeyMCryptoKeyName. If found, the CryptoKeyId shall
+be used as KeyID and this container shall be used for reference of any further key
+update operation (derive or store the key value).⌋
+[SWS_KeyM_00154]
+Upstream requirements: SRS_CryptoStack_00114
+⌈If either KeyNamePtr is not valid or KeyNameLength is 0 and KeyMCryptoKeyCrypto
+Props is defined then the Key Manager shall interpret the RequestData as M1M2M3
+values of a SHE key.
+The Key Manager shall extract bits 121..124 located in Re-
+questDataPtr (if RequestDataLength indicates enough data) and shall check for a cor-
+responding value in KeyMCryptoKeyCryptoProps. If a matching value is found then
+CryptoKeyId of this container shall be used as KeyID and this container shall be used
+for reference of any further key update operation (derive or store the key value).⌋
+[SWS_KeyM_00155]
+Upstream requirements: SRS_CryptoStack_00086, SRS_CryptoStack_00096
+⌈If a KeyID could not be identified and KeyMCryptoKeyHandlerUpdateEnabled is set to
+FALSE then KeyM_Update() shall not perform a key update operation and shall return
+KEYM_E_PARAMETER_MISMATCH.⌋
+[SWS_KeyM_00092]
+Upstream requirements: SRS_CryptoStack_00107
+⌈If KeyMCryptoKeyHandlerUpdateEnabled is set to TRUE to perform a key handler
+operation then KeyM_Update() shall call KeyM_KH_Update(). The parameter Request
+DataPtr, RequestDataLength, KeyName and KeyNameLength shall be passed on to
+the key handler. If a KeyMCryptoKey container was identified in one of the previous
+steps then the KeyMCryptoKeyID shall be provided with the KeymId parameter. Other-
+wise, the value 0xFFFF shall be used.⌋
+[SWS_KeyM_00098]
+Upstream requirements: SRS_CryptoStack_00117, SRS_CryptoStack_00118
+⌈If no key handler is configured for the key update operation (KeyMCryptoKeyHandler
+UpdateEnabled is set to FALSE) and a CryptoKey container was identified, a key up-
+date operation shall be performed according to the configuration (derive or store key in
+CSM). stored according to the configuration. Thus, if KeyMCryptoKeyStorage is set to
+KEYM_STORAGE_IN_NVM is set, the ResultData and length for this key ID shall be
+stored in the configured NVM block. Otherwise, if KEYM_STORAGE_IN_CSM is set,
+the CSM is responsible to store the key data after it has been set.⌋
+[SWS_KeyM_00099]
+Upstream requirements: SRS_CryptoStack_00096, SRS_CryptoStack_00107
+⌈If a key was identified by its ID and either RequestDataPtr and RequestDataLength
+indicates data or KeyM_KH_Update() has returned E_OK and ResultDataPtr and Re-
+sultDataLengthPtr indicates data and the configuration /KeyMCryptoKey/KeyMCrypto
+KeyGenerationType is set to KEYM_STORED_KEY, then this function shall call Csm_
+KeyElementSet() to provide the data to CSM. The key element ID is always 1 and the
+KeyMCryptoKeyCsmKeyTargetRef is used to identify the target key.⌋
+[SWS_KeyM_00100]
+Upstream requirements: SRS_CryptoStack_00107, SRS_CryptoStack_00027
+⌈If a CryptoKey container was found and either RequestDataPtr and RequestData
+Length provides data or KeyM_KH_Update() has returned E_OK and ResultDataPtr
+and ResultDataLengthPtr provides data and the configuration /KeyMCryptoKey/Key
+MCryptoKeyGenerationType is set to KEYM_DERIVE_KEY, then the data shall be set
+to the key element CRYPTO_KE_KEYDERIVATION_PASSWORD. If the configuration
+value KeyMCryptoKeyGenerationInfo is set, then this value shall be used as the salt for
+the target key and shall set the value to the key element ID CRYPTO_KE_KEYDERIVA-
+TION_SALT. The KeyMCryptoKeyCsmKeyTargetRef is used to identify the target key
+and KeyMCryptoKeyCsmKeySourceDeriveRef as the source key for the derivation and
+the function Csm_KeyDerive() shall be called accordingly.⌋
+[SWS_KeyM_00101]
+Upstream requirements: SRS_CryptoStack_00107
+⌈If a key update operation was successful and KeyMCryptoKeyStartFinalizeFunction
+Enabled is set to FALSE, then the function Csm_KeySetValid() shall be called immedi-
+ately after the key element has been successfully set in CSM.⌋
+[SWS_KeyM_00102]
+Upstream requirements: SRS_CryptoStack_00107
+⌈If a key update operation was successfully performed through CSM operation and
+KeyMCryptoKeyStartFinalizeFunctionEnabled is set to TRUE, then a flag shall be set
+for this key to indicate, that Csm_KeySetValid() for the key shall be called during final-
+ization of the key update operation.⌋
+[SWS_KeyM_00094]
+Upstream requirements: SRS_CryptoStack_00101
+⌈KeyM_Update() runs in asynchronous mode. Note that the key handler KeyM_KH_
+Update() is called in synchronous mode. It shall be called therefore from within the
+background task.⌋
+[SWS_KeyM_00095]
+Upstream requirements: SRS_CryptoStack_00106, SRS_CryptoStack_00107
+⌈If a single key update operation was finished with success or a key update operation
+has failed because a function call to CSM or key handler has not returned E_OK or Key
+M_KH_Update() has provided the operation type KEYM_KH_UPDATE_FINISH, the
+callback function KeyM_CryptoKeyUpdateCallbackNotification() has to be called.⌋
+[SWS_KeyM_00156]
+Upstream requirements: SRS_CryptoStack_00107, SRS_CryptoStack_00106
+⌈The function that calls KeyM_Update() shall provide a pointer to a buffer with Re-
+sultDataPtr. If KeyM_Update() accepts the operation by returning E_OK the function
+shall not touch this buffer until the callback notification KeyM_CryptoKeyUpdateCall-
+backNotification() has been called. Any results from the KeyM_Update() operation will
+be copied into this buffer. The same buffer pointer provided with the call to KeyM_Up-
+date() (ResultDataPtr) will be provided as ResultDataPtr with the callback notification.
+The callback also indicates the length of the result data and the overall result of the
+update operation.⌋
+Info:
+The result data is either the result from the key handler or, if no key handler is used,
+contains the M4M5 for a SHE key.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Update operation callback mechanism</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_KeyM_00156] im Text von SWS_KeyManager.</p>
       </section>
 
       <section class="snip-card">
@@ -134,11 +238,11 @@ KEYM_E_KEY_CERT_SIZE_MISMATCH: Parameter</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=52" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 55</td>
+              <td>Seite 52</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -146,15 +250,15 @@ KEYM_E_KEY_CERT_SIZE_MISMATCH: Parameter</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00077" class="swsref internal-spec-ref"><code>SWS_KeyM_00077</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00156" class="swsref internal-spec-ref"><code>SWS_KeyM_00156</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

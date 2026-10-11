@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_5_2_Explicit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 303)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=303" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 303)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_06012" class="swsref internal-spec-ref"><code>SWS_Rte_06012</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_06016" class="swsref internal-spec-ref"><code>SWS_Rte_06016</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,40 @@ a timeout occurs) at the according port. When new data is received, the RTE resu
 the execution of the waiting runnable. ([SRS_Rte_00092])
 To prevent infinite waiting, a blocking RTE API call can have a timeout applied. The RTE
 monitors the timeout and if it expires without data being received returns a particular
-err</div></section>
+error status.
+[SWS_Rte_06013]
+Upstream requirements: SRS_Rte_00069
+⌈A blocking RTE API “read” call shall indicate the expiry of a timeout.⌋
+The “timeout expired” indication also indicates that no data was received before the
+timeout expired.
+Blocking reception of data (“wake up of wait point” receive mode as described in Sec-
+tion 4.3.1.2) is only applicable for category 2 runnables whereas non-blocking reception
+(“explicit data read access” receive mode) can be employed by runnables of category
+2 or 1B. Neither blocking nor non-blocking explicit reception is applicable for category
+1A runnable because they must not invoke functions with unknown execution time (see
+table 4.8).
+[SWS_Rte_06016]
+Upstream requirements: SRS_Rte_00098
+⌈The RTE API call for explicit sending (VariableAccessin the dataSendPoint role,
+[SRS_Rte_00098]) shall be non-blocking.⌋
+Using this API call, the runnable can explicitly send new values of the VariableDat-
+aPrototype.
+Explicit writing is valid for runnables of category 1b and 2 only. Explicit writing is not al-
+lowed for a category 1A runnable since these require API calls with constant execution
+time (i.e. macros).
+Although the API call for explicit sending is non-blocking, it is possible for a cate-
+gory 2 runnable to block waiting for a notification whether the (explicit) send oper-
+ation was successful.
+This is specified by the AcknowledgementRequest attribute
+and occurs by a separate API call Rte_Feedback.
+If the feedback method is
+’wake_up_of_wait_point’, the runnable will block and be resumed by the RTE either
+when a positive or negative acknowledgment arrives or when the timeout associated
+with the WaitPoint expires.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_06012] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_06016] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +132,7 @@ err</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=303" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +144,7 @@ err</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_06012" class="swsref internal-spec-ref"><code>SWS_Rte_06012</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_06016" class="swsref internal-spec-ref"><code>SWS_Rte_06016</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

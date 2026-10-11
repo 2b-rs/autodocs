@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_8_3_3_5_KeyM_VerifyCertificate</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 68)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=68" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 68)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,34 @@ KeyM.h
 ⌋
 The intention of KeyM_VerifyCertificate() is to autonomously identify the certificates
 referenced by CertID and the associated certificates in the chain. The certificate that
-shall be validated is expected to be set prior to this func</div></section>
+shall be validated is expected to be set prior to this function call with KeyM_SetCer-
+tificate(). If a certificate in the chain is not yet verified, it will be parsed and verified
+automatically until the complete chain of trust has been parsed and verified up to the
+root certificate. The verification shall be done from the top of the certificate hierarchy
+to the bottom. Thus, the function shall first identify the chain of trust and check if the
+root certificate has been validated. If this is valid, the next intermediate certificate shall
+be checked until the certificate referenced by CertID is to be verified. The order of the
+validation is important to meet security requirements.
+[SWS_KeyM_00120]
+Upstream requirements: SRS_CryptoStack_00106, SRS_CryptoStack_00101
+⌈The verification of the certificate(s) shall be done asynchronously. All certificates that
+are involved in the chain of trust shall be verified, from top to bottom. The callback
+function KeyM_CertificateVerifyCallbackNotification() shall be called if the verification
+has been finished and provide the result of the operation in the callback.⌋
+[SWS_KeyM_00121]
+Upstream requirements: SRS_CryptoStack_00096
+⌈The function returns E_OK if the operation has been accepted and can be performed.
+Any other return value will indicate the appropriate error and the verification will not be
+started.⌋
+[SWS_KeyM_00135]
+Upstream requirements: SRS_CryptoStack_00031, SRS_CryptoStack_00111
+⌈Elements of the certificate associated and defined in KeyMCertificateElement and
+subcontainers shall be used to verify elements of the certificate according to the con-
+figuration. This shall be done for every certificate that has to be verified.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +153,7 @@ shall be validated is expected to be set prior to this func</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=68" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

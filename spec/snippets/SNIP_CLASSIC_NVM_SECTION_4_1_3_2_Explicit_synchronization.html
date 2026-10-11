@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: nvm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_4_1_3_2_Explicit_synchronization</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_NVDataHandling.pdf</strong> (Seite 13)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_NVDataHandling.pdf#page=13" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_NVDataHandling.pdf</a></strong> (Seite 13)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00738" class="swsref internal-spec-ref"><code>SWS_NvM_00738</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00793" class="swsref internal-spec-ref"><code>SWS_NvM_00793</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,47 @@ Following steps need to considered while using Explicit synchronization
 • Write request:
 1. The application fills a RAM block with the data that has to be written by the
 NvM module.
-2. The application is</div></section>
+2. The application issues the NvM_WriteBlock or NvM_WritePRAMBlock re-
+quest.
+3. The application might modify the RAM block until the routine NvMWriteRam-
+BlockToNvM is called by the NvM module.
+NV Data Handling Guideline
+4. If the routine NvMWriteRamBlockToNvM is called by the NvM module, then
+the application has to provide a consistent copy of the RAM block to the
+destination requested by the NvM module. The application can use the re-
+turn value E_NOT_OK in order to signal that data was not consistent. The
+NvM module will accept this NvMRepeatMirrorOperations times and then
+postpones the request and continues with its next request.
+5. Continuation only if data was copied to the NvM module:
+6. From now on the application can read and write the RAM block again.
+7. An application can use polling to get the status of the request or can be
+informed via a callback routine asynchronously.
+• Multi block write request (NvM_WriteAll):
+1. The ECU state manager issues the NvM_WriteAll request which transfers
+control to the NvM module.
+2. During
+NvM_WriteAll
+job,
+if
+a
+synchronization
+callback
+(NvM_WriteRamBlockToNvM) is configured for a block it will be called
+by the NvM module.
+In this callback the application has to provide a
+consistent copy of the RAM block to the destination requested by the NvM
+module.
+The application can use the return value E_NOT_OK in order
+to signal that data was not consistent. The NvM module will accept this
+NvMRepeatMirrorOperations times and then report the write operation as
+failed.
+3. Now the application can read and write the RAM block again.
+4. The ECU state manager can use polling to get the status of the request or
+can be informed via a callback function.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">ReadRamBlockFromNvM mirror interface</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_WritePRAMBlock().</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +138,7 @@ NvM module.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_NVDataHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_NVDataHandling.pdf#page=13" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_NVDataHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,15 +150,15 @@ NvM module.
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_NvM_00738" class="swsref internal-spec-ref"><code>SWS_NvM_00738</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_NvM_00793" class="swsref internal-spec-ref"><code>SWS_NvM_00793</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

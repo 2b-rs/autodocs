@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: modemanagementguide</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MODEMANAGEMENTGUIDE_SECTION_4_3_Shutdown</h1>
         <div class="snip-meta-line">
           <span>Quelle: <strong>ModemanagementGuide.pdf</strong> (Seite 58)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04119" class="swsref internal-spec-ref"><code>SWS_EcuM_04119</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00461" class="swsref internal-spec-ref"><code>SWS_NvM_00461</code></a></span>
         </div>
       </div>
 
@@ -101,11 +102,67 @@ actions GoBackToRunActions on condition {
 SchMSwitch EcuMode :ECU_APP_RUN
 }
 rule PrepShutdown initially false {
-if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; EcuMo</div></section>
+if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; EcuMode ==
+MDG_EcuMode.ECU_APP_POST_RUN) {
+actionlist PrepShutdownActions
+}
+}
+actions PrepShutdownActions on condition {
+custom "EcuMCompatibility_OnPrepShutdown()"
+custom "Dem_Shutdown(null)"
+SchMSwitch EcuMode :ECU_GO_SLEEP
+SchMSwitch EcuMode :ECU_GO_OFF_ONE
+}
+rule GoSleep initially false {
+if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; EcuMode ==
+MDG_EcuMode.ECU_GO_SLEEP) {
+actionlist GoSleepActions
+}
+}
+actions GoSleepActions on condition {
+custom "EcuMCompatibility_OnGoSleep()"
+SchMSwitch EcuMode : ECU_STARTUP_TWO
+custom "NvM_WriteAll()"
+}
+rule GoOff initially false {
+if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; EcuMode ==
+MDG_EcuMode.ECU_GO_OFF_ONE) {
+actionlist GoOffActions
+}
+}
+actions GoOffActions on condition {
+custom "EcuMCompatibility_OnGoOffOne()"
+custom "Rte_stop(null)"
+custom "ComM_DeInit(null)"
+SchMSwitch EcuMode :ECU_GO_OFF_TWO
+custom "NvM_WriteAll()"
+Guide to Modemanagement
+R4.1 Rev 3
+}
+rule GoSleepNvMWriteAllFinished initially false {
+if ( NvMWriteAllJobMode != NVM_REQ_PENDING &amp;&amp; EcuMode == MDG_EcuMode.
+ECU_SLEEP)
+{
+actionlist GoSleepNvMWriteAllFinishedActions
+}
+}
+actions GoSleepNvMWriteAllFinishedActions on condition {
+custom "EcuM_GoHalt()"
+}
+rule GoOff2 initially false {
+if ( NvMWriteAllJobMode == NVM_BLK_OK &amp;&amp; EcuMode == MDG_EcuMode.
+ECU_GO_OFF_TWO) {
+actionlist GoOff2Actions
+}
+}
+actions GoOff2Actions on condition {
+custom "EcuMCompatibility_OnGoOffTwo()"
+custom "EcuM_GoDown()"
+}</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">POST_RUN state transition and release</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_WriteAll().</p>
       </section>
 
       <section class="snip-card">
@@ -126,15 +183,15 @@ if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; EcuMo</div></s
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04119" class="swsref internal-spec-ref"><code>SWS_EcuM_04119</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_NvM_00461" class="swsref internal-spec-ref"><code>SWS_NvM_00461</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

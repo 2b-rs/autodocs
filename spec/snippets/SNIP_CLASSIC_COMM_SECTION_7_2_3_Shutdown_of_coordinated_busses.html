@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_3_Shutdown_of_coordinated_busses</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_NetworkManagementInterface.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_NetworkManagementInterface.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_NetworkManagementInterface.pdf</a></strong> (Seite 31)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Nm_00176" class="swsref internal-spec-ref"><code>SWS_Nm_00176</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Nm_00293" class="swsref internal-spec-ref"><code>SWS_Nm_00293</code></a></span>
         </div>
       </div>
 
@@ -114,11 +115,132 @@ on all awake networks.
 The NM Coordinator shall evaluate continuously if the
 coordinated shutdown can be started.⌋
 Rationale: Evaluation of shutdown conditions can be also done in other API calls then
-the main functi</div></section>
+the main function. The evaluation can be segmented then to check only the specific
+conditions affected by the API calls there, hence it is not necessary to re-evaluate all
+conditions in every main processing period and every API call.
+[SWS_Nm_00172]
+Upstream requirements: RS_Nm_00044
+⌈If the configuration parameter NmSynchronizingNetwork is TRUE for any of the
+busses in a coordination cluster, the coordination shutdown shall be delayed until a net-
+work that is configured as synchronizing network for this coordination cluster invoked
+Nm_SynchronizationPoint.⌋
+[SWS_Nm_00293]
+Upstream requirements: RS_Nm_02516
+⌈If on a coordinated network the coordinator detects a mode change to NM_MODE_-
+SYNCHRONIZE,NM_MODE_PREPARE_BUS_SLEEP or NM_MODE_BUS_SLEEP AND the
+coordinated cluster this network belongs to has not started the shutdown process AND
+if there is no internal network mode request for that channel by ComM, the coordinator
+shall treat this network as remote sleep and shall call &lt;Bus&gt;Nm_NetworkRelease for
+this network. If additionally for this network the configuration parameter NmSynchro-
+nizingNetwork is TRUE then the coordinator shall not wait for Nm_Synchroniza-
+tionPoint on this network.⌋
+Rationale: If one or more of the networks in the NM coordination clusters is cyclic
+(such as FlexRay), a higher level of synchronized shutdown will be achieved if the
+algorithm is synchronized with one of the included cyclic networks. If configured so, the
+shutdown timers for all coordinated networks will not be started until the synchronizing
+network has called the Nm_SynchronizationPoint.
+Rationale: Although only one network per NM coordination cluster should be config-
+ured to indicate synchronization points, this will allow the NM Coordinator functionality
+to filter out all synchronization indications except those that is originate from the net-
+work that is configured to be the synchronizing network of each coordination cluster.
+[SWS_Nm_00173]
+Upstream requirements: RS_Nm_02516
+⌈If not all conditions to start the coordinated shutdown have been met, or if the
+coordinated shutdown has already been started (but not aborted), calls to Nm_
+SynchronizationPoint shall be ignored.⌋
+Rationale: In some cases, non-synchronizing networks can take longer time to go to
+sleep. If this happens, the coordinated shutdown will be started based on one
+synchronization indication, but as the synchronizing network will not be released di-
+rectly it will continue to invoke (several) more synchronization indications which can
+safely be ignored.
+[SWS_Nm_00174]
+Upstream requirements: RS_Nm_02516
+⌈If the configuration parameter NmSynchronizingNetwork is FALSE for all of the
+presently awake busses in a coordination cluster, the timers shall be started after all
+shutdown conditions have been met, without waiting for a call to Nm_Synchroniza-
+tionPoint(). (see also [SWS_Nm_00172]).⌋
+[SWS_Nm_00175]
+Upstream requirements: RS_Nm_00149, RS_Nm_02516
+⌈When the coordinated shutdown is started, a shutdown delay timer shall be ac-
+tivated for each currently awake, actively coordinated channel in the coordination clus-
+ter. Each timer shall be set to NmGlobalCoordinatorTime. In case NmBusType is
+not set to NM_BUSNM_LOCALNM additionally the shutdown time of the specific channel
+TSHUTDOWN_CHANNEL shall be subtracted.⌋
+[SWS_Nm_00284]
+Upstream requirements: RS_Nm_00149, RS_Nm_02516
+⌈If the NmGlobalCoordinatorTime is zero the shutdown delay timer of all channels
+shall also be zero.⌋
+Note: The TSHUTDOWN_CHANNEL can be calculated as described in Chapter 7.2.5
+or with following formulas:
+CanNm: Ready Sleep Time + Prepare BusSleep Time
+FrNm: Ready Sleep Time, e.g.: (FrNmReadySleepCnt+1) * FrNmRepetitionCycle *
+”Duration of one Flexray Cycle“
+GenericNm: NmGenericBusNmShutdownTime
+[SWS_Nm_00176]
+Upstream requirements: RS_Nm_02516
+⌈When
+a
+shutdown
+timer
+expires
+for
+a
+network,
+Nm
+shall
+in
+case
+Nm_BusNmType
+is
+not
+set
+to
+NM_BUSNM_LOCALNM
+release
+the
+network
+by
+calling
+the
+&lt;Bus&gt;Nm_RequestBusSynchronization
+followed
+by
+&lt;Bus&gt;Nm_NetworkRelease.
+In case BusNmType is set to NM_BUSNM_LOCALNM
+Nm shall inform ComM about shutdown by calling ComM_Nm_BusSleepMode.⌋
+Note:
+In
+the
+AUTOSAR
+Classic
+Platform,
+CanNm_PassiveStartUp,
+J1939Nm_PassiveStartUp,
+FrNm_PassiveStartUp
+and
+UdpNm_PassiveStartUp
+have
+been
+specified
+as
+the
+predefined
+interfaces
+corresponding
+to
+&lt;Bus&gt;Nm_PassiveStartUp.
+[SWS_Nm_00177]
+Upstream requirements: RS_Nm_02516
+⌈Nm shall keep track of all networks that have been released but have not yet reported
+”bus-sleep mode“. If the shutdown is aborted, these networks shall still be considered
+active networks.⌋
+Note: See Section Chapter 7.3.3.
+Definition: When all networks have been released and all networks are in ”bus-sleep
+mode“, the coordinated shutdown is completed.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Actions when shutdown timer expires</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Nm_00293] im Text von SWS_NetworkManagementInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -127,11 +249,11 @@ the main functi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_NetworkManagementInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_NetworkManagementInterface.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_NetworkManagementInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 33</td>
+              <td>Seite 31</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -139,15 +261,15 @@ the main functi</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Nm_00176" class="swsref internal-spec-ref"><code>SWS_Nm_00176</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Nm_00293" class="swsref internal-spec-ref"><code>SWS_Nm_00293</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

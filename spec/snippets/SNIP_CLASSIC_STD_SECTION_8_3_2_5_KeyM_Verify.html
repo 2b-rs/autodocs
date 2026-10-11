@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_2_5_KeyM_Verify</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 58)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=58" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 58)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -122,11 +123,54 @@ provided through callback
 E_OK: Operation was successfully performed. Result information
 are available.
 E_NOT_OK: Operation not accepted due to an internal error.
-KEYM_E_BU</div></section>
+KEYM_E_BUSY: Validation cannot be performed yet. KeyM is
+currently busy with other jobs (for asynchronous mode).
+KEYM_E_PARAMETER_MISMATCH: Parameter do not match with
+expected value.
+KEYM_E_KEY_CERT_SIZE_MISMATCH: Parameter size doesn’t
+match
+KEYM_E_KEY_CERT_INVALID: Key operation cannot be
+performed because the key name is invalid.
+KEYM_E_KEY_CERT_EMPTY: The key for this slot has not been
+set.
+Description
+The key server requests to verify the provided keys. The key manager performs operation on
+the assigned job and returns the result to the key server who verifies if the results was provided
+with this key as expected. This function is only available if KeyMCryptoKeyVerifyFunction
+Enabled is set to TRUE.
+Available via
+KeyM.h
+⌋
+[SWS_KeyM_00107]
+Upstream requirements: SRS_CryptoStack_00119
+⌈If KeyMCryptoKeyVerifyFunctionEnabled is set to TRUE this function is available to
+perform a verification of a key. This function can always be called and is not bound to
+a key update session.⌋
+[SWS_KeyM_00108]
+Upstream requirements: SRS_CryptoStack_00119, SRS_CryptoStack_00022
+⌈If KeyMCryptoKeyVerifyAsyncMode is set to FALSE, the function will use KeyMCrypto
+Key/KeyMCryptoKeyCsmKeyVerifyJobRef to perform a crypto operation. If specified
+then the configuration KeyMCryptoCsmVerifyJobType shall be specified as well to iden-
+tify which job shall be called.⌋
+Info:
+Since only one input and output buffer is specified, only MAC generate and data de-
+crypt/encrypt operations can be done autonomously in this function. Other operations
+such as AEAD encrypt/decrypt or MAC verify requires interpretation of structured Re-
+questData which needs to be interpreted in the key handler verification function.
+[SWS_KeyM_00109]
+Upstream requirements: SRS_CryptoStack_00106, SRS_CryptoStack_00101
+⌈If KeyMCryptoKeyVerifyAsyncMode is set to TRUE, the function will run in asyn-
+chronous mode. The direct function call will return KEYM_E_PENDING if the job was
+accepted or any other return value if the job could not be accepted.
+In asynchronous mode, the KeyM_CryptoKeyVerifyCallbackNotification will provide the
+result of the crypto job operation.⌋
+Info:
+This is especially useful if at least one CSM verify job is configured for asynchronous
+operation. Ideally, the verification is initiated in the background task.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -135,7 +179,7 @@ KEYM_E_BU</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=58" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

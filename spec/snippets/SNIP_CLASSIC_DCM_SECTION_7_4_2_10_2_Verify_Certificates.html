@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dcm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_10_2_Verify_Certificates</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 147)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=146" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 147)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01461" class="swsref internal-spec-ref"><code>SWS_Dcm_01461</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00060" class="swsref internal-spec-ref"><code>SWS_KeyM_00060</code></a></span>
         </div>
       </div>
 
@@ -86,11 +87,187 @@ thus abstracting the certificate complexity from Dcm.
 [SWS_Dcm_01460] Verify verifyCertificateUnidirectional message length check
 Upstream requirements: RS_Diag_04230
 ⌈On reception of an Authentication (0x29) service with sub-function equal to verifyCer-
-tificateUnidirectional, the Dcm shall verify that the mes</div></section>
+tificateUnidirectional, the Dcm shall verify that the message length fits to the size given
+in the parameters lengthOfCertificateClient and return a NRC 0x13 if the size does not
+match.⌋
+[SWS_Dcm_01461] Verify verifyCertificateBidirectional message length check
+Upstream requirements: RS_Diag_04230
+⌈On reception of an Authentication (0x29) service with sub-function equal to verifyCer-
+tificateBidirectional, the Dcm shall verify that the message length fits to the size given
+Manager
+in the parameters lengthOfCertificateClient and lengthOfChallengeClient and return a
+NRC 0x13 if the size does not match. The Dcm uses the lengthOfCertificateClient as
+offset to calculate the position of lengthOfChallengeClient.⌋
+[SWS_Dcm_01462] Required configuration for bidirectional authentication ⌈If
+the sub-function verifyCertificateBidirectional is configured in the DsdServiceSubFunc-
+tion for 0x29, the configuration parameter DcmDspAuthenticationECUCertifi-
+cateRef is required.⌋
+[SWS_Dcm_01579] Mandatory certificate data
+Upstream requirements: RS_Diag_04230
+⌈On reception of an Authentication (0x29) service with sub-function equal to verifyC-
+ertificateUnidirectional or verifyCertificateBidirectionaland a lengthOfCertificateClient
+equal to zero, the Dcm shall respond with NRC 0x13 (incorrectMessageLengthOrIn-
+validFormat)..⌋
+Store certificate in Csm
+[SWS_Dcm_01463] Certificate validation
+Upstream requirements: RS_Diag_04230
+⌈On reception of an Authentication (0x29) service with sub-function equal to verifyCer-
+tificateUnidirectional or verifyCertificateBidirectional, the Dcm shall use the KeyM API
+KeyM_SetCertificate to store the client certificate from the service request within the
+KeyM module. The following parameter values shall be used:
+• CertificateId = DcmDspAuthenticationConnectionCertificateRef -&gt;
+KeyMCertificate.KeyMCertificateId
+• certificateDataPtr.certData = Pointer to certificateClient from Request
+• certificateDataPtr.certDataLength = lengthOfCertificateClient from Request
+⌋
+Diagnostic certificate configuration is a task that is mainly executed in the Csm and
+KeyM modules. The Dcm provides an abstraction from these modules and only keeps
+symbolic references to containers that keep the information. Please take attention
+while configuring the Csm and KeyM ’in spirit of Dcm certificates’.
+[SWS_Dcm_01464] Invalid certificate size failure
+Upstream requirements: RS_Diag_04230
+⌈If the API KeyM_SetCertificate returns KEYM_E_SIZE_MISMATCH, the Dcm shall
+return the NRC 0x13 (incorrectMessageLengthOrInvalidFormat).⌋
+Manager
+[SWS_Dcm_01465] Behavior on busy crypto operation
+Upstream requirements: RS_Diag_04230
+⌈If any of the Csm or KeyM APIs called by the Dcm is returning CRYPTO_E_BUSY or
+KEYM_E_BUSY, the Dcm shall return the NRC 0x21 (busyRepeat).⌋
+[SWS_Dcm_01466] Csm APIs returning failure code behavior
+Upstream requirements: RS_Diag_04230
+⌈Throughout this chapter the Csm or KeyM are used to process the authentication
+requests. These APIs have return values for failures. Unless there is no dedicated
+requirement for a given return value and if the return value is different to E_OK, the
+Dcm shall return a NRC 0x10 ’GeneralReject’.⌋
+The cryptographic operations have potential long execution times and are called asyn-
+chronously.
+[SWS_Dcm_01467] Asynchronous certificate operation handling
+Upstream requirements: RS_Diag_04230
+⌈For all asynchronous Csm or KeyM operations, the Dcm shall wait until the call-
+back has been called, indicating a successful job termination.
+If the result (e.g.
+KeyM_CertificateStatusType) is E_OK, the Dcm shall continue to process the 0x29 re-
+quest, if the result is different to E_OK, the Dcm shall skip the further processing and
+return a negative response with NRC ’GeneralReject’.⌋
+Parse and Verify certificate in Csm
+[SWS_Dcm_01468] Verifying client certificate
+Upstream requirements: RS_Diag_04230
+⌈After the Dcm has set the certificate according to [SWS_Dcm_01463], the Dcm shall
+verify the certificate by calling KeyM_VerifyCertificate with the following parameters:
+• CertificateId = DcmDspAuthenticationConnectionCertificateRef -&gt;
+KeyMMCertificate.KeyMCertificateId
+⌋
+[SWS_Dcm_01469] Behavior on failed certificate verification
+Upstream requirements: RS_Diag_04230
+⌈After the Dcm has verified a certificate and KeyM_CertificateStatusType is set to
+KEYM_E_CERTIFICATE_SIGNATURE_FAIL, the Dcm shall send a negative response
+with NRC set to ’Certificate verification failed - Invalid Signature’.⌋
+[SWS_Dcm_01470] Check certificate chain of trust
+Upstream requirements: RS_Diag_04235
+⌈If
+the
+operation
+started
+in
+[SWS_Dcm_01468]
+returns
+a
+result
+of
+KEYM_E_CERTIFICATE_INVALID_CHAIN_OF_TRUST, the Dcm shall refuse the
+Manager
+client certificate and return a negative response with NRC ’Certificate verification failed
+- Invalid Chain of Trust’.⌋
+[SWS_Dcm_01471] Check certificate type
+Upstream requirements: RS_Diag_04235
+⌈If
+the
+operation
+started
+in
+[SWS_Dcm_01468]
+returns
+a
+result
+of
+KEYM_E_CERTIFICATE_INVALID_TYPE, the Dcm shall refuse the client certifi-
+cate and return a negative response with NRC ’Certificate verification failed - Invalid
+Type’.⌋
+[SWS_Dcm_01472] Check certificate format
+Upstream requirements: RS_Diag_04235
+⌈If
+the
+operation
+started
+in
+[SWS_Dcm_01468]
+returns
+a
+result
+of
+KEYM_E_CERTIFICATE_INVALID_FORMAT, the Dcm shall refuse the client cer-
+tificate and return a negative response with NRC ’Certificate verification failed - Invalid
+Format’.⌋
+[SWS_Dcm_01473] Check certificate content
+Upstream requirements: RS_Diag_04235
+⌈If
+the
+operation
+started
+in
+[SWS_Dcm_01468]
+returns
+a
+result
+of
+KEYM_E_CERTIFICATE_INVALID_CONTENT,
+the
+Dcm
+shall
+refuse
+the
+client
+certificate and return a negative response with NRC ’Certificate verification failed -
+Invalid Content’.⌋
+Note: While most of the KeyM return values can be mapped 1:1 on UDS NRC values, this
+does not apply for KEYM_E_CERTIFICATE_INVALID_CONTENT. An invalid content
+from KeyM indicates that a key element verification has failed. A failed key element
+verification means that the certificate itself is valid, but the KeyM refuses the certificate
+as the data does not fit to the server’s required value. In UDS this is expressed by
+’Certificate verification failed - Invalid Scope’. As result invalid content from KeyM will
+trigger the NRC invalid scope.
+[SWS_Dcm_01475] Check certificate validity
+Upstream requirements: RS_Diag_04235
+⌈If
+the
+operation
+started
+in
+[SWS_Dcm_01468]
+returns
+a
+result
+of
+KEYM_E_CERTIFICATE_REVOKED, the Dcm shall refuse the client certificate
+and return a negative response with NRC ’Certificate verification failed - Invalid
+Certificate (revoked)’.⌋
+[SWS_Dcm_01476] Check certificate valid until
+Upstream requirements: RS_Diag_04235
+⌈If
+the
+operation
+started
+in
+[SWS_Dcm_01468]
+returns
+a
+result
+of
+KEYM_E_CERTIFICATE_VALIDITY_PERIOD_FAIL, the Dcm shall refuse the client</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Message length check for verifyCertificateBidirectional</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von KeyM_VerifyCertificate().</p>
       </section>
 
       <section class="snip-card">
@@ -99,7 +276,7 @@ tificateUnidirectional, the Dcm shall verify that the mes</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=146" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -111,15 +288,15 @@ tificateUnidirectional, the Dcm shall verify that the mes</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01461" class="swsref internal-spec-ref"><code>SWS_Dcm_01461</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00060" class="swsref internal-spec-ref"><code>SWS_KeyM_00060</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

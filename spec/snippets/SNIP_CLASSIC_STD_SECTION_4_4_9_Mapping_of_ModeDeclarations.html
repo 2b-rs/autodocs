@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_9_Mapping_of_ModeDeclarations</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 440)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=440" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 440)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01465" class="swsref"><code>TPS_SWCT_01465</code></a></span>
         </div>
@@ -91,7 +92,94 @@ Upstream requirements: SRS_Rte_00236
 ⌈If one ModeDeclaration of a mode user is mapped to several ModeDeclara-
 tions of a mode manager the related mode of the mode user is entered when any
 of the mapped modes of the mode manager mapped by one modeDeclaration-
-Mapping is entered. The related mode of the mode user is</div></section>
+Mapping is entered. The related mode of the mode user is exit when any of the
+mapped modes of the mode manager mapped by one modeDeclarationMapping
+is exit and if the new mode is not mapped by the same modeDeclarationMapping
+to related mode of the mode user.⌋
+Note: If one ModeDeclaration of a mode user is mapped to several ModeDecla-
+rations of a mode manager by the means of several modeDeclarationMappings
+the semantics is defined in a way that the individual mode transitions of the mode man-
+ager are getting visible as “exit” and “enter” events for the mode user. Further on the
+transition phase gets visible by the RTE_TRANSITION return value in the case that
+Rte_Mode-API is called during such a transition phase.
+If one ModeDeclaration of a mode user is mapped to several ModeDeclara-
+tions of a mode manager by the means of a single modeDeclarationMapping
+the semantics is defined in a way that the individual mode transitions of the mode
+manager are not visible for the mode user.
+Example:
+The mode manager and the mode user have different ModeDeclaration-
+Groups which are mapped by several modeDeclarationMappings.
+The Mode-
+DeclarationGroup of the mode manager is more fine grained, so more than one
+of its ModeDeclarations has to be mapped onto the same ModeDeclaration of
+the mode user. The modeDeclarationMappings can be seen in table 4.11. The
+complete example is listed as ARXML in Appendix F.1.
+modeDeclarationMapping
+ModeDeclarations of the
+mode manager
+Mapped
+ModeDeclara-
+tions of the mode user
+StartUp_2_STARTUP
+StartUp
+STARTUP
+Run_2_RUN
+Run
+RUN
+PostRunX_2_POST_RUN
+PostRun1
+PostRun2
+POST_RUN
+ShutDown_2_SHUTDOWN
+ShutDown
+SHUTDOWN
+Sleep_Hibernate_2_SHUTDOWN
+Sleep
+Hibernate
+SHUTDOWN
+Table 4.11: Example of a modeDeclarationMapping which maps ModeDeclarations
+from mode manager to ModeDeclarations of the mode user
+Table
+4.12 shows a possible scenario how mode transitions of a mode manager
+will be seen from the point of view of a mode user when the modeDeclaration-
+Mapping maps more than one ModeDeclaration of the mode manager’s Mode-
+DeclarationGroup onto the same ModeDeclaration of the mode user’s Mode-
+DeclarationGroup.
+Mode transitions of the
+mode manager
+Mode transitions of the
+mode user resulting out of the mapping
+Undefined →StartUp
+Undefined →STARTUP
+StartUp →Run
+STARTUP →RUN
+Run →PostRun1
+RUN →POST_RUN
+PostRun1 →PostRun2
+— (no transition)
+PostRun2 →ShutDown
+POST_RUN →SHUTDOWN
+ShutDown →Sleep
+SHUTDOWN →SHUTDOWN
+Sleep →Hibernate
+— (no transition)
+Table 4.12: Possible scenario of mode transitions by the mode manager and the result-
+ing transitions from the point of view of the mode user
+A configuration that maps several ModeDeclarations of a mode user to a single
+ModeDeclaration representing a mode of a mode manager shall be rejected (see
+also [constr_1209]). This is not valid as it violates the principle that modes are mutually
+exclusive.
+[SWS_Rte_08513]
+Upstream requirements: SRS_Rte_00236
+⌈The RTE-Generator shall reject configurations violating [constr_1209].⌋
+If a modeDeclarationMapping exists that references a ModeDeclaration repre-
+senting a mode of the mode manager then modeDeclarationMappings shall exist
+that map all ModeDeclarations of the mode manager to ModeDeclarations of
+the mode user (see also [constr_1210]).
+[SWS_Rte_08514]
+Upstream requirements: SRS_Rte_00236
+⌈The RTE-Generator shall reject configurations violating [constr_1210].⌋
+Note: It is only supported that modes of the mode user might not be mapped.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +192,7 @@ Mapping is entered. The related mode of the mode user is</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=440" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

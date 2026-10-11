@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FR_SECTION_8_4_23_Fr_GetSyncFrameList</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayDriver.pdf</strong> (Seite 75)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=75" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></strong> (Seite 75)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -109,11 +110,288 @@ elements are filled with the value ’0’ to indicate that no more
 syncframe has been seen.
 Fr_ChannelAOddListPtr
 Address the list of syncframes on channel A within the odd
-communication cycle is writ</div></section>
+communication cycle is written to. The exact number of elements
+written to the list is limited by parameter Fr_ListSize. Unused list
+elements are filled with the value ’0’ to indicate that no more
+syncframe has been seen.
+Parameters (out)
+Fr_ChannelBOddListPtr
+Address the list of syncframes on channel B within the odd
+communication cycle is written to. The exact number of elements
+written to the list is limited by parameter Fr_ListSize. Unused list
+elements are filled with the value ’0’ to indicate that no more
+syncframe has been seen.
+Return value
+Std_ReturnType
+E_OK: API call finished successfully.
+E_NOT_OK: API call aborted due to errors.
+Description
+Gets a list of syncframes received or transmitted on channel A and channel B via the even and
+odd communication cycle. See variables vsSyncIdListA and vsSyncIdListB of [12] for details.
+Available via
+Fr.h
+⌋
+[SWS_Fr_00575] ⌈The function Fr_GetSyncFrameList() shall perform the following
+tasks on FlexRay CC Fr_CtrIdx:
+1. Read
+the
+list
+of
+syncframes
+received
+in
+the
+last
+even
+communication
+cycle
+on
+channel
+A
+and
+write
+it
+as
+array
+to
+the
+memory
+location
+Fr_ChannelAEvenListPtr.
+2. Read
+the
+list
+of
+syncframes
+received
+in
+the
+last
+even
+communication
+cycle
+on
+channel
+B
+and
+write
+it
+as
+array
+to
+the
+memory
+location
+Fr_ChannelBEvenListPtr.
+3. Read the list of syncframes received in the last odd communication cycle on chan-
+nel A and write it as array to the memory location Fr_ChannelAOddListPtr.
+4. Read the list of syncframes received in the last odd communication cycle on chan-
+nel B and write it as array to the memory location Fr_ChannelBOddListPtr.
+5. Return E_OK.
+⌋
+[SWS_Fr_00576] ⌈The size of the array written to Fr_ChannelAEvenListPtr,
+Fr_ChannelBEvenListPtr,
+Fr_ChannelAOddListPtr
+and
+Fr_ChannelBOddListPtr shall be limited to Fr_ListSize (array elements 0
+to (Fr_ListSize - 1)).⌋
+[SWS_Fr_00577] ⌈Unused array elements shall be set to 0, indicating no valid sync
+frame.⌋
+[SWS_Fr_00578] ⌈A maximum number of 15 syncframes shall be supported.⌋
+[SWS_Fr_00580]
+⌈If
+the
+function
+Fr_GetSyncFrameList()
+is
+able
+to
+and
+detects
+a
+hardware
+error
+while
+performing
+the
+requested
+functional-
+ity,
+then
+it
+shall
+call
+Dem_SetEventStatus()
+(FR_E_CTRL_TESTRESULT,
+DEM_EVENT_STATUS_FAILED) and return E_NOT_OK.⌋
+[SWS_Fr_00581] ⌈If development error detection for the Fr module is enabled, and
+if the function Fr_GetSyncFrameList() is called before the successful initialization
+of Fr, then the function Fr_GetSyncFrameList() shall raise the development error
+FR_E_INIT_FAILED.⌋
+[SWS_Fr_00582] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_GetSyncFrameList() shall check the validity of the parameter
+Fr_CtrlIdx. If Fr_CtrlIdx is invalid, then the function Fr_GetSyncFrameList()
+shall raise the development error FR_E_INV_CTRL_IDX.⌋
+[SWS_Fr_00667] ⌈If development error detection for the Fr module is enabled,
+then the function Fr_GetSyncFrameList() shall check the validity of the parame-
+ter Fr_ListSize. If Fr_ListSize is larger than 15, then the function Fr_Get-
+SyncFrameList() shall raise the development error FR_E_INV_FRAMELIST_SIZE.⌋
+[SWS_Fr_00583]
+⌈If
+development
+error
+detection
+for
+the
+Fr
+module
+is
+en-
+abled,
+then
+the
+function
+Fr_GetSyncFrameList()
+shall
+check
+whether
+the
+parameter
+Fr_ChannelAEvenListPtr
+is
+a
+NULL
+pointer
+(NULL_PTR).
+If
+Fr_ChannelAEvenListPtr
+is
+a
+NULL
+pointer,
+then
+the
+function
+Fr_Get-
+SyncFrameList() shall raise the development error FR_E_PARAM_POINTER.⌋
+[SWS_Fr_00584]
+⌈If
+development
+error
+detection
+for
+the
+Fr
+module
+is
+en-
+abled,
+then
+the
+function
+Fr_GetSyncFrameList()
+shall
+check
+whether
+the
+parameter
+Fr_ChannelBEvenListPtr
+is
+a
+NULL
+pointer
+(NULL_PTR).
+If
+Fr_ChannelBEvenListPtr
+is
+a
+NULL
+pointer,
+then
+the
+function
+Fr_Get-
+SyncFrameList() shall raise the development error FR_E_PARAM_POINTER.⌋
+[SWS_Fr_00585]
+⌈If
+development
+error
+detection
+for
+the
+Fr
+module
+is
+en-
+abled,
+then
+the
+function
+Fr_GetSyncFrameList()
+shall
+check
+whether
+the
+parameter
+Fr_ChannelAOddListPtr
+is
+a
+NULL
+pointer
+(NULL_PTR).
+If
+Fr_ChannelAOddListPtr
+is
+a
+NULL
+pointer,
+then
+the
+function
+Fr_Get-
+SyncFrameList() shall raise the development error FR_E_PARAM_POINTER.⌋
+[SWS_Fr_00586]
+⌈If
+development
+error
+detection
+for
+the
+Fr
+module
+is
+en-
+abled,
+then
+the
+function
+Fr_GetSyncFrameList()
+shall
+check
+whether
+the
+parameter
+Fr_ChannelBOddListPtr
+is
+a
+NULL
+pointer
+(NULL_PTR).
+If
+Fr_ChannelBOddListPtr
+is
+a
+NULL
+pointer,
+then
+the
+function
+Fr_Get-
+SyncFrameList() shall raise the development error FR_E_PARAM_POINTER.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -122,7 +400,7 @@ communication cycle is writ</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=75" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

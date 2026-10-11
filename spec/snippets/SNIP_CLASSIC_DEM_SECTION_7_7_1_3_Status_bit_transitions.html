@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_1_3_Status_bit_transitions</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 87)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=85" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 87)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dem_CONSTR_6113</span>
         </div>
@@ -95,7 +96,126 @@ cycles (volatile)⌋
 ⌈For WWH-OBD ECU the DemStatusBitStorageTestFailed shall be set to True.⌋
 [SWS_Dem_00525]
 Upstream requirements: RS_Diag_04067
-⌈If the configuration parameter DemStatusBitStora</div></section>
+⌈If the configuration parameter DemStatusBitStorageTestFailed is set to True,
+the Dem module shall retain the information for UDS status bit 0 over power cy-
+cles (non-volatile).⌋
+TestFailed =
+FALSE
+TestFailed =
+TRUE
+Initial
+state
+Dem_SetEventStatus[EventStatus = DEM_EVENT_STATUS_PASSED] OR
+Dem_ResetEventStatus[(OperationCycleId == DemOperationCycleRef)] OR
+Dem_ClearDTC
+Dem_SetEventStatus[EventStatus = DEM_EVENT_STATUS_FAILED]
+Dem_SetEventStatus
+[EventStatus =
+DEM_EVENT_STATUS_PASSED]
+Bit 0
+Dem_SetEventStatus
+[EventStatus =
+DEM_EVENT_STATUS_FAILED]
+Figure 7.16: UDS status bit 0 TestFailed logic
+[SWS_Dem_00389]
+Upstream requirements: RS_Diag_04067
+⌈The Dem module shall implement the status bit transition for UDS status bit 1.⌋
+For details see figure 7.17.
+Note: The event status bit 1 (TestFailedThisOperationCycle) is stored in non-volatile
+memory.
+TestFailed
+ThisOperationCycle =
+FALSE
+TestFailed
+ThisOperationCycle =
+TRUE
+Dem_SetEventStatus[EventStatus = DEM_EVENT_STATUS_FAILED]
+Dem_RestartOperationCycle [(OperationCycleId == DemOperationCycleRef)] OR
+Dem_ClearDTC
+Dem_SetEventStatus
+[EventStatus =
+DEM_EVENT_STATUS_{FAILED|PASSED}]
+Initial
+state
+Bit 1
+Dem_SetEventStatus
+[EventStatus =
+DEM_EVENT_STATUS_PASSED]
+Figure 7.17: UDS status bit 1 TestFailedThisOperationCycle logic
+[SWS_Dem_00390]
+Upstream requirements: RS_Diag_04067
+⌈The Dem module shall implement the status bit transition for UDS status bit 2.⌋
+For details see figure 7.18.
+[SWS_Dem_01183] ⌈The information for UDS status bit 2 needs to be stored
+non-volatile⌋
+PendingDTC =
+FALSE
+PendingDTC =
+TRUE
+Dem_SetEventStatus[EventSatus = DEM_EVENT_STATUS_FAILED]
+Dem_RestartOperationCycle[(OperationCycleId == DemOperationCycleRef) &amp;&amp;
+(TestFailedThisOperationCycle == 0) AND
+(TestNotCompletedThisOperationCycle == 0)] OR
+Dem_ClearDTC  OR
+{FaultRecordOverwritten}
+Initial
+state
+Bit 2
+Dem_SetEventStatus
+[EventStatus =
+DEM_EVENT_STATUS_FAILED]
+Dem_SetEventStatus
+[EventStatus =
+DEM_EVENT_STATUS_PASSED]
+Figure 7.18: UDS status bit 2 PendingDTC logic
+[SWS_Dem_00391]
+Upstream requirements: RS_Diag_04067
+⌈The Dem module shall implement the status bit transition for UDS status bit 3.⌋
+For details see figure 7.19.
+Note: The information for event status bit 3 (ConfirmedDTC) is non-volatile (but it is
+also calculable based on the respective event memory entry).
+ConfirmedDTC =
+TRUE
+ConfirmedDTC =
+FALSE
+Dem_SetEventStatus[(EventStatus = DEM_EVENT_STATUS_FAILED) &amp;&amp;
+((failure counter+1) &gt;= DemEventConfirmationThreshold)]
+/failure counter = 0
+Dem_RestartOperationCycle[(OperationCycleId == DemOperationCycleRef) &amp;&amp; {AgingCriteriaFulfilled}] OR
+{FaultRecordOverwritten} OR
+Dem_ClearDTC
+Initial
+state
+Bit 3
+Dem_RestartOperationCycle
+[(OperationCycleId == DemOperationCycleRef) &amp;&amp;
+(testFailedThisOperationCycle == 1)* &amp;&amp;
+(failure counter+1 &lt; DemEventConfirmationThreshold)]
+/failure counter++
+Dem_RestartOperationCycle
+[(OperationCycleId == DemOperationCycleRef) &amp;&amp;
+(testFailedThisOperationCycle == 0)** &amp;&amp;
+(testNotCompleteThisOperationCycle == 0)***]
+/failure counter = 0
+/failure counter=0
+*this represents a presence of a failure in the previously completed operation cycle
+**this represents an absence of a failure in the previously completed operation cycle
+***this represents at least one completed test in the previously completed operation cycle
+Figure 7.19: UDS status bit 3 ConfirmedDTC logic
+The figure is applicable If DemOBDDelayedDCYConfirmedAndMIL is set to false. If
+DemOBDDelayedDCYConfirmedAndMIL is set to true the confirmed bit transition to 1
+dependes further more on the operation cylcle qualification, see [SWS_Dem_01220].
+Note: The “AgingCriteriaFulfilled” condition is specified by [SWS_Dem_00498]. The
+“FaultRecordOverwritten” condition is specified by [SWS_Dem_00409].
+The parameter DemEventConfirmationThreshold controls the operation cycle in
+which the confirmedDTC bit is set based on the first occurrence of the failure. The
+confirmedDTC bit is always set to 1 when the fault occurs, but the operation cycle in
+which this is done is depending on the use case.
+The value is relevant for OEM and legislated requirements on setting the confirmed-
+DTC bit from 0 to 1. In the Table 7.1 below, the most common use cases and necessary
+values are given:
+DemEventConfirmationThreshold
+Use Case</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -108,7 +228,7 @@ Upstream requirements: RS_Diag_04067
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=85" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_11_2_4_Access_event_related_data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 224)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=223" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 224)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91016" class="swsref internal-spec-ref"><code>SWS_Dem_91016</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91017" class="swsref internal-spec-ref"><code>SWS_Dem_91017</code></a></span>
         </div>
       </div>
 
@@ -99,11 +100,122 @@ Dem_SelectFreezeFrameData
 [SWS_Dem_01268]) are called without a prior call to Dem_SelectFreezeFrame-
 Data, the Dem shall report the Det error DET_E_WRONG_CONDITION.⌋
 [SWS_Dem_01271]
-Upstream requirements: SRS_BSW_</div></section>
+Upstream requirements: SRS_BSW_00369
+⌈If any of the APIs requiring a Dem_SelectFreezeFrameData is called without
+a prior call to Dem_SelectFreezeFrameData, the Dem shall report the Det error
+DEM_E_WRONG_CONDITION.⌋
+[SWS_Dem_00071] ⌈The function Dem_GetNextFreezeFrameData shall copy the
+specific data identifiers (DIDs) of the freezeframe record selected by the API Dem_-
+SelectFreezeFrameData for the specified ClientId to the destination buffer provided
+by the DestBuffer parameter.
+The Dem shall transmit these data as a complete
+record with the Buffer format.⌋
+For Buffer format see figure 7.48.
+[SWS_Dem_00576] ⌈If the RecordNumber selected by the API Dem_SelectFreeze-
+FrameData is set to 0x00, Dem_GetNextFreezeFrameData shall provide the even-
+t/DTC specific OBD equivalent freeze frame record.⌋
+Note: Retrieving record 0x00 with Dem_SelectFreezeFrameData and Dem_Get-
+NextFreezeFrameData is only supported if the Dem module supports OBD (refer to
+DemOBDSupport)
+Data #N
+Data #1
+1st DID
+Nth DID
+...
+Byte 2..3
+Byte 4..j
+Byte j..k
+Byte k..(k+2)
+Byte (k+2)..n
+requested freeze frame record
+Data element #N
+Data element #1
+...
+RecordNum
+Num of DIDs
+Byte 0
+Byte 1
+calculated (e.g. 1), or configured
+(e.g. first value from list)
+Figure 7.48: Buffer format used by Dem_GetNextFreezeFrameData
+Note: The data returned include the DTCSnapshotRecordNumber (RecordNum) and
+DTCSnapshotRecordNumberOfIdentifiers (Num of DIDs) as defined by ISO-14229-
+1[2] for the response message to service 0x19 0x04.
+In contradiction to the Dcm
+PIDstructure handling, the DIDstructure is handled within the Dem module. Therefore,
+the Dem returns already full freeze frame records according to the response layout.
+This results in an optimized Dem/Dcm interface.
+[SWS_Dem_00630] ⌈If a single DTC is selected and the API Dem_SelectFreeze-
+FrameData is called with a valid RecordNumber which is not stored, Dem_Get-
+NextFreezeFrameData shall return E_OK and BufSize 0 (empty buffer).⌋
+[SWS_Dem_00074]
+Upstream requirements: RS_Diag_04205
+⌈The function Dem_GetSizeOfFreezeFrameSelection shall return the size of the
+requested freeze frame record(s) by Dem_SelectFreezeFrameData for the spec-
+ified ClientId, which represents the number of user data bytes, including any freeze
+frame headerinformation (according to the format defined in [SWS_Dem_00071]).⌋
+Note: If the record number value 0xFF is requested, the Dem considers the size of all
+stored freeze frame records according to [SWS_Dem_00074].
+[SWS_Dem_01389] Requested size for not configured snapshot records
+Upstream requirements: RS_Diag_04205
+⌈If Dem_GetSizeOfFreezeFrameSelection is called and the selected freeze
+frame record number is not configured, the Dem shall return DEM_NO_SUCH_ELE-
+MENT.⌋
+[SWS_Dem_01348] Select freeze frame data for single DTCs only
+Upstream requirements: RS_Diag_04244
+⌈In case the function Dem_SelectFreezeFrameData is called and the DTC selected
+by Dem_SelectDTC is not a single DTC but a group of DTC, the Dem shall return
+DEM_WRONG_DTC.⌋
+[SWS_Dem_01349] Select extended data record for single DTCs only
+Upstream requirements: RS_Diag_04245
+⌈In case the function Dem_SelectExtendedDataRecord is called and the DTC se-
+lected by Dem_SelectDTC is not a single DTC but a group of DTC, the Dem shall return
+DEM_WRONG_DTC.⌋
+[SWS_Dem_01272] ⌈If the API Dem_SelectExtendedDataRecord is called, the
+Dem shall use the DTC selected by Dem_SelectDTC and the ExtendedDataNumber
+as a target for the following API calls:
+• Dem_GetNextExtendedDataRecord
+• Dem_GetSizeOfExtendedDataRecordSelection
+⌋
+[SWS_Dem_01273] ⌈The API Dem_SelectExtendedDataRecord triggers the Dem
+internal extended data record selection process on the event memory assigned to
+the ClientId.
+The Dem shall provide the result of the selection process in the re-
+turn value of the API calls following the Dem_SelectExtendedDataRecord, see
+[SWS_Dem_01272].⌋
+[SWS_Dem_01274]
+Upstream requirements: SRS_BSW_00369
+⌈If
+any
+of
+the
+APIs
+requiring
+a
+Dem_SelectExtendedDataRecord
+(see
+[SWS_Dem_01272]) are called without a prior call to Dem_SelectExtended-
+DataRecord, the Dem shall report the Det error DEM_E_WRONG_CONDITION.⌋
+[SWS_Dem_00075] ⌈The API Dem_GetNextExtendedDataRecord shall copy the
+complete data of the requested extended data record by Dem_SelectExtended-
+DataRecord API for the specified ClientId to the destination buffer (DestBuffer). The
+function shall transmit these data as a complete record with the Buffer format. The
+extended data record number is placed as the first byte in the copied data.⌋
+For Buffer format see figure 7.49.
+Data element #n
+Data element #1
+…
+Extended Data Record Buffer
+ExtendedData
+RecordNumber
+Byte n
+Byte 0
+Byte 1
+Figure 7.49: Buffer format used by Dem_GetNextExtendedDataRecord</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SelectExtendedDataRecord().</p>
       </section>
 
       <section class="snip-card">
@@ -112,7 +224,7 @@ Upstream requirements: SRS_BSW_</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=223" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -124,7 +236,7 @@ Upstream requirements: SRS_BSW_</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_91016" class="swsref internal-spec-ref"><code>SWS_Dem_91016</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_91017" class="swsref internal-spec-ref"><code>SWS_Dem_91017</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -132,7 +244,7 @@ Upstream requirements: SRS_BSW_</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

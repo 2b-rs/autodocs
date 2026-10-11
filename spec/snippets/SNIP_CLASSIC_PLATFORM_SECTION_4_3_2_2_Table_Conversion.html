@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_4_3_2_2_Table_Conversion</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SoftwareComponentTemplate.pdf</strong> (Seite 149)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SoftwareComponentTemplate.pdf#page=146" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SoftwareComponentTemplate.pdf</a></strong> (Seite 149)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01166" class="swsref"><code>TPS_SWCT_01166</code></a></span>
         </div>
@@ -89,7 +90,181 @@ ping, a dedicated TextTableMapping for each direction can be defined.⌋
 [constr_1303] Applicability of TextTableMapping depending on the value of
 CompuMethod.category
 Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
-⌈If a DataP</div></section>
+⌈If a DataPrototypeMapping aggregates a TextTableMapping then only certain
+combinations of the value of the applicable CompuMethod.category are supported:
+• category of firstDataPrototype: TEXTTABLE,
+category of secondDataPrototype: TEXTTABLE
+• category of firstDataPrototype: SCALE_LINEAR_AND_TEXTTABLE,
+category of secondDataPrototype: TEXTTABLE
+• category of firstDataPrototype: TEXTTABLE,
+category of secondDataPrototype: SCALE_LINEAR_AND_TEXTTABLE
+• category of firstDataPrototype: BITFIELD_TEXTTABLE,
+category of secondDataPrototype: TEXTTABLE
+• category of firstDataPrototype: TEXTTABLE,
+category of secondDataPrototype: BITFIELD_TEXTTABLE
+Software Component Template
+• category of firstDataPrototype: BITFIELD_TEXTTABLE,
+category of secondDataPrototype: BITFIELD_TEXTTABLE
+⌋
+To some extent, bitfields can be regarded as a hybrid between a primitive and a struc-
+tured data type:
+• On the one hand, a bitfield is defined in the context of a primitive Implementa-
+tionDataType.
+• On the other hand, by means of the definition of a mask, it is possible to define
+isolated parts within the primitive ImplementationDataType that potentially
+can be totally independent of each other with respect to the semantics of the data
+that match the mask.
+In other words, the existence of semantically independent and potentially isolated parts
+within the primitive ImplementationDataType creates a similar characteristic as
+if the definitions of the isolated parts were created by means of defining primitive Im-
+plementationDataTypeElements within the context of a composite Implemen-
+tationDataType.
+And because it is possible to regard the “mission statement” of a DataPrototype
+that refers to a CompuMethod of category BITFIELD_TEXTTABLE as to mimic the
+semantics of a structured data type it is also possible to apply some rules that are
+already in place for structured data types in this specific case as well.
+This conclusion, in combination with the existence of [TPS_SWCT_01551], sets the
+stage for [TPS_SWCT_01583].
+[TPS_SWCT_01583] Completeness of TextTableMapping is not a requirement
+⌈If a DataPrototypeMapping contains one or more TextTableMapping(s) where
+the DataPrototype on the sender side refers to a CompuMethod of category
+BITFIELD_TEXTTABLE it is not required that for each possible value and each pos-
+sible bit mask on the sender side corresponding values on the receiver side are speci-
+fied.⌋
+With respect to [TPS_SWCT_01583] it is still important to observe that within a single
+mask all values on the sender side shall have a mapping to the receiver side.
+Otherwise, the RTE generator would not be able to create mapping code that unam-
+biguously takes care of mapping the correct values onto each other.
+[constr_1304] Existence of attribute bitfieldTextTableMaskFirst
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈The attribute bitfieldTextTableMaskFirst shall be defined only if the first-
+DataPrototype of a DataPrototypeMapping refers to a CompuMethod that has
+the value of category set to BITFIELD_TEXTTABLE.⌋
+Software Component Template
+[constr_1305] Existence of attribute bitfieldTextTableMaskSecond
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈The attribute bitfieldTextTableMaskSecond shall be defined only if the sec-
+ondDataPrototype of a DataPrototypeMapping refers to a CompuMethod that
+has the value of category set to BITFIELD_TEXTTABLE.⌋
+[constr_1313] Completeness of TextTableMapping for the values of a given bit
+mask on the sender side
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈If a DataPrototypeMapping contains one or more TextTableMapping(s) where
+the DataPrototype on the sender side refers to a CompuMethod of cate-
+gory BITFIELD_TEXTTABLE then all DataPrototypeMapping.textTableMap-
+ping shall aggregate a collection of TextTableMapping.valuePair where each
+possible value of the sender bit mask9 is represented by exactly one TextTabl-
+eValuePair.firstValue ([TPS_SWCT_01163]) or TextTableValuePair.sec-
+ondValue ([TPS_SWCT_01164]).⌋
+[constr_1306] Limitation of TextTableMapping for CompuMethods that have the
+value of category set to BITFIELD_TEXTTABLE
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈For any TextTableMapping where both firstDataPrototype and second-
+DataPrototype refer to CompuMethods that have the value of category set to
+BITFIELD_TEXTTABLE and where the attribute TextTableMapping.valuePair
+exists the value of attribute TextTableMapping.identicalMapping shall be set
+to false.⌋
+[constr_1307] Consistency of values and masks in TextTableMapping
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈If a TextTableMapping element defines bit masks as bitfieldTextTableMask-
+First or bitfieldTextTableMaskSecond then all contained TextTableMap-
+ping.valuePair.firstValues as well as all TextTableMapping.valuePair.
+secondValues shall not specify a value that would be ruled out when - depending on
+the given value of TextTableMapping.mappingDirection - the relevant bit mask
+is applied.⌋
+Example 4.1
+Example for [constr_1307]: For a bit mask 0b00001000, only the corresponding val-
+ues 8 and 0 are allowed.
+9Depending on the applicable case this means either bitfieldTextTableMaskFirst (ap-
+plies if [TPS_SWCT_01163] is in place) or bitfieldTextTableMaskSecond for the case of
+[TPS_SWCT_01164].
+Software Component Template
+Class
+TextTableMapping
+Note
+Defines the mapping of two DataPrototypes typed by AutosarDataTypes that refer to
+CompuMethods of category TEXTTABLE, SCALE_LINEAR_AND_TEXTTABLE or BITFIELD_
+TEXTTABLE.
+Base
+ARObject
+Aggregated by
+DataPrototypeMapping.textTableMapping, SenderRecArrayTypeMapping.senderToSignalTextTable
+Mapping, SenderRecArrayTypeMapping.signalToReceiverTextTableMapping, SenderReceiverToSignal
+Mapping.senderToSignalTextTableMapping, SenderReceiverToSignalMapping.signalToReceiverTextTable
+Mapping, SenderRecRecordElementMapping.senderToSignalTextTableMapping, SenderRecRecord
+ElementMapping.signalToReceiverTextTableMapping, SubElementMapping.textTableMapping
+Attribute
+Type
+Mult.
+Kind
+Note
+bitfieldTextTable
+MaskFirst
+PositiveInteger
+0..1
+attr
+This attribute can be used to support the mapping of bit
+field to bit field, boolean values to bit fields, and vice
+versa. The attribute defines the bit mask for the first
+element of the TextTableMapping.
+Stereotypes: atpVariation
+Tags: vh.latestBindingTime=preCompileTime
+bitfieldTextTable
+MaskSecond
+PositiveInteger
+0..1
+attr
+This attribute can be used to support the mapping of bit
+field to bit field, boolean values to bit fields, and vice
+versa. The attribute defines the bit mask for the second
+element of the TextTableMapping.
+Stereotypes: atpVariation
+Tags: vh.latestBindingTime=preCompileTime
+identical
+Mapping
+Boolean
+0..1
+attr
+If identicalMapping is set == true the values of the two
+referenced DataPrototypes do not need any conversion of
+the values.
+mapping
+Direction
+MappingDirectionEnum
+0..1
+attr
+Specifies the conversion direction for which the TextTable
+Mapping is applicable.
+valuePair
+TextTableValuePair
+*
+aggr
+Defines a pair of values which are translated into each
+other.
+Table 4.36: TextTableMapping
+[constr_1884] Existence of attribute TextTableMapping.identicalMapping
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈For each TextTableMapping, the attribute identicalMapping shall exist.⌋
+[constr_1885] Existence of attribute TextTableMapping.mappingDirection
+Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
+⌈For each TextTableMapping, the attribute mappingDirection shall exist.⌋
+Enumeration
+MappingDirectionEnum
+Note
+Specifies the conversion direction for which the mapping is applicable.
+Aggregated by
+TextTableMapping.mappingDirection
+Literal
+Description
+bidirectional
+The TextTableMapping is applicable in both directions.
+Tags: atp.EnumerationLiteralIndex=0
+firstToSecond
+The TextTableMapping is applicable in the direction from firstDataPrototype / firstOperationArgument
+referring into the PortInterface of the PPortPrototype to secondDataPrototype / secondOperation
+Argument referring into the PortInterface of the RPortPrototype.
+Tags: atp.EnumerationLiteralIndex=1
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +277,7 @@ Imposition time: CP: IT_RteGen, AP: IT_BefAraApiGen
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SoftwareComponentTemplate.pdf#page=146" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

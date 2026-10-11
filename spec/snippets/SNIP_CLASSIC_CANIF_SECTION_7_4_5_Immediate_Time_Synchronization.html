@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: canif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_4_5_Immediate_Time_Synchronization</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverCAN.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTSyn_00120" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00120</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTSyn_00220" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00220</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,62 @@ timeBaseStatus can be obtained by StbM_GetTimeBaseStatus or
 StbM_GetCurrentTime.
 In addition, to the actual trigger condition for an immediate transmission (refer
 to [SWS_CanTSyn_00118] above) the parameter CanTSynCyclicMsgResumeTime
-needs to be considered for im</div></section>
+needs to be considered for immediate transmission. Refer also to the trigger condi-
+tion for cyclic Timesync message transmissions (refer to [SWS_CanTSyn_00028] and
+[SWS_CanTSyn_00038], respectively).
+Two main scenarios are relevant for configuration of CanTSynCyclicMsgResume-
+Time:
+• With CanTSynCyclicMsgResumeTime and CanTSynGlobalTimeTxPeriod
+both being configured as zero, a single shot mode is achieved that is solely trig-
+gered by the change of the timeBaseUpdateCounter.
+• With
+CanTSynCyclicMsgResumeTime
+greater
+than
+CanTSynGlobal-
+TimeTxPeriod a hold-over scenario in a Time Gateway can be configured:
+– While Timesync messages are received from the Time Master side, the
+Timesync messages on the sub-busses are only triggered by immediate
+transmission, as cyclic transmission is suspended while cyclicMsgRe-
+sumeCounter is running.
+– If no Timesync messages from the Time Master side are received anymore
+and a timeout is detected, cyclic transmission takes over, as cyclic trans-
+mission is no longer suspended because cyclicMsgResumeCounter has
+elapsed.
+– If reception of Timesync messages from the Time Master side resumes,
+the Timesync messages on the sub-busses are again triggered by immedi-
+ate transmission, as cyclic transmission is again suspended because of the
+cyclicMsgResumeCounter.
+[SWS_CanTSyn_00119]{OBSOLETE} ⌈If CanTSynImmediateTimeSync is set to
+TRUE, cyclicMsgResumeCounter and CanTSynCyclicMsgResumeTime shall be
+considered.⌋(RS_TS_20031)
+[SWS_CanTSyn_00120] ⌈If for a Time Domain
+• CanTSynImmediateTimeSync is set to TRUE
+• and CanTSynCyclicMsgResumeTime is greater than 0
+• and an immediate transmission of a SYNC or OFS message has completed suc-
+cessfully (i.e., CanTSyn_TxConfirmation returns E_OK in parameter result)
+then the CanTSyn shall set the counter cyclicMsgResumeCounter to CanTSyn-
+CyclicMsgResumeTime for the corresponding Time Domain.⌋(RS_TS_20031)
+[SWS_CanTSyn_00122] ⌈If for a Time Domain cyclicMsgResumeCounter is
+greater than 0, then the CanTSyn shall discard cyclic Timesync message transmis-
+sion requests for that Time Domain.⌋(RS_TS_20031)
+[SWS_CanTSyn_00220] ⌈If for a Time Domain cyclicMsgResumeCounter is
+greater than 0, then the CanTSyn shall decrement upon each invocation of CanTSyn_-
+MainFunction the cyclicMsgResumeCounter of the corresponding Time Domain
+by CanTSynMainFunctionPeriod.⌋(RS_TS_20031)
+[SWS_CanTSyn_00121] ⌈If the cyclicMsgResumeCounter is decremented to 0 or
+below, then the CanTSyn shall resume cyclic Timesync message transmission within
+the same CanTSyn_MainFunction call by requesting either a SYNC or OFS mes-
+sage transmission.⌋(RS_TS_20031)
+Rationale: [SWS_CanTSyn_00121] is to ensure, that the first cyclic transmission is
+requested in the same main function call in which also cyclicMsgResumeCounter
+reaches 0 (refer to term "earliest possible" main function in [SWS_CanTSyn_00028]
+and [SWS_CanTSyn_00038]). If the message is actually really transmitted depends
+also on the debounceCounter.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Resume counter started on immediate transmission</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CanTSyn_00220] im Text von SWS_TimeSyncOverCAN.</p>
       </section>
 
       <section class="snip-card">
@@ -106,7 +158,7 @@ needs to be considered for im</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverCAN.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,15 +170,15 @@ needs to be considered for im</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTSyn_00120" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00120</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CanTSyn_00220" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00220</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

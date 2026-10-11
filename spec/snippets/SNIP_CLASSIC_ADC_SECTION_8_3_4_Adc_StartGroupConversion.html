@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ADC_SECTION_8_3_4_Adc_StartGroupConversion</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ADCDriver.pdf</strong> (Seite 57)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=56" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></strong> (Seite 57)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Adc_91000" class="swsref internal-spec-ref"><code>SWS_Adc_91000</code></a></span>
         </div>
@@ -112,11 +113,69 @@ Upstream requirements: SRS_Adc_12817, SRS_Adc_12364
 ⌈The ADC module’s environment shall only call Adc_StartGroupConversion for groups
 configured with software trigger source.⌋
 [SWS_Adc_00259]
-Upstream requirements: SRS_BS</div></section>
+Upstream requirements: SRS_BSW_00171
+⌈The function Adc_StartGroupConversion shall be pre-compile time configurable On/
+Off by the configuration parameter AdcEnableStartStopGroupApi.⌋
+[SWS_Adc_00125]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00386, SRS_SPAL_12448
+⌈If development error detection for the ADC module is enabled:when called with a non-
+existing channel group ID, function Adc_StartGroupConversion shall raise development
+error ADC_E_PARAM_GROUP and return without any action.⌋
+[SWS_Adc_00133]
+Upstream requirements: SRS_BSW_00386, SRS_SPAL_12448
+⌈If development error detection for the ADC module is enabled: when called on a
+group with trigger source configured as hardware, function Adc_StartGroupConversion
+shall raise development error ADC_E_WRONG_TRIGG_SRC and return without any
+action.⌋
+[SWS_Adc_00346] ⌈If the priority mechanism is disabled and the queuing is disabled
+: when called while any of the groups, which can not be implicitly stopped, is not in
+state ADC_IDLE, the function Adc_StartGroupConversion shall report a runtime error
+ADC_E_BUSY.⌋
+Note: The condition that any group is not in state ADC_IDLE means in this context:
+• Any conversion is ongoing
+or
+• Any HW trigger is enabled
+[SWS_Adc_00426] ⌈If the priority mechanism is disabled and the queuing is dis-
+abled: when called while any of the groups, which can be implicitly stopped, is not
+in state ADC_IDLE and not in state ADC_STREAM_COMPLETED, the function Adc_
+StartGroupConversion shall report a runtime error ADC_E_BUSY.⌋
+Note: Groups which can be implicitly stopped are:
+• Software triggered groups configured in one-shot, single-access mode
+• Software triggered groups configured in continuous, linear streaming access
+mode
+• Hardware triggered groups configured in one-shot, linear streaming access mode
+[SWS_Adc_00348] ⌈If the priority mechanism is enabled: when called while agroup,
+which can not be implicitly stopped, is not in state ADC_IDLE, the function Adc_Start
+GroupConversion shall report a runtime error ADC_E_BUSY.⌋
+Note: The condition that the group is not in state ADC_IDLE means in this context:
+• The conversion of the same group is currently ongoing
+or
+• A conversion request for the same group is already stored one time in the queue
+[SWS_Adc_00427] ⌈If the priority mechanism is enabled: when called while a group,
+which can be implicitly stopped, is not in state ADC_IDLE and not in state ADC_
+STREAM_COMPLETED, the function Adc_StartGroupConversion shall report a run-
+time error ADC_E_BUSY.⌋
+[SWS_Adc_00351] ⌈If the priority mechanism is disabled and the queuing is enabled:
+when called while a group, which can not be implicitly stopped, is not in state ADC_
+IDLE, the function Adc_StartGroupConversion shall report a runtime error ADC_E_
+BUSY.⌋
+[SWS_Adc_00428] ⌈If the priority mechanism is disabled and the queuing is enabled:
+when called while a group, which can be implicitly stopped, is not in state ADC_IDLE
+and not in state ADC_STREAM_COMPLETED, the function Adc_StartGroupConver-
+sion shall report a runtime error ADC_E_BUSY.⌋
+[SWS_Adc_00294]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection for the ADC module is enabled:when called prior to
+initializing the driver, the function Adc_StartGroupConversion shall raise development
+error ADC_E_UNINIT.⌋
+[SWS_Adc_00424] ⌈If development error detection for the ADC module is enabled:
+when called prior to initializing the result buffer pointer with function Adc_SetupResult
+Buffer, the function Adc_StartGroupConversion shall raise development error ADC_E_
+BUFFER_UNINIT.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Adc_SetupResultBuffer().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +184,7 @@ Upstream requirements: SRS_BS</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ADCDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=56" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_8_4_4_CallTrustedFunction</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 172)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=172" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 172)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00776" class="swsref internal-spec-ref"><code>SWS_Os_00776</code></a></span>
         </div>
@@ -116,11 +117,61 @@ Upstream requirements: SRS_Os_11001
 TRUSTED_&lt;name_of_the_trusted_service&gt;( TrustedFunctionIndex
 Type,TrustedFunctionParameterRefType);
 (The arguments are the
-same as the arguments of C</div></section>
+same as the arguments of CallTrustedFunction).
+• Normally, a user will not directly call this service, but it will be part of some stan-
+dard interface, e.g. a standard I/O interface.
+• It is the duty of the called trusted function to check rights of passed parameters,
+especially if parameters are interpreted as out parameters.
+• It should be noted that the CallTrustedFunction does not disable timing pro-
+tection for the Task which called the service. This may lead to timing faults (calls
+of the ProtectionHook) even inside of a trusted OS-Application. It is therefore
+recommended to use CallTrustedFunction only for stateless functions (e.g.
+functions which do not write or do not have internal states)
+⌋
+[SWS_Os_00266]
+Upstream requirements: SRS_Os_11001
+⌈When CallTrustedFunction calls the function &lt;FunctionIndex&gt;, that function
+shall be executed with the same processor mode, memory protection boundaries and
+the service protection limitations of the OS-Application to which it belongs. The notion
+of "current application" shall remain that of the calling Task or Category 2 ISR.⌋
+Reaction to timing protection can be defined to terminate the OS-Application.
+If a
+Task is inside CallTrustedFunction and Task rescheduling takes place within the
+same OS-Application, the newly running higher priority Task may cause timing protec-
+tion and terminate the OS-Application, thus indirectly aborting the trusted function. To
+avoid this, the scheduling of other Tasks which belong to the same OS-Application as
+the caller can be restricted, as well as the availability of interrupts of the same OS-
+Application.
+[SWS_Os_00565] ⌈When CallTrustedFunction is called and the caller of Call-
+TrustedFunction is supervised with timing protection, the Operating System shall
+delay any timing protection errors until the CallTrustedFunction returns to a
+OsApplication with OsTrustedApplicationDelayTimingViolationCall ==
+FALSE.⌋
+[SWS_Os_00563] ⌈
+If OsLockTrustedFunctionCall == TRUE the OperatingSystem shall not schedule
+any other Tasks which belong to the same OS-Application as the non-trusted caller
+of the service. Also interrupts of Category 2 which belong to the same OS-Application
+shall be disabled during the execution of the service.⌋
+The lock/disabling in [SWS_Os_00563] is required to support timing supervision. Since
+the caller of a trusted function can be any Task or Category 2 ISR the Operating System
+has to make sure that no other calls can preempt/interrupt the ongoing trusted function.
+[SWS_Os_00364]
+Upstream requirements: SRS_Os_11001
+⌈If CallTrustedFunction calls the trusted function, that function shall continue to
+run on the same interrupt/task priority and be allowed to call system services defined
+for inside trusted functions.⌋
+See also table in chapter 7.7.3.3.
+[SWS_Os_00292]
+Upstream requirements: SRS_BSW_00323
+⌈If the function index &lt;FunctionIndex&gt; in a call of CallTrustedFunction is unde-
+fined, CallTrustedFunction shall return E_OS_SERVICEID.⌋
+[SWS_Os_00516]
+Upstream requirements: SRS_Os_11016
+⌈Availability of CallTrustedFunction: Available in Scalability Classes 3 and 4.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von TrustedFunctionParameterRefType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +180,7 @@ same as the arguments of C</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=172" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

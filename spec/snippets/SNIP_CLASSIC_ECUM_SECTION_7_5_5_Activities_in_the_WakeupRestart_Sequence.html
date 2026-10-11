@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: ecum</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_7_5_5_Activities_in_the_WakeupRestart_Sequence</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 56)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 55)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04084" class="swsref internal-spec-ref"><code>SWS_EcuM_04084</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04150" class="swsref internal-spec-ref"><code>SWS_EcuM_04150</code></a></span>
         </div>
       </div>
 
@@ -111,11 +112,48 @@ tion.
 The driver implementation should only invoke the wakeup callback once. Thereafter it
 should not invoke the wakeup callback again until it has been re-armed by an explicit
 function call. The driver must thus be re-armed to fire the callback again.
-[SWS_EcuM_02539] ⌈If the ECU Manager module has a li</div></section>
+[SWS_EcuM_02539] ⌈If the ECU Manager module has a list of wakeup source can-
+didates when the WakeupRestart Sequence has finished, the ECU Manager mod-
+ule shall validate these wakeup source candidates in EcuM_MainFunction.⌋(SRS_-
+ModeMgm_09100, SRS_BSW_00373)
+See section 7.6.4 Activities in the WakeupValidation Sequence.
+[SWS_EcuM_04066] ⌈⌋(SRS_ModeMgm_09136)
+«module»
+Mcu
+«module»
+Os
+«module»
+EcuM
+Integration Code
+EnableAllInterrupts()
+ReleaseResource(RES_AUTOSAR_ECUM_&lt;core#&gt;)
+Mcu_SetMode(Mcu_ModeType)
+DisableAllInterrupts()
+EcuM_GetPendingWakeupEvents(EcuM_WakeupSourceType)
+EcuM_AL_DriverRestart()
+EcuM_DisableWakeupSources(EcuM_WakeupSourceType)
+Figure 7.14: WakeupRestart Sequence
+[SWS_EcuM_04148] ⌈If WakeupEvent was reported EcuM shall exit sleep mode.⌋
+(SRS_ModeMgm_09136, SRS_ModeMgm_09145)
+[SWS_EcuM_04149] ⌈If all CheckWakeupTimers for all WakeupSources have been
+expired, EcuM shall transit to GoSleep state and begin sending EcuM to sleep (halt or
+polling) again.⌋(SRS_ModeMgm_09118)
+Note: When EcuM was resumed by an asynchronous WakeupSource the EcuM has
+to execute WakeRestart sequence to re-start the mainfunctions to establish asyn-
+chronous communication towards the used hardware (e.g. SPI).
+[SWS_EcuM_04150]
+⌈EcuM
+shall
+report
+the
+run-time
+error
+ECUM_E_WAKEUP_TIMEOUT if no wake up event was set after a signaled
+wake up and the corresponding CheckWakeupTimer expires.⌋(SRS_BSW_00452)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Derivation of wakeup sources to disable</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_04150] im Text von SWS_ECUStateManager.</p>
       </section>
 
       <section class="snip-card">
@@ -124,11 +162,11 @@ function call. The driver must thus be re-armed to fire the callback again.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=55" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 56</td>
+              <td>Seite 55</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -136,15 +174,15 @@ function call. The driver must thus be re-armed to fire the callback again.
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04084" class="swsref internal-spec-ref"><code>SWS_EcuM_04084</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04150" class="swsref internal-spec-ref"><code>SWS_EcuM_04150</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

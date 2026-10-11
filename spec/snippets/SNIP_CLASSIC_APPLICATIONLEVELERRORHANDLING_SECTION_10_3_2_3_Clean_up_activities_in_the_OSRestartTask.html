@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: applicationlevelerrorhandling</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_APPLICATIONLEVELERRORHANDLING_SECTION_10_3_2_3_Clean_up_activities_in_the_OSRestartTask</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ApplicationLevelErrorHandling.pdf</strong> (Seite 74)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_EXP_ApplicationLevelErrorHandling.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ApplicationLevelErrorHandling.pdf</a></strong> (Seite 74)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Com_00479" class="swsref internal-spec-ref"><code>SWS_Com_00479</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00097" class="swsref internal-spec-ref"><code>SWS_Os_00097</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,89 @@ Terminate:
  Issue a “No communication” request on behalf of the partition to
 ComM.
 Restart:
- Issue a “No communication” request on behalf</div></section>
+ Issue a “No communication” request on behalf of the partition to
+ComM.
+DCM
+Terminate:
+ No explicit clean-up necessary. However, calls from DCM to
+terminated partitions will be left unanswered. The RTE will
+indicate a time-out to the caller.
+Restart:
+ No explicit clean-up necessary. However, calls from DCM to will
+be left unanswered during restart. The RTE will indicate a time-
+out to the caller.
+Module
+Clean-up activities
+DEM
+Terminate:
+ No explicit clean-up necessary. However, monitors contained in
+terminated partitions need to be managed, e.g., shut off.
+Restart:
+ Run-time information of monitors located in the restarted partition
+needs to be managed.
+EcuM
+Terminate:
+ Avoid shutdown, sleep, or reset of the ECU by requesting a
+certain mode to BswM. When clean-up is completed, this request
+can be cancelled.
+Restart:
+ Avoid shutdown, sleep, or reset of the ECU by requesting a
+certain mode to BswM. When clean-up is completed, this request
+can be cancelled. The SW-Cs of the partition will issue similar
+requests when execution commences.
+NvM
+Terminate:
+ Invalidate relevant blocks belonging to the partition (note that not
+all blocks of a partition may require invalidation). Outstanding
+requests from the terminated partition shall be removed from the
+job queue.
+Restart:
+ No impact. Restart activities and consistency checks for NvM
+must be handled by the SW-Cs. This may include invalidating
+invalid blocks after a restart.
+Note: An integrator may decide which blocks can be “trusted” also in case
+of a termination. This makes different policies for “normal” shutdown and
+“exceptional” shutdown of partitions possible.
+Module
+Clean-up activities
+WdgM
+Terminate:
+ Stop all supervised entities belonging to the partition.
+Restart:
+ The integrator has to choose either to temporarily stop the
+supervision during restart or configure the watchdog by taking
+the time to restart the partition into account
+RTE
+Terminate:
+ The local RTE of the partition has already been notified by the
+Protection Hook that the partition is being terminated. No further
+actions necessary.
+Restart:
+ Once all clean-up activities in the BSW have been completed
+and the partition is ready for execution again, the RTE needs to
+be restarted.
+IoHwAb
+Terminate:
+ Set relevant IOs of IoHwAb to proper values. This is likely to be
+very application specific.
+Restart:
+ Reset relevant IOs of IoHwAb to proper values. This is likely to
+be very application specific.
+CDD
+Terminate:
+ Notify relevant CDDs that the partition is being terminated. The
+CDDs will then have to take appropriate actions.
+Restart:
+ Notify relevant CDDs that the partition is being restarted. The
+CDDs will then have to take appropriate actions
+Table 10-3. Clean-up activities for BSW
+All clean-up activities in BSW must be initiated with CallTrustedFunction() in order to
+switch to the BSW OS-Application, since the OSRestartTask is running in an OS-
+Application that is currently in the state APPLICATION_RESTARTING.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Stop sending signals and IPDU groups</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von CallTrustedFunction().</p>
       </section>
 
       <section class="snip-card">
@@ -108,7 +187,7 @@ Restart:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ApplicationLevelErrorHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_EXP_ApplicationLevelErrorHandling.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ApplicationLevelErrorHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -120,15 +199,15 @@ Restart:
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Com_00479" class="swsref internal-spec-ref"><code>SWS_Com_00479</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00097" class="swsref internal-spec-ref"><code>SWS_Os_00097</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

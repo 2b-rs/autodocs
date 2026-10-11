@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_4_16_4_Diagnostic_Activation_State</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 81)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=81" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 81)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01377" class="swsref internal-spec-ref"><code>SWS_Dcm_01377</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01378" class="swsref internal-spec-ref"><code>SWS_Dcm_01378</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,61 @@ agnostic request processing is finished and the Dcm is not processing a diagnost
 request of another protocol on this network and if the Dcm is in default session.⌋
 [SWS_Dcm_01375]
 Upstream requirements: RS_Diag_04006
-⌈The Dcm shall go into ’inactive’ d</div></section>
+⌈The Dcm shall go into ’inactive’ diagnostic state on all networks if a S3Server timeout
+occurs and the Dcm makes a transition into default session.⌋
+[SWS_Dcm_01376]
+Upstream requirements: RS_Diag_04006
+⌈If ActiveDiagnostic is ’DCM_COMM_ACTIVE’ and the Dcm is doing a transi-
+tion into ’active’ diagnostic state of a diagnostic protocol,
+the Dcm shall call
+ComM_DCM_ActiveDiagnostic(NetworkId), with the networkId associated to the re-
+ceived Pdu (see DcmDslProtocolComMChannelRef), with every request, to inform
+the ComM module about the need to stay in Full Communication Mode.⌋
+Manager
+[SWS_Dcm_01377]
+Upstream requirements: RS_Diag_04006
+⌈Upon
+a
+diagnostic
+state
+transition
+into
+’inactive’,
+the
+Dcm
+shall
+notify
+the
+ComM
+module
+about
+an
+inactive
+diagnostic
+state
+on
+a
+network
+by
+calling
+ComM_DCM_InactiveDiagnostic(NetworkId), with the networkId associated to the re-
+ceived Pdu (see DcmDslProtocolComMChannelRef).⌋
+[SWS_Dcm_01378]
+Upstream requirements: RS_Diag_04006
+⌈The definition of a finished diagnostic request according to [SWS_Dcm_01374], shall
+be as follows:
+• the Dcm has sent a positive or negative response unequal to NRC 0x78 by re-
+ceiving the Dcm_TpTxConfirmation connected to the response given by the
+DSL submodule
+• the Dcm has processed the service with SPRMIB=true and the positive response
+was suppressed
+• in case of functional addressing, the Dcm has processed the service and the
+negative response was suppressed.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Notifying ComM on inactive diagnostic state</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01378] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +153,7 @@ Upstream requirements: RS_Diag_04006
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=81" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,15 +165,15 @@ Upstream requirements: RS_Diag_04006
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01377" class="swsref internal-spec-ref"><code>SWS_Dcm_01377</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01378" class="swsref internal-spec-ref"><code>SWS_Dcm_01378</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

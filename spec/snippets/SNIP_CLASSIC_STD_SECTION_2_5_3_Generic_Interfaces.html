@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_2_5_3_Generic_Interfaces</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TR_BSWUMLModelModelingGuide.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TR_BSWUMLModelModelingGuide.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_BSWUMLModelModelingGuide.pdf</a></strong> (Seite 26)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_BRF_02288" class="swsref"><code>RS_BRF_02288</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -102,11 +103,68 @@ stereotype
 nition shall be located within the package “GenericInterfaces” within the package path
 “SoftwarePackages/GenericElements”.⌋
 [TR_BSWMG_00134]
-Derived Generic Interface ⌈In order to assign a de-</div></section>
+Derived Generic Interface ⌈In order to assign a de-
+rived generic interface to a generic interface definition, an interface stereotyped
+≪derived_generic_interface≫with a generalization association shall be mod-
+eled (targeting the generic interface definition).⌋
+[TR_BSWMG_00156] Derived Generic Interface contains no function ⌈A derived
+generic interface shall not contain a function definition.⌋
+[TR_BSWMG_00062] Derived Generic Interface Name ⌈In order to assign a con-
+crete name to a function defined within a generic interface, the derived generic inter-
+face shall be named with the desired name.⌋
+[TR_BSWMG_00178] Override the Derived Generic Interface Name ⌈If a mod-
+ule uses a derived generic interface that is realized by another module, but requires
+a name different from the derived generic interface, another interface stereotyped
+≪derived_generic_interface≫with a generalization association shall be mod-
+eled (targeting the derived generic interface definition). This new interface shall over-
+ride the name as in [TR_BSWMG_00062] and shall be referenced by the module.⌋
+Modeling Guidelines of Basic Software EA UML
+Model
+[TR_BSWMG_00179]
+Override Generic Interface Properties ⌈Properties of the
+generic interface that are modeled as tagged values may be overridden on a derived
+generic interface by applying those tagged values to the derived generic interface with
+new values.⌋
+[TR_BSWMG_00180] Override Derived Generic Interface Properties ⌈Properties of
+the derived generic interface that are modeled as tagged values may be overridden on
+an interface with generalization association to the interface by applying those tagged
+values to the second interface with new values.⌋
+[TR_BSWMG_00181] Re-use existing interfaces as much as possible ⌈Only when
+no derived generic interface with desired name and properties is already present in the
+model, a new derived generic interface shall be created.⌋
+«generic_interface»
+Transmit
+«function_blueprint»
++ Transmit(Std_ReturnType, PduIdType, const PduInfoType*): void
+«derived_generic_interface»
+PduR_&lt;User:Up&gt;Transmit
+«module»
+PduR
+«module»
+CanTp
+«module»
+CanIf
+«derived_generic_interface»
+CanIf_Transmit
+«derived_generic_interface»
+CanTp_Transmit
+«derived_generic_interface»
+&lt;Provider:LoTp&gt;_Transmit
+«derived_generic_interface»
+&lt;Provider:Lo&gt;_Transmit
+«realize»
+«realize»
+«optional»
+«optional»
+«realize»
+«mandatory»
+Figure 2.7: Generic Interface/Derived Generic Interface example
+Modeling Guidelines of Basic Software EA UML
+Model</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">generic interfaces supporting underlying modules</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -115,7 +173,7 @@ Derived Generic Interface ⌈In order to assign a de-</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TR_BSWUMLModelModelingGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TR_BSWUMLModelModelingGuide.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_BSWUMLModelModelingGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -127,15 +185,15 @@ Derived Generic Interface ⌈In order to assign a de-</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=RS_BRF_02288" class="swsref"><code>RS_BRF_02288</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

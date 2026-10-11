@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_6_2_13_Service_0x2E_WriteDataByIdentifier</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 163)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=163" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 163)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01551" class="swsref internal-spec-ref"><code>SWS_Dcm_01551</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06099</span>
         </div>
       </div>
 
@@ -89,11 +90,143 @@ According to [SWS_Dcm_01537] the authentication checks are only executed if
 DcmDspAuthentication is configured. In case of a failed authentication the NRC han-
 dling is according to [SWS_Dcm_01544] and [SWS_Dcm_01551] applies.
 [SWS_Dcm_00467] ⌈On reception of the UDS Service WriteDataByIdentifier (0x2E),
-the Dcm module shall check if the DID is supported (see configu</div></section>
+the Dcm module shall check if the DID is supported (see configuration parameter
+DcmDspDid and DcmDspDidRange) If not, the Dcm module shall send NRC 0x31 (Re-
+quest out of range) .⌋()
+[SWS_Dcm_00562] ⌈If a DID is set as unused (DcmDspDidUsed set to FALSE), the
+Dcm shall consider the DID as not supported (according to [SWS_Dcm_00467])⌋()
+[SWS_Dcm_00468] ⌈On reception of the UDS Service WriteDataByIdentifier (0x2E),
+the Dcm module shall check if the DID has a Write access configured (see configuration
+parameter DcmDspDidWrite in DcmDspDidInfo). If not, the Dcm module shall send
+NRC 0x31 (Request out of range).⌋()
+[SWS_Dcm_00469] ⌈On reception of the UDS Service WriteDataByIdentifier (0x2E),
+the Dcm module shall check if the DID can be written in the current session (see con-
+figuration parameter DcmDspDidWriteSessionRef). If not, the Dcm module shall
+send a NRC 0x31 (Request Out of Range).⌋()
+[SWS_Dcm_00470] ⌈On reception of the UDS Service WriteDataByIdentifier (0x2E),
+the Dcm module shall check if the DID can be written in the current security level
+(see configuration parameter DcmDspDidWriteSecurityLevelRef).
+If not, the
+Dcm module shall send NRC 0x33 (Security access denied).⌋()
+[SWS_Dcm_00822] ⌈On reception of the UDS Service WriteDataByIdentifier (0x2E),
+the Dcm module shall check if the DID can be written in the current mode condition (see
+configuration parameter DcmDspDidWriteModeRuleRef). If not, the Dcm module
+shall send the calculated negative response code of the referenced DcmModeRule.⌋()
+[SWS_Dcm_00473] ⌈On reception of the UDS Service WriteDataByIdentifier (0x2E),
+if all signals (DcmDspDidSignal) of the DID have fixed length (DcmDspDataType
+is different than UINT8_DYN), the Dcm module shall check if the received data length
+corresponds to the DID data length (addition of all DcmDspDataByteSize).⌋()
+[SWS_Dcm_00395]
+⌈After
+all
+verifications
+(see
+[SWS_Dcm_00467],
+[SWS_Dcm_00468], [SWS_Dcm_00469], [SWS_Dcm_00470], [SWS_Dcm_00473]
+) the Dcm module shall write all the signals (DcmDspDidSignal) of the DID by
+either calling the configured function DcmDspDataWriteFnc (if parameter DcmD-
+spDataUsePort is set to USE_DATA_SYNCH_FNC or USE_DATA_ASYNCH_FNC
+or USE_DATA_ASYNCH_FNC_ERROR or USE_DATA_SYNCH_FNC_PROXY or USE_-
+DATA_ASYNCH_FNC_PROXY) or the associated WriteData operations (if parameter
+DcmDspDataUsePort is set to USE_DATA_SYNCH_CLIENT_SERVER or USE_-
+DATA_ASYNCH_CLIENT_SERVER or USE_DATA_ASYNCH_CLIENT_SERVER_ERROR)
+or the associated SenderReceiver interfaces (if parameter DcmDspDataUsePort is
+Manager
+set to USE_DATA_SENDER_RECEIVER or to USE_DATA_SENDER_RECEIVER_AS_-
+SERVICE) with the following parameter values:
+Data: the dataRecord form the request
+DataLength: the number of bytes in the dataRecord (get from the configuration if the
+data has fixed length (DcmDspDataType is different than UINT8_DYN) or from the
+diagnostic request length if the data has dynamic length (DcmDspDataType is set to
+UINT8_DYN)).⌋()
+[SWS_Dcm_01433]
+⌈After
+all
+verifications
+(see
+[SWS_Dcm_00467],
+[SWS_Dcm_00468], [SWS_Dcm_00469], [SWS_Dcm_00470], [SWS_Dcm_00473] )
+for DID’s with DcmDspDidUsePort is set to USE_ATOMIC_SENDER_RECEIVER_-
+INTERFACE,
+USE_ATOMIC_SENDER_RECEIVER_INTERFACE_AS_SERVICE
+or
+USE_ATOMIC_NV_DATA_INTERFACE, the Dcm module shall write the data by writing
+the associated sender-receiver or NvDataInterface DataServices_{DID}.⌋()
+[SWS_Dcm_CONSTR_06039] Signals with variable datalength ⌈Only the last sig-
+nal (DcmDspDidSignal) of a DID can have variable datalength (DcmDspDataType
+is set to UINT8_DYN).⌋()
+In other case the Dcm won’t be able to split the data from the request.
+[SWS_Dcm_00639] ⌈To serialize the request message of UDS Service WriteDataByI-
+dentifier request into the required AUTOSAR data types (signed- and unsigned inte-
+ger), the target endianness configured in DcmDspDataEndianness shall be consid-
+ered for DcmDspData elements having DcmDspDataUsePort set to USE_DATA_-
+SENDER_RECEIVER, USE_DATA_SENDER_RECEIVER_AS_SERVICE. In case DcmD-
+spDataEndianness is not present, the DcmDspDataDefaultEndianness shall be
+used instead.⌋()
+[SWS_Dcm_CONSTR_06018] ⌈DcmDspData elements used in service 0x2E shall not
+have DcmDspDataUsePorts set to USE_ECU_SIGNAL.⌋()
+[SWS_Dcm_CONSTR_06073] Dependency for DcmDspDataWriteFnc ⌈DcmDsp-
+DataWriteFnc shall be only present if:
+• DcmDspDataUsePort is set to USE_DATA_SYNCH_FNC or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC_ERROR or
+• DcmDspDataUsePort is set to USE_DATA_SYNCH_FNC_PROXY or
+• DcmDspDataUsePort is set to USE_DATA_ASYNCH_FNC_PROXY
+⌋()
+Note: The invocation of functions BndM_WriteStart and BndM_WriteFinalize are not
+part of Dcm Specification. The functions are called via project specific implementation
+(e.g. CDD).
+Manager
+[SWS_Dcm_01582]
+Atomic
+BndM
+write
+operation
+⌈After
+all
+verifica-
+tions
+(see
+[SWS_Dcm_00467],
+[SWS_Dcm_00468],
+[SWS_Dcm_00469],
+[SWS_Dcm_00470], [SWS_Dcm_00473]) for DIDs with DcmDspDidUsePort is
+set to USE_ATOMIC_BNDM, the Dcm module shall write the data by writing the
+data to the associated BlockId from the BndM (DcmDspDidBndMBlockIdRef)
+using the block specific writing function BndM_WriteBlock_&lt;BlockId.Shortname&gt;.⌋
+(RS_Diag_04243)
+[SWS_Dcm_01583]
+Not allowed atomic BndM write operation ⌈If the Dcm
+calls BndM_WriteBlock_’BlockId.Shortname’ according to [SWS_Dcm_01582] and
+BndM_WriteBlock_’BlockId.Shortname’ returns E_NOT_OK, the Dcm shall return a
+negative response 0x24 (requestSequenceError).⌋(RS_Diag_04243)
+Note: The BndM needs to be set into writing mode as a precondition. This is either
+done by the coding sub-module in Dcm or by a CDD.
+[SWS_Dcm_01584] Positive response on atomic BndM write operation ⌈If the
+Dcm has triggered an atomic BndM write operation according to [SWS_Dcm_01582],
+the Dcm shall return a positive response if the write operation of the BndM has called
+Dcm_BndMWriteBlockFinish with the parameter result set to E_OK.⌋(RS_Diag_04243)
+[SWS_Dcm_01585] Negative response on atomic BndM write operation ⌈If the
+Dcm has triggered an atomic BndM write operation according to [SWS_Dcm_01582],
+the Dcm shall return a negative response 0x72 (generalProgrammingFailure) if the write
+operation of the BndM has called Dcm_BndMWriteBlockFinish with the parameter re-
+sult set to E_NOT_OK.⌋(RS_Diag_04243)
+Note: The Dcm needs to ensure that [SWS_Dcm_00024] requirement is respected
+while waiting on the job finish callback as specified in [SWS_Dcm_01584] and
+[SWS_Dcm_01585].
+[SWS_Dcm_01586] ⌈If the Dcm is reading or writing a DID with DcmDspDidUsePort
+set to USE_ATOMIC_BNDM, the Dcm shall transform the dataRecord into the corre-
+sponding BndM type. The DID data element structure needs to be compatible to the
+referenced ImplementationDataType of the BndMBlockDescriptor. For each DID data
+element a corresponding sub-element shall exist in the ImplementationDataType with
+the same shortname and the basetypes shall be compatible.⌋(RS_Diag_04243)
+[SWS_Dcm_CONSTR_06099] Consistency of BndM Block configuration ⌈If a
+DcmDspDid has DcmDspDidUsePort set to USE_ATOMIC_BNDM, the parameter
+DcmDspDidBndMBlockIdRef shall be present.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01551] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06099] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +235,7 @@ the Dcm module shall check if the DID is supported (see configu</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=163" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +247,7 @@ the Dcm module shall check if the DID is supported (see configu</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01551" class="swsref internal-spec-ref"><code>SWS_Dcm_01551</code></a></td>
+              <td>SWS_Dcm_CONSTR_06099</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

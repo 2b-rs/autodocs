@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_EA_SECTION_8_3_7_Ea_InvalidateBlock</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EEPROMAbstraction.pdf</strong> (Seite 31)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EEPROMAbstraction.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EEPROMAbstraction.pdf</a></strong> (Seite 31)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,43 @@ driver or changing some module internal management information accordingly.⌋
 Note: How exactly the requested block is invalidated depends on the module’s imple-
 mentation and will not be further detailed in this specification. The internal manage-
 ment information has to be stored in NV memory since it has to be resistant against
-resets. What this information is and how it is stored is not further detailed b</div></section>
+resets. What this information is and how it is stored is not further detailed by this
+specification.
+[SWS_Ea_00135]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection for the module Ea is enabled: the function Ea_Inval-
+idateBlock shall check if the module state is MEMIF_UNINIT. If this is the case, the
+function Ea_InvalidateBlock shall reject the invalidation request, raise the development
+error EA_E_UNINIT and return with E_NOT_OK.⌋
+[SWS_Ea_00175]
+Upstream requirements: SRS_BSW_00323
+⌈The function Ea_InvalidateBlock shall check if the module state is MEMIF_BUSY. If
+this is the case, the function Ea_InvalidateBlock shall reject the invalidation request,
+raise the runtime error EA_E_BUSY and return with E_NOT_OK.⌋
+[SWS_Ea_00194]
+Upstream requirements: SRS_MemHwAb_14028
+⌈The function Ea_InvalidateBlock shall check if the module state is MEMIF_IDLE or
+MEMIF_BUSY_INTERNAL. If this is the case the module shall accept the invalidation
+request, set the Ea module status to MEMIF_BUSY, set the job result to MEMIF_JOB_
+PENDING and return E_OK to the caller.⌋
+[SWS_Ea_00195] ⌈The Ea module shall execute the block invalidation request asyn-
+chronously within the Ea module’s main function.⌋
+[SWS_Ea_00149]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection for the module EA is enabled: the function Ea_In-
+validateBlock shall check whether the given block number is valid (i.e. it has been
+configured). If this is not the case, the function Ea_InvalidateBlock shall reject the re-
+quest, raise the development error EA_E_INVALID_BLOCK_NO and return with E_
+NOT_OK.⌋
+[SWS_Ea_00161]
+Upstream requirements: SRS_BSW_00323
+⌈If an invalidation request is rejected by the function Ea_InvalidateBlock, i.e. require-
+ments SWS_Ea_00135, SWS_Ea_00149 or SWS_Ea_00175 apply, the function Ea_
+InvalidateBlock shall not change the current module status or job result.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +158,7 @@ resets. What this information is and how it is stored is not further detailed b<
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EEPROMAbstraction.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EEPROMAbstraction.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EEPROMAbstraction.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

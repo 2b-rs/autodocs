@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_3_2_N_SDU_Transmission</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANTransportLayer.pdf</strong> (Seite 31)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></strong> (Seite 31)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTp_00336" class="swsref internal-spec-ref"><code>SWS_CanTp_00336</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTp_00343" class="swsref internal-spec-ref"><code>SWS_CanTp_00343</code></a></span>
         </div>
       </div>
 
@@ -94,11 +95,78 @@ tion in the MetaData depends on the addressing format:
 ⌋()
 [SWS_CanTp_00336] ⌈When CanTp_RxIndication is called for an FC on a generic
 connection (N-PDU with MetaData), the CanTp module shall check the addressing
-informati</div></section>
+information contained in the MetaData against the stored values.⌋()
+[SWS_CanTp_00167] ⌈After a transmission request from upper layer, the CanTp mod-
+ule shall start time-out N_Cs before the call of PduR_CanTpCopyTxData. If no data is
+available before the timer elapsed, the CanTp module shall abort the communication.⌋
+()
+[SWS_CanTp_00086] ⌈The CanTp module shall call the PduR_CanTpCopyTxData
+service for each segment that is sent (SF, FF and CF). The upper layer copy the trans-
+mit data on the PduInfoType structure.⌋(SRS_Can_01079)
+[SWS_CanTp_00272] ⌈The API PduR_CanTpCopyTxData() contains a parameter
+used for the recovery mechanism - ’retry’. Because ISO 15765-2 does not support
+such a mechanism, the CAN Transport Layer does not implement any kind of recovery.
+Thus, the parameter is always set to NULL pointer.⌋()
+If the upper layer cannot make Tx data available because of an error (e.g. in gateway
+case it may indicate that the transport session from the source network was termi-
+nated), the PduR_CanTpCopyTxData() function returns BUFREQ_E_NOT_OK.
+[SWS_CanTp_00087] ⌈If PduR_CanTpCopyTxData() returns BUFREQ_E_NOT_OK,
+the CanTp module shall abort the transmit request and notify the upper layer of this
+failure by calling the callback function PduR_CanTpTxConfirmation() with the re-
+sult E_NOT_OK.⌋()
+Note:
+If
+upper
+layer
+temporarily
+has
+no
+Tx
+buffer
+available,
+the
+PduR_CanTpCopyTxData() function returns BUFREQ_E_BUSY.
+[SWS_CanTp_00184]
+⌈If
+the
+PduR_CanTpCopyTxData()
+function
+returns
+BUFREQ_E_BUSY, the CanTp module shall later (implementation specific) retry
+to copy the data.⌋()
+Note: If no data is available before the expiration of the N_Cs timer (ISO 15765-2
+specification defines the following performance requirement: (N_Cs + N_As) &lt; 0.9*
+N_Cr timeout), the CanTp module shall abort this transmission session.
+[SWS_CanTp_00280] ⌈If data is not available within N_Cs timeout the CanTp
+module shall notify the upper layer of this failure by calling the callback function
+PduR_CanTpTxConfirmation with the result E_NOT_OK.⌋()
+[SWS_CanTp_00089] ⌈When Tx data is available, the CanTp module shall resume
+the transmission of the N-SDU.⌋()
+[SWS_CanTp_00310] ⌈In case of N_As timeout occurrence (no confirmation from
+CAN driver) the CanTp module shall notify the upper layer by calling the callback func-
+tion PduR_CanTpTxConfirmation() with the result E_NOT_OK.⌋()
+[SWS_CanTp_00309] ⌈If a FC frame is received with the FS set to OVFLW the Can
+Tp module shall abort the transmit request and notify the upper layer by calling the
+callback function PduR_CanTpTxConfirmation() with the result E_NOT_OK.⌋()
+[SWS_CanTp_00317] ⌈If a FC frame is received with an invalid FS the CanTp module
+shall abort the transmission of this message and notify the upper layer by calling the
+callback function PduR_CanTpTxConfirmation() with the result E_NOT_OK.⌋()
+[SWS_CanTp_00315] ⌈The CanTp module shall start a timeout observation for N_Bs
+time at confirmation of the FF transmission, last CF of a block transmission and at each
+indication of FC with FS=WT (i.e. time until reception of the next FC).⌋()
+[SWS_CanTp_00316] ⌈In case of N_Bs timeout occurrence the CanTp module shall
+abort transmission of this message and notify the upper layer by calling the callback
+function PduR_CanTpTxConfirmation() with the result E_NOT_OK.⌋()
+[SWS_CanTp_00090] ⌈When the transport transmission session is successfully
+completed, the CanTp module shall call a notification service of the upper layer,
+PduR_CanTpTxConfirmation(), with the result E_OK.⌋()
+[SWS_CanTp_00343] ⌈CanTp shall terminate the current transmission connection
+when CanIf_Transmit() returns E_NOT_OK when transmitting an SF, FF, of CF.⌋
+()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_CanTp_00336] im Text von SWS_CANTransportLayer.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CanTp_00343] im Text von SWS_CANTransportLayer.</p>
       </section>
 
       <section class="snip-card">
@@ -107,7 +175,7 @@ informati</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -119,7 +187,7 @@ informati</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTp_00336" class="swsref internal-spec-ref"><code>SWS_CanTp_00336</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CanTp_00343" class="swsref internal-spec-ref"><code>SWS_CanTp_00343</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_6_1_Triggerings_and_Ports</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SystemTemplate.pdf</strong> (Seite 278)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=271" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></strong> (Seite 278)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02104" class="swsref"><code>TPS_SYST_02104</code></a></span>
         </div>
@@ -94,7 +95,170 @@ createEcuWakeupSource: Boolean [0..1]
 +
 dynamicPncToChannelMappingEnabled: Boolean [0..1]
 +
-pncFilterArrayMask:</div></section>
+pncFilterArrayMask: PositiveInteger [0..*] {ordered}
++
+pncGatewayType: PncGatewayTypeEnum [0..1]
+CommConnectorPort
++
+communicationDirection: CommunicationDirectionType
+IPduPort
++
+iPduSignalProcessing: IPduSignalProcessingEnum [0..1]
++
+rxSecurityVerification: Boolean [0..1]
++
+timestampRxAcceptanceWindow: TimeValue [0..1]
++
+useAuthDataFreshness: Boolean [0..1]
+ISignalPort
++
+firstTimeout: TimeValue [0..1]
++
+handleInvalid: HandleInvalidEnum [0..1]
++
+timeout: TimeValue [0..1]
+PhysicalChannel
+«enumeration»
+CommunicationDirectionType
+in
+out
+FramePort
+PduTriggering
+DataFilter
++
+dataFilterType: DataFilterTypeEnum [0..1]
++
+mask: UnlimitedInteger [0..1]
++
+max: UnlimitedInteger [0..1]
++
+min: UnlimitedInteger [0..1]
++
+offset: PositiveInteger [0..1]
++
+period: PositiveInteger [0..1]
++
+x: UnlimitedInteger [0..1]
+«enumeration»
+IPduSignalProcessingEnum
+deferred
+immediate
++dataFilter
+0..1
+«atpVariation,atpSplitable»
++iSignalTriggering
+0..*
++iSignalPort
+*
+«atpVariation,atpSplitable»
++pduTriggering
+0..*
++ecuCommPortInstance 0..*
+«atpVariation,atpSplitable»
++iSignalTriggering
+0..*
+«atpVariation,atpSplitable»
++iPduPort
+*
++pduTriggering 0..*
+«atpVariation,atpSplitable»
++managedPhysicalChannel 0..*
+«atpVariation,atpSplitable»
++commConnector
+0..*
++framePort
+*
++frameTriggering 0..*
+«atpVariation,atpSplitable»
+Figure 6.2: Communication Matrix (FibexCore: CommunicationMatrix)
+Figure 6.2 shows the relationship between the CommConnectorPort and the
+FrameTriggering, PduTriggering and ISignalTriggering. This relationship
+allows to specify explicitly which Frames, Pdus, ISignals are received/sent by the
+connected ECU on the connected channel.
+[constr_3243] FrameTriggering.pduTriggering condition ⌈A FrameTrigger-
+ing shall reference a PduTriggering if the PduTriggering references a Pdu that
+is referenced by a PduToFrameMapping which in turn is aggregated by the Frame
+that is referenced by that FrameTriggering.⌋()
+[constr_3250] PduTriggering.iSignalTriggering condition ⌈A PduTrigger-
+ing shall reference an ISignalTriggering if the ISignalTriggering references
+an ISignal or an ISignalGroup that is referenced by an ISignalToIPduMap-
+ping which in turn is aggregated by the Pdu that is referenced by that PduTrigger-
+ing.⌋()
+System Template
+[TPS_SYST_02102] FrameTriggering.pduTriggering references that shall be
+ignored ⌈References from FrameTriggering to PduTriggering which are not
+covered by [constr_3243] shall be ignored.⌋()
+As a consequence of [constr_3243] the following implications can be derived:
+• The PduTriggering of the ContainerIPdu is referenced from the
+FrameTriggering but the PduTriggerings of the contained IPdus are not
+referenced from the FrameTriggering.
+• The PduTriggering of the MultiplexedIPdu is referenced from the
+FrameTriggering but the PduTriggerings of the multiplexed Part Pdus are
+not referenced from the FrameTriggering.
+[TPS_SYST_02104] Triggerings on PhysicalChannel ⌈The following modeling
+creates a "membership" of ISignals, ISignalGroups, Pdus, and Frames in a given
+PhysicalChannel:
+• PhysicalChannel aggregates
+– ISignalTriggering that in turn references ISignal in the role iSignal
+– ISignalTriggering that in turn references an ISignalGroup in the role
+iSignalGroup ([constr_5106] applies).
+• PhysicalChannel aggregates PduTriggering that in turn references a Pdu
+in the role iPdu.
+• PhysicalChannel aggregates FrameTriggering that in turn references a
+Frame in the role frame.
+⌋()
+[constr_5106] ISignalGroup and ISignal referenced from ISignalTrigger-
+ing ⌈Either an ISignalGroup and all ISignals referenced from the ISignal-
+Group are also referenced from ISignalTriggerings aggregated at the same
+PhysicalChannel or neither the ISignalGroup nor any of the ISignals refer-
+enced by the ISignalGroup shall be referenced from ISignalTriggerings.⌋()
+[TPS_SYST_01142]
+Rules for the creation of references to Ports (ecuComm-
+PortInstance) with communicationDirection out on sending Ecu ⌈
+• Application sends ISignal or ISignalGroup
+– Reference from ISignalTriggering to ISignalPort shall be created
+for an ISignal that is not part of an ISignalGroup
+– Reference from ISignalTriggering to ISignalPort shall be created
+for the ISignalGroup
+– Reference from ISignalTriggering to ISignalPort shall be created
+for the ISignalGroup members that are sent by the Application.
+– PduTriggering reference to IPduPort shall be created
+System Template
+– FrameTriggering reference to FramePort shall be created
+• COM Signal Gateway
+– Reference from ISignalTriggering to ISignalPort shall be created
+for an ISignal that is not part of an ISignalGroup
+– Reference from ISignalTriggering to ISignalPort shall be created
+for the ISignalGroup
+– Reference from ISignalTriggering to ISignalPort for a subset of
+ISignals inside the ISignalGroup shall be created (in case not all mem-
+bers of the ISignalGroup participate in the target Signal Gateway rela-
+tion).
+– PduTriggering reference to IPduPort shall be created
+– FrameTriggering reference to FramePort shall be created
+• ISignal or ISignalGroup is mapped to ISignalIPdu but NOT sent by Ap-
+plication or Signal Gateway
+– No ISignalTriggering reference to ISignalPort shall be created for
+an ISignal that is not part of an ISignalGroup
+– No ISignalTriggering reference to ISignalPort shall be created for
+an ISignalGroup
+– No ISignalTriggering reference to ISignalPort shall be created for
+any ISignal that is part of an ISignalGroup
+– PduTriggering reference to IPduPort shall be created
+– FrameTriggering reference to FramePort shall be created
+• Neither ISignal, ISignalGroup, Pdu, nor Frame sent by the ECU
+– No ISignalTriggering reference to ISignalPort shall be created for
+an ISignal that is not part of an ISignalGroup
+– No ISignalTriggering reference to ISignalPort shall be created for
+an ISignalGroup
+– No ISignalTriggering reference to ISignalPort shall be created for
+any ISignal that is part of an ISignalGroup
+– No PduTriggering reference to IPduPort shall be created
+– No FrameTriggering reference to FramePort shall be created
+⌋()
+Please note that it is possible to configure a signal that is transmitted by an application
+and also routed by a SignalGateway. At runtime it has to be ensured that only one path
+is active at a particular point in time (to avoid race conditions in COM Stack).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +271,7 @@ pncFilterArrayMask:</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=271" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

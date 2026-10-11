@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DIAGNOSTICEXTRACTTEMPLATE_SECTION_3_Byte_OBD_DTC_value_based_on_the_definition_from_SAE_J2012_The_existence_of_this_attribute_is_only_required_if_separated</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>DiagnosticExtractTemplate.pdf</strong> (Seite 546)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_TPS_DiagnosticExtractTemplate.pdf#page=542" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">DiagnosticExtractTemplate.pdf</a></strong> (Seite 546)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_01122" class="swsref"><code>TPS_DEXT_01122</code></a></span>
         </div>
@@ -117,7 +118,177 @@ Kind of OBD ECU: OBD Dependend / Secondary ECU
 Template Description
 This represents the role "secondary ECU".
 M2 Parameter
-DiagnosticExtract::</div></section>
+DiagnosticExtract::DiagnosticContribution::DiagnosticObdSupportEnum.secondaryEcu
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral/DemOBDSupport
+BSW Parameter
+BSW Type
+DEM_OBD_MASTER_ECU
+ECUC-ENUMERATION-LITERAL-DEF
+BSW Description
+Kind of OBD ECU: Master ECU
+Template Description
+This represent the role "master ECU".
+M2 Parameter
+DiagnosticExtract::DiagnosticContribution::DiagnosticObdSupportEnum.masterEcu
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral/DemOBDSupport
+BSW Parameter
+BSW Type
+DEM_OBD_NO_OBD_SUPPORT
+ECUC-ENUMERATION-LITERAL-DEF
+BSW Description
+OBD is not supported within this ECU
+Template Description
+This represents the ability to explicitly specify that no participation in OBD is foreseen.
+M2 Parameter
+DiagnosticExtract::DiagnosticContribution::DiagnosticObdSupportEnum.noObdSupport
+Mapping Rule
+Mapping Type
+▽
+Diagnostic Extract Template
+△
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral/DemOBDSupport
+BSW Parameter
+BSW Type
+DEM_OBD_PRIMARY_ECU
+ECUC-ENUMERATION-LITERAL-DEF
+BSW Description
+Kind of OBD ECU: Pimary ECU
+Template Description
+This represents the role "primary ECU".
+M2 Parameter
+DiagnosticExtract::DiagnosticContribution::DiagnosticObdSupportEnum.primaryEcu
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral
+BSW Parameter
+BSW Type
+DemOperationCycle
+ECUC-PARAM-CONF-CONTAINER-DEF
+BSW Description
+This container holds all parameters that are relevant to configure an operation cycle.
+Template Description
+Definition of an operation cycle that is the base of the event qualifying and for Dem scheduling.
+M2 Parameter
+DiagnosticExtract::Dem::DiagnosticOperationCycle::DiagnosticOperationCycle
+Mapping Rule
+Mapping Type
+1:1 mapping
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dem_00701]
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral
+BSW Parameter
+BSW Type
+DemRatio
+ECUC-PARAM-CONF-CONTAINER-DEF
+BSW Description
+This container contains the OBD-specific in-use-monitor performance ratio configuration. It is related to a specific event, a
+FID, and an IUMPR group.
+▽
+Diagnostic Extract Template
+△
+Template Description
+ObdRatioServiceNeeds:
+Specifies the abstract needs of a component or module on the configuration of OBD Services in relation to a particular "ratio
+monitoring" which is supported by this component or module.
+DiagnosticIumprGroup:
+This meta-class represents the ability to model a IUMPR groups.
+M2 Parameter
+CommonStructure::ServiceNeeds::ObdRatioServiceNeeds, DiagnosticExtract::Dem::DiagnosticEvent::
+DiagnosticIumprGroup
+Mapping Rule
+Mapping Type
+In case the owner of the ObdRatioServiceNeeds is a BSW module then the DemRatio.shortName
+= {capitalizedMip}_{ServiceDependency.symbolicNameProps.symbol}. For the DiagnosticIumpr
+Group the mapping rule is 1:1
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dem_00734]
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral/DemRatio
+BSW Parameter
+BSW Type
+DemDiagnosticEventRef
+ECUC-REFERENCE-DEF
+BSW Description
+This reference contains the link to a diagnostic event.
+Template Description
+DiagnosticIumprGroup.iumpr:
+This reference collects DiagnosticIumpr to a DiagnosticIumprGroup.
+DiagnosticIumpr.event:
+This reference represents the DiagnosticEvent that corresponds to the IUMPR computation.
+M2 Parameter
+DiagnosticExtract::Dem::DiagnosticEvent::DiagnosticIumprGroup.iumpr, DiagnosticExtract::Dem::Diagnostic
+Event::DiagnosticIumpr.event
+Mapping Rule
+Mapping Type
+foreach DiagnosticIumprGroup, follow the iumpr reference and then pick the target of the event
+reference
+full
+Mapping Status
+ECUC Parameter ID
+valid
+[ECUC_Dem_00735]
+BSW Module
+BSW Context
+Dem
+Dem/DemGeneral/DemRatio
+BSW Parameter
+BSW Type
+DemFunctionIdRef
+ECUC-REFERENCE-DEF
+BSW Description
+This reference contains the link to a function identifier within the FiM which is used as a primary FID.
+Template Description
+This meta-class represents the ability to associate a DiagnosticFunctionIdentifier with a DiagnosticIumpr.
+M2 Parameter
+DiagnosticExtract::DiagnosticMapping::DiagnosticIumprToFunctionIdentifierMapping
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -130,7 +301,7 @@ DiagnosticExtract::</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>DiagnosticExtractTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_TPS_DiagnosticExtractTemplate.pdf#page=542" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">DiagnosticExtractTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

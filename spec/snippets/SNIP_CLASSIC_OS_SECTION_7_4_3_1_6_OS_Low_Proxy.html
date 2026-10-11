@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_4_3_1_6_OS_Low_Proxy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SoftwareClusterConnection.pdf</strong> (Seite 145)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=145" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></strong> (Seite 145)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_02254" class="swsref internal-spec-ref"><code>SWS_SwCluC_02254</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_90004" class="swsref internal-spec-ref"><code>SWS_SwCluC_90004</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,121 @@ Software Cluster.
 Upstream requirements: SRS_SwCluC_00214
 ⌈The Os Low Proxy shall provide an API to start the Os High Proxy of an Ap-
 plication Software Cluster. This shall be one element of the service resource
-S</div></section>
+SwCluCOsProxyOsBaseSocket.⌋
+For example, a Startup hook could be provided for each Application Software
+Cluster.
+[SWS_SwCluC_02255]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os Low Proxy shall provide an API to shutdown the Os High Proxy of an
+Application Software Cluster. This shall be one element of the service re-
+source SwCluCOsProxyOsBaseSocket.⌋
+For example, a shutdown hook could be provided for each Application Software
+Cluster.
+[SWS_SwCluC_02256]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os Low Proxy shall be able to provide an API to connect IOC from Os High
+Proxy of an Application Software Cluster. This shall be one element of the
+service resource SwCluCOsProxyOsBaseSocket.⌋
+For example, an IOC-Init callback could be provided for each Application Soft-
+ware Cluster, and called from the Os Low Proxy, if a connection is established.
+Dispatchers
+Please note section ’Overview of Os Proxy’ 7.11.
+Example: The Host Software Cluster has a full configuration of the Os, and is
+prepared to host serveral Application Software Cluster, with their local RTE,
+to be able to execute the runnables of the Application Software Cluster’s soft-
+ware components. This preconfiguration will preserve positions in an OS Task, like
+for events of runnables. Instead of directly executing a runnable that belongs to an
+module
+Application Software Cluster, a so called Dispatcher Runnable is sched-
+uled in the OsTask on the Host Software Cluster and will be executed. This
+Dispatcher acts as a link to Application Software Clusters task container,
+which will then execute all mapped runnables for this specific part of the task.
+A connection between Software Clusters is established, when resource Id in the
+Binary Manifests matches. This is necessary for service resources of the SwClu-
+COsProxyOsTask.
+[SWS_SwCluC_02259]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os Low Proxy shall provide a service resource SwCluCOsProxyOsTask, for
+each Application Software Clusters task configuration that the system shall
+be prepared for. For this resource, an entry in the Binary Manifest shall be created,
+to be able to link it to the Os High Proxy task in the Host Software Cluster.⌋
+Please note that the SwCluCOsProxyOsTask container has a reference SwClu-
+COsProxyOsTaskRef to a OsTask container. This reference shall be used in the
+Host Software Cluster and the Application Software Cluster to obtain
+the OsTask configuration relevant for the guard value calculation. Hence, it is ensured
+that Host Software Cluster and Application Software Cluster’s OsTask
+configuration is compatible. See as well [SWS_SwCluC_90004].
+[SWS_SwCluC_02284]
+SwCluCBManifProvideResourceEntryGroup
+for
+SwCluCOsProxyOsTask ⌈For the Os Low Proxy, there shall be a SwCluCBManif-
+ProvideResourceEntryGroup, whose SwCluCBManifResourceTypeRef shall
+refer to a SwCluCBManifResourceType that contains one SwCluCBManifNoti-
+fierHandle, with SwCluCBManifNativeHandleType set to FUNCTION_REFER-
+ENCE.
+The SwCluCBManifMultipleNotifierSupport shall be set to MULTIPLE_-
+NOTIFIER_SETS.⌋
+[SWS_SwCluC_02285] Semantics of SwCluCOsProxyMaxNumberOfCallee
+Upstream requirements: SRS_SwCluC_00214
+⌈For each SwCluCOsProxyOsTask, the Os Low Proxy shall put a SwCluCBMan-
+ifProvideResourceEntry into the binary manifest.
+If the proxy task’s SwCluCOsProxyOsTaskDispatcher has SwCluCOsProxy-
+MaxNumberOfCallee set to a value bigger than 1,
+the provide entry shall
+be
+placed
+in
+the
+SwCluCBManifProvideResourceEntryGroup
+defined
+in
+[SWS_SwCluC_02284] and the SwCluCBManifMaxNumberOfNotifierSets shall
+be set to the value of SwCluCOsProxyMaxNumberOfCallee.⌋
+module
+Note: If SwCluCOsProxyMaxNumberOfCallee is not set, or set to 1, it’s not manda-
+tory to place it into this SwCluCBManifProvideResourceEntryGroup. It’s pos-
+sible to have an additional SwCluCBManifProvideResourceEntryGroup, where
+SwCluCBManifMultipleNotifierSupport is set to SINGLE_NOTIFIER_SET.
+For MULTIPLE_NOTIFIER_SETS, there is always an additional element in the provide
+handle array (to store the number of handles in use), even if an SwCluCOsProx-
+yOsTask does not use the feature.
+Having two SwCluCBManifProvideRe-
+sourceEntryGroups allows to selectively enable the feature - SwCluCOsProx-
+yOsTasks with SwCluCOsProxyMaxNumberOfCallee &gt; 1 use the MULTIPLE_-
+NOTIFIER_SETS SwCluCBManifProvideResourceEntryGroup, other SwClu-
+COsProxyOsTasks use the SINGLE_NOTIFIER_SET SwCluCBManifProvideRe-
+sourceEntryGroup.
+[SWS_SwCluC_02271]
+Upstream requirements: SRS_SwCluC_00214
+⌈The Os Low Proxy shall have a service resource SwCluCOsProxyFunctionDis-
+patcher, for each function dispatcher provided in the Host Software Cluster.
+For this resource, an entry in the Binary Manifest shall be created, to be able to
+link the function dispatcher to its Os High Proxy implementation in the Applica-
+tion Software Cluster.⌋
+Example: The Host Software Cluster has a full configuration of the BSW. To ini-
+tialize all modules properly, a call to Application Software Cluster might be
+necessary. For example, to initialize a local RAM area there. Since this function or
+runnable might not be known by the RTE as runnable of a software component, this
+function can be called via the Os Proxy function dispatcher. This dispatcher can be
+configured in the Host Software Cluster, to be called from ECUM or an Ini-Task.
+Each dispatcher provides its own service resource in the Binary Manifest. If a suc-
+cessful link to another Software Cluster is established, the call can be executed
+from the Host Software Cluster into the Application Software Cluster.
+In an older version of AUTOSAR, there was the possibility to have multiple Dis-
+patchers for one SwCluCOsProxyOsTask. As a consequence, it was required to
+configure Dispatchers in both the Host Software Cluster and the Applica-
+tion Software Cluster. This was changed with R25-11. There is now only one
+Dispatcher per SwCluCOsProxyOsTask. SwCluCOsProxyOsTaskDispatcher
+describes the runnable in the Os Low Proxy that will call the OsTask (via the
+SwCluCOsProxyOsTask Binary Manifest Entry) in the Application Software
+Cluster. The Os High Proxy configuration does not contain an SwCluCOsProx-
+yOsTaskDispatcher. The Dispatcher has no Binary Manifest entry and no
+longer needs a CpSoftwareClusterServiceResource.
+Scheduling of dispatchers in Host Software Cluster</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_02254] im Text von SWS_SoftwareClusterConnection.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_90004] im Text von SWS_SoftwareClusterConnection.</p>
       </section>
 
       <section class="snip-card">
@@ -110,7 +221,7 @@ S</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SoftwareClusterConnection.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=145" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -122,7 +233,7 @@ S</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_02254" class="swsref internal-spec-ref"><code>SWS_SwCluC_02254</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_90004" class="swsref internal-spec-ref"><code>SWS_SwCluC_90004</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

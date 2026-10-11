@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SOFTWARECOMPONENTTEMPLATE_SECTION_5_2_3_Data_Categories</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SoftwareComponentTemplate.pdf</strong> (Seite 242)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=240" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></strong> (Seite 242)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01238" class="swsref"><code>TPS_SWCT_01238</code></a></span>
         </div>
@@ -90,7 +91,325 @@ An overview on all valid categorys defined for AutosarDataType is shown in [con-
 str_1006].
 Some categorys are also applied to sub-elements of the type system (column “Appli-
 cable to ...” in [constr_1006]). This is explained in more detail in the following sections.
-Please</div></section>
+Please note that the column “RTE + BSW” of [constr_1006] is only applicable for cat-
+egorys that are relevant either for ImplementationDataTypes and/or the aspect of
+measurement and calibration in McDataInstance.
+Software Component Template
+[constr_1006] Applicable data categories, depending on specific model elements
+related to data definition properties ⌈
+Category
+Applicable to ...
+Use Case
+Description
+ApplicationArrayDataType
+ApplicationRecordDataType
+ApplicationPrimitiveDataType
+ApplicationRecordElement
+ApplicationArrayElement
+ApplicationValueSpecification
+ApplicationRuleBasedValueSpecification
+ImplementationDataType
+ImplementationDataTypeElement
+SwSystemconst
+McDataInstance
+Calibration
+Measurement
+Communication Port Interfaces
+RTE + BSW
+VALUE
+x
+x
+x
+x
+x
+x
+x
+x
+x
+x
+x
+x
+Contains a single value.
+VAL_BLK
+x
+x
+x
+x
+x
+x
+x
+x
+A value block defines values stored together within one cal-
+ibration parameter object.
+It is similar to an value array but it stores the values by
+means of an axis instead (only important for calibration data
+handling).
+DATA_REF-
+ERENCE
+x
+x
+x
+x3 x
+Contains an address of another DataPrototype (whose
+type is given via SwDataDefProps.swPointerTarget-
+Props).
+FUNCTION_
+REFERENCE
+x
+x
+x
+x
+Contains an address of a function prototype (whose signa-
+ture is given via SwDataDefProps.swPointerTarget-
+Props.functionPointerSignature).
+TYPE_REF-
+ERENCE
+x
+x
+x
+x
+x
+The element is defined via reference to another data type
+(via SwDataDefProps.implementationDataType).
+STRUCTURE
+x
+x
+x
+x
+x
+x
+x
+x
+x
+x
+Holds one or several further elements which can have differ-
+ent AutosarDataTypes.
+The underlying elements are defined in the same manner as
+normal data except for the association to SwAddrMethod:
+This has to be the same for all underlying elements.
+Corresponds to a Record if used in the application domain.
+UNION
+x
+x
+x
+x
+x
+x
+x
+Can hold values of different data types.
+It is similar to
+STRUCTURE except that all of its members start at the same
+location in memory.
+A UNION data prototype can contain only one of its elements
+at a time. The size of the UNION is at least the size of the
+largest member.
+Please find more information in [TPS_SWCT_01700].
+ARRAY
+x
+x
+x
+x
+x
+x
+x
+x
+x
+x
+x
+An array of sub-elements which are of the same type.
+BIT
+x
+x
+x
+x
+One or several bits within a host variable, which are treated
+as an own data object.
+▽
+3[constr_1295] applies!
+Software Component Template
+△
+Category
+Applicable to ...
+Use Case
+Description
+ApplicationArrayDataType
+ApplicationRecordDataType
+ApplicationPrimitiveDataType
+ApplicationRecordElement
+ApplicationArrayElement
+ApplicationValueSpecification
+ApplicationRuleBasedValueSpecification
+ImplementationDataType
+ImplementationDataTypeElement
+SwSystemconst
+McDataInstance
+Calibration
+Measurement
+Communication Port Interfaces
+RTE + BSW
+HOST
+x
+x
+x
+x
+A HOST data type is like a simple VALUE, but it is used for
+packed bit definition.
+That means it can host several BIT variables which have
+their own description and measurement access.
+STRING
+x
+x
+x
+x
+x
+x
+x
+x
+Contains a single value interpreted as a text string (note that
+it appears as a single value for the application domain; the
+internal representation can be an array).
+BOOLEAN
+x
+x
+x
+x
+x
+x
+x
+x
+Contains one boolean state. Depending on the CPU direct
+addressing of single bits may not be available.
+So a byte or a word can be used to store only one logical
+state.
+COM_AXIS
+x
+x
+x
+x
+x
+x
+x
+x
+An axis definition as separate calibration parameter which
+can be referenced by any CURVE, MAP, CUBOID, CUBE_4,
+and CUBE_5.
+The benefits by using a common axis is that it saves memory
+space; because it is stored only one time and can be used in
+multiple CURVEs, MAPs, CUBOIDs, CUBE_4s, and CUBE_5s.
+RES_AXIS
+x
+x
+x
+x
+x
+x
+x
+x
+A RES_AXIS (rescale axis) is also a shared axis like COM_-
+AXIS, the difference is that this kind of axis can be used for
+rescaling.
+Note that the RES_AXIS is by nature a CURVE which is used
+to implement a non linear scaling (rescale) of the axis.
+In addition to saving memory space via the shared usage
+like a COM_AXIS, it can compress a huge range to a non-
+linear distributed axis points thus retaining the required ac-
+curacy.
+CURVE
+x
+x
+x
+x
+x
+x
+x
+x
+Calibration parameter with one input value and one output
+value. That means output values can be defined depending
+on the input value.
+The granularity of implemented func-
+tionality can be changed by using different number of axis
+points.
+A CURVE has always one input axis and one output axis. The
+output axis is a characteristic of the curve and every time
+present but the input axis can be defined within the curve
+definition or separately.
+▽
+Software Component Template
+△
+Category
+Applicable to ...
+Use Case
+Description
+ApplicationArrayDataType
+ApplicationRecordDataType
+ApplicationPrimitiveDataType
+ApplicationRecordElement
+ApplicationArrayElement
+ApplicationValueSpecification
+ApplicationRuleBasedValueSpecification
+ImplementationDataType
+ImplementationDataTypeElement
+SwSystemconst
+McDataInstance
+Calibration
+Measurement
+Communication Port Interfaces
+RTE + BSW
+MAP
+x
+x
+x
+x
+x
+x
+x
+x
+Calibration parameter with two input values and one output
+value. That means output values can be defined depending
+on the input values.
+The granularity of implemented functionality can be changed
+by using different number of axis points for y- and x-axis. A
+MAP has always two input axes and one output axis.
+The output axis is a characteristic of the MAP and every time
+present but the input axes can be defined within the MAP
+definition or separately.
+CUBOID
+x
+x
+x
+x
+x
+x
+x
+x
+Calibration parameter with three input values and one output
+value. That means output values can be defined depending
+on the input values.
+The granularity of implemented functionality can be changed
+by using different number of axis points for the input axes. A
+CUBOID has always three input axes and one output axis.
+The output axis is a characteristic of the CUBOID and every
+time present but the input axes can be defined within the
+CUBOID definition or separately.
+CUBE_4
+x
+x
+x
+x
+x
+x
+x
+x
+Calibration parameter with four input values and one output
+value. That means output values can be defined depending
+on the input values.
+The granularity of implemented functionality can be changed
+by using different number of axis points for the input axes. A
+CUBE_4 has always four input axes and one output axis.
+The output axis is a characteristic of the CUBE_4 and every
+time present but the input axes can be defined within the
+CUBE_4 definition or separately.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +422,7 @@ Please</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=240" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

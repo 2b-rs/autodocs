@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_ADAPTIVE_STD_SECTION_3_3_1_8_Error_Handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ManifestSpecification.pdf</strong> (Seite 85)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#page=84" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ManifestSpecification.pdf</a></strong> (Seite 85)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_GST_00049" class="swsref"><code>TPS_GST_00049</code></a></span>
         </div>
@@ -111,7 +112,225 @@ This reference represents the error domain of the Ap
 ApplicationError.
 Table 3.45: ApApplicationError
 [constr_10132] Multiplicity of attribute ApApplicationError.errorCode
-Imposition time: IT_Bef</div></section>
+Imposition time: IT_BefAraApiGen
+⌈For each ApApplicationError, the attribute errorCode shall exist.⌋
+[TPS_MANI_03674] Adaptive platform SOME/IP Service Instance interacting with
+a classic platform SOME/IP Service Instance
+Upstream requirements: RS_MANI_00002
+⌈If a ProvidedSomeipServiceInstance / RequiredSomeipServiceInstance
+is referenced by a SomeipServiceInstanceToMachineMapping and a Con-
+sumedServiceInstance / ProvidedServiceInstance (on a classic platform
+EcuInstance) exists on the same VLAN with the following matching SOME/IP cre-
+dentials:
+For ProvidedSomeipServiceInstance:
+• ProvidedSomeipServiceInstance.serviceInstanceId
+equals
+Con-
+sumedServiceInstance.instanceIdentifier
+• SomeipServiceInterfaceDeployment.serviceInterfaceId
+equals
+ConsumedServiceInstance.serviceIdentifier
+• SomeipServiceVersion.majorVersion
+equals
+ConsumedServiceIn-
+stance.majorVersion
+For RequiredSomeipServiceInstance:
+• RequiredSomeipServiceInstance.requiredServiceInstanceId
+equals ProvidedServiceInstance.instanceIdentifier
+• SomeipServiceInterfaceDeployment.serviceInterfaceId
+equals
+ProvidedServiceInstance.serviceIdentifier
+• SomeipServiceVersion.majorVersion
+equals
+ProvidedServiceIn-
+stance.majorVersion
+then the ProvidedSomeipServiceInstance / RequiredSomeipServiceIn-
+stance is considered to interact with the AUTOSAR classic platform.⌋
+[constr_3772] Range of ApApplicationError.errorCode for interoperability
+with the AUTOSAR classic platform
+Imposition time: IT_SysDes
+⌈If a SOME/IP service instance interacts with a classic platform according to
+[TPS_MANI_03674], then the value of attribute ApApplicationError.errorCode
+used according to [TPS_MANI_01191] shall not exceed the closed interval [1..63].⌋
+Rationale for [constr_3772]: This restriction originates from [SWS_Std_00011] which
+limits the usable bits of the Std_ReturnType (which is the return type of
+ClientServerOperations in AUTOSAR classic platform) for encoding errors to the
+lower 6 bits.
+AtpStructureElement
+Identifiable
+ClientServerOperation
++
+fireAndForget: Boolean [0..1]
+PortInterface
+ServiceInterface
++
+majorVersion: PositiveInteger [0..1]
++
+minorVersion: PositiveInteger [0..1]
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+ 	   
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ARElement
+ApApplicationError
++
+errorCode: Integer [0..1]
+ARElement
+ApApplicationErrorDomain
++
+value: PositiveUnlimitedInteger [0..1]
+ARElement
+ApApplicationErrorSet
+ImplementationProps
+SymbolProps
++errorDomain
+0..1
++apApplicationError
+0..*
+«atpVariation,atpSplitable»
++method
+0..*
++namespace
+0..*
+{ordered}
++possibleApErrorSet
+0..*
++possibleApError
+0..*
+Figure 3.19: Modeling of ApApplicationError on the AUTOSAR adaptive platform
+[constr_1625] Existence of reference ApApplicationError.errorDomain
+Imposition time: IT_BefAraApiGen
+⌈For each ApApplicationError, the reference errorDomain shall exist.
+In other words, the association of an ApApplicationError with a corresponding
+ApApplicationErrorDomain is mandatory.⌋
+[TPS_MANI_01198] Semantics of ApApplicationErrorSet
+Upstream requirements: RS_MANI_00026
+⌈Meta-class ApApplicationErrorSet has the ability to group references to ApAp-
+plicationError and thus represents a “proxy” to this group of references towards
+the ClientServerOperation.
+The use case for this modeling ability is that some ClientServerOperations may
+have to reference an identical significant number of ApApplicationErrors.
+Letting each of the ClientServerOperations repeat the same set of references to
+ApApplicationError is considered unnecessary and therefore the ability to refer to
+a group instead of individual references is provided as an alternative.⌋
+The decision whether an ApApplicationErrorSet is defined and referenced
+from specific ClientServerOperations has to be done on an individual basis.
+AUTOSAR just wants to make this business as straightforward as possible.
+Please note that it is also positively possible to mix the usage of ClientServer-
+Operation.possibleApError and ClientServerOperation.possibleApEr-
+rorSet.
+As ApApplicationError is no longer defined within the scope of a ServiceIn-
+terface, there is no need to define a mapping between two ApApplicationErrors
+by means of a dedicated sub-class of ServiceInterfaceElementMapping.
+Class
+ApApplicationErrorSet
+Package
+M2::AUTOSARTemplates::AdaptivePlatform::ApplicationDesign::PortInterface
+Note
+This meta-class acts as a reference target that represents an entire collection of APApplicationErrors.
+This takes the burden from ClientServerOperations that reference a larger number of ApApplication
+Errors.
+Tags: atp.recommendedPackage=ApplicationErrorSets
+Base
+ARElement, ARObject, CollectableElement, Identifiable, MultilanguageReferrable, Packageable
+Element, Referrable
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+apApplication
+Error
+ApApplicationError
+*
+ref
+This reference represents the collection of ApApplication
+Error represented by the enclosing ApApplicationErrorSet
+Table 3.46: ApApplicationErrorSet
+[TPS_MANI_01191] Modeling of possible errors
+Upstream requirements: RS_MANI_00026
+⌈A ClientServerOperation aggregated by a ServiceInterface in the role
+method may reference
+• zero or more ApApplicationError(s) in the role possibleApError and/or
+• zero or more ApApplicationErrorSet(s) in the role possibleApErrorSet
+to formally specify the existence of possible errors raised by the ClientServerOp-
+eration.⌋
+[TPS_MANI_01192] Semantics of ApApplicationErrorDomain
+Upstream requirements: RS_MANI_00026
+⌈Meta-class ApApplicationErrorDomain shall be used to define a specific error
+domain that can potentially be standardized by AUTOSAR.
+Therefore, the definition of such an error domain is not defined in the scope of the
+ApApplicationError itself. Instead, an ApApplicationError identifies the ap-
+plicable error domain by means of a reference in the role errorDomain.
+It is possible to attach the definition of a namespace to ApApplicationErrorDo-
+main because this information is relevant for the language binding.⌋
+[TPS_MANI_01863] Supported value range for attribute ApApplicationError-
+Domain.value
+Upstream requirements: RS_MANI_00026
+⌈The supported value range of attribute ApApplicationErrorDomain.value is
+given by [constr_2637].⌋
+Please note that [constr_2637] can be found in the document [6, TPS Generic Structure
+Template].
+[constr_10574] Value of ApApplicationErrorDomain.value shall be unique in
+the context of a ClientServerOperation
+Imposition time: IT_BefAraApiGen
+⌈Within the context of one ClientServerOperation, no two ApApplication-
+ErrorDomains referenced in the role ClientServerOperation.possibleApEr-
+ror.errorDomain or transitively referenced in the role ClientServerOperation.
+possibleApErrorSet.apApplicationError.errorDomain shall have the iden-
+tical value of attribute ApApplicationErrorDomain.value.⌋
+Please find more explanation for [constr_10574] in Section B.12.1.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -124,7 +343,7 @@ Imposition time: IT_Bef</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#page=84" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_IDSM_SECTION_8_7_1_2_IdsM_IdsMService_EventName</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IntrusionDetectionSystemManager.pdf</strong> (Seite 80)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=80" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></strong> (Seite 80)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01827" class="swsref"><code>TPS_SWCT_01827</code></a></span>
         </div>
@@ -141,7 +142,190 @@ Variation
 –
 timestampPtr
 Type
-Id</div></section>
+IdsM_TimestampPointerType
+Direction
+IN
+Comment
+Application provides NULL_PTR when no timestamp is available.
+Parameters
+Variation
+–
+Possible Errors
+–
+⌋
+[SWS_IdsM_91045]
+Definition of ClientServerInterface IdsMService_{Event
+Name}
+Status: DRAFT
+⌈
+Name
+IdsMService_{EventName} (draft)
+Comment
+Interface to report security events to the IdsM.
+Tags: atp.Status=draft
+IsService
+true
+Variation
+({ecuc(IdsM/IdsMConfiguration/IdsMEvent/IdsMExternalEventId)} is in range 0x8000 - 0xFFFE)
+({ecuc(IdsM/IdsMConfiguration/IdsMEvent/IdsMServiceInterfaceOptions/IdsMEventMax
+ContextDataSize)} == 0
+({ecuc(IdsM/IdsMConfiguration/IdsMEvent/IdsMServiceInterfaceOptions/IdsMEventEnable
+TimestampReporting)} == True
+EventName = {ecuc(IdsM/IdsMConfiguration/IdsMEvent.SHORT-NAME)}
+Possible Errors
+–
+–
+–
+Manager
+Operation
+ReportSecurityEvent
+Comment
+This function shall report a security event with optional versioned context data, timestamp and
+count.
+Mapped to API
+IdsM_ReportSecurityEvent
+Variation
+–
+contextDataPtr
+Type
+IdsM_ContextDataPointerType
+Direction
+IN
+Comment
+Application provides NULL_PTR when no context data is available.
+Variation
+–
+contextDataSize
+Type
+uint16
+Direction
+IN
+Comment
+Size of context data. If no context data is available, provide 0.
+Variation
+–
+contextDataVersion
+Type
+uint16
+Direction
+IN
+Comment
+Version of context data. If no context data is available, provide 1.
+Variation
+–
+count
+Type
+uint16
+Direction
+IN
+Comment
+Number of occurrences of the security event since last report. Permitted range
+[1, max(uint16)]. If sensor didn’t maintain a special count, provide 1.
+Variation
+–
+timestamp
+Type
+IdsM_TimestampDataType
+Direction
+IN
+Comment
+Pointer to timestamp used for time reference of the security event.
+Parameters
+Variation
+–
+Possible Errors
+–
+⌋
+[SWS_IdsM_91046]
+Definition of ClientServerInterface IdsMService_{Event
+Name}
+Status: DRAFT
+⌈
+Name
+IdsMService_{EventName} (draft)
+Comment
+Interface to report security events to the IdsM.
+Tags: atp.Status=draft
+IsService
+true
+▽
+Manager
+△
+Variation
+({ecuc(IdsM/IdsMConfiguration/IdsMEvent/IdsMExternalEventId)} is in range 0x8000 - 0xFFFE)
+({ecuc(IdsM/IdsMConfiguration/IdsMEvent/IdsMServiceInterfaceOptions/IdsMEventMax
+ContextDataSize)} &gt; 0
+({ecuc(IdsM/IdsMConfiguration/IdsMEvent/IdsMServiceInterfaceOptions/IdsMEventEnable
+TimestampReporting)} == False
+EventName = {ecuc(IdsM/IdsMConfiguration/IdsMEvent.SHORT-NAME)}
+Possible Errors
+–
+–
+–
+Operation
+ReportSecurityEvent
+Comment
+This function shall report a security event with optional versioned context data, timestamp and
+count.
+Mapped to API
+IdsM_ReportSecurityEvent
+Variation
+–
+contextData
+Type
+IdsM_{EventName}_ContextDataType
+Direction
+IN
+Comment
+Pointer to optional context data descriptor.
+Variation
+–
+contextDataSize
+Type
+uint16
+Direction
+IN
+Comment
+Size of context data. If no context data is available, provide 0.
+Variation
+–
+contextDataVersion
+Type
+uint16
+Direction
+IN
+Comment
+Version of context data. If no context data is available, provide 0.
+Variation
+–
+count
+Type
+uint16
+Direction
+IN
+Comment
+Number of occurrences of the security events since last report. Permitted
+range [1, max(uint16)]. If sensor didn’t maintain a special count, provide 1.
+Variation
+–
+timestampPtr
+Type
+IdsM_TimestampPointerType
+Direction
+IN
+Comment
+Application provides NULL_PTR when no timestamp is available.
+Parameters
+Variation
+–
+Possible Errors
+–
+⌋
+[SWS_IdsM_91044]
+Definition of ClientServerInterface IdsMService_{Event
+Name}
+Status: DRAFT
+⌈</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -154,7 +338,7 @@ Id</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IntrusionDetectionSystemManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=80" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/platform.html">Modul: platform</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_5_12_6_Ramp_switch_routine_MFLLIBRARY</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MFLLibrary.pdf</strong> (Seite 93)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=92" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></strong> (Seite 92)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00221" class="swsref internal-spec-ref"><code>SWS_Mfl_00221</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00372" class="swsref internal-spec-ref"><code>SWS_Mfl_00372</code></a></span>
         </div>
       </div>
 
@@ -122,11 +123,89 @@ if (State_cpst-&gt;Dir_s8 == RISING)
 then State_cpst-&gt;State_f32 = State_cpst-&gt;State_f32 + (Param_cpcst-&gt;SlopePos_f32
 * dT_f32)
 else if (State_cpst-&gt;Dir_s8 == FALLING)
-then State_cpst-&gt;State_f32 = State_cpst-&gt;State_f32 - (P</div></section>
+then State_cpst-&gt;State_f32 = State_cpst-&gt;State_f32 - (Param_cpcst-&gt;SlopeNeg_f32 *
+dT_f32)
+else if (State_cpst-&gt;Dir_s8 == END)
+State_cpst-&gt;State_f32 = target value which is decided by State_cpst-&gt;Switch_s8.
+⌋
+[SWS_Mfl_00220] ⌈
+Once ramp value reaches the selected target value, the ramp direction status is
+switched to END.
+State_cpst-&gt;Dir_s8 == END
+⌋
+[SWS_Mfl_00221] ⌈
+If the ramp has reached its destination and no change of switch occurs, the output
+value follows the actual target value.
+If(State_cpst-&gt;State_f32 == target value)
+Return_value = Xa_f32 (if State_cpst-&gt;Switch_s8 is TARGET_A)
+Return_value = Xb_f32 (if State_cpst-&gt;Switch_s8 is TARGET_B)
+⌋
+[SWS_Mfl_00222] ⌈
+Calculated ramp value shall be stored to State_cpst-&gt;State_f32 variable.
+⌋
+Note : "This routine (Mfl_RampCalcSwitch_f32) is depreciated and will not be sup-
+ported in future release.
+Replacement routine : Mfl_RampCalcSwitch "
+[SWS_Mfl_00369] Definition of API function Mfl_RampCalcSwitch ⌈
+Service Name
+Mfl_RampCalcSwitch
+Syntax
+float32 Mfl_RampCalcSwitch (
+float32 Xa_f32,
+float32 Xb_f32,
+boolean Switch,
+Mfl_StateRamp_Type* State_cpst
+)
+Service ID [hex]
+0xCA
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+▽
+△
+Xa_f32
+Target value for the ramp to reach if switch is in position ’A’
+Xb_f32
+Target value for the ramp to reach if switch is in position ’B’
+Parameters (in)
+Switch
+Switch to decide target value
+Parameters (inout)
+State_cpst
+Pointer to StateRamp structure
+Parameters (out)
+None
+Return value
+float32
+Returns the selected target value
+Description
+This routine switches between two target values for a ramp service based on a Switch
+parameter.
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00370] ⌈
+Parameter Switch decides which target value is selected.
+If Switch = TRUE, then Xa_f32 is selected.
+State_cpst-&gt;Switch_s8 is set to TARGET_A
+Return value = Xa_f32
+If Swtich = FALSE, then Xb_f32 is selected.
+State_cpst-&gt;Switch_s8 is set to TARGET_B
+Return value = Xb_f32
+⌋
+[SWS_Mfl_00371] ⌈
+State_cpst-&gt;Dir_s8 hold direction information
+State_cpst-&gt;Dir_s8 shall be set to END to reset direction information in case of target
+switch.
+⌋
+[SWS_Mfl_00372] ⌈
+Mfl_RampCalcSwitch has to be called before Mfl_RampCalc routine
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Ramp switch output follow behavior</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00372] im Text von SWS_MFLLibrary.</p>
       </section>
 
       <section class="snip-card">
@@ -135,11 +214,11 @@ then State_cpst-&gt;State_f32 = State_cpst-&gt;State_f32 - (P</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MFLLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=92" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 93</td>
+              <td>Seite 92</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -147,15 +226,15 @@ then State_cpst-&gt;State_f32 = State_cpst-&gt;State_f32 - (P</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00221" class="swsref internal-spec-ref"><code>SWS_Mfl_00221</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00372" class="swsref internal-spec-ref"><code>SWS_Mfl_00372</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

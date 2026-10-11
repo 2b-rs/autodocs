@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SOFTWARECOMPONENTTEMPLATE_SECTION_5_2_6_Base_Type</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SoftwareComponentTemplate.pdf</strong> (Seite 301)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=296" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></strong> (Seite 301)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01261" class="swsref"><code>TPS_SWCT_01261</code></a></span>
         </div>
@@ -87,7 +88,176 @@ Still, the compiler will positively be able to resolve the data type because it 
 to the data type definitions contained in the header file for platform and standard data
 types that has to be included by regulation of the AUTOSAR standard.
 Please note that nativeDeclaration shall yield a valid C data type symbol, whether
-this is done by a typedef or a by using the symbol11 of an in</div></section>
+this is done by a typedef or a by using the symbol11 of an integral data type is princi-
+pally all the same.
+Of course, using the symbol of an integral data type as the value of nativeDeclara-
+tion increases the odds that the enclosing SwBaseType can be used independently
+of the availability of the definition of a typedef that may or may not be available in a
+given context.
+[TPS_SWCT_01563] Applicable values for nativeDeclaration ⌈For the purpose
+of avoiding portability issues the value nativeDeclaration should only consist of
+the symbol of an integral C data type.⌋()
+For more information on this refer to [23].
+[TPS_SWCT_01263] Further use cases for SwBaseType ⌈Within the basic software
+description, SwBaseType can be used (together with ImplementationDataTypes)
+for documentation or to specify variables for debugging. Furthermore, SwBaseTypes
+are required in the generation of support data for measurement and calibration tools.
+Please refer to [6] for details on these use cases.⌋()
+A more detailed description of BaseTypes can also be found in ASAM MCD 2 Harmo-
+nized Data Objects.12
+11Note that the symbol does not necessarily have to consist of a single token, i.e. for all intents and
+purposes (for example) unsigned char is also considered the symbol of an integral C data type.
+12The definition of Harmonized Data Objects can be retrieved from ASAM at www.asam.net. Access
+is limited to ASAM members.
+Software Component Template
+Class
+BaseType (abstract)
+Package
+M2::MSR::AsamHdo::BaseTypes
+Note
+This abstract meta-class represents the ability to specify a platform dependant base type.
+Base
+ARElement, ARObject, CollectableElement, Identifiable, MultilanguageReferrable, Packageable
+Element, Referrable
+Subclasses
+SwBaseType
+Attribute
+Type
+Mult.
+Kind
+Note
+baseType
+Definition
+BaseTypeDefinition
+1
+aggr
+This is the actual definition of the base type.
+Tags:
+xml.roleElement=false
+xml.roleWrapperElement=false
+xml.sequenceOffset=20
+xml.typeElement=false
+xml.typeWrapperElement=false
+Table 5.26: BaseType
+The aggregation BaseType.baseTypeDefinition affects two abstract meta-
+classes and is therefore never used directly. However, in order to not break the seman-
+tics of the derived meta-classes SwBaseType and BaseTypeDirectDefinition a
+constraint is still required.
+[constr_1910] Existence of attribute BaseType.baseTypeDefinition ⌈For each
+BaseType (which will be utilized in the form of SwBaseType), the aggregation in the
+role baseTypeDefinition shall exist at the time when the RTE is generated.⌋()
+Class
+SwBaseType
+Package
+M2::MSR::AsamHdo::BaseTypes
+Note
+This meta-class represents a base type used within ECU software.
+Tags:atp.recommendedPackage=BaseTypes
+Base
+ARElement, ARObject, AtpBlueprint, AtpBlueprintable, BaseType, CollectableElement, Identifiable,
+MultilanguageReferrable, PackageableElement, Referrable
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 5.27: SwBaseType
+Class
+BaseTypeDefinition (abstract)
+Package
+M2::MSR::AsamHdo::BaseTypes
+Note
+This meta-class represents the ability to define a basetype.
+Base
+ARObject
+Subclasses
+BaseTypeDirectDefinition
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 5.28: BaseTypeDefinition
+Software Component Template
+Class
+BaseTypeDirectDefinition
+Package
+M2::MSR::AsamHdo::BaseTypes
+Note
+This BaseType is defined directly (as opposite to a derived BaseType)
+Base
+ARObject, BaseTypeDefinition
+Attribute
+Type
+Mult.
+Kind
+Note
+baseType
+Encoding
+BaseTypeEncoding
+String
+0..1
+attr
+This specifies, how an object of the current BaseType is
+encoded, e.g. in an ECU within a message sequence.
+Tags:xml.sequenceOffset=90
+baseTypeSize
+PositiveInteger
+0..1
+attr
+Describes the length of the data type specified in the
+container in bits.
+Tags:xml.sequenceOffset=70
+byteOrder
+ByteOrderEnum
+0..1
+attr
+This attribute specifies the byte order of the base type.
+Tags:xml.sequenceOffset=110
+memAlignment
+PositiveInteger
+0..1
+attr
+This attribute describes the alignment of the memory
+object in bits. E.g. "8" specifies, that the object in
+question is aligned to a byte while "32" specifies that it is
+aligned four byte. If the value is set to "0" the meaning
+shall be interpreted as "unspecified".
+Tags:xml.sequenceOffset=100
+native
+Declaration
+NativeDeclarationString
+0..1
+attr
+This attribute describes the declaration of such a base
+type in the native programming language, primarily in the
+Programming language C. This can then be used by a
+code generator to include the necessary declarations into
+a header file. For example
+BaseType with shortName: "MyUnsignedInt" native
+Declaration: "unsigned short"
+Results in
+typedef unsigned short MyUnsignedInt;
+If the attribute is not defined the referring Implementation
+DataTypes will not be generated as a typedef by RTE.
+If a nativeDeclaration type is given it shall fulfill the
+characteristic given by basetypeEncoding and baseType
+Size.
+This is required to ensure the consistent handling and
+interpretation by software components, RTE, COM and
+MCM systems.
+Tags:xml.sequenceOffset=120
+Table 5.29: BaseTypeDirectDefinition</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +270,7 @@ this is done by a typedef or a by using the symbol11 of an in</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=296" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

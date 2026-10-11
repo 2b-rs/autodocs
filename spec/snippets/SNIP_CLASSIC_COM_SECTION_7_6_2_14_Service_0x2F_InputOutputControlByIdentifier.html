@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_7_6_2_14_Service_0x2F_InputOutputControlByIdentifier</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 166)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=166" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 166)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01661" class="swsref internal-spec-ref"><code>SWS_Dcm_01661</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06086</span>
         </div>
       </div>
 
@@ -111,11 +112,103 @@ resetToDefault
 freezeCurrentState
 03
 shortTermAdjustment
-Table 7.23: InputOutputControlParameter definition</div></section>
+Table 7.23: InputOutputControlParameter definitions
+⌋()
+[SWS_Dcm_01554] IOControl DID authentication check ⌈On reception of the UDS
+Service InputOutputControlByIdentifier (0x2F), the Dcm shall check if the control ac-
+cess to the requested DID is authenticated and control the IO only if:
+• for that IO control a role is configured via DcmDspDidControlRoleRef and the
+verification according to [SWS_Dcm_01522] was successful or
+• the active white list on that connection has for the requested DID one entry with
+control access that matches that DID.
+⌋(RS_Diag_04218)
+Manager
+According to [SWS_Dcm_01522] the authentication checks are only executed if
+DcmDspAuthentication is configured. In case of a failed authentication the NRC
+handling is according to [SWS_Dcm_01544] and [SWS_Dcm_01551] applies.
+[SWS_Dcm_00563] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID is supported (see configuration param-
+eter DcmDspDid) If not, the Dcm module shall send NRC 0x31 (Request out of range).⌋
+(RS_Diag_04218)
+[SWS_Dcm_00564] ⌈If a DID is set as unused (DcmDspDidUsed set to FALSE), the
+Dcm shall consider the DID as not supported (according to [SWS_Dcm_00563])⌋(RS_-
+Diag_04218)
+[SWS_Dcm_00565] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID has a Control access configured (see
+configuration parameter DcmDspDidControl in DcmDspDidInfo). If not, the Dcm
+module shall send NRC 0x31 (Request out of range).⌋(RS_Diag_04218)
+[SWS_Dcm_00566] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID can be control in the current session (see
+configuration parameter DcmDspDidControlSessionRef). If not, the Dcm module
+shall send a NRC 0x31 (Request Out of Range).⌋()
+[SWS_Dcm_00567] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID can be control in the current security
+level (see configuration parameter DcmDspDidControlSecurityLevelRef). If not,
+the Dcm module shall send NRC 0x33 (Security access denied).⌋()
+[SWS_Dcm_00823] ⌈On reception of the UDS Service InputOutputControlByIdentifier
+(0x2F), the Dcm module shall check if the DID can be control in the current mode
+condition (see configuration parameter DcmDspDidControlModeRuleRef). If not,
+the Dcm module shall send the calculated negative response code of the referenced
+DcmModeRule.⌋()
+[SWS_Dcm_01600] CEMR on SR interface for DIDs with no CEMR in the UDS re-
+quest ⌈If the IOC DID has no CEMR in the UDS request message, the Dcm shall use
+a Dcm_Cemr_Type that has a bit for each DcmDspData of the DID on the interface
+IOControlRequest that has each bit set to 1.⌋(RS_Diag_04218)
+[SWS_Dcm_00580] ⌈On reception of a request for UDS Service InputOutput-
+ControlByIdentifier (0x2F) , if all verifications have been successfully done (see
+[SWS_Dcm_00563], [SWS_Dcm_00565], [SWS_Dcm_00566], [SWS_Dcm_00567] )
+and if the data is configured as a "ECU signal" of the IoHwAb (parameter DcmD-
+spDataUsePort), the Dcm shall call the Api IoHwAb_Dcm_&lt;symbolic name of
+ECU signal (parameter DcmDspDataEcuSignal)&gt;() with InputOutputControlParam-
+eter for the ’action’ parameter and in case of InputOutputControlParameter is set
+to ’shortTermAdjustment’ the signal value for the "signal" parameter.
+In this case
+the requirements [SWS_Dcm_00396], [SWS_Dcm_00397], [SWS_Dcm_00398] and
+[SWS_Dcm_00399] doesn’t apply.⌋(RS_Diag_04218)
+Manager
+[SWS_Dcm_00581] ⌈In case of more than one supported I/O signal per DataIdenti-
+fier and the configuration parameter DcmDspDidControlMask is set to DCM_CON-
+TROLMASK_INTERNAL, the Dcm shall internally consider the parameter controlEnable-
+MaskRecord and control only the included signals in the request message.⌋(RS_-
+Diag_04218)
+[SWS_Dcm_CONSTR_06051] ⌈The configuration parameter DcmDspDidControl-
+MaskSize shall be only present if DcmDspDidControlMask is equal to DCM_CON-
+TROLMASK_EXTERNAL or DCM_CONTROLMASK_INTERNAL.⌋()
+[SWS_Dcm_01273] ⌈If the configuration parameter DcmDspDidControlMask is set
+to DCM_CONTROLMASK_EXTERNAL or DCM_CONTROLMASK_INTERNAL, or the DcmD-
+spDid element used in service 0x2F is configured to have an atomic S/R interface,
+the Dcm shall reject requests without included control enable mask record with the NRC
+0x13 (incorrectMessageLengthOrInvalidFormat).⌋(RS_Diag_04218)
+[SWS_Dcm_01274] ⌈If the configuration parameter DcmDspDidControlMask is set
+to DCM_CONTROLMASK_NO, the Dcm shall reject request with included control en-
+able mask record with the NRC 0x13 (incorrectMessageLengthOrInvalidFormat).⌋(RS_-
+Diag_04218)
+[SWS_Dcm_CONSTR_06084] Sender-receiver communication for IOControls is
+limited to atomic S/R interfaces ⌈If a DID has a configured DcmDspDidUsePort
+= USE_DATA_ELEMENT_SPECIFIC_INTERFACES, the possible values of DcmDsp-
+DataUsePort are limited to non S/R interfaces.⌋(RS_Diag_04218)
+[SWS_Dcm_CONSTR_06085] Atomic S/R for IOControls are limited to non-NV
+interfaces ⌈If a DID has a configured DcmDspDidControl, the possible values of
+DcmDspDidUsePort are limited to atomic S/R interface and USE_DATA_ELEMENT_-
+SPECIFIC_INTERFACES.⌋(RS_Diag_04218)
+[SWS_Dcm_CONSTR_06086] Signals for DIDs with Atomic S/R are not shared
+with other DIDs ⌈If a DcmDspDid is configured to have an atomic S/R interface, all
+DcmDspDataElements referenced by this DID shall be referenced only from this DID.
+⌋(RS_Diag_04218)
+[SWS_Dcm_CONSTR_06050] ⌈If a DcmDspDid is used in service 0x2F and is con-
+figured to have an atomic S/R interface, the DcmDspDidControlMask shall be set to
+DCM_CONTROLMASK_EXTERNAL and the parameter DcmDspDidControlMaskSize
+shall be present with a value greater than zero.⌋()
+[SWS_Dcm_00680] Mapping of internal ControlEnableMaskRecord to DID data
+elements ⌈If DcmDspDidControlMask is set to DCM_CONTROLMASK_INTERNAL,the
+ControlEnableMaskRecord shall be mapped to the DID data elements by applying the
+following mapping :
+• The most significant bit of the first byte of the ControlEnableMask shall corre-
+spond to the first DID data element</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01661] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06086] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -124,7 +217,7 @@ Table 7.23: InputOutputControlParameter definition</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=166" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -136,7 +229,7 @@ Table 7.23: InputOutputControlParameter definition</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01661" class="swsref internal-spec-ref"><code>SWS_Dcm_01661</code></a></td>
+              <td>SWS_Dcm_CONSTR_06086</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

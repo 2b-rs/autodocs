@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_7_2_2_PDU_Transmission_via_IF_API_and_nPduUdpTxBuffer</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 31)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 31)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00747" class="swsref internal-spec-ref"><code>SWS_SoAd_00747</code></a></span>
         </div>
@@ -93,7 +94,86 @@ Upstream requirements: SRS_Eth_00116
 ⌈In case the nPdu feature is used for a socket connection, the related PDU param-
 eter SoAdTxPduCollectionSemantics is set to SOAD_COLLECT_LAST_IS_BEST
 and the upper layer doesn’t provide all the data, previously requested for transmission
-according to [SWS_SoAd_00747], via &lt;</div></section>
+according to [SWS_SoAd_00747], via &lt;Up&gt;_[SoAd][If]TriggerTransmit() in
+the context of SoAd_CopyTxData(), SoAd shall abort the transmission and return
+BUFREQ_E_NOT_OK.⌋
+[SWS_SoAd_00548]
+Upstream requirements: SRS_Eth_00116
+⌈In case the nPdu feature is used for a socket connection and SoAdTxUdpTrigger-
+Mode is set to TRIGGER_ALWAYS for the current PDU (SoAdPduRouteDest) and the
+resulting PDU data and headers don’t exceed SoAdSocketnPduUdpTxBufferMin,
+SoAd shall transmit all PDUs stored for the socket connection (if any) and the current
+PDU by calling TcpIp_UdpTransmit().⌋
+[SWS_SoAd_00685]
+Upstream requirements: SRS_Eth_00116
+⌈In case the nPdu feature is used for a socket connection and SoAdTxUdpTrigger-
+Mode is set to TRIGGER_ALWAYS for the current PDU (SoAdPduRouteDest) and the
+resulting PDU data and headers would exceed SoAdSocketnPduUdpTxBufferMin,
+SoAd shall first transmit all PDUs stored for the socket connection (if any) by calling
+TcpIp_UdpTransmit() and then the current PDU by calling TcpIp_UdpTransmit
+() once more.⌋
+[SWS_SoAd_00549]
+Upstream requirements: SRS_Eth_00116
+⌈In case the nPdu feature is used for a socket connection and SoAdTxUdpTrigger-
+Mode is set to TRIGGER_NEVER for the current PDU (SoAdPduRouteDest) and the
+resulting PDU data and headers would exceed SoAdSocketnPduUdpTxBufferMin,
+SoAd shall first transmit all PDUs stored for the socket connection by calling TcpIp_-
+UdpTransmit() and then store the PDU for the socket connection.⌋
+[SWS_SoAd_00690]
+Upstream requirements: SRS_Eth_00116
+⌈SoAd shall preserve the order of PDUs transmitted via a socket connection that uses
+the nPdu feature. Pdus collected on the sender side first shall be extracted and indi-
+cated to the receivers on the receiving side first as well.⌋
+[SWS_SoAd_00691]
+Upstream requirements: SRS_Eth_00116
+⌈In case the nPdu feature is used for a socket connection and and all PDUs are con-
+figured with SoAdTxPduCollectionSemantics set to SOAD_COLLECT_QUEUED,
+SoAd shall store all PDUs individually, also PDUs with the same PduId.⌋
+[SWS_SoAd_00735]
+Upstream requirements: SRS_Eth_00116
+⌈In case the nPdu feature is used for a socket connection and all PDUs are configured
+with SoAdTxPduCollectionSemantics set to SOAD_COLLECT_LAST_IS_BEST,
+SoAd shall only store the last instance of each PDU with the same PduId in the se-
+quence their first instances were requested for transmission.⌋
+[SWS_SoAd_00736]
+Upstream requirements: SRS_Eth_00116
+⌈SoAd shall reject configurations in which the transmit properties (see SoAdTxP-
+duCollectionSemantics) of the PDUs which are assigned to a socket connection
+are mixed. Furthermore all socket connnections of a socket connection group shall
+either be refered solely by PDUs with SOAD_COLLECT_LAST_IS_BEST or solely by
+PDUs with SOAD_COLLECT_QUEUED semantic.⌋
+[SWS_SoAd_00696]
+Upstream requirements: SRS_Eth_00116
+⌈SoAd shall maintain a nPdu specific timer for each socket connection using the nPdu
+feature.⌋
+[SWS_SoAd_00550]
+Upstream requirements: SRS_Eth_00116
+⌈Within SoAd_MainFunction() SoAd shall transmit all PDUs stored for a socket con-
+nection (if any) by calling TcpIp_UdpTransmit() if the nPdu specific timer expired.⌋
+[SWS_SoAd_00697]
+Upstream requirements: SRS_Eth_00116
+⌈If a PDU with SoAdTxUdpTriggerMode set to TRIGGER_NEVER with a specific
+SoAdTxUdpTriggerTimeout get buffered SoAd shall set the nPdu specific timer to
+the value of SoAdTxUdpTriggerTimeout if the timer is not running or if it is lower
+than the current nPdu specific timer value.⌋
+[SWS_SoAd_00683]
+Upstream requirements: SRS_Eth_00116
+⌈If a PDU with SoAdTxUdpTriggerMode set to TRIGGER_NEVER without a specific
+SoAdTxUdpTriggerTimeout get buffered SoAd shall set the the nPdu specific timer
+to the value of SoAdSocketUdpTriggerTimeout if the timer is not running or if it is
+lower than the current nPdu specific timer value.⌋
+[SWS_SoAd_00684]
+Upstream requirements: SRS_Eth_00116
+⌈SoAd shall stop the nPdu specific timer when the PDUs stored for the socket connec-
+tion have been sent⌋
+[SWS_SoAd_00737] ⌈For all PDUs that have been stored for a socket connection
+using the nPdu feature, SoAd shall call the upper layer with the related transmit con-
+firmation function (&lt;Up&gt;_[SoAd][If]TxConfirmation()) within the context of the
+SoAd_MainFunction() and with result set to
+1. E_OK if the related TcpIp_UdpTransmit() call was successful,
+2. E_NOT_OK if the transmission was not successful or cancelled for any other rea-
+son.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -106,7 +186,7 @@ according to [SWS_SoAd_00747], via &lt;</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

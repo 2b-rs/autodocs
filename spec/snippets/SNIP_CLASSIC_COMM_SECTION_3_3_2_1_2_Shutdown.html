@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_3_3_2_1_2_Shutdown</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_ModeManagementGuide.pdf</strong> (Seite 30)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></strong> (Seite 30)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00461" class="swsref internal-spec-ref"><code>SWS_NvM_00461</code></a></span>
         </div>
@@ -115,11 +116,42 @@ custom "EcuM_SetState(ECU_STARTUP_TWO)"
 custom "NvM_WriteAll()"
 }
 rule GoOff initially false {
-if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; E</div></section>
+if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; EcuMode ==
+MDG_EcuMode.ECU_GO_OFF_ONE) {
+actionlist GoOffActions
+}
+}
+actions GoOffActions on condition {
+custom "Rte_stop(null)"
+custom "ComM_DeInit(null)"
+custom "EcuM_SetState(ECU_GO_OFF_TWO)"
+custom "NvM_WriteAll()"
+}
+rule GoSleepNvMWriteAllFinished initially false {
+if ( NvMWriteAllJobMode != NVM_REQ_PENDING &amp;&amp; EcuMode == MDG_EcuMode.
+ECU_SLEEP)
+{
+actionlist GoSleepNvMWriteAllFinishedActions
+}
+}
+actions GoSleepNvMWriteAllFinishedActions on condition {
+custom "EcuM_GoHalt()"
+}
+rule GoOff2 initially false {
+if ( NvMWriteAllJobMode == NVM_BLK_OK &amp;&amp; EcuMode == MDG_EcuMode.
+ECU_GO_OFF_TWO) {
+actionlist GoOff2Actions
+}
+}
+actions GoOff2Actions on condition {
+custom "EcuM_GoDown()"
+Guide to Mode Management
+}
+Listing 3.15: BswM configuration for fixed EcuM compatible shutdown</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_WriteAll().</p>
       </section>
 
       <section class="snip-card">
@@ -128,7 +160,7 @@ if ( ComM_Mode_Channel1 == COMM_NO_COM_REQUEST_PENDING &amp;&amp; E</div></secti
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_ModeManagementGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

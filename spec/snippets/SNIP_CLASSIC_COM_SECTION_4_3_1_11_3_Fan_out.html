@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_3_1_11_3_Fan_out</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 334)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=334" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 334)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02309" class="swsref"><code>TPS_SYST_02309</code></a></span>
         </div>
@@ -88,7 +89,118 @@ required to establish the interaction between Rte and COM.
 Please note that in case of a fan-out only ISignal or ISignalGroup elements need
 to be considered that are transmitted by the EcuInstance on which the RTE is run-
 ning.
-With the usage of “Data Transformation” a mixture of different serializati</div></section>
+With the usage of “Data Transformation” a mixture of different serialization technologies
+for signal fan-out in the RTE can be used. This is determined by the ISignal or
+ISignalGroup association to DataTransformation.
+[SWS_Rte_04585]
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028
+⌈The RTE needs to perform a RTE signal fan-out for a SystemSignal and for a
+number of connected ISignals for which the following conditions apply in an Ecu
+Extract:
+• the ISignals reference the SystemSignal in the role systemSignal and
+• a DataMapping references the SystemSignal and
+• the DataMapping references an element in a PPortPrototype and
+• the ISignals are transmitted by the EcuInstance, i.e. the ComSignal that
+refers with the ComSystemTemplateSystemSignalRef in the COM Configu-
+ration to the ISignalToIPduMapping that in turn refers to the ISignal and
+the ISignalIPdu from which the ComIPdu is derived that has the ComIPduDi-
+rection = SEND.
+⌋
+In other words if two ISignals reference the same SystemSignal, but one of the
+ISignals is received and one is transmitted no RTE signal fan-out is performed. Only
+if several ISignals that are transmitted reference the same SystemSignal the RTE
+signal fan-out is performed.
+[SWS_Rte_04586]
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028
+⌈The RTE needs to perform a RTE signal fan-out for a SystemSignalGroup and for
+a number of connected ISignalGroups for which the following conditions apply in an
+Ecu Extract:
+• the ISignalGroups reference the SystemSignalGroup in the role system-
+SignalGroup and
+• a DataMapping references the SystemSignalGroup and
+• the DataMapping references an element in a PPortPrototype and
+• each of the contained ISignals of the ISignalGroup refers to its correspond-
+ing SystemSignal which in turn is part of the SystemSignalGroup and
+• the ISignalGroups are transmitted by the EcuInstance, i.e. the ComSig-
+nalGroup and its respective ComGroupSignals that refer with the ComSys-
+temTemplateSignalGroupRef resp.
+ComSystemTemplateSystemSig-
+nalRef in the COM Configuration to the ISignalToIPduMapping that in turn
+refers to the ISignalGroup resp. ISignals and the ISignalIPdu from which
+the ComIPdu is derived that has the ComIPduDirection = SEND.
+⌋
+In other words if two ISignalGroups reference the same SystemSignalGroup, but
+one of the ISignalGroups is received and one is transmitted no RTE signal fan-out
+is performed. Only if several ISignalGroups that are transmitted reference the same
+SystemSignalGroup the RTE signal fan-out is performed.
+[SWS_Rte_06023]
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028, SRS_Rte_00247
+⌈For inter-ECU transmission of a primitive data type, the RTE shall perform for each
+ISignal to which the primitive data element is mapped
+• the transformation if the ISignal references a TransformationTechnology
+• the invocation of Com_SendSignal
+⌋
+If the data element is typed by a composite data type several scenarios shall to be
+considered for each of the signal fan-out based on the ISignal or ISignalGroup
+association to DataTransformation:
+• no “Data Transformation”: RTE invokes Com_SendSignal for each primitive el-
+ement (ISignal) in the composite data type and each COM signal to which that
+primitive element is mapped, and Com_SendSignalGroup for each ISignal-
+Group that does not require a “Data Transformation” to which the data element
+is mapped.
+• “Data Transformation” without COM Based Transformer: RTE performs the trans-
+formation and then invokes Com_SendSignal for each ISignal that has the
+dataTransformation association to the DataTransformation defined.
+• “Data Transformation” with COM Based Transformer: RTE performs the trans-
+formation and then invokes Com_SendSignalGroupArray for each ISignal-
+Group that has the comBasedSignalGroupTransformation association to
+the DataTransformation defined.
+Note:
+It is also possible to configure the system to use multiple of these scenarios at the
+same time. Then the RTE executes all configured scenarios.
+[SWS_Rte_04526] Inter-ECU transmission of composite data without Data Trans-
+formation
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028
+⌈For inter-ECU transmission of composite data type where
+• a SenderReceiverToSignalGroupMapping to the VariableDataProto-
+type is defined
+• and the respective ISignalGroup has no comBasedSignalGroupTrans-
+formation defined
+the RTE shall invoke Com_SendSignal for each ISignal to which an element in
+the composite data type is mapped and Com_SendSignalGroup for each ISignal-
+Group to which the composite data element is mapped.⌋
+[SWS_Rte_08586] Inter-ECU transmission of composite data with COM Based
+Data Transformation
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028, SRS_Rte_00251
+⌈For inter-ECU transmission of composite data type where
+• a SenderReceiverToSignalGroupMapping to the VariableDataProto-
+type is defined
+• and the respective ISignalGroup has a comBasedSignalGroupTransfor-
+mation reference defined
+the RTE shall perform the transformation and then invoke Com_SendSignal-
+GroupArray for the ISignalGroup to which the composite data type is mapped.⌋
+[SWS_Rte_08587] Inter-ECU transmission of composite data with Data Transfor-
+mation
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028, SRS_Rte_00247
+⌈For inter-ECU transmission of composite data type where
+• a SenderReceiverToSignalMapping to the VariableDataPrototype is
+defined
+• and the respective ISignal has a dataTransformation reference defined
+the RTE shall perform the transformation and then invoke Com_SendSignal for the
+ISignal to which composite data type is mapped.⌋
+Note:
+A SystemSignal can be added to a SystemSignalGroup in the role transform-
+ingSystemSignal to support the configuration where a complex data element is
+transferred via Sender/Receiver communication both using transformation and tradi-
+tional mapping of RTE and COM.
+For intra-ECU transmission of data elements, the situation is slightly different; the RTE
+handles the communication (the lower layers of the AUTOSAR communication stack
+are not used) and therefore must ensure that the data elements are routed to all re-
+ceivers. For inter-partition communication, RTE may use the IOC.
+[SWS_Rte_06024]
+Upstream requirements: SRS_Rte_00019, SRS_Rte_00028
+⌈For inter-partition transmission of data elements, the RTE shall perform the
+fan-out to each receiver.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +213,7 @@ With the usage of “Data Transformation” a mixture of different serializati</
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=334" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

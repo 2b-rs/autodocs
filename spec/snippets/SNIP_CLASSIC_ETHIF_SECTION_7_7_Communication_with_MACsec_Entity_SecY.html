@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_7_Communication_with_MACsec_Entity_SecY</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MACsecKeyAgreement.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MACsecKeyAgreement.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MACsecKeyAgreement.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_91227" class="swsref internal-spec-ref"><code>SWS_EthIf_91227</code></a></span>
         </div>
@@ -95,7 +96,92 @@ performed by an PHY:
 – EthIf_MacSecAddTxSa
 – Mka_MacSecAddTxSaNotification
 – EthIf_MacSecSetControlledPortEnabled
-– EthIf_MacSecUpdateTx</div></section>
+– EthIf_MacSecUpdateTxSa
+– EthIf_MacSecGetTxSaNextPn
+– EthIf_MacSecUpdateRxSa
+• APIs to establish and maintain a Secure Association, if MACsec processing is
+performed by an Ethernet switch port:
+– EthIf_SwitchMacSecAddRxSa
+– Mka_MacSecAddRxSaNotification
+– EthIf_SwitchMacSecAddTxSa
+– Mka_MacSecAddTxSaNotification
+– EthIf_SwitchMacSecSetControlledPortEnabled
+– EthIf_SwitchMacSecUpdateTxSa
+– EthIf_SwitchMacSecGetTxSaNextPn
+– EthIf_SwitchMacSecUpdateRxSa
+Initialization and update of a MACsec Entity (SecY) need to be robust and consider
+hardware issues. API calls may need to be performed multiple times for over come
+race conditions if hardware of the MACsec Entity react not as expected. The MKA is
+responsible to retry function calls once a function to initialize, update or maintain the
+MACsec Entity returns with E_NOT_OK.
+[CP_SWS_Mka_00044] Retry of function calls which return with E_NOT_OK
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If one of the following APIs return with E_NOT_OK for a specific MkaPaeIn-
+stance, then the MKA module shall retry again during the next main cycles again
+for this MkaPaeInstance until E_OK is returned or Mka_LinkStateChange with
+TransceiverLinkState set to ETHTRCV_LINK_STATE_DOWN and MkaPaeIdx set
+to the affected MkaPaeInstance:
+• EthIf_MacSecInitRxSc
+• EthIf_MacSecUpdateSecY
+• EthIf_SwitchMacSecInitRxSc
+• EthIf_SwitchMacSecUpdateSecY
+• EthIf_MacSecAddRxSa
+• EthIf_MacSecUpdateRxSa
+• EthIf_MacSecAddTxSa
+• EthIf_MacSecUpdateTxSa
+• EthIf_MacSecGetTxSaNextPn
+• EthIf_MacSecSetControlledPortEnabled
+• EthIf_MacSecGetMacSecStatistics
+• EthIf_SwitchMacSecGetMacSecStatistics
+• EthIf_MacSecOperational
+⌋
+[CP_SWS_Mka_00024]
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00003
+⌈The MKA Module shall propagate the MACsec Entity specific parameters as needed
+by means of the EthIf API.
+This requirement applies for the initialization, shutdown and, maintenance of MACsec
+related parameters.⌋
+[CP_SWS_Mka_00045] Considerations to provide a SAK key reference of type
+Mka_SakKeyPtrType
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If the MKA module need to provide a SAK key reference of type Mka_SakKeyP-
+trType for a particular MkaPaeInstance, then the MKA module shall consider the
+following points:
+• If MkaCalculateSakHashKey of the referenced MkaPaeConfiguration is
+set to TRUE, then the MKA module shall calculate a hash key and set the pointer
+HashKeyPtr to the corresponding memory address. Otherwise set the pointer
+to NULL_PTR. The MKA module shall calculate this 128 bit value by performing
+an AES-ECB block encryption operation using SAK as a key over 128 zero bits
+block.
+• If the current cipher suite uses extended packet numbering (XPN), then the MKA
+module shall calculate a salt key according to [4, IEEE 802.1AE-2018] (see chap-
+ter "SAK creation") and set the pointer SaltKeyPtr to the corresponding mem-
+ory address. Otherwise set the pointer to NULL_PTR.
+• The MKA module shall trigger to calculate a SAK and set the pointer SakKeyPtr
+to the corresponding memory address.
+⌋
+[CP_SWS_Mka_00025]
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00009
+⌈The MKA Module shall collect the MACsec Entity (SecY) statistics when requested by
+means of the EthIf API.⌋
+Note: Other modules may request port specific MACsec statistics in order to set DTCs,
+answer to Diagnostics, and for monitoring.
+[CP_SWS_Mka_00037]
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00001, FO_RS_MACsec_00002
+⌈When Mka_GetMacSecStatistics is requested, it shall call the EthIf_Mac-
+SecGetMacSecStatistics and it shall wait for the notification of Mka_GetMacSec-
+StatisticsNotification, then it shall trigger the callback configured by MkaGet-
+MacSecStatisticsCallbackNotification.([CP_SWS_Mka_91036])⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -108,7 +194,7 @@ performed by an PHY:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MACsecKeyAgreement.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MACsecKeyAgreement.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MACsecKeyAgreement.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

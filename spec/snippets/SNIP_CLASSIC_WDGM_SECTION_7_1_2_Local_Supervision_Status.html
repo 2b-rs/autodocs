@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_7_1_2_Local_Supervision_Status</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 30)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 30)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_91006" class="swsref internal-spec-ref"><code>SWS_WdgM_91006</code></a></span>
         </div>
@@ -90,7 +91,114 @@ Deadline and Logical Supervisions will not be affected by WdgM-
 FailedAliveSupervisionRefCycleTol.
 [SWS_WdgM_00200] ⌈The Watchdog Manager module shall track the Local Supervi-
 sion Status of each Supervised Entity.⌋
-[SWS_WdgM_91006] shows the state machine f</div></section>
+[SWS_WdgM_91006] shows the state machine for Local Supervision Status of a Su-
+pervised Entity with all possible states.
+[SWS_WdgM_91006] Local Supervision Status ⌈
+stm SPEC_WdgM_Local_Supervision_Status
+WDGM_LOCAL_STATUS_OK
+WDGM_LOCAL_STATUS_DEACTIVATED
+WDGM_LOCAL_STATUS_FAILED
+WDGM_LOCAL_STATUS_EXPIRED
+(2)
+(3)
+(5)
+(4)
+(12)
+(9)
+(1)
+(10)
+(8)
+(11)
+(6)
+(7)
+⌋
+For the transitions between the states of the Local Supervision Status the following
+rules apply:
+[SWS_WdgM_00268]
+Upstream requirements: SRS_BSW_00101
+⌈If the function WdgM_Init is successfully called, then for each Supervised Entity that
+is referenced from the Initial Mode (WdgMInitialMode) (i.e. each Supervised Entity
+that is activated in the Initial Mode), the function WdgM_Init shall set the Local Super-
+vision Status for this Supervised Entity to WDGM_LOCAL_STATUS_OK. And the counter
+for Failed Supervision Reference Cycles shall be set to zero (0). (see Tran-
+sition (10) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00269]
+Upstream requirements: SRS_BSW_00101
+⌈If the function WdgM_Init is successfully called, then for each Supervised Entity that
+is not referenced from the Initial Mode (WdgMInitialMode), the function WdgM_Init
+shall set the Local Supervision Status for this Supervised Entity to WDGM_LOCAL_-
+STATUS_DEACTIVATED (see Transition (11) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00201] ⌈If all values in three sets of results of Supervision (results of
+Alive Supervision, results of Deadline Supervision, results of Logical Supervision) for
+the Supervised Entity are correct and the Supervised Entity was in Local Supervision
+Status WDGM_LOCAL_STATUS_OK, then the function WdgM_MainFunction shall keep
+the Supervised Entity in the Local Supervision Status WDGM_LOCAL_STATUS_OK (see
+Transition (1) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00202] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_OK AND:
+1. (At least one result of Alive Supervision of the Supervised Entity is incorrect
+and a Failure Tolerance of zero is configured (see configuration parameter WdgM-
+FailedAliveSupervisionRefCycleTol [ECUC_WdgM_00327]) OR
+2. If the result of at least one Deadline Supervision of the Supervised Entity or the
+result of at least one Logical supervision of the Supervised Entity is incorrect),
+THEN the function WdgM_MainFunction shall change the Local Supervision Status
+to WDGM_LOCAL_STATUS_EXPIRED (see Transition (2) in [SWS_WdgM_91006]).⌋
+The below requirements show the important difference of Alive Supervision versus
+Deadline and Logical Supervision: The Alive Supervision has an error tolerance for
+failed reference cycles.
+[SWS_WdgM_00203] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_OK AND:
+1. (If the result of at least one Alive Supervision of the Supervised En-
+tity is incorrect and a Failure Tolerance greater than zero is configured
+(see configuration parameter WdgMFailedAliveSupervisionRefCycleTol
+[ECUC_WdgM_00327]) AND
+2. If all the results of Deadline Supervision of the Supervised Entity and all results
+of Logical Supervision of the Supervised Entity are correct),
+THEN the function WdgM_MainFunction shall change the Local Supervision Status
+to WDGM_LOCAL_STATUS_FAILED and increment the counter for Failed Supervi-
+sion Reference Cycles (see Transition (3) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00204] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_FAILED AND:
+1. (If the result of at least one Alive Supervision is incorrect and the counter for
+Failed Supervision Reference Cycles is less than the configured Fail-
+ure Tolerance (see parameter WdgMFailedAliveSupervisionRefCycleTol
+[ECUC_WdgM_00327]) AND
+2. If all the results of Deadline Supervisions of the Supervised Entity and all the
+result of Logical Supervision of the Supervised Entity are correct),
+THEN the function WdgM_MainFunction shall keep the Local Supervision Status in
+WDGM_LOCAL_STATUS_FAILED and increment the counter for Failed Supervi-
+sion Reference Cycles (see Transition (4)in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00300] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_FAILED AND:
+1. (If all the results of Alive Supervision of the Supervised Entity are correct and
+the counter for Failed Supervision Reference Cycles is &gt; 1) AND
+2. If all the result of Deadline Supervision of the Supervised Entity and all the result
+of Logical Supervision of the Supervised Entity are correct),
+THEN the function WdgM_MainFunction shall keep the Local Supervision Status in
+WDGM_LOCAL_STATUS_FAILED and decrement the counter for Failed Supervi-
+sion Reference Cycles (see Transition (4) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00205] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_FAILED AND:
+1. (If all the results of Alive Supervision of the Supervised Entity are correct and
+the counter for Failed Supervision Reference Cycles equals 1) AND
+2. If all the results of Deadline Supervisions of the Supervised Entity and all the
+results of Logical Supervision of the Supervised Entity are correct),
+THEN the function WdgM_MainFunction shall change the Local Supervision Status
+to WDGM_LOCAL_STATUS_OK and decrement the counter for Failed Supervision
+Reference Cycles (see Transition (5) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00206] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_FAILED AND:
+1. (If at least one result of Alive Supervision is incorrect and the counter for
+Failed Supervision Reference Cycles is equal to the configured Failure
+Tolerance (see configuration parameter WdgMFailedAliveSupervisionRef-
+CycleTol [ECUC_WdgM_00327]) OR
+2. If at least one result of Deadline Supervision of the Supervised Entity or at least
+one the result of Logical Supervision of the Supervised Entity is incorrect),
+THEN the function WdgM_MainFunction shall change the Local Supervision Status
+to WDGM_LOCAL_STATUS_EXPIRED (see Transition (6) in [SWS_WdgM_91006]).⌋
+[SWS_WdgM_00207] ⌈If the Supervised Entity was in Local Supervision Status
+WDGM_LOCAL_STATUS_OK and if a call of WdgM_SetMode switches to a mode
+which deactivates the Supervised Entity (see [SWS_WdgM_00283]), then the Watch-</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +211,7 @@ sion Status of each Supervised Entity.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

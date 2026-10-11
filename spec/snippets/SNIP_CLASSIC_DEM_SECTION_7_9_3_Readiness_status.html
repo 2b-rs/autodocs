@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_9_3_Readiness_status</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 172)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=172" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 172)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dem_CONSTR_06147</span>
         </div>
@@ -92,7 +93,27 @@ For details see chapter 7.4.8.
 Dem_SetEventDisabled). OBD Events Suppression shall be ignored for this com-
 putation.⌋
 For details see chapter 7.4.8.
-[SWS_Dem_00294] ⌈In order to allow a mon</div></section>
+[SWS_Dem_00294] ⌈In order to allow a monitor to report that the event cannot be
+computed in the driving cycle (aborted e.g. due to physical reasons), the Dem shall
+provide the API Dem_SetEventDisabled.⌋
+Note: For the computation of PID $41, the monitor has to report its event as disabled,
+if the test cannot be carried out anymore until the end of this driving cycle.
+Note: SetEventDisabled does report an Event as “uncompletable“ during the current
+driving cycle. It does not turn the Event into a Events Suppression according to chapter
+7.4.8
+RTE
+SW-C 1
+SW-C 2
+SW-C 3
+Dcm
+Dem
+[DiagnosticMonitor]
+-&gt; SetEventStatus()
+Dem_DcmReadDataOfPID41()
+Dem_DcmReadDataOfPID01()
+[DiagnosticMonitor]
+à SetEventDisabled()
+Figure 7.43: Dem calculates PID$01 and PID$41 data based on specific port operations</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +126,7 @@ For details see chapter 7.4.8.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=172" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

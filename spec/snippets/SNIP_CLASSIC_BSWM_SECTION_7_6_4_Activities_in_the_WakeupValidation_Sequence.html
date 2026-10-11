@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_6_4_Activities_in_the_WakeupValidation_Sequence</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 64)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 64)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_02539" class="swsref internal-spec-ref"><code>SWS_EcuM_02539</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04082" class="swsref internal-spec-ref"><code>SWS_EcuM_04082</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,64 @@ CanSM
 loop WHILE no wakeup event has been validated AND timeout not expired
 opt Wakeup validated
 opt No wakeup event was validated
-&lt;Module&gt;_CheckValidat</div></section>
+&lt;Module&gt;_CheckValidation()
+BswM_EcuM_CurrentWakeup(Source,
+ECUM_WKSTATUS_EXPIRED)
+EcuM_ValidateWakeupEvent(EcuM_WakeupSourceType)
+EcuM_StopWakeupSources(EcuM_WakeupSourceType)
+ComM_EcuM_PNCWakeUpIndication(PNCHandleType)
+CanSM_StopWakeupSource(Std_ReturnType,
+NetworkHandleType)
+EcuM_GetPendingWakeupEvents(EcuM_WakeupSourceType)
+ComM_EcuM_WakeUpIndication(NetworkHandleType)
+Start validation
+timeout()
+EcuM_StartWakeupSources(EcuM_WakeupSourceType)
+EcuM_CheckValidation(EcuM_WakeupSourceType)
+BswM_EcuM_CurrentWakeup(Source, ECUM_WKSTATUS_VALIDATED)
+CanSM_StartWakeupSource(Std_ReturnType,
+NetworkHandleType)
+Figure 7.16: The WakeupValidation Sequence
+[SWS_EcuM_02566]
+Upstream requirements: SRS_ModeMgm_00003
+⌈The ECU Manager module shall only invoke wakeup validation on those wakeup
+sources where it is required by configuration. If the validation protocol is not config-
+ured (see EcuMValidationTimeout ), then a call to EcuM_SetWakeupEvent shall
+also imply a call to EcuM_ValidateWakeupEvent .⌋
+[SWS_EcuM_02565]
+Upstream requirements: SRS_ModeMgm_00003
+⌈The ECU Manager module shall start a validation timeout for each pending wakeup
+event that should be validated. The timeout shall be event-specific (see EcuMVali-
+dationTimeout ).⌋
+Implementation hint for [SWS_EcuM_02565]: It is sufficient for an implementation to
+provide only one timer, which is prolonged to the largest timeout when new wakeup
+events are reported.
+[SWS_EcuM_04081]
+Upstream requirements: SRS_ModeMgm_00003
+⌈When the validation timeout expires for a pending wakeup event, the EcuM_Main-
+Function sets (OR-operation) set the bit in the internal expired wakeup events vari-
+able.⌋
+See also section 7.6.3 Internal Representation of Wakeup States.
+[SWS_EcuM_04082]
+Upstream requirements: SRS_ModeMgm_00003
+⌈When the validation timeout expires for a pending wakeup event, the EcuM_-
+MainFunction shall invoke BswM_EcuM_CurrentWakeup with an EcuM_Wakeup-
+SourceType bitmask parameter with the bit corresponding to the wakeup event set
+and state value parameter set to ECUM_WKSTATUS_EXPIRED.⌋
+The BswM will be configured to monitor the wakeup validation through mode switch
+requests coming from the EcuM as the wakeup sources are validated or the timers ex-
+pire. If the last validation timeout (see [SWS_EcuM_02565] ) expires without validation
+then the BswM shall consider wakeup validation to have failed. If at least one of the
+pending events is validated then the entire validation shall have passed.
+Pending events are validated with a call of EcuM_ValidateWakeupEvent (see
+[SWS_EcuM_02829] ). This call must be placed in the driver or the consuming stack
+on top of the driver (e.g. the handler). The best place to put this depends on hardware
+and software design. See also section 7.6.4.4 Requirements for Drivers with Wakeup
+Sources .</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_02539] im Text von SWS_ECUStateManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_04082] im Text von SWS_ECUStateManager.</p>
       </section>
 
       <section class="snip-card">
@@ -110,7 +164,7 @@ opt No wakeup event was validated
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -122,7 +176,7 @@ opt No wakeup event was validated
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_02539" class="swsref internal-spec-ref"><code>SWS_EcuM_02539</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04082" class="swsref internal-spec-ref"><code>SWS_EcuM_04082</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

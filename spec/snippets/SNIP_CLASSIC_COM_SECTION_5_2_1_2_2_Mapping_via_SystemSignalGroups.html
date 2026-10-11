@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_5_2_1_2_2_Mapping_via_SystemSignalGroups</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SystemTemplate.pdf</strong> (Seite 267)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=265" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></strong> (Seite 267)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01143" class="swsref"><code>TPS_SYST_01143</code></a></span>
         </div>
@@ -106,7 +107,223 @@ ApplicationCompositeElementDataPrototype
 ApplicationRecordElement
 +
 isOptional: Boolean [0..1]
-ApplicationCompositeElementDataPrototype</div></section>
+ApplicationCompositeElementDataPrototype
+ApplicationArrayElement
++
+arraySizeHandling: ArraySizeHandlingEnum [0..1]
++
+arraySizeSemantics: ArraySizeSemanticsEnum [0..1]
+«atpVariation»
++
+maxNumberOfElements: PositiveInteger [0..1]
+TextTableMapping
++
+identicalMapping: Boolean [0..1]
++
+mappingDirection: MappingDirectionEnum [0..1]
+«atpVariation»
++
+bitfieldTextTableMaskFirst: PositiveInteger [0..1]
++
+bitfieldTextTableMaskSecond: PositiveInteger [0..1]
++signalToReceiverTextTableMapping
+0..1
++senderToSignalTextTableMapping
+0..1
++recordElementMapping
+*
++senderToSignalTextTableMapping
+0..1
+«instanceRef»
++dataElement
+0..1
++implementationRecordElement
+0..1
++signalToReceiverTextTableMapping
+0..1
++typeMapping 0..1
++complexTypeMapping
+0..1
++complexTypeMapping
+0..1
++signalGroup
+0..1
++indexedArrayElement
+0..1
++arrayElementMapping *
++applicationRecordElement
+0..1
++systemSignal
+0..1
++applicationArrayElement
+0..1
++systemSignal
+0..1
++implementationArrayElement
+0..1
++systemSignal
+*
+Figure 5.22: Mapping of data elements with composite data types (SenderRecCompos-
+iteTypeMapping)
+System Template
+[constr_3000] valid SenderRecCompositeTypeMappings
+Imposition time: CP: IT_EcuExt
+⌈All
+SenderRecRecordElementMappings
+or
+SenderRecArrayElementMap-
+pings aggregated in the context of a given SenderReceiverToSignalGroupMap-
+ping shall reference a SystemSignal that is also referenced in the role system-
+Signal by the SystemSignalGroup that is referenced by the enclosing Sender-
+ReceiverToSignalGroupMapping in the role signalGroup.⌋
+In other words: within the context of an SenderReceiverToSignalGroupMapping,
+it shall only be possible to refer to a SystemSignal that is a member of the System-
+SignalGroup referenced by the SenderReceiverToSignalGroupMapping.
+Please note that [constr_3000] does not demand that all leaf elements of the composite
+data type are actually mapped to a SystemSignal.
+[TPS_SYST_02278] Existence of SystemSignals in a SystemSignalGroup that
+are not referenced by a SenderRecCompositeTypeMapping ⌈There are use
+cases where not all SystemSignals of a SystemSignalGroup are referenced by
+a SenderRecRecordElementMapping or a SenderRecArrayElementMapping.
+One example is the ComBased Transformer use case where the SystemSignal-
+Group contains SystemSignals that are added by additional Transformers like the
+E2E Transformer (e.g. CRC and Alive Counter), but only the application data element
+signals are mapped by the SenderReceiverToSignalGroupMapping. One addi-
+tional use case is the partial mapping of composite data types where only a subset of
+elements of the composite data type are mapped to SystemSignals of the System-
+SignalGroup.⌋
+Class
+SenderReceiverToSignalGroupMapping
+Note
+Mapping of a sender receiver communication data element with a composite datatype to a signal group.
+Base
+ARObject, DataMapping
+Aggregated by
+SystemMapping.dataMapping
+Attribute
+Type
+Mult.
+Kind
+Note
+dataElement
+VariableDataPrototype
+0..1
+iref
+Reference to a data element with a composite datatype
+which is mapped to a signal group.
+InstanceRef implemented by: VariableDataPrototypeIn
+SystemInstanceRef
+signalGroup
+SystemSignalGroup
+0..1
+ref
+Reference to the signal group, which contain all primitive
+datatypes of the composite type
+typeMapping
+SenderRecComposite
+TypeMapping
+0..1
+aggr
+The CompositeTypeMapping maps the ApplicationArray
+Elements and ApplicationRecordElements to Signals of
+the SignalGroup.
+Table 5.24: SenderReceiverToSignalGroupMapping
+[constr_5468]
+Existence
+of
+SenderReceiverToSignalGroupMapping.
+dataElement
+Imposition time: CP: IT_EcuExt
+⌈For each SenderReceiverToSignalGroupMapping, the reference to Vari-
+ableDataPrototype in the role dataElement shall exist.⌋
+System Template
+[constr_5469] Existence of SenderReceiverToSignalGroupMapping.signal-
+Group
+Imposition time: CP: IT_EcuExt
+⌈For each SenderReceiverToSignalGroupMapping, the reference to System-
+SignalGroup in the role signalGroup shall exist.⌋
+[constr_5470]
+Existence
+of
+SenderReceiverToSignalGroupMapping.
+typeMapping
+Imposition time: CP: IT_EcuExt
+⌈For each SenderReceiverToSignalGroupMapping, the aggregation of Sender-
+RecCompositeTypeMapping in the role typeMapping shall exist.⌋
+Class
+SenderRecCompositeTypeMapping (abstract)
+Note
+Two mappings exist for the composite data types: "ArrayTypeMapping" and "RecordTypeMapping". In
+both, a primitive datatype will be mapped to a system signal.
+But it is also possible to combine the arrays and the records, so that an "array" could be an element of a
+"record" and in the same manner a "record" could be an element of an "array". Nesting these data types
+is also possible.
+If an element of a composite data type is again a composite one, the "CompositeTypeMapping" element
+will be used one more time (aggregation between the ArrayElementMapping and CompositeType
+Mapping or aggregation between the RecordElementMapping and CompositeTypeMapping).
+Base
+ARObject
+Subclasses
+SenderRecArrayTypeMapping, SenderRecRecordTypeMapping
+Aggregated by
+SenderRecArrayElementMapping.complexTypeMapping, SenderReceiverCompositeElementToSignal
+Mapping.typeMapping, SenderReceiverToSignalGroupMapping.typeMapping, SenderRecRecord
+ElementMapping.complexTypeMapping
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 5.25: SenderRecCompositeTypeMapping
+Class
+SenderRecArrayTypeMapping
+Note
+If the ApplicationCompositeDataType is an Array, the "ArrayTypeMapping" will be used.
+Base
+ARObject, SenderRecCompositeTypeMapping
+Aggregated by
+SenderRecArrayElementMapping.complexTypeMapping, SenderReceiverCompositeElementToSignal
+Mapping.typeMapping, SenderReceiverToSignalGroupMapping.typeMapping, SenderRecRecord
+ElementMapping.complexTypeMapping
+Attribute
+Type
+Mult.
+Kind
+Note
+arrayElement
+Mapping
+SenderRecArray
+ElementMapping
+*
+aggr
+Each ApplicationArrayElement shall be mapped on a
+SystemSignal.
+senderToSignal
+TextTable
+Mapping
+TextTableMapping
+0..1
+aggr
+This mapping allows for the text-table translation between
+the sending DataPrototype that is defined in the Port
+Prototype and the physicalProps defined for the System
+Signal.
+signalTo
+ReceiverText
+TableMapping
+TextTableMapping
+0..1
+aggr
+This mapping allows for the text-table translation between
+the physicalProps defined for the SystemSignal and a
+receiving DataPrototype that is defined in the Port
+Prototype.
+Table 5.26: SenderRecArrayTypeMapping</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -119,7 +336,7 @@ ApplicationCompositeElementDataPrototype</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=265" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

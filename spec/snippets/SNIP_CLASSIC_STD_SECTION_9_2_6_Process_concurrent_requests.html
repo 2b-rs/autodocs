@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_9_2_6_Process_concurrent_requests</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 437)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=437" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 437)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -149,11 +150,66 @@ request will be preempted. This is due to the configured higher priority of OBD 
 (see configuration parameter DcmDslProtocolPriority).
 The following is processed on reception of 1st OBD request:
 • The Application is informed of the protocol stop (done with Xxx_StopProtocol())
-and resets to a stable state (e.g. switch of digital Ios,..)</div></section>
+and resets to a stable state (e.g. switch of digital Ios,..).
+Manager
+• Lower Layer is requested to cancel ongoing transmission on the same N-PDU
+(done with PduR_DcmCancelTransmitRequest()).
+• If the Dcm is not able to switch fast enough from non OBD to OBD protocol, the DSL
+submodule responses with a negative response "BusyRepeatRequest" (NRC
+0x21) to OBD tester. It is in the responsibility of the system designer to ensure
+that the legislative timings are satisfied.
+As
+long
+as
+the
+external
+module
+processing
+the
+request
+is
+not
+fin-
+ished
+(finish
+is
+indicated
+by
+returning
+E_OK
+or
+E_NOT_OK
+to
+&lt;Mod-
+ule&gt;_&lt;DiagnosticService&gt;()/&lt;Module&gt;_&lt;DiagnosticService&gt;_&lt;SubService&gt;()
+API
+call) or no timeout occurs, the DSL submodule responses with negative response
+"BusyRepeatRequest".
+With
+receiving
+E_OK
+or
+E_NOT_OK
+from
+the
+external
+module
+to
+&lt;Mod-
+ule&gt;_&lt;DiagnosticService&gt;()/&lt;Module&gt;_&lt;DiagnosticService&gt;_&lt;SubService&gt;()
+API
+call, the DSL submodule will not transmit a response to old request. There will also
+not given any negative response to inform first tester about preemption of diagnostic
+request.
+If the external module processing the request never returns E_OK or E_NOT_OK
+to &lt;Module&gt;_&lt;DiagnosticService&gt;()/&lt;Module&gt;_&lt;DiagnosticService&gt;_&lt;SubService&gt;()
+API call, the DSL submodule runs into timeout and switches directly to further process-
+ing of preempting protocol.
+Manager</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -162,7 +218,7 @@ and resets to a stable state (e.g. switch of digital Ios,..)</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=437" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

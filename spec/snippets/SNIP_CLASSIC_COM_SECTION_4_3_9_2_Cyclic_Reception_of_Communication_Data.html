@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_3_9_2_Cyclic_Reception_of_Communication_Data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 405)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=404" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 405)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01901" class="swsref"><code>TPS_SWCT_01901</code></a></span>
         </div>
@@ -95,7 +96,117 @@ calls the polling for received data has to be configured faster than the sending
 [SWS_Rte_04658]
 Check
 for
-n</div></section>
+no
+data
+received
+from
+COM
+where
+E2E
+transformation is configured ⌈The Rte Read Api (Rte_Read) shall return
+RTE_E_NO_NEW_DATA if:
+• RteComDataE2EXfOverSamplingPeriod is configured.
+AND
+• returnNoNewDataEnabled is set to TRUE.
+AND
+• E2E transformation is configured for this data.
+AND
+• Last execution of RTE cycle function Rte_ComDataMainFunction before this
+Rte_Read call didn’t receive new data from COM within the configured RteCom-
+DataE2EXfOverSamplingPeriod.
+⌋
+Note: If RteComDataE2EXfOverSamplingPeriod and RteComDataMainFunc-
+tionPeriod have the same value or RteComDataE2EXfOverSamplingPeriod is
+not defined, then there won’t be oversampling.
+[SWS_Rte_04659]
+Check for no data received from COM where no E2E
+transformation is configured ⌈The Rte Read Api (Rte_Read) shall return
+RTE_E_NO_NEW_DATA if:
+• RteComDataMainFunctionPeriod is configured.
+AND
+• NonqueuedReceiverComSpec.returnNoNewDataEnabled is set to TRUE.
+AND
+• no E2E transformation is configured for this data.
+AND
+• Last execution of RTE cycle function Rte_ComDataMainFunction before this
+Rte_Read call didn’t receive new data from COM within the configured RteCom-
+DataMainFunctionPeriod.
+⌋
+[SWS_Rte_04660] Transformation chain execution within cyclic function ⌈If Rte-
+ComDataMapping is configured for the VariableDataPrototype, then the RTE
+shall execute the data transformation for that data element within the cyclic function in
+the following cases:
+• The new data is received within configured cyclic time according to requirement
+[SWS_Rte_04655].
+• E2E
+transformation
+is
+configured
+for
+the
+VariableDataPrototype
+and
+the
+waiting for new data period
+(calcuated
+as
+mentioned
+in
+[SWS_Rte_04661]) has been elapsed since the last data was received. The last
+received data from the Com should be passed to the transformation chain.
+⌋
+For more jitter robustness a configurable extension factor can be configured in order
+have buffer time for execution of E2E transformation.
+[SWS_Rte_04661] Calculation of the waiting for new data period ⌈The waiting
+for new data period is the waiting period for new cycle execution which is cal-
+culated after each reception of data if RteComDataE2EXfNNDExtensionFactor is
+configured for data with E2E transformation configured by multiplying the following:
+• The cycle time configured according to requirement [SWS_Rte_04655].
+• The calculated no new data extension factor [SWS_Rte_04662].
+⌋
+[SWS_Rte_04662] No New Data extension factor calculation ⌈The calculated no
+new data extension factor shall be:
+• RteComDataE2EXfNNDExtensionFactor,
+before
+the
+first
+execution
+of
+E2EXf_Inv_&lt;transformerId&gt; for this VariableDataPrototype.
+• 1,
+if
+the
+last
+execution
+of
+E2EXf_Inv_&lt;transformerId&gt;
+for
+this
+VariableDataPrototype
+did
+not
+return
+E_OK,
+E_SAFETY_INIT_OK,
+E_SAFETY_INVALID_OK, E_SAFETY_NOSM_OK or E_SAFETY_NODATA_OK.
+• RteComDataE2EXfNNDExtensionFactor,
+if
+the
+last
+execution
+of
+E2EXf_Inv_&lt;transformerId&gt;
+for
+this
+VariableDataPrototype
+re-
+turned
+E_SAFETY_E_OK,
+E_SAFETY_INIT_OK,
+E_SAFETY_INVALID_OK,
+E_SAFETY_NOSM_OK or E_SAFETY_NODATA_OK.
+⌋
+Figure 4.48: Calculation of waiting for new data period</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -108,7 +219,7 @@ n</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=404" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

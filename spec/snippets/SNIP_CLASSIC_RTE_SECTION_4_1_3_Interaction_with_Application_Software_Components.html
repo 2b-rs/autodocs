@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_RTE_SECTION_4_1_3_Interaction_with_Application_Software_Components</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_SRS_RTE.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_SRS_RTE.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_RTE.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_03015" class="swsref internal-spec-ref"><code>SWS_Rte_03015</code></a></span>
         </div>
@@ -108,7 +109,164 @@ duplication. This depends on the implementation of the RTE.
 Rationale:
 1) VFB metamodel.
 2) Requirement to minimise code space.
-3) Cannot modify binary-code software components an</div></section>
+3) Cannot modify binary-code software components and therefore all instances
+must use the same object-code.
+Dependencies:
+[SRS_Rte_00133]
+Use Case:
+–
+Supporting
+Material:
+Software Component Template [4]
+Code that is to be shared between instances should be re-entrant because of
+the pre-emptive environment it which it will run. Re-entrant code is indicated by
+the "supportsMultipleInstantiation" flag in the software component description.
+⌋()
+[SRS_Rte_00013] Per-instance memory ⌈
+Type:
+valid
+Description:
+The RTE shall provide per-instance memory to Application Software
+Components, where each Application Software Component instance has its
+own copy of memory, not shared with other instances of the same Application
+Software Component type.
+Rationale:
+Require variables with lifetime greater than that of a Runnable Entity but remain
+protected from different instances of the same Software Component type.
+RTE shall not provide memory shared between instances of an Application
+Software Component type.
+Also required for multiple instance support.
+Dependencies:
+[SRS_Rte_00075] - API for accessing per-instance memory
+Use Case:
+–
+Supporting
+Material:
+Software Component Template [4]
+⌋()
+[SRS_Rte_00077] Instantiation of per-instance memory ⌈
+Type:
+valid
+Description:
+The RTE generator shall instantiate each per-instance memory section of a
+software component according to the attributes given in its software component
+description.
+The instantiation of per-instance memory shall be either derived from input
+information or instantiated automatically by the RTE generator (where such
+information is not available). In the latter case the address of the per-instance
+memory is assigned by the RTE generator and therefore is not subject to
+control by the system integrator.
+Rationale:
+Required by the Software Component Template
+▽
+△
+Dependencies:
+–
+Use Case:
+RAM mirror from NVRAMManager.
+Supporting
+Material:
+The per-instance memory presented as input to the RTE generator shall be
+uniquely identifiable.
+Software Component Template [4]
+⌋()
+[SRS_Rte_00017] Rejection of inconsistent component implementations ⌈
+Type:
+valid
+Description:
+The RTE generator shall ensure that the compiler can detect (and reject)
+access to undefined RTE API calls.
+The RTE generator is required to reject "invalid" configurations, part of this is
+rejecting invalid APIs (i.e. calls to an unknown port at compile time).
+Rationale:
+–
+Dependencies:
+–
+Use Case:
+The component description defines the names of the ports that a component
+"requires" and "provides" and the associated interfaces. The RTE generator
+can then define only the valid API calls.
+For example, consider a component that has a Port ‘p1’ with a data items ‘a’
+and ‘b’. In this case, the RTE generator will only create an API for the send of
+data items ‘a’ and ‘b’. Thus an attempt by the component to send any invalid
+data item, e.g. ‘c’ on the interface shall be detected by the compiler and a
+warning issued.
+Supporting
+Material:
+Software Component Template [4]
+⌋()
+[SRS_Rte_00134] Runnable Entity categories supported by the RTE ⌈
+Type:
+valid
+Description:
+The RTE shall support the Runnable Entity categories 1a, 1b and 2
+Runnable Entity category:
+• 1a) The Runnable Entity is only allowed to use implicit reading
+(DataReadAccess) and writing (DataWriteAcess). A category 1a
+Runnable Entity cannot block and cannot use explicit read/write.
+• 1b) The Runnable Entity can use explicit reading and writing
+(DataReadAccess). A category 1b Runnable Entity cannot block. Implicit
+read/write is also allowed.
+• 2) The Runnable Entity may use explicit reading/writing including
+blocking behavior.
+Rationale:
+Support several kinds of runnable entity implementation kinds.
+▽
+△
+Dependencies:
+[SRS_Rte_00128], [SRS_Rte_00129] - Implicit reception and transmission.
+[SRS_Rte_00098] - Explicit transmission.
+Use Case:
+It is easier to reason about time behavior for category 1a Runnable Entities that
+do not invoke RTE API calls that (may) not execute in constant time.
+Supporting
+Material:
+Software Component Template [4]
+⌋()
+[SRS_Rte_00072] Activation of Runnable Entities ⌈
+Type:
+valid
+Description:
+The RTE shall start/resume a Runnable Entity according to the RTEEvents to
+which it is linked.
+Rationale:
+Activations of Runnable Entities due to arrival of data from other components,
+invocation of operations of one port or time based execution of Runnable
+Entities is based on the RTEEvent model [4].
+Dependencies:
+[SRS_Rte_00160], [SRS_Rte_00161]
+Use Case:
+Cyclic, time based activation of Runnable Entities; activation of a Runnable
+Entity due to the arrival of data using the sender-receiver communication
+pattern.
+Supporting
+Material:
+Software Component Template [4]
+⌋()
+[SRS_Rte_00160] Debounced start of Runnable Entities ⌈
+Type:
+valid
+Description:
+The RTE shall allow the configuration of a debounce start time of Runnable
+Entities to avoid the same Runnable Entity being executed shortly after each
+other.
+Rationale:
+In case several RTE Events occur within a short time interval there shall only
+be a limited amount of executions of the Runnable Entity. It shall be possible to
+define a minimum time which in which all activations are noticed, but the
+Runnable Entity will start only after that period has passed.
+Dependencies:
+[SRS_Rte_00072]
+Use Case:
+Runnable Entities being activated with along timing period and additionally
+activated on several DataReceivedEvents. If the Runnable Entity has just been
+executed the RTE shall wait for the defined period until the Runnable Entity is
+executed again.
+Supporting
+Material:
+–
+⌋()
+[SRS_Rte_00161] Activation offset of Runnable Entities ⌈</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -121,7 +279,7 @@ Rationale:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_SRS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_SRS_RTE.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

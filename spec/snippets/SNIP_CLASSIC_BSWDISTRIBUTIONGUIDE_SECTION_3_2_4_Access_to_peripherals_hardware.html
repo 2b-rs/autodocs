@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: bswdistributionguide</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWDISTRIBUTIONGUIDE_SECTION_3_2_4_Access_to_peripherals_hardware</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>BSWDistributionGuide.pdf</strong> (Seite 54)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_EXP_BSWDistributionGuide.pdf#page=67" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWDistributionGuide.pdf</a></strong> (Seite 54)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BSW_00179" class="swsref internal-spec-ref"><code>SWS_BSW_00179</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -94,11 +95,34 @@ access to these registers for the BSW modules which are located in the
 partition. The availability of this method depends strongly on the used
 microcontroller and the capabilities of the memory protection unit.
 /* callee side code */
-void TRUSTED</div></section>
+void TRUSTED_GETCYCLESTATE(TrustedFunctionIndexType a,
+parameter_struct *local_struct)
+{
+Std_ReturnType localreturn;
+uint 8         localid;
+Dem_OperationCycleStateType localstate
+/* setup parameters from local_struct */
+…
+localreturn = Dem_GetOperationCycleState(localid,
+&amp;localstate);
+IocSend_RETURNVALUEGETCYCLESTATE(localreturn);
+IocSend_VALUEGETCYCLESTATE(localstate);
+return;
+}
+Guide to BSW Distribution
+Example for the “CDD approach”: A CDD offers methods to read (peek) and write
+(poke) hardware registers. Note that in such cases it should be mentioned that
+additionally an access management is necessary (“Who is allowed to call these
+functions?”) because otherwise you could not guarantee freedom from interference.
+The CDD is mapped to an partition with full memory access.
+Figure 31: CDD approach
+Note that some modules typically have implicit access, because their code is
+executed before the memory protection scheme is started in the Os. Details can be
+found in the next chapter.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">concurrent register access in drivers</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -107,7 +131,7 @@ void TRUSTED</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>BSWDistributionGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_EXP_BSWDistributionGuide.pdf#page=67" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWDistributionGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -119,15 +143,15 @@ void TRUSTED</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_BSW_00179" class="swsref internal-spec-ref"><code>SWS_BSW_00179</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

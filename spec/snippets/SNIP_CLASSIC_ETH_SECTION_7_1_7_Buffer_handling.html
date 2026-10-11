@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: eth</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETH_SECTION_7_1_7_Buffer_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetDriver.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00310" class="swsref internal-spec-ref"><code>SWS_Eth_00310</code></a></span>
+          <span>Ziel-Element: SWS_Eth_CONSTR_00003</span>
         </div>
       </div>
 
@@ -87,11 +88,109 @@ buffer index of this SW buffer pool.
 layer will call Eth_Transmit() with the according buffer index. The Ethernet driver
 will add the given buffer index to the SW queue according to the provided priority,
 which was previously given within the call of Eth_ProvideTxBuffer()
-• SW queue are handled</div></section>
+• SW queue are handled according to the CBS algorithm. If an element of the
+SW queue is rated to be transmitted by the CBS, the SW buffer pool which corre-
+sponds to the buffer index (given by the element of the SW queue) is copied to the
+HW queue. The SW buffer pool is released and available for further transmission
+requests.
+The CBS, its elements and the different API calls involved are depicted in the following
+graphic:
+Figure 7.5: CBS algorithm
+[SWS_Eth_00263] ⌈If the configuration parameter EthCtrlConfigSwBufferHandling is
+set to TRUE, then the optional SW buffer handling shall be enabled.⌋(SRS_Eth_00146)
+Note: If buffer handling is supported by hardware, it is recommended to deactivate the
+software buffer handling by setting EthCtrlConfigSwBufferHandling to FALSE.
+[SWS_Eth_00299]{OBSOLETE} ⌈If the configuration parameter EthCtrlConfigSw
+BufferHandling is set to TRUE, then one SW FIFO shall be available per configured
+EthCtrlConfigEgressFifo.⌋(SRS_Eth_00146)
+[SWS_Eth_CONSTR_00002]{DRAFT} ⌈If the configuration parameter EthCtrlCon-
+figSwBufferHandling is set to TRUE, then one SW queue per configured EthCtrlCon-
+figEgressQueue shall be available.⌋(SRS_Eth_00146)
+[SWS_Eth_CONSTR_00003]{DRAFT} ⌈If the configuration parameter EthCtrlCon-
+figSwBufferHandling is set to TRUE, then at least two egress queues (via EthCtrlCon-
+figEgressQueue) shall be configured.⌋(SRS_Eth_00146)
+Note: Each SW queue configuration is derived from exactly one given EthCtrlConfigE-
+gressFifo.
+[SWS_Eth_00298]{OBSOLETE} ⌈If the configuration parameter EthCtrlConfigSw
+BufferHandling is set to TRUE, then each SW FIFO shall handle frames according
+to the configured priorities given by EthCtrlConfigEgressFifoPriorityAssignment aggre-
+gated by the according EthCtrlConfigEgressFifo. If no EthCtrlConfigEgressFifoPrior-
+ityAssignment is configured, then any priority shall be handled by this SW FIFO.⌋
+(SRS_Eth_00146)
+[SWS_Eth_00302]{DRAFT} ⌈If the configuration parameter EthCtrlConfigSwBuffer
+Handling is set to TRUE, then each SW queue shall handle frames according to
+the configured priorities given by EthCtrlConfigEgressQueuePriorityAssignment aggre-
+gated by the according EthCtrlConfigEgressQueue. If no EthCtrlConfigEgressQueue
+PriorityAssignment is configured, then any priority shall be handled by this SW queue.⌋
+(SRS_Eth_00146)
+Note: It is recommended to assign exactly one priority per EthCtrlConfigEgressQueue
+to support the performance of a software shaping algorithm.
+[SWS_Eth_00264]{OBSOLETE} ⌈If the config parameter EthCtrlConfigSwBufferHan-
+dling is set to TRUE, then each SW FIFO shall have the total amount of elements given
+by EthCtrlConfigEgressFifoBufTotal ( [ECUC_Eth_00050]). Each element shall be of
+type Eth_BufIdxType.⌋(SRS_Eth_00146)
+[SWS_Eth_00303]{DRAFT} ⌈If the configuration parameter EthCtrlConfigSwBuffer
+Handling is set to TRUE, then each SW queue shall have the total amount of ele-
+ments given by EthCtrlConfigEgressQueueBufTotal (see t.b.d.). Each element shall be
+of type Eth_BufIdxType.⌋(SRS_Eth_00146)
+Note: SW queues have to store the buffer index which was reserved in a previous call
+of Eth_ProvideTxBuffer().
+[SWS_Eth_00297]{OBSOLETE} ⌈If the config parameter EthCtrlConfigSwBufferHan-
+dling is set to TRUE, then a SW buffer shall be provided with a size according to all
+configured EthCtrlConfigEgressFifo’s. The size of each EthCtrlConfigEgressFifo shall
+be calculated in bytes by considering the following formula: size of one EthCtrlConfigE-
+gressFifo = EthCtrlConfigEgressFifoBufTotal * EthCtrlConfigEgressFifoBufLenByte.⌋
+(SRS_Eth_00146)
+[SWS_Eth_00304]{DRAFT} ⌈If the config parameter EthCtrlConfigSwBufferHandling
+is set to TRUE, then a SW buffer shall be provided with a size according to all config-
+ured EthCtrlConfigEgressQueue’s. The size of each EthCtrlConfigEgressQueue shall
+be calculated in bytes by considering the following formula: size of one EthCtrlCon-
+figEgressQueue = EthCtrlConfigEgressQueueBufTotal * EthCtrlConfigEgressQueue-
+BufLenByte.⌋(SRS_Eth_00146)
+Note: Along with the SW buffer, the Ethernet driver has to handle the mapping between
+the given priority (provided by Eth_ProvideTxBuffer) and the according buffer index of
+the reserved SW puffer pool.
+[SWS_Eth_00265]{OBSOLETE} ⌈All SW FIFOs shall follow the criteria listed here:
+• Each SW FIFO shall be filled and read out according to FIFO principles.
+• The SW FIFOs shall support independent configuration regardless of any settings
+on the rest of SW FIFOs.
+⌋(SRS_Eth_00146)
+[SWS_Eth_00305]{DRAFT} ⌈All SW queues shall follow the criteria listed here:
+• Each SW queue shall be filled and read out according to FIFO principles.
+• The SW queue shall support independent configuration regardless of any settings
+on the rest of SW queue.
+⌋(SRS_Eth_00146)
+Note: Regarding last bulletin point, it is recommended to use different settings of EthC-
+trlConfigEgressQueueCreditBasedShaperIdleSlope and EthCtrlConfigEgressQueue-
+CreditBasedShaperSendSlope per SW queue. Those two configuration parameters
+can be used to freely configure the output rate of the SW queue as demanded.
+[SWS_Eth_00266]{OBSOLETE} ⌈SW FIFOs shall be iterated and their credits account
+be updated in the following way and order:
+• Credits are only accumulated for SW FIFOs which have at least one message
+queued inside them. Empty SW FIFOs do not accumulate credits and their credits
+counter shall be set to 0.
+• Iterate through all SW FIFOs,
+starting at the highest priority SW FIFO
+and descending, and add the amount of credits accumulated since the last
+Eth_MainFunction() call. The amount of credits accumulated is given by EthCtrl-
+ConfigShaperIdleSlope.
+• If a SW FIFO reaches EthCtrlConfigShaperMaxCredit then the credit accumula-
+tion shall stop at that point and the next SW FIFO in the row is handled.
+⌋(SRS_Eth_00146)
+[SWS_Eth_00306]{DRAFT} ⌈SW queue shall be iterated and their credits account be
+updated in the following way and order:
+• Credits are only accumulated for SW queues which have at least one message
+queued inside them.
+Empty SW queues do not accumulate credits and their
+credits counter shall be set to 0.
+• Iterate through all SW queues, starting at the highest priority SW queue
+and descending, and add the amount of credits accumulated since the last
+Eth_MainFunction() call. The amount of credits accumulated is given by EthCtrl-
+ConfigEgressQueueCreditBasedShaperIdleSlope.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Moving queued messages from SW to HW queue.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Eth_CONSTR_00003] im Text von SWS_EthernetDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +199,7 @@ which was previously given within the call of Eth_ProvideTxBuffer()
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -112,15 +211,15 @@ which was previously given within the call of Eth_ProvideTxBuffer()
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Eth_00310" class="swsref internal-spec-ref"><code>SWS_Eth_00310</code></a></td>
+              <td>SWS_Eth_CONSTR_00003</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

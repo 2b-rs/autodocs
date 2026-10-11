@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_7_3_3_KeyM_KH_Update</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 83)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=83" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 83)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,60 @@ ResultDataPtr
 Data returned by the function.
 Parameters (out)
 UpdateOperation
-Provides information to the caller what op</div></section>
+Provides information to the caller what operation has been
+performed and how to interpret the ResultData.
+Return value
+Std_ReturnType
+E_OK: Data returned by this function.
+E_NOT_OK: General error, no data provided.
+E_BUSY: Service could not be accepted because another
+operation is already ongoing. Try next time.
+KEYM_E_PARAMETER_MISMATCH: A parameter does not have
+expected value. Service discarded.
+KEYM_E_KEY_CERT_WRITE_FAIL: Key could not be written.
+KEYM_E_KEY_CERT_UPDATE_FAIL: General failure on updating
+a key.
+Description
+If the configuration item KeyMCryptoKeyHandlerUpdateEnabled is set to TRUE, the KeyM_
+Update function will not perform any operation but will delegate the operation to the key
+handler. On return, the function provides the status of the key operation.
+Available via
+KeyM_Externals.h
+⌋
+[SWS_KeyM_00097]
+Upstream requirements: SRS_CryptoStack_00107
+⌈If a key handler is used for key update operation (KeyMCryptoKeyHandlerUpdateEn-
+abled is set to TRUE), the Key Manager shall provide a pointer to an internal buffer
+to the key handler when calling KeyM_KH_Update(). This buffer can be used by the
+key handler to store the key data results during the operation. As a consequence, the
+KeyM_Update() function shall not touch this buffer after calling KeyM_KH_Update()
+until the key handler returns. The length of the buffer shall be at least as large as
+the largest value of all KeyMCryptoKey/KeyMCryptoKeyMaxLength defined in the Key
+MCryptoKey container.⌋
+[SWS_KeyM_00096]
+Upstream requirements: SRS_CryptoStack_00107, SRS_CryptoStack_00109
+⌈If the key handler returns E_OK and provides the operation type KEYM_KH_UP-
+DATE_KEY_UPDATE_REPEAT and ResultDataLengthPtr indicates a value greater
+than 0 then the key manager shall perform the key update operation according to the
+configuration (store or derive the key in CSM) and use the data stored in ResultData
+Ptr.
+If the update operation was successful, the key handler shall be called again.⌋
+Info: The repeated call to the key handler update operation allows the key handler to
+update several keys at a time.
+[SWS_KeyM_00093]
+Upstream requirements: SRS_CryptoStack_00107
+⌈If the key handler returns and provides the operation type KEYM_KH_UPDATE_
+FINISH, the key update operation shall finish and use the return value from the key
+handler.The data buffer from KeyM_KH_Update::ResultDataPtr shall be copied to the
+buffer provided with KeyM_Update::ResultDataPtr and the KeyM_CryptoKeyUpdate
+CallbackNotification() function shall be called by the job of the KeyM_Update() func-
+tion.⌋
+Info:
+This allows the key handler update operation to provide results back to the key server.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +175,7 @@ Provides information to the caller what op</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=83" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

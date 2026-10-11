@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRANCAINTEGRATION_SECTION_3_3_2_Primitive_Types</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>FrancaIntegration.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TR_FrancaIntegration.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">FrancaIntegration.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_SWCT_03218" class="swsref"><code>RS_SWCT_03218</code></a></span>
         </div>
@@ -120,7 +121,92 @@ VALUE
 data constraint: lower limit = -128, upper limit = 127
 UInt16
 VALUE
-data co</div></section>
+data constraint: lower limit = 0, upper limit = 65535
+Int16
+VALUE
+data constraint: lower limit = -32768, upper limit = 32767
+UInt32
+VALUE
+data constraint: lower limit = 0, upper limit = 232
+Int32
+VALUE
+data constraint: lower limit = -(231), upper limit = 231-1
+UInt64
+VALUE
+data constraint: lower limit = 0, upper limit = 264
+Int64
+VALUE
+data constraint: lower limit = -(263), upper limit = 263-1
+Boolean
+BOOLEAN
+data constraint: lower limit = 0, upper limit = 1
+Float
+VALUE
+—
+Double
+VALUE
+—
+String
+STRING
+maximum text size default = 256,
+can be redefined in the Franca deployment definition
+Table 3.11: Categories and properties of AUTOSAR application data types correspond-
+ing to Franca primitive types
+Application primitive data types are defined directly by the metaclass Application-
+PrimitiveDataType in AUTOSAR. To express that an implementation data type rep-
+resents a primitive type in AUTOSAR its name must coincide with one of the AUTOSAR
+platform types (see [7]) and it must be associated to a base type that does not have
+a native declaration. This is reflected in the following definition of the translation of
+Franca primitive data types to AUTOSAR implementation types.
+[TR_FRANCA_00110] Primitive Type is mapped to ImplementationDataType
+corresponding to AUTOSAR platform type ⌈A Franca primitive type, except the prim-
+itive type String, is mapped to an ImplementationDataType with the short name
+defined in table described by [TR_FRANCA_00426]. The base type of each of these
+implementation data types must not have a native declaration.⌋()
+The primitive type String of Franca is interpreted as an array of characters. Franca
+does not defined whether strings have a fixed or a variable size. This can be defined
+in a Franca deployment definition. Strings of fixed size can represented directly as
+fixed size arrays in AUTOSAR. Arrays of variable size are encoded in AUTOSAR as
+structures with two elements: an integer field that defines the actual size of an array
+and an array field that contains the array itself. The latter also contains the maximal
+size of the array instances.
+[TR_FRANCA_00120] Primitive type String of fixed size is mapped to AUTOSAR
+array implementation data type ⌈If the property FixedStringLength of the Franca
+primitive type String is set to true and the property MaxStringLength is n then the
+type String is mapped to the ImplementationDataType stringImplType defined as
+follows.
+• stringImplType.shortName = String
+• stringImplType.category = ARRAY
+• stringImplType.subElement = subElement, with
+Integration of Franca IDL Software Component
+Descriptions
+• subElement.shortName = Char
+• subElement.category = VALUE
+• subElement.arraySize = n
+• subElement.arraySizeSemantics = fixedSize
+The default values of the two String properties are FixedStringLength = false and
+MaxStringLength = 256.⌋()
+[TR_FRANCA_00121] Primitive type String of variable size is mapped to AU-
+TOSAR structure implementation data type ⌈If the property FixedStringLength of
+the Franca primitive type String is not set (which means that is has the default value
+false) and the property MaxStringLength is n then the type String is mapped to the
+ImplementationDataType stringImplType defined as follows.
+• stringImplType.shortName = String
+• stringImplType.category = STRUCTURE
+• stringImplType.subElements = {size, chars}
+with the ImplementationDataTypeElements size and chars
+• size.shortName = size
+• size.category = TYPE_REFERENCE
+• size.swDataDefProps.implementationDataType = uint8
+• chars.shortName = chars
+• chars.category = ARRAY
+• chars.subElement = char, with
+• char.shortName = char
+• char.category = TYPE_REFERENCE
+• char.arraySize = n
+• char.arraySizeSemantics = variableSize
+• char.swDataDefProps.implementationDataType = uint8
+The default value MaxStringLength is 256.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -133,7 +219,7 @@ data co</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>FrancaIntegration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TR_FrancaIntegration.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">FrancaIntegration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

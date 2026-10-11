@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_5_EthTrcv_CheckWakeup</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetTransceiverDriver.pdf</strong> (Seite 53)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetTransceiverDriver.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetTransceiverDriver.pdf</a></strong> (Seite 53)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -123,11 +124,63 @@ is
 to
 ETHTRCV_WAKEUP_BY_ASYNCHRONOUS_CHECK,
 ETHTRCV_WAKEUP_BY_INTERRUPT or ETHTRCV_WAKEUP_BY_POLLING, then
-the Ethernet Transceiv</div></section>
+the Ethernet Transceiver driver shall start a delay timer with EthTrcvSleepModeExecu-
+tionDelay.⌋
+Note:
+• A wake-up has to be propagated to the affected upper layer (EcuM, EthSM,
+EthIf).
+As long as EthIf is not aware of the detected wake-up, EthIf at-
+tempts to ensure that the requested communication mode matches to the cur-
+rent Ethernet hardware (PHY, Ethernet port) state. In case a wake-up for OA
+TC10 compliant Ethernet hardware (PHY) arrives, the PHY transits to a nor-
+mal mode (ETH_MODE_ACTIVE). Thus, EthIf may detect a mismatch between
+the current requested mode (ETH_MODE_DOWN) and the current PHY state
+(ETH_MODE_ACTIVE) and re-triggers the PHY to transit back to sleep mode.
+To avoid this, a timer to delay the sleep mode execution is started. As long as
+the timer is running, the Ethernet transceiver driver will not execute a requested
+sleep mode.
+• If ETHTRCV_WAKEUP_BY_ASYNCHRONOUS_CHECK is configured, then the
+timer to delay a sleep execution may be started twice. First start in the context of
+this function and second start in the context of the EthTrcv_Mainfunction where
+the check for wake-up reasons is performed.
+[SWS_EthTrcv_00185]
+Upstream requirements: SRS_Eth_00108, SRS_Eth_00107
+⌈If the function EthTrcv_CheckWakeup() is called and EthTrcvWakeUpSupport is set
+to ETHTRCV_WAKEUP_BY_ASYNCHRONOUS_CHECK, the Ethernet Transceiver
+Driver shall store the request to asynchronously check for a wake-up of used
+Ethernet hardware (e.g.
+the OA TC10 compliant PHY) in the context of the
+EthTrcv_MainFunction.⌋
+Note: Asychronous check for a wake-up could be used for Ethernet switches, due to
+the time consumption to read out all Ethernet switch ports of an Ethernet switch. E.g.
+the Ethernet switch is signaled that an interrupt of one or more of its Ethernet switch
+ports occurred. The corresponding host ECU (ECU that maintain an Ethernet switch)
+has to read out all registers of the cooresponding PHYs, to check which PHYs signaled
+the interrupt and the reason for the interrupt. This could be done in the context of
+the EthTrcv_MainFunction() asynchronously (and NOT synchronously in the context of
+EthTrcv_CheckWakeup() ) to support timing constraints regarding runtime of the host
+ECU.
+[SWS_EthTrcv_00137] ⌈If development error detection is enabled:
+The func-
+tion EthTrcv_CheckWakeup() shall check that the service EthTrcv_Init was previ-
+ously called.
+If the check fails, the function shall raise the development error
+ETHTRCV_E_UNINIT.⌋
+[SWS_EthTrcv_00138] ⌈If development error detection is enabled:
+The function
+EthTrcv_CheckWakeup() shall check the parameter TrcvIdx for being valid. If the check
+fails, the function shall raise the development error ETHTRCV_E_INV_TRCV_IDX.⌋
+[SWS_EthTrcv_00140]
+⌈EthTrcv_Init()
+shall
+be
+called
+before
+EthTrcv_CheckWakeup().⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -136,7 +189,7 @@ the Ethernet Transceiv</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetTransceiverDriver.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

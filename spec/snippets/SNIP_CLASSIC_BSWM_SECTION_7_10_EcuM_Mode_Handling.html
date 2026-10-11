@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: bswm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_10_EcuM_Mode_Handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 99)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=98" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 98)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04130" class="swsref internal-spec-ref"><code>SWS_EcuM_04130</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04144" class="swsref internal-spec-ref"><code>SWS_EcuM_04144</code></a></span>
         </div>
       </div>
 
@@ -92,11 +93,74 @@ Upstream requirements: SRS_ModeMgm_00010, SRS_ModeMgm_00009
 ⌈When the last RUN request has been released, ECU State Manager module shall indi-
 cate this to BswM using the API BswM_EcuM_RequestedState(ECUM_STATE_RUN,
 ECUM_RUNSTATUS_RELEASED).⌋
-If a SW-C needs post run activity during POS</div></section>
+If a SW-C needs post run activity during POST_RUN (e.g. shutdown preparation),
+then it must request POST_RUN before releasing the RUN request. Otherwise it is not
+guaranteed that this SW-C will get a chance to run its POST_RUN code.
+[SWS_EcuM_04118]
+Upstream requirements: SRS_ModeMgm_00010, SRS_ModeMgm_00009
+⌈When the ECU State Manager is not in the state which is requested by a SWC, it shall
+inform BswM about requested states using the BswM_EcuM_RequestedState API.⌋
+POST_RUN state provides a post run phase for SW-C’s and allows them to save im-
+portant data or switch off peripherals.
+[SWS_EcuM_04144]
+Upstream requirements: SRS_ModeMgm_00010, SRS_ModeMgm_00009
+⌈When the first RUN or POST_RUN request has been received, ECU State Man-
+ager module shall indicate this to BswM using BswM_EcuM_RequestedState(ECUM_
+STATE_RUN, ECUM_RUNSTATUS_REQUESTED).⌋
+[SWS_EcuM_04119]
+Upstream requirements: SRS_ModeMgm_00009, SRS_ModeMgm_00011
+⌈When the last POST_RUN request has been released, ECU State Manager mod-
+ule shall indicate this to BswM using the API BswM_EcuM_RequestedState(ECUM_
+STATE_POST_RUN, ECUM_RUNSTATUS_RELEASED).⌋
+Hint: To prevent, that the mode machine instance of ECU Mode lags behind and the
+states EcuM and the RTE get out of phase, the EcuM can use acknowledgement feed-
+back for the mode switch notification.
+Note that EcuM only requests Modes from and to RUN and POST_RUN, the SLEEP
+Mode has to be set by BswM, as the EcuM has no information about when this Mode
+can be entered.
+State
+Description
+STARTUP
+Initial value.
+Set by Rte when
+Rte_Start() has been called.
+RUN
+As soon as all necesseray BSW
+modules are inistialized, BswM
+switches to this Mode.
+POST_RUN
+EcuM
+requests
+POST_RUN,
+when
+no
+RUN
+requests
+are
+available.
+SLEEP
+EcuM requests SLEEP Mode
+when no RUN and POST_RUN
+requests are available and Shut-
+down Target is set to SLEEP.
+SHUTDOWN
+EcuM
+requests
+SHUTDOWN
+Mode when no RUN and POST_
+RUN requests are available and
+Shutdown Target is set to SHUT-
+DOWN.
+Table 7.5: EcuM Modes
+[SWS_EcuM_04143]
+Upstream requirements: SRS_ModeMgm_00021
+⌈EcuM shall notify BswM about the current State by calling the interface BswM_EcuM_
+CurrentState(EcuM_StateType State). A new state shall be set by EcuM when RTE has
+given its feedback via the acknowledgement port.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EcuM provides RUN and POST_RUN request services</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_04144] im Text von SWS_ECUStateManager.</p>
       </section>
 
       <section class="snip-card">
@@ -105,11 +169,11 @@ If a SW-C needs post run activity during POS</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=98" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 99</td>
+              <td>Seite 98</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -117,15 +181,15 @@ If a SW-C needs post run activity during POS</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04130" class="swsref internal-spec-ref"><code>SWS_EcuM_04130</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04144" class="swsref internal-spec-ref"><code>SWS_EcuM_04144</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

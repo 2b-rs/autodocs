@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -87,7 +88,82 @@ then is forwarded to the upper layer. This created Pdu does not have a reference
 PduToFrameMapping).
 2For the aspect of the conﬁguration it does not matter what kind of PDU it is, i.e. I-PDU, L-PDU or
 N-PDU.
-3The element PduToFrameMapping represents the actual PDU in the speciﬁc ECU (formerl</div></section>
+3The element PduToFrameMapping represents the actual PDU in the speciﬁc ECU (formerly known
+as PduInstance)
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+System Template
+EcucPduCollection :
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+Pdu :
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 0
+EcuC :EcucModuleDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+(from EcuC)
+Identifiable
+«atpPrototype»
+CoreCommunication::PduToFrameMapping
++
+packingByteOrder:  ByteOrderEnum
++
+startPosition:  Integer
++
+updateIndicationBitPosition:  Integer [0..1]
+SysTPduToFrameMappingRef :
+EcucForeignReferenceDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+destinationType = PDU-TO-FRAME-MAPPING
+PduLength :
+EcucIntegerParamDef
+min = 0
+max = 4095
+PduLengthTypeEnum :
+EcucEnumerationParamDef
+PduIdTypeEnum :
+EcucEnumerationParamDef
+UINT8 :
+EcucEnumerationLiteralDef
+UINT16 :
+EcucEnumerationLiteralDef
+UINT32 :
+EcucEnumerationLiteralDef
++literal
++literal
++literal
++literal
++literal
++reference
++parameter
++container
++subContainer
++parameter
++parameter
+Figure 4.5: Generic Pdu Container
+EcucPduCollection
+SWS Item
+[EcuC002_Conf]
+Container Name
+EcucPduCollection
+Description
+Collection of all Pdu objects ﬂowing through the Com-Stack.
+Conﬁguration Parameters
+Name
+PduIdTypeEnum [EcuC041_Conf]
+Description
+The PduIdType is used within the entire AUTOSAR Com Stack except
+for bus drivers. The size of this global type depends on the maximum
+number of PDUs used within one software module. If no software
+module deals with more PDUs that 256, this type can be set to uint8. If
+at least one software module handles more than 256 PDUs, this type
+must be set to uint16. See
+AUTOSAR_SWS_CommunicationStackTypes for more details.
+Multiplicity</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

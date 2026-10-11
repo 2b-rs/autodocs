@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: modemanagementguide</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 98%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MODEMANAGEMENTGUIDE_SECTION_3_2_3_Con_guration_of_the_BswM_behavior</h1>
         <div class="snip-meta-line">
           <span>Quelle: <strong>ModemanagementGuide.pdf</strong> (Seite 31)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BswM_00049" class="swsref internal-spec-ref"><code>SWS_BswM_00049</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04122" class="swsref internal-spec-ref"><code>SWS_EcuM_04122</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,64 @@ is
 CAN_SM_BswM_NO_COMMUNICATION.
 processing immediate means that every evaluation rule, which refers to this Mod-
 eRequestSourcePort shall immediately be processed. Every immediate mode re-
-quest will trigger the evaluation of the referring rules. If this parameter would be d</div></section>
+quest will trigger the evaluation of the referring rules. If this parameter would be de-
+ferred in case of a mode request, the evaluation of rules would be delayed until the next
+run of the main function of the BSWM. The BSWM does not support queued evaluation
+of deferred mode requests. As a result, deferred mode requests will have "last-is-best"
+semantics. Only the last mode request made before the execution of the BSWM’S
+main function will be used.
+The following example shows an arbitration rule called canIPDUActivation. The
+overall content is rather self explanatory. The initial parameters speciﬁes that the
+initial result of the rule evaluation is false.
+Listing 3.8: Example for a rule
+rule checkApp1Request initially false {
+if ( App1ModeRequest == MDG_ApplicationModes.ModeA &amp;&amp; EcuMode ==
+MDG_EcuMode.ECU_RUN) {
+actionlist checkApp1RequestTrueActions
+}
+}
+actions checkApp1RequestTrueActions on condition {
+ComMAllowCom MyComM.CanNet1 true
+custom "EcuM_SetState(ECU_RUN)"
+}
+At which point in time a rule is executed, after an event has occurred depends on
+the parameter BswMActionListExecution.
+Either it is executed every time the
+Guide to Modemanagement
+rule is evaluated with the corresponding result, or only when the evaluation result has
+changed from the previous evaluation. This is called triggered respectively condi-
+tional execution.
+Table 3.1 gives an overview in which situations an ActionList is executed or not.
+Triggered ActionLists are executed (triggered) if the result of the rule evaluation
+changes. Conditional ActionLists depend only on the current result (condition) of
+the evaluation independent if it has changed or not.
+Table 3.1: Execution of Action Lists depending on parameter BswMActionListExecu-
+tion
+eval. result
+(old) -&gt; (new)
+true -&gt; true
+true -&gt; false
+false
+-&gt;
+false
+false -&gt; true
+TrueActionList
+CONDITION
+-
+-
+TRIGGERED/
+CONDITION
+FalseActionList
+-
+TRIGGERED/
+CONDITION
+CONDITION
+-
+Table 3.1: Execution of Action Lists depending on parameter</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Explizite Erwähnung von SWS_BswM_00049 im Text des Dokuments AUTOSAR_EXP_ModemanagementGuide.pdf.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EcuM_SetState().</p>
       </section>
 
       <section class="snip-card">
@@ -120,7 +174,7 @@ quest will trigger the evaluation of the referring rules. If this parameter woul
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_BswM_00049" class="swsref internal-spec-ref"><code>SWS_BswM_00049</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04122" class="swsref internal-spec-ref"><code>SWS_EcuM_04122</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -128,7 +182,7 @@ quest will trigger the evaluation of the referring rules. If this parameter woul
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.98</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

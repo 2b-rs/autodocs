@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_12_Variation_Point_Proxy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SoftwareComponentTemplate.pdf</strong> (Seite 623)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SoftwareComponentTemplate.pdf#page=620" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SoftwareComponentTemplate.pdf</a></strong> (Seite 623)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01372" class="swsref"><code>TPS_SWCT_01372</code></a></span>
         </div>
@@ -101,7 +102,192 @@ Mult.
 Kind
 Note
 conditionAccess
-ConditionByFor</div></section>
+ConditionByFormula
+0..1
+aggr
+This condition acts as Binding Function for the Variation
+Point.
+implementation
+DataType
+AbstractImplementation
+DataType
+0..1
+ref
+This association to ImplementationDataType shall be
+taken as an implementation hint by the RTE generator.
+postBuildValue
+Access
+PostBuildVariant
+Criterion
+0..1
+ref
+This represents the applicable PostBuildVariantCriterion
+in the context of a VariationPointProxy.
+Note that the technical details how to access the
+particular postBuildValueAccess are still considered
+internal to the RTE and are consequently not
+standardized.
+postBuildVariant
+Condition
+PostBuildVariant
+Condition
+*
+aggr
+This represents that applicable PostBuoldVariant
+Condition in the context of aVariationPointProxy.
+valueAccess
+AttributeValueVariation
+Point
+0..1
+aggr
+This value acts as Binding Function for the VariationPoint.
+Table 7.61: VariationPointProxy
+Class
+«atpMixedString» ConditionByFormula
+Note
+This class represents a condition which is computed based on system constants according to the
+specified expression. The expected result is considered as boolean value.
+The result of the expression is interpreted as a condition.
+• "0" represents "false";
+• a value other than zero is considered "true"
+Base
+ARObject, FormulaExpression, SwSystemconstDependentFormula
+Aggregated by
+VariationPoint.swSyscond, VariationPointProxy.conditionAccess
+Attribute
+Type
+Mult.
+Kind
+Note
+bindingTime
+BindingTimeEnum
+1
+attr
+This attribute specifies the point in time when condition
+may be evaluated at earliest. At this point in time all
+referenced system constants shall have a value.
+Tags: xml.attribute=true
+Table 7.62: ConditionByFormula
+Class
+PostBuildVariantCriterion
+Note
+This class specifies one particular PostBuildVariantSelector.
+Tags: atp.recommendedPackage=PostBuildVariantCriterions
+Base
+ARElement, ARObject, AtpDefinition, CollectableElement, Identifiable, MultilanguageReferrable,
+PackageableElement, Referrable
+Aggregated by
+ARPackage.element
+▽
+Software Component Template
+△
+Class
+PostBuildVariantCriterion
+Attribute
+Type
+Mult.
+Kind
+Note
+compuMethod
+CompuMethod
+1
+ref
+The compuMethod specifies the possible values for the
+variant criterion serving as an enumerator.
+Table 7.63: PostBuildVariantCriterion
+Class
+PostBuildVariantCondition
+Note
+This class specifies the value which shall be assigned to a particular variant criterion in order to bind the
+variation point. If multiple criterion/value pairs are specified, they shall all match to bind the variation
+point.
+In other words binding can be represented by
+(criterion1 == value1) &amp;&amp; (condition2 == value2) ...
+Base
+ARObject
+Aggregated by
+VariationPoint.postBuildVariantCondition, VariationPointProxy.postBuildVariantCondition
+Attribute
+Type
+Mult.
+Kind
+Note
+matching
+Criterion
+PostBuildVariant
+Criterion
+1
+ref
+This is the criterion which needs to match the value in
+order to make the PostbuildVariantCondition to be true.
+value
+Integer
+1
+attr
+This is the particular value of the post-build variant
+criterion.
+Stereotypes: atpVariation
+Tags: vh.latestBindingTime=preCompileTime
+Table 7.64: PostBuildVariantCondition
+Please note that in the first two cases of the second bullet list in [TPS_SWCT_01370]
+the evaluation of conditionAccess shall replace the formula by the result.
+The name VariationPointProxy was motivated by the fact that it represents a
+model element that is not directly related to the structure but to the code and from this
+point of view acts as a proxy to the functional variation existing in the code.
+The consequence of the two levels of abstraction is that (from a model processing point
+of view) it would be possible to bind all structural variation points entirely while keeping
+some or all of the functional variation points unbound. This is an explanation for the
+existence of [TPS_SWCT_01371].
+[TPS_SWCT_01371] VariationPointProxy vs. VariationPoint ⌈The differ-
+ence between a VariationPoint and a VariationPointProxy is that if during
+the process of binding the formula evaluates to 0 the VariationPointProxy re-
+mains in the model while the VariationPoint as well as its owner is removed from
+the model.⌋
+Nevertheless, the binding of the variability is described by the means of SwSystem-
+constantValueSets and PostBuildVariantCriterionValueSets.
+[TPS_SWCT_01448] Pre-defined values for the category of VariationPoint-
+Proxy ⌈AUTOSAR pre-defines two possible values for the category of Variation-
+PointProxy. The meaning of the values, however, depends on the particular model-
+ing of individual VariationPointProxys, see [TPS_SWCT_01370].
+Software Component Template
+VALUE In the “pre-build” case this means that valueAccess shall yield an integer
+literal. In the “post-build” case, on the other hand, this means that postBuild-
+ValueAccess shall yield an integer value conform with the implementation-
+DataType.
+In this context, [constr_1388] applies.
+CONDITION In this case it is possible (though not mandatory) to define a Varia-
+tionPointProxy that actually works in a combination of the “pre-build” and
+“post-build” scenario.
+In other words, in the “pre-build” case conditionAccess shall yield a boolean
+value and in the “post-build” case postBuildVariantCondition shall also
+yield a boolean value.
+An and operator shall be applied to all boolean values returned by condi-
+tionAccess and the collection of postBuildVariantCondition in order to
+yield the actual result of the condition. [TPS_GST_00259] and [SWS_Rte_08069]
+apply.
+For the postBuildVariantCondition an implicit reference to the Platform
+Data Type boolean shall be assumed.
+In contrast to the value VALUE it is possible to define a VariationPointProxy
+that uses both conditionAccess and postBuildVariantCondition.
+⌋
+[constr_1388] VariationPointProxy of category VALUE shall not mix “pre-
+build” and “post-build” use-cases
+Imposition time: CP: IT_CpgExe
+⌈If the value of category of the VariationPointProxy is set to VALUE then there
+can only be one value yield from the evaluation of a VariationPointProxy. In other
+words, a VariationPointProxy of category VALUE shall not mix the “pre-build”
+and “post-build” use-cases.⌋
+[constr_1389] Restriction regarding the value of category of VariationPoint-
+Proxy.implementationDataType
+Imposition time: CP: IT_CpgExe
+⌈VariationPointProxy.implementationDataType shall not be of category
+STRUCTURE, ARRAY, UNION, FUNCTION_REFERENCE, and DATA_REFERENCE.
+The VariationPointProxy.implementationDataType shall be of category
+VALUE or TYPE_REFERENCE that, after all references are resolved, yields an Imple-
+mentationDataType of category VALUE.⌋
+[TPS_SWCT_01372] bindingTime = preCompileTime ⌈If bindingTime = pre-
+CompileTime the RTE provides macro definitions that can be used for preprocessor
+directives to implement preCompileTime variability in C/C++ code.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -114,7 +300,7 @@ ConditionByFor</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SoftwareComponentTemplate.pdf#page=620" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

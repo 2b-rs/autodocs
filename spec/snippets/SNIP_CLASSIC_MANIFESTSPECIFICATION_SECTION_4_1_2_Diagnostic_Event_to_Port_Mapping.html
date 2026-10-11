@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MANIFESTSPECIFICATION_SECTION_4_1_2_Diagnostic_Event_to_Port_Mapping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ManifestSpecification.pdf</strong> (Seite 242)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=237" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></strong> (Seite 242)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_03007" class="swsref"><code>TPS_DEXT_03007</code></a></span>
         </div>
@@ -90,7 +91,245 @@ a diagnostic event.
 The use case (as described within [TPS_MANI_01336]) that supports the reporting of
 a diagnostic event is depicted in Figure 4.4.
 The use case (as described within [TPS_MANI_01336]) that supports the retrieval of
-information about a diagnostic event is de</div></section>
+information about a diagnostic event is depicted in Figure 4.5.
+[constr_1500]{DRAFT} Target SwcServiceDependency of DiagnosticEvent-
+PortMapping.swcServiceDependencyInExecutable ⌈Any particular SwcSer-
+viceDependency that is referenced in the role DiagnosticEventPortMapping.
+swcServiceDependencyInExecutable shall
+• only be aggregated in the role serviceDependency by an AdaptiveSwcIn-
+ternalBehavior
+• aggregate either a DiagnosticEventNeeds or a DiagnosticEventIn-
+foNeeds.
+⌋()
+AtpStructureElement
+Identifiable
+ServiceDependency
+SwcServiceDependency
+DiagnosticEventPortMapping
+DiagnosticEvent
+AbstractExecutionContext
+Process
+DiagnosticMapping
+ARElement
+DiagnosticCommonElement
+DiagnosticSwMapping
+ARElement
+ProcessDesign
+Identifiable
+ServiceNeeds
+DiagnosticCapabilityElement
+DiagnosticEventNeeds
+RoleBasedPortAssignment
+AtpBlueprintable
+AtpPrototype
+PortPrototype
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+PortInterface
+DiagnosticPortInterface
+DiagnosticMonitorInterface
+AbstractRequiredPortPrototype
+RPortPrototype
++portPrototype
+0..1
++serviceNeeds
+0..1
++design
+0..1
+«atpSplitable»
++process
+0..1
+«instanceRef»
++swcServiceDependencyInExecutable
+0..1
+«isOfType»
++requiredInterface
+0..1
+{redefines atpType}
++diagnosticEvent
+0..1
+«atpVariation,atpSplitable»
++assignedPort
+0..*
+Figure 4.4: Modeling of DiagnosticEventPortMapping for reporting events on the
+AUTOSAR adaptive platform
+AtpStructureElement
+Identifiable
+ServiceDependency
+SwcServiceDependency
+DiagnosticEventPortMapping
+DiagnosticEvent
+AbstractExecutionContext
+Process
+DiagnosticMapping
+ARElement
+DiagnosticCommonElement
+DiagnosticSwMapping
+ARElement
+ProcessDesign
+Identifiable
+ServiceNeeds
+DiagnosticCapabilityElement
+RoleBasedPortAssignment
+AtpBlueprintable
+AtpPrototype
+PortPrototype
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+PortInterface
+DiagnosticPortInterface
+DiagnosticEventInterface
+DiagnosticEventInfoNeeds
+AbstractRequiredPortPrototype
+RPortPrototype
+«atpSplitable»
++process
+0..1
++design
+0..1
+«isOfType»
++requiredInterface
+0..1
+{redefines atpType}
++portPrototype
+0..1
+«atpVariation,atpSplitable»
++assignedPort
+0..*
++diagnosticEvent
+0..1
+«instanceRef»
++swcServiceDependencyInExecutable
+0..1
++serviceNeeds
+0..1
+Figure 4.5: Modeling of DiagnosticEventPortMapping tor retrieve information about
+a diagnostic event on the AUTOSAR adaptive platform
+Class
+DiagnosticEvent
+Package
+M2::AUTOSARTemplates::DiagnosticExtract::Dem::DiagnosticEvent
+Note
+This element is used to configure DiagnosticEvents.
+Tags:atp.recommendedPackage=DiagnosticEvents
+Base
+ARElement, ARObject, CollectableElement, DiagnosticCommonElement, Identifiable, Multilanguage
+Referrable, PackageableElement, Referrable
+Attribute
+Type
+Mult.
+Kind
+Note
+▽
+△
+Class
+DiagnosticEvent
+associated
+Event
+Identification
+PositiveInteger
+0..1
+attr
+This attribute represents the identification number that is
+associated with the enclosing DiagnosticEvent and allows
+to identify it when placed into a snapshot record or
+extended data record storage.
+This value can be reported as internal data element in
+snapshot records or extended data records.
+clearEvent
+Allowed
+Behavior
+DiagnosticClearEvent
+AllowedBehaviorEnum
+0..1
+attr
+This attribute defines the resulting UDS status byte for the
+related event, which shall not be cleared according to the
+ClearEventAllowed callback
+confirmation
+Threshold
+PositiveInteger
+0..1
+attr
+This attribute defines the number of operation cycles with
+a failed result before a confirmed DTC is set to 1. The
+semantic of this attribute is a by "1" increased value
+compared to the confirmation threshold of the "trip
+counter" mentioned in ISO 14229-1 in figure D.4. A value
+of "1" defines the immediate confirmation of the DTC
+along with the first reported failed. This is also sometimes
+called "zero trip DTC". A value of "2" defines a DTC
+confirmation in the operation cycle after the first occurred
+failed. A value of "2" is typically used in the US for OBD
+DTC confirmation.
+Stereotypes: atpVariation
+Tags:vh.latestBindingTime=preCompileTime
+connected
+Indicator
+DiagnosticConnected
+Indicator
+*
+aggr
+Event specific description of Indicators.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=connectedIndicator.shortName, connected
+Indicator.variationPoint.shortLabel
+vh.latestBindingTime=postBuild
+eventClear
+Allowed
+DiagnosticEventClear
+AllowedEnum
+0..1
+attr
+This attribute defines whether the Dem has access to a
+"ClearEventAllowed" callback.
+prestorage
+FreezeFrame
+Boolean
+0..1
+attr
+This attribute describes whether the Prestorage of Freeze
+Frames is supported by the assigned event or not.
+True: Prestorage of FreezeFrames is supported
+False: Prestorage of FreezeFrames is not supported
+prestored
+Freezeframe
+StoredInNvm
+Boolean
+0..1
+attr
+If the Event uses a prestored freeze-frame (using the
+operations PrestoreFreezeFrame and ClearPrestored
+FreezeFrame of the service interface DiagnosticMonitor)
+this attribute indicates if the Event requires the data to be
+stored in non-volatile memory. TRUE = Dem shall store
+the prestored data in non-volatile memory, FALSE = Data
+can be lost at shutdown (not stored in Nvm)
+recoverableIn
+SameOperation
+Cycle
+Boolean
+0..1
+attr
+If the attribute is set to true then reporting PASSED will
+reset the indication of a failed test in the current operation
+cycle. If the attribute is set to false then reporting
+PASSED will be ignored and not lead to a reset of the
+indication of a failed test.
+Table 4.4: DiagnosticEvent
+Class
+DiagnosticEventPortMapping
+Package
+M2::AUTOSARTemplates::DiagnosticExtract::Dem::DiagnosticMapping
+Note
+Defines to which SWC service ports with DiagnosticEventNeeds the DiagnosticEvent is mapped.
+Tags:atp.recommendedPackage=DiagnosticMappings
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +342,7 @@ information about a diagnostic event is de</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=237" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

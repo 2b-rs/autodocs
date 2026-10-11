@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_7_4_1_1_Control_Messages_for_AC_Charging</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ISO15118Charging.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ISO15118Charging.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ISO15118Charging.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
           <span>Ziel-Element: –</span>
         </div>
@@ -113,7 +114,133 @@ ISO15118Chrg shall proceed as per requirements [CP_SWS_ISO15118Chrg_00006],
 [CP_SWS_ISO15118Chrg_00007],
 [CP_SWS_ISO15118Chrg_00008]
 to
-[CP_SWS_ISO15118Chrg_0000</div></section>
+[CP_SWS_ISO15118Chrg_00009].
+The ISO15118Chrg shall wait for the response
+message.⌋
+[CP_SWS_ISO15118Chrg_00051] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈Upon reception of the message ’ChargeStatusRes’,
+the ISO15118Chrg shall
+proceed
+as
+per
+requirements
+mentioned
+[CP_SWS_ISO15118Chrg_00010],
+[CP_SWS_ISO15118Chrg_00011],
+[CP_SWS_ISO15118Chrg_00012],
+[CP_SWS_ISO15118Chrg_00013], [CP_SWS_ISO15118Chrg_00014].
+If the the
+response message is succesfully processed, then message ’MeteringReceiptReq’
+shall be triggered by the ISO15118Chrg itself, given that that parameter ReceiptRe-
+quired was set to TRUE in the response message ’ChargeStatusRes’, if the parameter
+ReceiptRequired was set to FALSE, then the message ’ChargeStatusReq’ shall be
+sent again.⌋
+[CP_SWS_ISO15118Chrg_00052] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈Upon reception of the message ’MeteringReceiptRes’, the ISO15118Chrg shall
+proceed
+as
+per
+requirements
+mentioned
+[CP_SWS_ISO15118Chrg_00010],
+[CP_SWS_ISO15118Chrg_00011],
+[CP_SWS_ISO15118Chrg_00012],
+[CP_SWS_ISO15118Chrg_00013], [CP_SWS_ISO15118Chrg_00014]. The message
+’ChargeStatusReq’ shall be triggered again. The ISO15118Chrg shall proceed as per
+requirements [CP_SWS_ISO15118Chrg_00006], [CP_SWS_ISO15118Chrg_00007],
+[CP_SWS_ISO15118Chrg_00008]
+to
+[CP_SWS_ISO15118Chrg_00009].
+The
+ISO15118Chrg shall wait for the response message.⌋
+[CP_SWS_ISO15118Chrg_00053] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈After succesfully processing the response message ’ChargeStatusRes’, the message
+’PowerDeliveryReq’ shall be triggered with the parameter ChargeProgress set to STOP,
+if the charging process is to be STOPPED.⌋
+[CP_SWS_ISO15118Chrg_00054] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈If
+the
+message
+’PowerDeliveryReq’
+was
+triggered
+with
+parameter
+Charge-
+Progress set to STOP, then the ISO15118Chrg shall proceed as per require-
+ments
+[CP_SWS_ISO15118Chrg_00006],
+[CP_SWS_ISO15118Chrg_00007],
+[CP_SWS_ISO15118Chrg_00008]
+to
+[CP_SWS_ISO15118Chrg_00009].
+The
+ISO15118Chrg
+shall
+wait
+for
+the
+response
+message.
+Upon
+reception
+and
+succesful
+processing
+of
+the
+response
+’PowerDeliveryRes’
+message
+as
+per
+[CP_SWS_ISO15118Chrg_00010],
+[CP_SWS_ISO15118Chrg_00011],
+[CP_SWS_ISO15118Chrg_00012],
+[CP_SWS_ISO15118Chrg_00013],
+[CP_SWS_ISO15118Chrg_00014],
+then
+request
+message
+’SesssionStopReq’
+shall be trigegred to stop the AC charging process.⌋
+Note: The following requirements are for EV initiated renegotiation.
+[CP_SWS_ISO15118Chrg_00055] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈After succesfully processing the response message ’ChargeStatusRes’, the charge
+profile can be renegotiated by sending the request message ’PowerDeliveryReq’ with
+parameter ChargeProgess set to Renegotiate.⌋
+[CP_SWS_ISO15118Chrg_00056] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈After succesfully processing the response message ’MeteringReceiptRes’, the charge
+profile can be reneogtiated by sending the request message ’PowerDeliveryReq’ with
+parameter ChargeProgess set to Renegotiate.⌋
+Note: The following requirements are for EVSE initiated renegotiation.
+[CP_SWS_ISO15118Chrg_00057] General Requirement
+Status:
+DRAFT
+Upstream requirements: CP_RS_ChrgM_00009
+⌈After succesfully processing the response message ’ChargeStatusRes’, if the param-
+eter EVSENotification in EVSEStatus was set to Renegotiate, the renegotiatiation of
+the charge profile shall happen by sending the request message ’PowerDeliveryReq’
+with parameter ChargeProgess set to Renegotiate within the number of seconds pro-
+vided in NotificationMaxDelay.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -126,7 +253,7 @@ to
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ISO15118Charging.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ISO15118Charging.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ISO15118Charging.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

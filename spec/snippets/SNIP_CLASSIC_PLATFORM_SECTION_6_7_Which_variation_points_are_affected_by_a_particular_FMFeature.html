@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_6_7_Which_variation_points_are_affected_by_a_particular_FMFeature</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</strong> (Seite 60)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/FO/AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</a></strong> (Seite 60)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_FMDT_00038" class="swsref"><code>TPS_FMDT_00038</code></a></span>
         </div>
@@ -121,7 +122,139 @@ rionValue
 Next, we need to look at all variation points to see where those SwSystemconst and
 PostBuildVariantCriterion are referenced. Figure 6.4 shows the structure of a
 variation point. While the PostBuildVariantCriterion is directly visible in Figure
-6.4, a SwSystemconst would be referenced from a Condi</div></section>
+6.4, a SwSystemconst would be referenced from a ConditionByFormula.
+AUTOSAR Feature Model Exchange Format
+VariationPoint
+«atpIdentityContributor»
++
+shortLabel: Identifier [0..1]
+«enumeration»
+BindingTimeEnum
+literals
+systemDesignTime
+codeGenerationTime
+preCompileTime
+linkTime
+ARElement
+AtpDefinition
+PostBuildVariantCriterion
+SwSystemconstDependentFormula
+ConditionByFormula
++
+bindingTime: BindingTimeEnum
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+PostBuildVariantCondition
+«atpVariation»
++
+value: Integer
+MultiLanguageOverviewParagraph
+Sdg
++
+gid: NameToken
+«atpMixed»
+DocumentationBlock
+«enumeration»
+AdditionalBindingTimeEnum
+literals
+blueprintDerivationTime
+postBuild
+SwSystemconstDependentFormula
+«atpMixedString»
+BlueprintFormula
+BlueprintGenerator
++
+expression: VerbatimString [0..1]
++formalBlueprintGenerator 0..1
++blueprintCondition
+0..1
++swSyscond
+0..1
++desc
+0..1
++postBuildVariantCondition
+0..*
++matchingCriterion
+1
++sdg
+0..1
++introduction
+0..1
+Figure 6.4: Variation Point
+The algorithm to find out which variation points are affected by a single FMFea-
+tureMapElement is outlined in [TPS_FMDT_00025].
+[TPS_FMDT_00025] Set of affected variation points for a FMFeatureMapElement
+Upstream requirements: RS_FMDT_00010
+⌈
+1. Let e be a FMFeatureMapElement.
+2. Let S = {s1, s2, . . . , sn} the set of SwSystemconstantValueSet elements ag-
+gregated by e in the role swSystemconstantValueSet.
+3. Each SwSystemconstantValueSet si aggregates a number of SwSystem-
+constValue elements in the role swSystemconstantValue, which in turn re-
+fer to a single SwSystemconst element in the role swSystemconst. Let SCi
+be the set of these SwSystemconst elements for each si.
+4. Each SwSystemconst in SCi is used in the condition of one or more Varia-
+tionPoints. More precisely, the SwSystemconsts are referenced from the
+ConditionByFormula elements2 that are aggregated by the Variation-
+Point in the role swSyscond. Let Vi be the set of these variation points for
+all elements in SCi.
+2ConditionByFormula elements are expressions which use SwSystemconst elements as vari-
+ables.
+AUTOSAR Feature Model Exchange Format
+5. Let P = {p1, p2, . . . , pm} be the set of PostBuildVariantCriterionValue-
+Set elements aggregated by e in the role postBuildVariantCriterionVa-
+lueSet.
+6. Each PostBuildVariantCriterionValueSet pj aggregates a number of
+PostBuildVariantCriterionValue elements in the role postBuildVari-
+antCriterionValue, which in turn refer to a PostBuildVariantCrite-
+rion in the role variantCriterion. Let PCj be the set of PostBuildVari-
+antCriterion elements.
+7. Each PostBuildVariantCriterion element is used in a variation point.
+More precisely, a VariationPoint aggregates a PostBuildVariantCon-
+dition which in turn references a PostBuildVariantCriterion. Let V ′
+j be
+the set of these variation points for all elements in PCj.
+The affected variation points for the FMFeatureMapElement e is now defined as fol-
+lows:
+affected variation points(e) =
+[
+i
+Vi ∪
+[
+j
+V ′
+j
+⌋
+With [TPS_FMDT_00025] in place, we can now collect the affected variation points for
+a FMFeature.
+[TPS_FMDT_00038] Definition of Affected Variation Points for a FMFeature
+Upstream requirements: RS_FMDT_00010
+⌈
+1. Let f be a FMFeature.
+2. Let C be the set of FMFeatureMapElement elements that aggregate a FM-
+FeatureMapCondition in the role fmCond whose aggregated FMFormula-
+ByFeaturesAndAttributes element refers to f.
+3. Let A be the set of FMFeatureMapElement elements that aggregate a FM-
+FeatureMapAssertion in the role fmSyscond whose aggregated FMCondi-
+tionByFeaturesAndSwSystemconsts element refers to f.
+affected variation points(f) = affected variation points(C)∪affected variation points(A)
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -134,7 +267,7 @@ variation point. While the PostBuildVariantCriterion is directly visible in Figu
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/FO/AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

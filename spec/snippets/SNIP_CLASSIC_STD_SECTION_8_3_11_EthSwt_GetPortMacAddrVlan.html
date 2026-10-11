@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_11_EthSwt_GetPortMacAddrVlan</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetSwitchDriver.pdf</strong> (Seite 120)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetSwitchDriver.pdf#page=120" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetSwitchDriver.pdf</a></strong> (Seite 120)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -115,11 +116,73 @@ Obtains an Ethernet switch port bit map, where the given MAC-address with respec
 given VLAN-ID is assigned to. The return argument PortBitMapPtr points to uint32 value which
 shall be handled as Ethernet switch port bit map. Each bit of the Ethernet switch port bit map
 represents an EthSwtPortIdx, where the least significant bit (bit 0) represents EthSwitchPortIdx
-0 and most significant bit (</div></section>
+0 and most significant bit (bit 32) represents EthSwitchPortIdx 31 (e.g. 0x0001 == EthSwitch
+PortIdx 0 is set; 0x8005 == EthSwitchPortIdx 0, 2 and 31 are set).
+Available via
+EthSwt.h
+⌋
+[SWS_EthSwt_00512] Behaviour if EthSwtMacAddressLearningMode is set to
+SVL
+Upstream requirements: SRS_Eth_00087
+⌈If EthSwtMacAddressLearningMode is set to SVL, then the EthSwt driver shall
+consider the given the MAC-address and ignore the given VLAN-ID to determine the
+MAC-address to Ethernet port assignment.⌋
+Note: If EthSwtMacAddressLearningMode is set to SVL, the MAC-address to port
+assignment is shared across all VLANs and therefore the given VLAN is ignored.
+[SWS_EthSwt_00513] Behaviour if EthSwtMacAddressLearningMode is set to
+IVL and VLAN-ID is set to value in a range from 1 to 4095
+Upstream requirements: SRS_Eth_00087
+⌈If EthSwtMacAddressLearningMode is set to IVL and given VLAN-ID is set to a
+value in a range from 1 to 4095, then the EthSwt driver shall consider the given the
+MAC-address and the given VLAN-ID to determine the MAC-address to Ethernet port
+assignment.⌋
+[SWS_EthSwt_00514] Behaviour if EthSwtMacAddressLearningMode is set to
+IVL and VLAN-ID is set to 0
+Upstream requirements: SRS_Eth_00087
+⌈If EthSwtMacAddressLearningMode is set to IVL and given VLAN-ID is set to
+0, then the EthSwt driver shall consider the given the MAC-address to determine the
+MAC-address to Ethernet port assignment irrespective of the VLAN.⌋
+[SWS_EthSwt_00515] Behaviour if EthSwtMacAddressLearningMode is set to
+IVL and VLAN-ID is set to a value greater than 4095
+Upstream requirements: SRS_Eth_00087
+⌈If EthSwtMacAddressLearningMode is set to IVL and given VLAN-ID is set to a
+value greater that 4095, then the EthSwt driver shall return with E_NOT_OK.⌋
+[SWS_EthSwt_00516] Creation of Ethernet switch port bit map
+Upstream requirements: SRS_Eth_00087
+⌈The
+function
+shall
+create
+a
+Ethernet
+switch
+port
+bit
+map
+addressed
+by
+PortBitMapPtr with respect to [SWS_EthSwt_00512], [SWS_EthSwt_00513] and
+[SWS_EthSwt_00514], where the index of the affected EthSwtPorts are encoded in
+a 32bit data type. The least significant bit shall represent EthSwtPortIdx 0 and the
+most signification bit shall represent EthSwtPortIdx 31.⌋
+[SWS_EthSwt_00517] Behaviour for creation of Ethernet switch port bit map
+Upstream requirements: SRS_Eth_00087
+⌈If the creation of the Ethernet switch port bit map was successful finalized and trans-
+fered to the location addressed with PortBitMapPtr, then the EthSwt driver shall return
+with E_OK.⌋
+[SWS_EthSwt_00518] Behaviour if Ethernet switch port bit map exceeds uint32
+data type
+Upstream requirements: SRS_Eth_00087
+⌈If the resulting Ethernet switch port bit map exceeds the unit32 data type, then the
+EthSwt driver shall return with E_NOT_OK.⌋
+[SWS_EthSwt_00519] compile configuration for API
+Upstream requirements: SRS_BSW_00171
+⌈The function EthSwt_GetPortMacAddrVlan shall be pre compile time configurable
+On/Off by the configuration parameter: EthSwtGetPortMacAddrVlanApi.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -128,7 +191,7 @@ represents an EthSwtPortIdx, where the least significant bit (bit 0) represents 
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetSwitchDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetSwitchDriver.pdf#page=120" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetSwitchDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

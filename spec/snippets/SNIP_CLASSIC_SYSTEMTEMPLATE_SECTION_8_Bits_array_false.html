@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_8_Bits_array_false</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SystemTemplate.pdf</strong> (Seite 300)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=204" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></strong> (Seite 300)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02111" class="swsref"><code>TPS_SYST_02111</code></a></span>
         </div>
@@ -138,7 +139,204 @@ ableDataPrototype shall boil down to an Array according to [TPS_SYST_02083],
 [TPS_SYST_02084], [TPS_SYST_02085] and [TPS_SYST_02089].⌋()
 The invalidValue is aggregated by the SwDataDefProps element.
 The Sw-
-DataDefProps and the SwBaseType classes are described in m</div></section>
+DataDefProps and the SwBaseType classes are described in more detail in the
+Software Component Template [5].
+Identifiable
+ISignalToIPduMapping
++
+packingByteOrder: ByteOrderEnum [0..1]
++
+startPosition: Integer [0..1]
++
+transferProperty: TransferPropertyEnum [0..1]
++
+updateIndicationBitPosition: Integer [0..1]
+ARElement
+SystemSignal
++
+dynamicLength: Boolean
+ARElement
+SystemSignalGroup
+Pdu
+IPdu
+Identifiable
+PhysicalChannel
+Identifiable
+ISignalTriggering
+FibexElement
+ISignal
++
+dataTypePolicy: DataTypePolicyEnum
++
+iSignalType: ISignalTypeEnum [0..1]
++
+length: Integer
+ISignalIPdu
++
+unusedBitPattern: Integer
+ValueSpecification
++
+shortLabel: Identifier [0..1]
+«enumeration»
+DataTypePolicyEnum
+networkRepresentationFromComSpec
+legacy
+override
+transformingISignal
+FibexElement
+ISignalGroup
+«atpVariation»
+SwDataDefProps
+«enumeration»
+TransferPropertyEnum
+triggered
+pending
+triggeredOnChange
+triggeredWithoutRepetition
+triggeredOnChangeWithoutRepetition
+ISignalProps
++
+handleOutOfRange: HandleOutOfRangeEnum
+«enumeration»
+HandleOutOfRangeEnum
+none
+ignore
+saturate
+default
+invalid
+externalReplacement
+«enumerati...
+ISignalTypeEnum
+primitive
+array
++transformingSystemSignal
+0..1
++systemSignal
+1
++iSignalGroup
+0..1
++timeoutSubstitutionValue
+0..1
++iSignalToPduMapping 0..*
+«atpVariation»
++iSignal
+0..1
++iSignal
+0..1
++systemSignal
+*
++iSignalTriggering
+0..*
+«atpVariation,atpSplitable»
++systemSignalGroup
+1
++iSignalProps
+0..1
+«atpSplitable»
++managedPhysicalChannel 0..*
++invalidValue
+0..1
++iSignalGroup
+0..1
++physicalProps
+0..1
++initValue
+0..1
++iSignal
+0..*
++networkRepresentationProps 0..1
+Figure 6.4: ISignals and the mapping into IPdus (FibexCore: SignalOverview)
+The configuration of the COM Module for atomic signals can largely be derived from
+the System Template.
+System Template
+[TPS_SYST_01066] Derivation of Tx COM Signals ⌈A ComSignal shall be defined
+in the COM module configuration for each ISignalToIPduMapping that is aggre-
+gated by ISignalIPdu that in turn is referenced by a PduTriggering that in turn
+references an IPduPort where the communicationDirection is set to out of the
+regarded ECU.
+Exception: If the ISignal is part of a Signal Gateway relation (ISignalMapping.
+targetSignal pointing to an ISignalTriggering referencing this ISignal) the
+creation of a ComSignal is not mandated if
+• the ISignal does not point to a SystemSignal that is referenced by a
+DataMapping (application does not send the gatewayed signal content) or
+• the ISignal points to a SystemSignal that is referenced by a DataMap-
+ping where communicationDirection equals in and destination ISignal-
+Triggering.iSignalPort.communicationDirection equals out (appli-
+cation sends the gatewayed signal content) or
+• the ISignalToIPduMapping.iSignal.dataTypePolicy is set to legacy.
+In these cases the configuration of ComGwMapping can be done by means of ComG-
+wSourceDescription and ComGwDestinationDescription. However it is pos-
+sible to create ComSignals for the ComGwSignal approach as well (i.e., even if the
+application does not require access to the respective SystemSignal).⌋()
+[TPS_SYST_01067] Derivation of Rx COM Signals ⌈A ComSignal shall be defined
+in the COM module configuration for each ISignalToIPduMapping that is aggre-
+gated by ISignalIPdu that in turn is referenced by a PduTriggering that in turn
+references an IPduPort where the communicationDirection is set to in in the
+regarded ECU.
+Exception: If the ISignal is part of a Signal Gateway relation (ISignalMapping.
+sourceSignal pointing to an ISignalTriggering referencing this ISignal) the
+creation of a ComSignal is not mandated if
+• the ISignal does not point to a SystemSignal that is referenced by a
+DataMapping (application is not interested in the gatewayed signal content) or
+• the ISignal points to a SystemSignal that is referenced by a DataMapping
+where communicationDirection equals out and source ISignalTrig-
+gering.iSignalPort.communicationDirection equals in (application is
+not interested in the gatewayed signal content) or
+• the ISignalToIPduMapping.iSignal.dataTypePolicy is set to legacy.
+In these cases the configuration of ComGwMapping can be done by means of ComG-
+wSourceDescription and ComGwDestinationDescription. However it is pos-
+sible to create ComSignals for the ComGwSignal approach as well (i.e., even if the
+application does not require access to the respective SystemSignal).⌋()
+System Template
+To support the AUTOSAR concept of composite data types the AUTOSAR COM layer
+provides signal groups. Every record or array element of a composite data type re-
+quires a SystemSignal for the transmission. But the RTE has to guarantee the con-
+sistent transmission of data.
+[TPS_SYST_01153] Atomic transport of SystemSignalGroups ⌈A SystemSig-
+nalGroup shall be transmitted and received consistently; therefore it provides data
+consistency for composite data types.⌋()
+A SystemSignalGroup refers to a set of SystemSignals that shall always be kept
+together in a common IPdu. An ISignalGroup represents a SystemSignalGroup
+of the Interaction Layer. In the case of "signal fan-out", several ISignalGroups refer
+to the same SystemSignalGroup.
+Record A
+Int X
+Record B
+Int Y
+Bool Z
+SystemSignalGroupA
+SystemSignal X
+SystemSignal Y
+SystemSignal Z
+RTE Fanout
+ISignalGroupA_1
+ISignal X_1
+ISignal Y_1
+ISignal Z_1
+ISignalGroupA_2
+ISignal X_2
+ISignal Y_2
+ISignal Z_3
+Figure 6.5: ISignal example
+The example in Figure 6.5 shows the usage of ISignalGroups and ISignals. In
+this example a record is mapped to a SystemSignalGroup.
+All Application-
+RecordElements with ApplicationPrimitiveDataType are mapped to individ-
+ual SystemSignals. If the same SystemSignalGroup is sent to different receivers
+(RTE Fanout) then two different ISignalGroups are created. For each SystemSig-
+nal within the SystemSignalGroup an ISignal is created. The different ISignals
+of the same SystemSignal can have different network representations.
+[TPS_SYST_01156] Definition of ISignalTriggerings is allowed for ISig-
+nalGroups and for GroupSignals ⌈If an ISignalGroup is referenced by an
+ISignalTriggering then the ISignals that are contained in the ISignalGroup
+(GroupSignals) may be referenced as well by ISignalTriggerings.⌋()
+[constr_3094]
+Consistent
+ISignalPort.communicationDirection
+for
+ISignalTriggerings of ISignalGroups and contained ISignals ⌈In case the
+ISignals contained in an ISignalGroup are referenced by an ISignalTrig-
+gering, the communicationDirection of the ISignalPort referenced by the</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -151,7 +349,7 @@ DataDefProps and the SwBaseType classes are described in m</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=204" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

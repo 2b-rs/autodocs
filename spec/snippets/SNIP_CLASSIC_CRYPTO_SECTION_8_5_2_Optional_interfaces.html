@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/crypto.html">Modul: crypto</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYPTO_SECTION_8_5_2_Optional_interfaces</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoInterface.pdf</strong> (Seite 45)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoInterface.pdf#page=46" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoInterface.pdf</a></strong> (Seite 45)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Crypto_91008" class="swsref internal-spec-ref"><code>SWS_Crypto_91008</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_01001" class="swsref internal-spec-ref"><code>SWS_Det_01001</code></a></span>
         </div>
       </div>
 
@@ -108,11 +109,90 @@ operation)
 Crypto_KeyElementCopyPartial
 Crypto.h
 Copies a key element to another key element in the
-same crypto driver. The keyElementSourceOffse</div></section>
+same crypto driver. The keyElementSourceOffset
+and keyElementCopyLength allows to copy just a
+part of the source key element into the destination.
+The offset of the target key is also specified with this
+function.
+Note: If the actual key element is directly mapped to
+flash memory, there could be a bigger delay when
+calling this function (synchronous operation).
+Crypto_KeyElementGet
+Crypto.h
+This interface shall be used to get a key element of
+the key identified by the cryptoKeyId and store the
+key element in the memory location pointed by the
+result pointer. Note: If the actual key element is
+directly mapped to flash memory, there could be a
+bigger delay when calling this function (synchronous
+operation).
+Crypto_KeyElementIdsGet
+Crypto.h
+Used to retrieve information which key elements are
+available in a given key.
+Crypto_KeyElementSet
+Crypto.h
+Sets the given key element bytes to the key
+identified by cryptoKeyId.
+Crypto_KeyExchangeCalcPubVal
+Crypto.h
+Calculates the public value for the key exchange
+and stores the public key in the memory location
+pointed by the public value pointer.
+Crypto_KeyExchangeCalcSecret
+Crypto.h
+Calculates the shared secret key for the key
+exchange with the key material of the key identified
+by the cryptoKeyId and the partner public key. The
+shared secret key is stored as a key element in the
+same key.
+▽
+△
+API Function
+Header File
+Description
+Crypto_KeyGenerate
+Crypto.h
+Generates new key material store it in the key
+identified by cryptoKeyId.
+Crypto_KeyGetStatus
+Crypto.h
+Returns the key state of the key identified by crypto
+KeyId.
+Crypto_KeySetInvalid
+Crypto.h
+Sets invalid for the status of the key identified by
+cryptoKeyId.
+Crypto_KeySetValid
+Crypto.h
+Sets the key state of the key identified by cryptoKey
+Id to valid.
+Crypto_ProcessJob
+Crypto.h
+Performs the crypto primitive, that is configured in
+the job parameter.
+Crypto_RandomSeed
+Crypto.h
+This function generates the internal seed state using
+the provided entropy source. Furthermore, this
+function can be used to update the seed state with
+new entropy
+Csm_CallbackNotification
+Csm.h
+Notifies the CSM that a job has finished. This
+function is used by the underlying layer (CRYIF).
+Det_ReportError
+Det.h
+Service to report development errors.
+Det_ReportRuntimeError
+Det.h
+Service to report runtime errors. If a callout has
+been configured then this callout shall be called.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Lists Crypto_KeyDerive interface</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Det_ReportRuntimeError().</p>
       </section>
 
       <section class="snip-card">
@@ -121,7 +201,7 @@ same crypto driver. The keyElementSourceOffse</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoInterface.pdf#page=46" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -133,15 +213,15 @@ same crypto driver. The keyElementSourceOffse</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Crypto_91008" class="swsref internal-spec-ref"><code>SWS_Crypto_91008</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Det_01001" class="swsref internal-spec-ref"><code>SWS_Det_01001</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: csm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_7_4_6_6_ICV_Generation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverCAN.pdf</strong> (Seite 45)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></strong> (Seite 46)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTSyn_00166" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00166</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_91003" class="swsref internal-spec-ref"><code>SWS_IdsM_91003</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,118 @@ truncated FV by using the StbMFreshnessValueId.⌋(RS_TS_20073)
 IcvGenerationFvIdRef), the Time Master shall not include the FV in the ICV gen-
 eration and fill 0 for FVL field in message types 0x78, 0x88, 0x94, 0xA4.⌋(RS_-
 TS_20073)
-[SWS_CanTSyn_00166]{DRAFT} ⌈If Stb</div></section>
+[SWS_CanTSyn_00166]{DRAFT} ⌈If StbM_GetTxFreshness returns E_OK, the
+Time Master shall construct the message types 0x78, 0x88, 0x94, 0xA4 with the
+full FV, set the FVL to StbMFreshnessValueLength and use the full FV in ICV gen-
+eration.⌋(RS_TS_20073)
+[SWS_CanTSyn_00167]{DRAFT} ⌈If StbM_GetTxFreshnessTruncData returns
+E_OK, the Time Master shall construct the message types 0x78, 0x88, 0x94,
+0xA4 with truncated FV, set the FVL to StbMFreshnessValueTruncLength and
+use the full FV in ICV generation.⌋(RS_TS_20073)
+[SWS_CanTSyn_00168]{DRAFT}
+⌈If
+StbM_GetTxFreshness
+or
+StbM_Get-
+TxFreshnessTruncData return a non-recoverable error code (i.e, E_NOT_OK), the
+Time Master shall:
+• stop the ICV generation and accordingly fill 0 for FVL and ICVL fields in message
+types 0x78, 0x88, 0x94 and 0xA4,
+• call Det_ReportRuntimeError with the parameter ErrorId set to CANTSYN_
+E_FRESHNESSFAILURE (refer [SWS_CanTSyn_91001]),
+• call
+IdsM_SetSecurityEventWithContextData
+with
+the
+parame-
+ter
+EventId
+set
+to
+SEV_TSYN_CAN_FRESHNESS_NOT_AVAILABLE
+(refer
+[SWS_CanTSyn_00204])
+⌋(RS_TS_20073)
+Refer to the chapter 10.2.5 in [7] for the configuration details of CSM job used for ICV
+generation.
+[SWS_CanTSyn_00169]{DRAFT} ⌈If CanTSynIcvGenerationBase for the Time
+Domain is configured to ICV_MAC, the Time Master shall call Csm_MacGenerate to
+generate the ICV value.⌋(RS_TS_20073)
+[SWS_CanTSyn_00170]{DRAFT} ⌈If CanTSynIcvGenerationBase for the Time
+Domain is configured to ICV_SIGNATURE, the Time Master shall call Csm_Signa-
+tureGenerate to generate the ICV value.⌋(RS_TS_20073)
+Note: The mode parameter is intentionally left open for the implementer to choose (
+i.e. CRYPTO_OPERATIONMODE_SINGLECALL would possibly be the best option since
+it does not require further calls to CSM).
+The CSM job used to generate the ICV can be configured to synchronous or asyn-
+chronous behaviour.
+[SWS_CanTSyn_00171]{DRAFT} ⌈If the CSM job used to generate ICV is configured
+in synchronous behaviour, the Time Master shall disable ICV generation timeout mon-
+itoring.⌋(RS_TS_20073)
+[SWS_CanTSyn_00172]{DRAFT} ⌈If the CanTSynIcvGenerationTimeout is set
+to 0, the Time Master shall not do the ICV generation timeout monitoring.⌋(RS_TS_-
+20073)
+[SWS_CanTSyn_00173]{DRAFT} ⌈If CanTSynIcvGenerationTimeout is set to
+any value &gt; 0 and Csm_MacGenerate or Csm_SignatureGenerate returns E_OK,
+the Time Master shall start the CanTSynIcvGenerationTimeout.⌋(RS_TS_20073)
+[SWS_CanTSyn_00174]{DRAFT} ⌈If CanTSynIcvGenerationTimeout is set to
+any value &gt; 0 and the CanTSyn_IcvGenerationIndication callback is called, the
+Time Master shall stop the running CanTSynIcvGenerationTimeout.⌋(RS_TS_-
+20073)
+[SWS_CanTSyn_00175]{DRAFT} ⌈If one of the following conditions is true:
+• the authentication build counter has reached the configuration value CanTSyn-
+TxAuthenticationBuildAttempts,
+• the verification of the ICV has returned a non-recoverable error such as returning
+E_NOT_OK or KEY_FAILURE,
+• or CanTSynIcvGenerationTimeout expires before the notification of the
+CanTSyn_IcvGenerationIndication callback,
+then the Time Master shall
+• stop the ICV generation and accordingly fill 0 for ICVL field in message types
+0x78, 0x88, 0x94 and 0xA4,
+• and
+call
+IdsM_SetSecurityEventWithContextData
+with
+the
+param-
+eters
+EventId
+set
+to
+SEV_TSYN_CAN_ICV_GENERATION_FAILED
+(refer
+[SWS_CanTSyn_00204])
+⌋(RS_TS_20073)
+[SWS_CanTSyn_00176]{DRAFT} ⌈With the notification of the CanTSyn_IcvGener-
+ationIndication callback and successful generation of ICV, the Time Master shall
+add the generated ICV to the ICV field in message types 0x78, 0x88, 0x94 and
+0xA4 and transmit the FUP, Extended OFS message.⌋(RS_TS_20073)
+[SWS_CanTSyn_00177]{DRAFT} ⌈If the FV is referenced (refer CanTSynIcvGen-
+erationFvIdRef), then the Time Master shall notify the successful transmission of
+messages of type 0x78, 0x88, 0x94 and 0xA4 to FVM by calling StbM_SPduTx-
+Confirmation.⌋(RS_TS_20073)
+[SWS_CanTSyn_00210]{DRAFT} ⌈For every transmission of messages of type 0x78,
+0x88, 0x94 and 0xA4 the Time Master shall maintain an authentication build counter
+(refer CanTSynTxAuthenticationBuildAttempts).⌋(RS_TS_20073)
+[SWS_CanTSyn_00211]{DRAFT} ⌈Upon the initial processing of messages of type
+0x78, 0x88, 0x94 and 0xA4 the Time Master shall set the authentication build
+counter to 0.⌋(RS_TS_20073)
+[SWS_CanTSyn_00212]{DRAFT} ⌈When StbM_GetTxFreshness or StbM_Get-
+TxFreshnessTruncData return a recoverable error code (e.g., STBM_E_BUSY), then
+the Time Master shall increment the authentication build counter.⌋(RS_TS_20073)
+[SWS_CanTSyn_00213]{DRAFT} ⌈When Csm_MacGenerate or Csm_Signature-
+Generate return a recoverable error code (e.g., E_BUSY, QUEUE_FULL), then the
+Time Master shall increment the authentication build counter.⌋(RS_TS_20073)
+[SWS_CanTSyn_00214]{DRAFT} ⌈If
+• building the authenticated message has failed
+• and the authentication build counter has not yet reached the configuration value
+CanTSynTxAuthenticationBuildAttempts,
+then the Time Master shall retry the freshness attempt and ICV calculation in the next
+call of CanTSyn_MainFunction.⌋(RS_TS_20073)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_CanTSyn_00166] im Text von SWS_TimeSyncOverCAN.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von IdsM_SetSecurityEventWithContextData().</p>
       </section>
 
       <section class="snip-card">
@@ -102,11 +210,11 @@ TS_20073)
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverCAN.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 45</td>
+              <td>Seite 46</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -114,7 +222,7 @@ TS_20073)
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTSyn_00166" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00166</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_IdsM_91003" class="swsref internal-spec-ref"><code>SWS_IdsM_91003</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -122,7 +230,7 @@ TS_20073)
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

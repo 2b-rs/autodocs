@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_0_FDC_min</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 111)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=110" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 110)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_00927" class="swsref internal-spec-ref"><code>SWS_Dem_00927</code></a></span>
+          <span>Ziel-Element: SWS_Dem_CONSTR_06153</span>
         </div>
       </div>
 
@@ -130,11 +131,38 @@ Upstream requirements: RS_Diag_04124
 ⌈If the configuration parameter DemDebounceCounterStorage is set to True, the
 Dem module shall store the current value of the internal debounce counter non-
 volatile (refer to [SWS_Dem_00341]).⌋
-Note: De</div></section>
+Note: DemDebounceCounterStorage is not supported for time based debouncing.
+[SWS_Dem_00675]
+Upstream requirements: RS_Diag_04124
+⌈If the configuration parameter DemDebounceCounterStorage is set to True, the
+Dem module shall re-store the current value of the internal debounce counter dur-
+ing each startup (latest in Dem_Init).⌋
+Note: BSW events using non-volatile storage of the internal debounce counter can-
+not be reported before Dem_Init, because the value needs first to be restored.
+[SWS_Dem_00676]
+Upstream requirements: RS_Diag_04124
+⌈If development error detection is enabled and Dem_SetEventStatus or Dem_Re-
+setEventDebounceStatus is called before Dem_Init or after Dem_Shutdown for
+events which have DemDebounceCounterStorage set to True, the Dem module shall
+set the error code DEM_E_WRONG_CONDITION.⌋
+[SWS_Dem_CONSTR_06151] Dependency on DemCounterBasedFdcThreshold-
+StorageValue ⌈The configuration parameter DemCounterBasedFdcThreshold-
+StorageValue shall only be present if DemFreezeFrameRecordTrigger is set to
+DEM_TRIGGER_ON_FDC_THRESHOLD or DemExtendedDataRecordTrigger is set
+to DEM_TRIGGER_ON_FDC_THRESHOLD or DemEventMemoryEntryStorageTrig-
+ger is set to DEM_TRIGGER_ON_FDC_THRESHOLD.⌋
+[SWS_Dem_CONSTR_06152]
+Dependency on DemDebounceCounterJump-
+DownValue ⌈DemDebounceCounterJumpDownValue shall only be present if
+DemDebounceCounterJumpDown is set to TRUE.⌋
+[SWS_Dem_CONSTR_06153]
+Dependency on DemDebounceCounterJumpUp-
+Value ⌈DemDebounceCounterJumpUpValue shall only be present if DemDe-
+bounceCounterJumpUp is set to TRUE.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Dem_DebounceResetStatusType freeze and reset</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_CONSTR_06153] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -143,11 +171,11 @@ Note: De</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=110" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 111</td>
+              <td>Seite 110</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -155,15 +183,15 @@ Note: De</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_00927" class="swsref internal-spec-ref"><code>SWS_Dem_00927</code></a></td>
+              <td>SWS_Dem_CONSTR_06153</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

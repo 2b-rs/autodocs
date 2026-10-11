@@ -34,7 +34,7 @@
          ["mod", "mod", 1], ["cl", "cl", 1], ["first", "first"], ["last", "last"], ["chg", "chg"],
          ["has", "has", 1]],
     fig: [["q", "fq"], ["plat", "fplat", 1], ["mod", "fmod", 1], ["doc", "fdoc"], ["multi", "fmulti"],
-          ["id", "fid"]],
+          ["role", "frole", 1], ["id", "fid"]],
     snip: [["q", "sq"], ["plat", "splat", 1], ["mod", "smod", 1], ["doc", "sdoc"], ["role", "srole", 1],
            ["id", "sid"]]
   };
@@ -60,7 +60,9 @@
     s.id = (u.get("id") || "").trim();
     var view = u.get("view");
     if (VIEWS.indexOf(view) >= 0) s.view = view;
-    ["from", "to", "ffrom", "fto", "sfrom", "sto"].forEach(function (k) { s[k] = (u.get(k) || "").trim(); });
+    s.from = (u.get("from") || u.get("fromRel") || "").trim();
+    s.to = (u.get("to") || u.get("toRel") || "").trim();
+    ["ffrom", "fto", "sfrom", "sto"].forEach(function (k) { s[k] = (u.get(k) || "").trim(); });
     TABS.forEach(function (t) {
       PARAMS[t].forEach(function (p) {
         var v = u.get(p[1]);
@@ -303,7 +305,9 @@
       if (!(d in di)) { di[d] = docs.length; docs.push(d); }
       it.docCode[i] = di[d];
       var rb = 0;
-      String(raw.role[i] || "").split(",").forEach(function (r) {
+      // Ältere Indizes ohne role-Spalte bleiben filterbar (keine Rolle = kein Treffer bei gesetztem Filter).
+      var roleCol = Array.isArray(raw.role) ? raw.role : [];
+      String(roleCol[i] || "").split(",").forEach(function (r) {
         var k = roles.indexOf(r); if (k >= 0) rb |= (1 << k);
       });
       it.roleBits[i] = rb;
@@ -330,15 +334,20 @@
       { key: "doc", type: "one", get: function (i) { return it.docCode[i]; }, values: it.dict.doc },
       { key: "mod", type: "many", get: function (i) { return it.modBits[i]; }, values: it.dict.mod }
     ];
-    if (kind === "snip") {
-      g.push({ key: "role", type: "bits", get: function (i) { return it.roleBits[i]; }, values: it.dict.role,
-               bit: function (k) { return 1 << k; } });
-    } else {
+    // Konstitutiv/heuristisch gilt für Snippets und Schaubilder (Matrix-Rolle je Zuordnung).
+    // Bildreihen bleiben ein zusätzliches Kriterium nur der Schaubilder.
+    g.push({ key: "role", type: "bits", get: function (i) { return it.roleBits[i]; }, values: it.dict.role,
+             bit: function (k) { return 1 << k; } });
+    if (kind === "fig") {
       g.push({ key: "multi", type: "flags", get: function (i) { return it.nser[i] > 1 ? 1 : 0; }, values: ["1"],
                bit: function () { return 1; } });
     }
     return g;
   }
+
+  // Katalog und Filterliste: gleicher Start in allen Reitern. Eine Auswahl, auch per Deep-Link,
+  // klappt sie nicht ein; das tut nur der Schalter.
+  function catalogCollapsedOnLoad() { return false; }
 
   function filterItems(it, kind, sel) {
     return facetFilter(it.n, itemGroups(it, kind), sel, textMatcher(it.hay, sel.q));
@@ -517,8 +526,9 @@
       spans.forEach(function (x) {
         if (cur && cur.hash === x.hash) { x.releases.forEach(function (r) { cur.releases.push(r); }); return; }
         var differs = last !== null && last !== x.hash;
+        var shot = x.screenshot_path || x.screenshot || null;
         cur = { type: textHash && x.hash === textHash ? "content" : "other", hash: x.hash, releases: x.releases.slice(),
-                page: x.page || null, isInitial: last === null, isChange: differs && !seen[x.hash], isRevert: differs && !!seen[x.hash] };
+                page: x.page || null, screenshot: shot, isInitial: last === null, isChange: differs && !seen[x.hash], isRevert: differs && !!seen[x.hash] };
         seen[x.hash] = 1; last = x.hash;
         segs.push(cur);
       });
@@ -533,7 +543,8 @@
       rels.forEach(function (r) {
         var ty = r === textRel ? "content" : "presence";
         if (run && run.type === ty && ty === "presence") { run.releases.push(r); return; }
-        run = { type: ty, releases: [r], page: ty === "content" ? (info.page || null) : null,
+        var shot = ty === "content" ? (info.screenshot_path || info.screenshot || null) : null;
+        run = { type: ty, releases: [r], page: ty === "content" ? (info.page || null) : null, screenshot: shot,
                 isInitial: !segs.some(function (x) { return x.type === "content"; }), isChange: false, isRevert: false };
         segs.push(run);
       });
@@ -552,12 +563,24 @@
   var COMPARABLE = { section: 1, caption: 1 };
   function releaseTextTimeline(info) {
     var segs = [], seen = {}, cur = null, gap = null, lastKey = null, rt = info.rt || [], rk = info.rk || [];
+    var spanShots = {};
+    (info.series || []).forEach(function (sp) {
+      if (sp && sp.releases && (sp.screenshot_path || sp.screenshot)) {
+        var s = sp.screenshot_path || sp.screenshot;
+        sp.releases.forEach(function (r) { spanShots[r] = s; });
+      }
+    });
     info.rv.forEach(function (v) {
+      var vShot = v.screenshot || v.screenshot_path || spanShots[v.r] || null;
       if (!COMPARABLE[v.m] || v.t == null || rt[v.t] == null) {
         cur = null;
         var reason = v.m === "page_excerpt" ? "page_excerpt" : "none";
-        if (gap && gap.reason === reason) { gap.releases.push(v.r); return; }
-        gap = { type: "nocapture", reason: reason, releases: [v.r], page: v.p || null };
+        if (gap && gap.reason === reason) {
+          gap.releases.push(v.r);
+          if (vShot && !gap.screenshot) gap.screenshot = vShot;
+          return;
+        }
+        gap = { type: "nocapture", reason: reason, releases: [v.r], page: v.p || null, screenshot: vShot };
         segs.push(gap);
         return;
       }
@@ -566,10 +589,12 @@
       if (cur && cur.key === k) {
         cur.releases.push(v.r); cur.entries.push(v);
         if (cur.texts.indexOf(v.t) < 0) cur.texts.push(v.t);
+        if (vShot && !cur.screenshot) cur.screenshot = vShot;
         return;
       }
       var differs = lastKey !== null && lastKey !== k;
       cur = { type: "content", key: k, releases: [v.r], entries: [v], texts: [v.t], page: v.p || null,
+              screenshot: vShot,
               isInitial: lastKey === null, isChange: differs && !seen[k], isRevert: differs && !!seen[k] };
       seen[k] = 1; lastKey = k;
       segs.push(cur);
@@ -614,6 +639,13 @@
 
   function thumbUrl(root, sha) {
     return sha ? root + "assets/figures/" + sha.slice(0, 2) + "/" + sha + ".webp" : "";
+  }
+
+  function snippetScreenshotUrl(root, shot) {
+    if (!shot) return "";
+    if (/^https?:\/\//i.test(shot)) return shot;
+    var clean = String(shot).replace(/^\/?(?:_src\/)?/, "");
+    return (root || "") + clean;
   }
 
   // PDF-Pfad aus dem Bildkatalog (R22-11/AUTOSAR/AP/Datei.pdf) -> autosar.org
@@ -788,12 +820,13 @@
     filterElements: filterElements, decodeItems: decodeItems, filterItems: filterItems,
     figureHref: figureHref, itemFile: itemFile, recordFile: recordFile, caseMask: caseMask, safeStem: safeStem,
     markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
+    snippetScreenshotUrl: snippetScreenshotUrl,
     catalogPdfUrl: catalogPdfUrl, textMatcher: textMatcher, normContent: normContent, releaseKey: releaseKey,
     sortVersions: sortVersions, buildTimeline: buildTimeline, snippetTimeline: snippetTimeline, versionHash: versionHash,
     decodeEntities: decodeEntities, decodeFully: decodeFully, citedIds: citedIds, linkifyIds: linkifyIds, resolveId: resolveId,
     UNIVERSES: UNIVERSES,
     isAbortError: isAbortError, isNetworkError: isNetworkError, loadJson: loadJson, renderMarkdown: renderMarkdown,
-    mdInline: mdInline
+    mdInline: mdInline, catalogCollapsedOnLoad: catalogCollapsedOnLoad
   };
 });
 
@@ -912,6 +945,11 @@
       panel.querySelectorAll("[data-role]").forEach(function (el) { r[el.getAttribute("data-role")] = el; });
       r.vlist = new VList(tab, r.list, r.space, ROW_H[tab]);
       ui[tab] = r;
+      // Rad am Listen- oder Filterrand bleibt im Bereich und zieht nicht die Seite mit.
+      r.list.style.overscrollBehavior = "contain";
+      r.facets.style.overscrollBehavior = "contain";
+      r.viewer.style.overscrollBehavior = "contain";
+      r.viewer.style.overflowAnchor = "none";
       wirePanel(tab, r);
     });
     app.querySelectorAll(".ve-tab").forEach(function (b) {
@@ -1499,8 +1537,8 @@
         (D.full ? releaseSelect(tab, "chg", t("rel_chg"), c.chg) : ""), "ve-fgroup-rel");
     } else {
       html += group(t("f_plat"), facetChips(tab, "plat", D.dict.plat, c.plat, { hideEmpty: true }));
-      if (tab === "snip") html += group(t("f_role"), facetChips(tab, "role", D.dict.role, c.role));
-      else html += group(t("f_series"), facetChips(tab, "multi", ["1"], c.multi));
+      html += group(t("f_role"), facetChips(tab, "role", D.dict.role, c.role));
+      if (tab === "fig") html += group(t("f_series"), facetChips(tab, "multi", ["1"], c.multi));
       html += group(t("f_doc"), docSelect(tab, D, c.doc), "ve-fgroup-rel");
       if (D.dict.mod.length) html += modGroup(tab, D.dict.mod, c.mod);
     }
@@ -1631,15 +1669,22 @@
     }
     var D = data.el, di = D ? D.byId.get(id) : null;
     var isRef = di != null && D.ref[di] === 1;
+    var fromFile = fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
+      .catch(function (err) {
+        // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
+        if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
+        return fetchJson("/api/versions?id=" + encodeURIComponent(id), signal);
+      });
+    var fromPack = (typeof FrozenPack !== "undefined")
+      ? FrozenPack.record(ROOT, id, signal).catch(function (err) {
+          if (C.isAbortError(err)) throw err;
+          return null;
+        })
+      : Promise.resolve(null);
     var p = (EL.rec && EL.rec.id === id) ? Promise.resolve(EL.rec) : isRef
       // nur zitierte Kennung: kein Versions-Record, Belege aus versions/explorer/refs/
       ? fetchJson(ROOT + "versions/explorer/refs/" + encodeURIComponent(C.recordFile(id, stems("ref"))), signal)
-      : fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
-        .catch(function (err) {
-          // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
-          if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
-          return fetchJson("/api/versions?id=" + encodeURIComponent(id), signal);
-        });
+      : fromPack.then(function (rec) { return rec && rec.versions ? rec : fromFile; });
     p.then(function (rec) {
       if (my !== token.el) return;
       if (!rec || (!rec.ok && !rec.versions)) throw new Error(t("not_found", { id: id }));
@@ -1986,6 +2031,15 @@
       if (!ropen) revealTop(rb.closest(".ve-req"));
       return;
     }
+    if (b.getAttribute("data-act") === "snip-zoom") {
+      var wrap = ui[tab] && ui[tab].vbody ? ui[tab].vbody.querySelector(".ve-snipbig") : null;
+      if (!wrap) wrap = b.closest(".ve-snipbig");
+      if (wrap) {
+        var exp = wrap.classList.toggle("is-expanded");
+        b.setAttribute("aria-expanded", exp ? "true" : "false");
+      }
+      return;
+    }
     if (b.getAttribute("data-act") === "copy") {
       var url = window.location.href;
       var done = function () { b.textContent = t("copied"); setTimeout(function () { b.textContent = t("copy_link"); }, 1500); };
@@ -2168,6 +2222,18 @@
     r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     fetchJson(ROOT + "versions/explorer/items/" + encodeURIComponent(C.itemFile(id, stems("item"))), signal).then(function (info) {
       if (my !== token[tab]) return;
+      var pack = (typeof FrozenPack === "undefined") ? Promise.resolve(null)
+        : FrozenPack.record(ROOT, id, signal).catch(function (err) {
+            if (C.isAbortError(err)) throw err;
+            return null;
+          });
+      return pack.then(function (rec) {
+        if (rec && rec.series && !info.seriesPayload) info.seriesPayload = rec.series;
+        if (rec && rec.rv && !info.rv) { info.rv = rec.rv; info.rt = rec.rt; info.rk = rec.rk; }
+        return info;
+      });
+    }).then(function (info) {
+      if (my !== token[tab] || !info) return;
       shown[tab] = id;
       r.vbody.innerHTML = itemHtml(tab, info);
       r.vbody.parentNode.scrollTop = 0;
@@ -2224,6 +2290,7 @@
       fillCanonLinks(box);
       figObserve(box);
     }
+    if (info.seriesPayload) { mount(info.seriesPayload, false); return; }
     mount(null, !!info.series_file);
     if (!info.series_file) return;
     fetchJson(ROOT + "versions/explorer/series/" + encodeURIComponent(info.series_file), ctrl.fig ? ctrl.fig.signal : undefined)
@@ -2253,8 +2320,30 @@
                  body: "<div>" + esc(t(seg.reason === "page_excerpt" ? "snip_nf_page" : "snip_nf_none")) + "</div>" + page + pills };
       }
       var st = epochStatus(seg, seg.releases[0]);
+      var shot = seg.screenshot || seg.screenshot_path;
+      if (!shot && seg.entries) {
+        for (var i = 0; i < seg.entries.length; i++) {
+          if (seg.entries[i].screenshot || seg.entries[i].screenshot_path) {
+            shot = seg.entries[i].screenshot || seg.entries[i].screenshot_path;
+            break;
+          }
+        }
+      }
+      if (!shot && (info.screenshot_path || info.screenshot)) {
+        if (seg.type === "content" || (info.trel && seg.releases && seg.releases.indexOf(info.trel) >= 0)) {
+          shot = info.screenshot_path || info.screenshot;
+        }
+      }
+      var shotBadge = "";
+      if (shot) {
+        var shotUrl = C.snippetScreenshotUrl(ROOT, shot);
+        shotBadge = '<div class="ve-epoch-shot">' +
+          '<a href="' + esc(shotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-shot-badge" title="' + esc(t("open_page")) + '">' +
+          '<span class="ve-shot-icon" aria-hidden="true">🖼️</span> ' + esc(t("v_snip")) +
+          '</a></div>';
+      }
       if (seg.type === "other") {
-        return { span: span, cls: "ve-epoch-absent", status: st, body: "<div>" + esc(t("snip_other")) + "</div>" + page + pills };
+        return { span: span, cls: "ve-epoch-absent", status: st, body: "<div>" + esc(t("snip_other")) + "</div>" + page + pills + shotBadge };
       }
       if (seg.entries) {
         // Wortlaut je Release aus dem PDF: Quelle, Varianten, Schnitt, entfernte Seitenköpfe
@@ -2265,11 +2354,11 @@
         if (ncl) sub += '<div class="ve-epoch-cleaned">' + esc(t("ep_cleaned", { n: ncl })) + "</div>";
         if (cut) sub += '<div class="ve-epoch-cleaned">' + esc(t("snip_cut")) + "</div>";
         return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
-                 body: (sub ? "<div>" + sub + "</div>" : "") + page + pills };
+                 body: (sub ? "<div>" + sub + "</div>" : "") + page + pills + shotBadge };
       }
       var own = info.trel && seg.releases.indexOf(info.trel) >= 0;
       return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
-               body: "<div>" + esc(own ? t("snip_captured_rel", { rel: info.trel }) : t("snip_captured_same")) + "</div>" + page + pills };
+               body: "<div>" + esc(own ? t("snip_captured_rel", { rel: info.trel }) : t("snip_captured_same")) + "</div>" + page + pills + shotBadge };
     });
   }
   function mountSnipRevisions(vbody, info) {
@@ -2386,7 +2475,23 @@
     if (info.text) {
       h += '<section class="ve-sect"><h3>' + esc(t(isFig ? "fig_text_head" : "text_head")) + '</h3><div class="ve-fulltext">' + linkIds(esc(info.text), null) + "</div></section>";
     }
-    if (!isFig) h += '<section class="ve-sect ve-revsect" aria-labelledby="ve-sr-h"><h3 id="ve-sr-h">' + esc(t("v_ver")) + '</h3><div data-role="sniprev"></div></section>';
+    if (!isFig) {
+      var snipShot = info.screenshot_path || info.screenshot;
+      if (snipShot) {
+        var snipShotUrl = C.snippetScreenshotUrl(ROOT, snipShot);
+        h += '<div class="ve-snipbig" id="ve-snipbig-' + esc(info.id) + '">' +
+          '<div class="ve-snipbig-bar">' +
+          '<button type="button" class="ve-btn ve-snipbig-toggle" data-act="snip-zoom" aria-expanded="false">🔍 Zoom</button>' +
+          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-linkbtn ve-linkbtn-small">↗ ' + esc(t("open_page")) + '</a>' +
+          '</div>' +
+          '<div class="ve-snipbig-frame">' +
+          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-snipbig-link" title="' + esc(t("open_page")) + '">' +
+          '<img src="' + esc(snipShotUrl) + '" alt="' + esc(info.caption || info.id) + '" loading="lazy" class="ve-snipbig-img" />' +
+          '</a>' +
+          '</div></div>';
+      }
+      h += '<section class="ve-sect ve-revsect" aria-labelledby="ve-sr-h"><h3 id="ve-sr-h">' + esc(t("v_ver")) + '</h3><div data-role="sniprev"></div></section>';
+    }
     var targets = info.targets || [];
     var D = data.el;
     var targetIds = targets.map(function (tg) { return tg.id; });
@@ -2447,9 +2552,9 @@
     }
   }
   build();
-  // Mit einem Element in der URL (ohne Filter) steht der Viewer im Vordergrund, der Katalog ist eingeklappt
+  // Katalog (Liste) und Filterliste starten in allen drei Reitern sichtbar, auch bei einem Deep-Link.
   ["el", "fig", "snip"].forEach(function (tab) {
-    if (selectedKey(tab) && !state[tab].q && !C.activeCount(state, tab)) setCollapsed(tab, true);
+    if (C.catalogCollapsedOnLoad(tab, state)) setCollapsed(tab, true);
   });
   try { window.scrollTo(0, 0); } catch (e) { /* ignore */ }
   ["el", "fig", "snip"].forEach(function (tab) { ui[tab].q.value = state[tab].q || ""; });

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: frtp</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRTP_SECTION_15_FrTp_transmits_always_the_real_amount_of_data_stored_in_the_corresponding_buffer_FrTp_is_not</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayISOTransportLayer.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></strong> (Seite 47)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTp_01058" class="swsref internal-spec-ref"><code>SWS_FrTp_01058</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTp_01199" class="swsref internal-spec-ref"><code>SWS_FrTp_01199</code></a></span>
         </div>
       </div>
 
@@ -94,11 +95,85 @@ after reception.
 ⌈The FrTp module shall implement a timing and timeout
 behaviour as defined in chapter 7.5.8⌋()
 Step 17 - 21
-If all N-SDU data are transmitted the Fr</div></section>
+If all N-SDU data are transmitted the FrTp module shall free all allocated resources
+and reset all flags which signals an ongoing data transfer for this connection.
+If the data transmission is pending, the FrTp module shall continue the data transfer
+at step 6.
+[SWS_FrTp_01056]
+⌈The FrTp module shall free the allocated channel
+(FrTpTxChannelState = Idle) if
+a) all Tx N-SDU data are transmitted and
+b) FrTp_TxConfirmation was given with result E_OK and
+c) the final acknowledge is received in case acknowledge is configured.
+segment N-PDU Consecutive Frames to the maximum length of the corresponding PDU of the
+PduPool.
+Or
+d) FrTp_TxConfirmation was given with result E_NOT_OK.
+⌋()
+[SWS_FrTp_01057]
+⌈
+The
+FrTp
+module
+shall
+reset
+the
+flag
+TX_SDU_AVAILABLE, if:
+a) all N-SDU data are transmitted and
+b) FrTp_TxConfirmation was given with result E_OK and
+c) the final acknowledge is received in case acknowledge is configured.
+Or
+d) FrTp_TxConfirmation was given with result E_NOT_OK.
+⌋()
+[SWS_FrTp_01124]
+⌈
+The
+FrTp
+module
+shall
+reset
+the
+flag
+TX_SDU_UNKNOWN_MSG_LENGTH, if:
+a) all N-SDU data are transmitted and
+b) FrTp_TxConfirmation was given with result E_OK and
+c) the final acknowledge is received in case acknowledge is configured
+or
+d) if transmission was aborted or FrTp_TxConfirmation was given with
+result E_NOT_OK.⌋()
+[SWS_FrTp_01058]
+⌈The FrTp module shall always call the service primitive
+PduR_FrTpTxConfirmation for the corresponding FrTpTxSdu ID
+after the transmission request was accepted.
+The result shall be E_OK if
+a) all N-SDU data are transmitted and
+b) FrTp_TxConfirmation was given with result E_OK and
+c) the final acknowledge is received in case acknowledge is configured.
+Otherwise the result shall be E_NOT_OK.
+⌋()
+[SWS_FrTp_01198]
+⌈ If an FC frame is received with an invalid FS or with FS
+set to OVFLW or ABT, the FrTp module shall abort the transmission of
+this message and notify the upper layer by calling the callback function
+PduR_FrTpTxConfirmation with the result E_NOT_OK.⌋()
+[SWS_FrTp_01199]
+⌈ If an FC frame is received with the FS set to ACK_RET,
+where the BP points to a position outside the buffer of the sender, then
+the FrTp module shall abort the transmission of this message and notify
+the
+upper
+layer
+by
+calling
+the
+callback
+function
+PduR_FrTpTxConfirmation with the result E_NOT_OK.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Calls PduR_FrTpTxConfirmation when transmitted</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrTp_01199] im Text von SWS_FlexRayISOTransportLayer.</p>
       </section>
 
       <section class="snip-card">
@@ -107,11 +182,11 @@ If all N-SDU data are transmitted the Fr</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayISOTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 48</td>
+              <td>Seite 47</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -119,15 +194,15 @@ If all N-SDU data are transmitted the Fr</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrTp_01058" class="swsref internal-spec-ref"><code>SWS_FrTp_01058</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrTp_01199" class="swsref internal-spec-ref"><code>SWS_FrTp_01199</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

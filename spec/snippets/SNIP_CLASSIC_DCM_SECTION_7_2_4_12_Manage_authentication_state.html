@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dcm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_2_4_12_Manage_authentication_state</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 69)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=68" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 69)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91067" class="swsref internal-spec-ref"><code>SWS_Dcm_91067</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91069" class="swsref internal-spec-ref"><code>SWS_Dcm_91069</code></a></span>
         </div>
       </div>
 
@@ -91,11 +92,86 @@ Manager
 Upon startup, the Dcm is in deauthenticated state or restores the persisted state. A
 transition to authenticated state can only be done after the client successfully exe-
 cuted the authentication sequence. In some use cases as in production, a frequent
-power-on/power off sequence is performed. To</div></section>
+power-on/power off sequence is performed. To keep the achieved authentication state
+over the power off, there is a dedicated mode rule requesting the Dcm to persist the
+authenticated state.
+[SWS_Dcm_01480] Initialization of authentication state
+Upstream requirements: RS_Diag_04230
+⌈If DcmDspAuthenticationPersistStateModeRuleRef is not configured or the
+mode rule referenced by DcmDspAuthenticationPersistStateModeRuleRef is
+evaluated to false, the Dcm shall initialize within Dcm_Init all authentication states to
+deauthenticated state.⌋
+[SWS_Dcm_01481] Initialization of persisted authentication states
+Upstream requirements: RS_Diag_04230
+⌈If
+the
+mode
+rule
+referenced
+by
+DcmDspAuthenticationPersistState-
+ModeRuleRef is evaluated to true, the Dcm shall initialize the persisted authentication
+state including role and white list on each connection.⌋
+Transitions between authenticated states are controlled by both DSL and DSP sub-
+modules. The DSL sub-module is in charge for fallback of authenticated state into
+deauthenticated state. The DSP sub-module is in charge for transition changes trig-
+gered from a client by diagnostic services.
+Figure 7.7: Authenticated state transitions without persistent states
+[SWS_Dcm_01482] Fallback to deauthenticated state on idle connection
+Upstream requirements: RS_Diag_04230
+⌈The Dcm shall make a transition from authenticated into deauthenticated state for a
+configured connection if the following conditions apply:
+Manager
+• The Dcm was in default session when the last diagnostic response was sent on
+that connection and
+• DcmDspAuthenticationDefaultSessionTimeOut is configured and no di-
+agnostic request was received on that connection for DcmDspAuthentica-
+tionDefaultSessionTimeOut seconds after the last Dcm_TpTxConfirma-
+tion on that connection.
+⌋
+[SWS_Dcm_01483] Fallback to deauthenticated session on S3server timeout
+Upstream requirements: RS_Diag_04230
+⌈If the Dcm is in a non-default session and a S3server timeout occurs, the Dcm shall
+perform a transition from authenticated into deauthenticated state on the authentication
+state assigned to that connection which was in a non-default session.⌋
+[SWS_Dcm_01484] Clearing persisted authentication state
+Upstream requirements: RS_Diag_04230
+⌈If the authentication state of a connection performs a transition to deauthenticated
+state, the Dcm shall clear all persisted authentication information on that connection.⌋
+[SWS_Dcm_01485] Reaction of fallback into deauthenticated state
+Upstream requirements: RS_Diag_04230
+⌈Upon a transition from authenticated into deauthenticated state, the Dcm shall dis-
+card the current role, white list and use the configured deauthentication role from
+DcmDspAuthenticationDeauthenticatedRoleRef.⌋
+In some use cases, it is desirable that the application set the role instead of using
+a diagnostic service with its potentially time-consuming certificate parsing. The Dcm
+provides the API Dcm_SetDeauthenticatedRole to overwrite the configured deau-
+thentication role. The overwritten role is only valid in deauthenticated state will not be
+persisted and is overwritten by a role provided by certificates via service 0x29.
+[SWS_Dcm_01486] Default authentication role set from SWC
+Upstream requirements: RS_Diag_04230
+⌈If a connection is in deauthenticated state and the API Dcm_SetDeauthenticate-
+dRole is called, the Dcm shall use the provided deauthenticatedRole as new role per
+deauthenticated state for this connection.⌋
+Manager
+[SWS_Dcm_01487] Setting deauthenticated role by SWC only in deauthenticated
+state
+Upstream requirements: RS_Diag_04230
+⌈The Dcm shall process a call of Dcm_SetDeauthenticatedRole only if the con-
+nection is in deauthenticated state.⌋
+[SWS_Dcm_01488] Lifetime of deauthenticated role by SWC
+Upstream requirements: RS_Diag_04230
+⌈A deauthenticated role set by Dcm_SetDeauthenticatedRole is discarded when
+that connection performs a transition to authenticated state.⌋
+[SWS_Dcm_01489] No persistency for deauthenticated roles by SWC
+Upstream requirements: RS_Diag_04230
+⌈If the authentication state is not persisted, at startup the Dcm shall always be in the
+deauthenticated state and use the default role configured in DcmDspAuthentica-
+tionDeauthenticatedRoleRef.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Specifies DcmAuthenticationState mode declaration group</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dcm_SetDeauthenticatedRole().</p>
       </section>
 
       <section class="snip-card">
@@ -104,7 +180,7 @@ power-on/power off sequence is performed. To</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=68" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -116,15 +192,15 @@ power-on/power off sequence is performed. To</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_91067" class="swsref internal-spec-ref"><code>SWS_Dcm_91067</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dcm_91069" class="swsref internal-spec-ref"><code>SWS_Dcm_91069</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_3_4_5_J1939_Networkmanagement</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_ModeManagementGuide.pdf</strong> (Seite 45)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></strong> (Seite 45)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Rm_00116" class="swsref internal-spec-ref"><code>SWS_J1939Rm_00116</code></a></span>
         </div>
@@ -90,7 +91,38 @@ I-PDUs for each network.
 The PduR shall be configured in the same way, having
 RoutingPathGroups for all locally received and transmitted IPDUs for each channel,
 excluding the received I-PDU for the Request message forwarded to the J1939Rm.
-The BswM must then be configured to switch on and off the aforemention</div></section>
+The BswM must then be configured to switch on and off the aforementioned IPDU
+groups and PduRRoutingPathGroups depending on the reported NM states, as well as
+general request handling of the J1939 Request Manager. The following rule shows the
+actions of the BswM depending on the NM states.
+rule J1939_nm_normal_operation initially false {
+if ( J1939NmState == NM_STATE_NORMAL_OPERATION ) {
+actionlist J1939NormalOperationActions
+}
+}
+actions J1939NormalOperationActions on condition {
+PduGroupSwitch {
+init true
+enable ArMmExample.EcuC.MyCom.J1939IPDUS
+}
+PduRoute enable J1939_RoutingPath
+custom "J1939Rm_SetState(J1939RM_STATE_ONLINE)"
+custom "Xcp_SetTransmissionMode(CHANNEL1,XCP_TX_ON)"
+}
+rule J1939_nm_offline initially false {
+if ( J1939NmState != NM_STATE_NORMAL_OPERATION ) {
+actionlist J1939OfflineActions
+}
+}
+actions J1939OfflineActions on condition {
+PduGroupSwitch {
+disable ArMmExample.EcuC.MyCom.J1939IPDUS
+}
+PduRoute disable J1939_RoutingPath
+custom " J1939Rm_SetState(J1939RM_STATE_OFFLINE)"
+custom "Xcp_SetTransmissionMode(CHANNEL1,XCP_TX_OFF)"
+}
+Listing 3.27: Rule to implement network management according to J1939</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +135,7 @@ The BswM must then be configured to switch on and off the aforemention</div></se
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_ModeManagementGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

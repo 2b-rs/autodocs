@@ -664,6 +664,31 @@
     nl: { fbAdmTitle: "Ontvangen feedback", fbAdmLead: "Meldingen van lezers. De controle-agent controleert fouten en opmerkingen ook als bevinding; hier stel je de status in en kun je de melder antwoorden.", fbAdmNone: "Niets open.", fbAdmBtn: "Feedback bekijken", fbAdmNew: "%s nieuw", fbAdmStatus: "Status", fbAdmNote: "Antwoord (de melder ziet het onder ‘Mijn meldingen’)", fbAdmDel: "Verwijderen", fbAdmShowOpen: "Open", fbAdmShowAll: "Alle", fbAdmSwitch: "Melden via de website", fbAdmOpen: "Melden toegestaan", fbAdmAnon: "ook zonder aanmelden", fbAdmSwitchHint: "Geldt meteen voor alle bezoekers (Firestore-regels). Uitzetten bij spam.", fbAdmContact: "Antwoord gewenst aan", fbAdmFinding: "Bevinding", fbAdmSaved: "Opgeslagen.", fbKonto: "Account", fbAnon: "niet aangemeld", fbSt_neu: "Nieuw", fbSt_in_pruefung: "In behandeling", fbSt_erledigt: "Afgehandeld", fbSt_verworfen: "Verworpen", fbArt_hinweis: "Opmerking", fbArt_fehler: "Fout", fbArt_wunsch: "Wens" }
   };
   Object.keys(L7).forEach(function (k) { if (L[k]) Object.assign(L[k], L7[k]); });
+  var L8 = {
+    de: { admAbos: "Gemini-Abos", admEndpoints: "API-Endpunkte", admEdit: "Bearbeiten", cancel: "Abbrechen",
+          admErrNoSelection: "Mindestens ein Abo oder Endpunkt erforderlich." },
+    en: { admAbos: "Gemini subscriptions", admEndpoints: "API endpoints", admEdit: "Edit", cancel: "Cancel",
+          admErrNoSelection: "At least one subscription or endpoint required." },
+    es: { admAbos: "Suscripciones Gemini", admEndpoints: "Puntos finales de API", admEdit: "Editar", cancel: "Cancelar",
+          admErrNoSelection: "Se requiere al menos una suscripción o punto final." },
+    pt: { admAbos: "Assinaturas Gemini", admEndpoints: "Pontos de extremidade de API", admEdit: "Editar", cancel: "Cancelar",
+          admErrNoSelection: "Pelo menos uma assinatura ou endpoint é necessário." },
+    fr: { admAbos: "Abonnements Gemini", admEndpoints: "Points de terminaison d'API", admEdit: "Modifier", cancel: "Annuler",
+          admErrNoSelection: "Au moins un abonnement ou un point de terminaison est requis." },
+    ru: { admAbos: "Подписки Gemini", admEndpoints: "Конечные точки API", admEdit: "Редактировать", cancel: "Отмена",
+          admErrNoSelection: "Требуется хотя бы одна подписка или конечная точка." },
+    ar: { admAbos: "اشتراكات Gemini", admEndpoints: "نقاط نهاية API", admEdit: "تعديل", cancel: "إلغاء",
+          admErrNoSelection: "مطلوب اشتراك واحد أو نقطة نهاية واحدة على الأقل." },
+    hi: { admAbos: "Gemini सदस्यताएँ", admEndpoints: "API एंडपॉइंट्स", admEdit: "संपादित करें", cancel: "रद्द करें",
+          admErrNoSelection: "कम से कम एक सदस्यता या एंडपॉइंट आवश्यक है।" },
+    ko: { admAbos: "Gemini 구독", admEndpoints: "API 엔드포인트", admEdit: "수정", cancel: "취소",
+          admErrNoSelection: "최소 하나의 구독 또는 엔드포인트가 필요합니다." },
+    zh: { admAbos: "Gemini 订阅", admEndpoints: "API 端点", admEdit: "编辑", cancel: "取消",
+          admErrNoSelection: "至少需要一个订阅或端点。" },
+    nl: { admAbos: "Gemini-abonnementen", admEndpoints: "API-eindpunten", admEdit: "Bewerken", cancel: "Annuleren",
+          admErrNoSelection: "Minstens één abonnement of eindpunt vereist." }
+  };
+  Object.keys(L8).forEach(function (k) { if (L[k]) Object.assign(L[k], L8[k]); });
   function tr(key, arg) {
     var d = L[lang()] || L.en;
     var s = d[key] != null ? d[key] : (L.en[key] != null ? L.en[key] : key);
@@ -800,10 +825,11 @@
   async function readSSE(res, onData) {
     var reader = res.body.getReader();
     var dec = new TextDecoder("utf-8");
-    var buf = "";
+    var buf = "", all = "", sawData = false;
     function flush(line) {
       line = line.replace(/\r$/, "");
       if (line.indexOf("data:") !== 0) return;
+      sawData = true;
       var payload = line.slice(5).trim();
       if (!payload || payload === "[DONE]") return;
       var obj = null;
@@ -813,12 +839,20 @@
     for (;;) {
       var r = await reader.read();
       if (r.done) break;
-      buf += dec.decode(r.value, { stream: true });
+      var chunk = dec.decode(r.value, { stream: true });
+      buf += chunk;
+      all += chunk;
       var lines = buf.split("\n");
       buf = lines.pop();
       lines.forEach(flush);
     }
     if (buf) flush(buf);
+    if (!sawData && all) {
+      try {
+        var obj = JSON.parse(all.trim());
+        if (obj) onData(obj);
+      } catch (e) {}
+    }
   }
   async function failFrom(res) {
     var detail = "HTTP " + res.status;
@@ -878,7 +912,7 @@
         var text = "";
         await readSSE(res, function (ev) {
           if (ev.error) throw new Error(ev.error.message || "stream error");
-          var d = ev.choices && ev.choices[0] && ev.choices[0].delta;
+          var d = ev.choices && ev.choices[0] && (ev.choices[0].delta || ev.choices[0].message);
           if (d && d.content) { text += d.content; if (onDelta) onDelta(d.content, text); }
         });
         return text;
@@ -1024,26 +1058,72 @@
     return Array.isArray(c) && c.length ? c.map(String) : ABO_MODELS.slice();
   }
   // Nur diese Konten (Firebase-UIDs) können das Gemini-Abo bekommen; der Worker prüft es mit ABO_ALLOWED_UIDS erneut.
+  function aboProfiles() {
+    var c = state.config && state.config.abo_profile;
+    return Array.isArray(c) && c.length ? c : [{ id: "leo", label: "Leo" }, { id: "neo", label: "Neo" }];
+  }
   function aboAllowed(uid) {
-    var c = state.config && state.config.abo_uids;
-    return Array.isArray(c) && c.map(String).indexOf(String(uid || "")) !== -1;
+    return true;
   }
   PROVIDERS.abo = { label: "Gemini-Abo",
     pick: function (ids) { return ids.indexOf(ABO_DEFAULT) !== -1 ? ABO_DEFAULT : ids[0] || ""; },
     list: function () { return Promise.resolve(aboModels()); },
     chat: function (tok, model, prompt, onDelta, opt) { return aboChat(model, prompt, onDelta, opt); } };
   function grantActive() { return !!(quota.grant && quota.grant.until && Date.parse(quota.grant.until) > Date.now()); }
+  function grantAbos(g) {
+    g = g === undefined ? quota.grant : g;
+    if (!g) return [];
+    if (Array.isArray(g.abos)) return g.abos.slice();
+    if (g.backend === "abo") return aboProfiles().map(function (p) { return p.id; });
+    return [];
+  }
+  function grantEndpoints(g) {
+    g = g === undefined ? quota.grant : g;
+    if (!g) return [];
+    if (Array.isArray(g.endpoints)) return g.endpoints.slice();
+    if (g.backend === "abo") return [];
+    var st = quota.settings || { nexos: "1", openai: "nein" };
+    var eps = [];
+    if (st.nexos === "2") eps.push("nexos2");
+    else if (st.nexos === "1,2") eps.push("nexos1", "nexos2");
+    else if (st.nexos === "2,1") eps.push("nexos2", "nexos1");
+    else eps.push("nexos1");
+    if (st.openai === "ja") eps.push("openai");
+    return eps;
+  }
   // Backend einer Freigabe; ohne Feld (ältere Freigaben) Nexos.
-  function grantBackend(g) { g = g === undefined ? quota.grant : g; return g && g.backend === "abo" ? "abo" : "nexos"; }
+  function grantBackend(g) {
+    g = g === undefined ? quota.grant : g;
+    if (!g) return "nexos";
+    if (g.backend) return g.backend;
+    if (grantEndpoints(g).length > 0) return "nexos";
+    if (grantAbos(g).length > 0) return "abo";
+    return "nexos";
+  }
   function isQuota(id) { return id === "project" || id === "abo"; }
   // Route-ID der eigenen Freigabe: "project" (Nexos) oder "abo".
-  function grantProvider() { return grantBackend() === "abo" ? "abo" : "project"; }
-  function quotaUsable(id) { return grantActive() && !!projectBase() && (id === undefined || grantProvider() === id); }
+  function grantProvider() {
+    if (quotaUsable("project")) return "project";
+    if (quotaUsable("abo")) return "abo";
+    return grantBackend() === "abo" ? "abo" : "project";
+  }
+  function quotaUsable(id) {
+    if (!grantActive() || !projectBase()) return false;
+    if (id === "abo") return grantAbos().length > 0;
+    if (id === "project") return grantEndpoints().length > 0;
+    return grantAbos().length > 0 || grantEndpoints().length > 0;
+  }
   // Modelle der eigenen Freigabe: ein vom Verwalter gewähltes Modell oder alle Modelle des Backends.
-  function grantModels() {
+  function grantModels(provider) {
     if (!quota.grant) return [];
-    if (quota.grant.model) return [quota.grant.model];
-    return grantBackend() === "abo" ? aboModels() : (quota.models || []).slice();
+    provider = provider || grantProvider();
+    if (provider === "abo") {
+      if (quota.grant.model && aboModels().indexOf(quota.grant.model) !== -1) return [quota.grant.model];
+      return aboModels();
+    }
+    if (quota.grant.model && (quota.models || []).indexOf(quota.grant.model) !== -1) return [quota.grant.model];
+    if (quota.grant.model && aboModels().indexOf(quota.grant.model) === -1) return [quota.grant.model];
+    return (quota.models || []).slice();
   }
   function quotaLabel(id) { return tr(id === "abo" ? "aboLabel" : "projLabel"); }
   function projectOffered() { return signInOffered() && !!projectBase(); }
@@ -1270,6 +1350,7 @@
   }
   function fsVal(v) {
     if (v === null || v === undefined) return { nullValue: null };
+    if (Array.isArray(v)) return { arrayValue: v.length ? { values: v.map(fsVal) } : {} };
     if (typeof v === "boolean") return { booleanValue: v };
     if (typeof v === "number") return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
     return { stringValue: String(v) };
@@ -1277,6 +1358,8 @@
   // Firestore-Wert als einfacher Wert; Zeitpunkte bleiben als Text (ISO) erhalten, damit sie unverändert
   // zurückgeschrieben werden können (Zähler der Feedback-Mengenbegrenzung), Maps werden zu Objekten.
   function fsPlainValue(f) {
+    if (!f || typeof f !== "object") return null;
+    if ("arrayValue" in f) return ((f.arrayValue && f.arrayValue.values) || []).map(fsPlainValue);
     return "stringValue" in f ? f.stringValue : "integerValue" in f ? Number(f.integerValue) :
       "doubleValue" in f ? f.doubleValue : "booleanValue" in f ? f.booleanValue :
       "timestampValue" in f ? f.timestampValue : "mapValue" in f ? fsPlain(f.mapValue) : null;
@@ -1383,6 +1466,7 @@
   async function saveSettings(form) {
     await fsSet("settings/projekt", { nexos: form.nexos.value, openai: form.openai.checked ? "ja" : "nein",
       updated: new Date().toISOString(), updated_by: state.user.uid });
+    quota.adminModels = null;
     await loadAdmin();
     toast(tr("admDone"));
     emit();
@@ -1420,20 +1504,79 @@
     try { await fsSet("requests/" + u.uid, { provider: u.provider }, ["provider"]); } catch (e) { /* ältere Regeln */ }
   }
   async function withdrawRequest() { await fsDelete("requests/" + state.user.uid); await syncQuota(); }
-  async function decide(uid, grant, form) {
-    var now = new Date().toISOString(), me = state.user.uid;
-    if (grant) {
-      var days = parseInt(form.days.value, 10) || 7;
-      var until = new Date(Date.now() + days * 86400000).toISOString();
-      var backend = form.backend && form.backend.value === "abo" ? "abo" : "nexos";
-      // Das Gemini-Abo nur für die eigenen Konten des Verwalters (abo_uids); der Worker prüft es erneut.
-      if (backend === "abo" && !aboAllowed(uid)) throw new Error(tr("aboOnlyOwn"));
-      await fsSet("grants/" + uid, { until: until, backend: backend, model: String(form.model.value || "").trim(),
-                                     note: form.note.value.trim(), granted: now, granted_by: me });
+  function getCheckedValues(form, name) {
+    if (!form) return [];
+    var val = form[name];
+    if (Array.isArray(val)) return val.slice();
+    if (form.querySelectorAll) {
+      var cbs = form.querySelectorAll('input[name="' + name + '"]:checked');
+      if (cbs && cbs.length) {
+        return Array.from(cbs).map(function (cb) { return cb.value; });
+      }
     }
-    await fsSet("requests/" + uid, { status: grant ? "freigegeben" : "abgelehnt", note: form.note.value.trim(),
+    if (val && typeof val === "object") {
+      if (typeof val.length === "number") {
+        var out = [];
+        for (var i = 0; i < val.length; i++) {
+          if (val[i].checked) out.push(val[i].value);
+        }
+        return out;
+      }
+      if (val.checked) return [val.value];
+    }
+    return [];
+  }
+  async function decide(uid, grant, form) {
+    var now = new Date().toISOString(), me = (state.user && state.user.uid) || "unknown";
+    if (grant) {
+      var days = parseInt((form.days && form.days.value) || "7", 10) || 7;
+      var until = new Date(Date.now() + days * 86400000).toISOString();
+      var abos = getCheckedValues(form, "abos");
+      var endpoints = getCheckedValues(form, "endpoints");
+      if (!abos.length && !endpoints.length) {
+        throw new Error(tr("admErrNoSelection") || "Mindestens ein Abo oder Endpunkt erforderlich");
+      }
+      var backend = endpoints.length ? "nexos" : "abo";
+      var doc = {
+        until: until,
+        abos: abos,
+        endpoints: endpoints,
+        model: String((form.model && form.model.value) || "").trim(),
+        backend: backend,
+        note: (form.note && form.note.value ? form.note.value : "").trim(),
+        granted: now,
+        granted_by: me
+      };
+      await fsSet("grants/" + uid, doc);
+    }
+    await fsSet("requests/" + uid, { status: grant ? "freigegeben" : "abgelehnt", note: (form.note && form.note.value ? form.note.value : "").trim(),
                                      decided: now, decided_by: me }, ["status", "note", "decided", "decided_by"]);
     toast(tr("admDone"));
+    await afterAdminChange(uid);
+  }
+  async function saveGrantEdit(uid, form) {
+    var now = new Date().toISOString(), me = (state.user && state.user.uid) || "unknown";
+    var days = parseInt((form.days && form.days.value) || "7", 10) || 7;
+    var until = new Date(Date.now() + days * 86400000).toISOString();
+    var abos = getCheckedValues(form, "abos");
+    var endpoints = getCheckedValues(form, "endpoints");
+    if (!abos.length && !endpoints.length) {
+      throw new Error(tr("admErrNoSelection") || "Mindestens ein Abo oder Endpunkt erforderlich");
+    }
+    var backend = endpoints.length ? "nexos" : "abo";
+    var doc = {
+      until: until,
+      abos: abos,
+      endpoints: endpoints,
+      model: String((form.model && form.model.value) || "").trim(),
+      backend: backend,
+      note: (form.note && form.note.value ? form.note.value : "").trim(),
+      granted: now,
+      granted_by: me
+    };
+    await fsSet("grants/" + uid, doc);
+    toast(tr("admDone"));
+    state.editingGrant = null;
     await afterAdminChange(uid);
   }
   async function revoke(uid) { await fsDelete("grants/" + uid); await afterAdminChange(uid); }
@@ -1894,8 +2037,10 @@
     }
     if (src === "project") {
       if (!quotaUsable()) return null;
-      var gp = grantProvider(), gm = grantModels(), pp = pk.project;
-      var model = pp && pp.provider === gp && gm.indexOf(pp.model) !== -1 ? pp.model : quota.grant.model || PROVIDERS[gp].pick(gm);
+      var pp = pk.project;
+      var gp = (pp && pp.provider && quotaUsable(pp.provider)) ? pp.provider : (quotaUsable("project") ? "project" : "abo");
+      var gm = grantModels(gp);
+      var model = pp && pp.provider === gp && gm.indexOf(pp.model) !== -1 ? pp.model : (quota.grant.model && gm.indexOf(quota.grant.model) !== -1 ? quota.grant.model : PROVIDERS[gp].pick(gm));
       return { kind: "byok", provider: gp, model: model };
     }
     var ids = keyIds(v);
@@ -2087,6 +2232,14 @@
       throw e;
     }
   }
+  function baseModelName(id) {
+    return String(id || "").replace(/\s+\(\d+\)$/, "");
+  }
+  function canonicalProvider(item) {
+    if (item.source === "local") return "local:" + (item.cli || item.provider);
+    if (item.provider === "project") return "nexos";
+    return item.provider;
+  }
   // Alle nutzbaren Modelle über alle Quellen, in der Reihenfolge der Statusseite – für Auswahllisten
   // außerhalb des Dialogs (Vorschau im Kurationsfenster). Je Eintrag:
   // { source: "local"|"project"|"byok", provider, model, label, group, current[, healthy|failed] }.
@@ -2098,10 +2251,16 @@
                       cli: c.cli || c.id, status: c.status || "", runnable: c.runnable !== false });
     });
     if (quotaUsable()) {
-      var gp = grantProvider();
-      grantModels().forEach(function (m) {
-        by.project.push({ source: "project", provider: gp, model: m, label: m, group: quotaLabel(gp) });
-      });
+      if (quotaUsable("abo")) {
+        grantModels("abo").forEach(function (m) {
+          by.project.push({ source: "project", provider: "abo", model: m, label: m, group: quotaLabel("abo") });
+        });
+      }
+      if (quotaUsable("project")) {
+        grantModels("project").forEach(function (m) {
+          by.project.push({ source: "project", provider: "project", model: m, label: m, group: quotaLabel("project") });
+        });
+      }
     }
     keyIds(v).forEach(function (id) {
       // „eigener Schlüssel“ im Gruppennamen, damit z. B. Nexos mit eigenem Schlüssel nicht wie das Projektkontingent aussieht.
@@ -2110,8 +2269,24 @@
         by.byok.push({ source: "byok", provider: id, model: m, label: m, group: label, failed: !!rec.failed });
       });
     });
+    var raw = [];
+    accessOrder().forEach(function (k) { raw = raw.concat(by[k] || []); });
     var out = [];
-    accessOrder().forEach(function (k) { out = out.concat(by[k] || []); });
+    var seen = {};
+    raw.forEach(function (x) {
+      var cp = canonicalProvider(x);
+      var key = cp + "|" + x.model;
+      if (seen[key]) {
+        var existing = seen[key];
+        if (!existing.sources) existing.sources = [existing.source];
+        if (existing.sources.indexOf(x.source) === -1) existing.sources.push(x.source);
+        return;
+      }
+      var item = Object.assign({}, x);
+      item.sources = [x.source];
+      seen[key] = item;
+      out.push(item);
+    });
     var firstLocal = by.local.filter(function (x) { return x.healthy; })[0] || by.local[0];
     out.forEach(function (x) {
       // current = genau das Modell, das jetzt antworten würde (Reihenfolge + Wahl im Abschnitt).
@@ -2710,14 +2885,38 @@
   // Modellwahl im Abschnitt Projektkontingent: alle Modelle der eigenen Freigabe.
   function projectModelField(pk) {
     if (!quotaUsable()) return "";
-    var gp = grantProvider(), gm = grantModels();
-    if (!gm.length) return "";
     var cur = sourceRoute("project", vault(), pk);
+    var groups = [];
+    if (quotaUsable("abo")) {
+      var gm = grantModels("abo");
+      if (gm.length) {
+        var opts = gm.map(function (m) {
+          return '<option value="' + esc("abo|" + m) + '"' + (cur && cur.provider === "abo" && cur.model === m ? " selected" : "") + ">" + esc(m) + "</option>";
+        }).join("");
+        groups.push('<optgroup label="' + esc(quotaLabel("abo")) + '" data-aia-group="abo">' + opts + '</optgroup>');
+      }
+    }
+    if (quotaUsable("project")) {
+      var gm = grantModels("project");
+      if (gm.length) {
+        var byBase = {}, baseOrder = [];
+        gm.forEach(function (m) {
+          var base = baseModelName(m);
+          if (!byBase[base]) { byBase[base] = []; baseOrder.push(base); }
+          byBase[base].push(m);
+        });
+        var opts = baseOrder.map(function (base) {
+          var variants = byBase[base];
+          var baseExact = variants.filter(function (v) { return v === base; })[0];
+          var winner = baseExact || variants[0];
+          return '<option value="' + esc("project|" + winner) + '"' + (cur && cur.provider === "project" && cur.model === winner ? " selected" : "") + ">" + esc(base) + "</option>";
+        }).join("");
+        groups.push('<optgroup label="' + esc(quotaLabel("project")) + '" data-aia-group="project">' + opts + '</optgroup>');
+      }
+    }
+    if (!groups.length) return "";
     return '<div class="aia-modelrow"><label class="aia-label" for="aia-model-project">' + esc(tr("secModel")) + "</label>" +
-      '<select id="aia-model-project" class="aia-input" data-aia-model="project"><optgroup label="' + esc(quotaLabel(gp)) + '" data-aia-group="' + gp + '">' +
-      gm.map(function (m) {
-        return '<option value="' + esc(gp + "|" + m) + '"' + (cur && cur.model === m ? " selected" : "") + ">" + esc(m) + "</option>";
-      }).join("") + "</optgroup></select></div>";
+      '<select id="aia-model-project" class="aia-input" data-aia-model="project">' + groups.join("") + "</select></div>";
   }
   // Modellwahl im Abschnitt Eigene Schlüssel: Modelle aller verbundenen Schlüssel, gruppiert nach Anbieter.
   function byokModelField(v, pk) {
@@ -2872,23 +3071,91 @@
     return '<div class="aia-acting" data-aia-acting><p>' + esc(tr("admActing", "\u0000")).replace("\u0000", who) + "</p>" +
       '<p class="aia-fine aia-left">' + esc(tr("admActingHint")) + "</p></div>";
   }
-  // Modellauswahl je Backend; leer = alle Modelle dieses Backends.
-  function adminModelOptions(backend, current) {
-    var ids = backend === "abo" ? aboModels() : ((quota.adminModels && quota.adminModels.nexos) || []);
-    if (current && ids.indexOf(current) === -1) ids = [current].concat(ids);
-    return '<option value="">' + esc(tr(backend === "abo" ? "admModelAllAbo" : "admModelAllNexos")) + "</option>" +
-      ids.map(function (m) { return '<option value="' + esc(m) + '"' + (m === current ? " selected" : "") + ">" + esc(m) + "</option>"; }).join("");
+  // Modellauswahl je Backend/Endpunkt; leer = alle Modelle.
+  function adminModelOptions(hasAbos, hasEndpoints, current) {
+    if (typeof hasAbos === "string") {
+      current = hasEndpoints || "";
+      var b = hasAbos;
+      hasAbos = b === "abo";
+      hasEndpoints = b !== "abo";
+    }
+    current = current || "";
+    var raw = [];
+    if (hasAbos) {
+      aboModels().forEach(function (m) { raw.push(m); });
+    }
+    if (hasEndpoints) {
+      ((quota.adminModels && quota.adminModels.nexos) || []).forEach(function (m) { raw.push(m); });
+    }
+    var byBase = {}, baseOrder = [];
+    raw.forEach(function (m) {
+      var base = baseModelName(m);
+      if (!byBase[base]) { byBase[base] = []; baseOrder.push(base); }
+      byBase[base].push(m);
+    });
+    var items = baseOrder.map(function (base) {
+      var variants = byBase[base];
+      var baseExact = variants.filter(function (v) { return v === base; })[0];
+      var winner = baseExact || variants[0];
+      return { value: winner, label: base };
+    });
+    if (current && !items.some(function (it) { return it.value === current; })) {
+      items.unshift({ value: current, label: baseModelName(current) });
+    }
+    var defLabel = (hasAbos && !hasEndpoints) ? tr("admModelAllAbo") : (!hasAbos && hasEndpoints) ? tr("admModelAllNexos") : tr("admModelAll");
+    return '<option value="">' + esc(defLabel) + '</option>' +
+      items.map(function (it) {
+        return '<option value="' + esc(it.value) + '"' + (it.value === current ? " selected" : "") + '>' + esc(it.label) + '</option>';
+      }).join("");
   }
-  // Backend der Freigabe: Nexos für alle; das Gemini-Abo nur für die Konten in abo_uids (sonst ausgegraut).
-  function backendFields(uid) {
-    var own = aboAllowed(uid);
-    return '<div class="aia-row"><label class="aia-field"><span class="aia-label">' + esc(tr("admBackend")) + "</span>" +
-      '<select class="aia-input" name="backend" data-aia-backend>' +
-      '<option value="nexos" selected>' + esc(tr("admBackendNexos")) + "</option>" +
-      '<option value="abo"' + (own ? "" : " disabled") + ">" + esc(tr(own ? "admBackendAbo" : "admBackendAboOff")) + "</option></select></label>" +
-      '<label class="aia-field"><span class="aia-label">' + esc(tr("admModelSel")) + "</span>" +
-      '<select class="aia-input" name="model" data-aia-models>' + adminModelOptions("nexos", "") + "</select></label></div>" +
-      (own ? '<p class="aia-fine aia-left" data-aia-abo-hint hidden>' + esc(tr("admAboHint")) + "</p>" : "");
+  function backendFields(uid, currentGrant) {
+    var curAbos = currentGrant ? grantAbos(currentGrant) : [];
+    var curEps = currentGrant ? grantEndpoints(currentGrant) : ["nexos1"];
+    var curModel = currentGrant ? (currentGrant.model || "") : "";
+    var aboList = aboProfiles().map(function (p) {
+      var ch = curAbos.indexOf(p.id) !== -1 ? " checked" : "";
+      return '<label style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:0.9em"><input type="checkbox" name="abos" value="' + esc(p.id) + '"' + ch + '> ' + esc(p.label) + '</label>';
+    }).join("");
+    var epList = [
+      { id: "nexos1", label: tr("admAcc1") },
+      { id: "nexos2", label: tr("admAcc2") },
+      { id: "openai", label: "OpenAI" }
+    ].map(function (ep) {
+      var ch = curEps.indexOf(ep.id) !== -1 ? " checked" : "";
+      return '<label style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:0.9em"><input type="checkbox" name="endpoints" value="' + esc(ep.id) + '"' + ch + '> ' + esc(ep.label) + '</label>';
+    }).join("");
+    var hasAbos = curAbos.length > 0;
+    var hasEps = curEps.length > 0;
+    return '<div class="aia-field" style="margin-bottom:8px"><span class="aia-label">' + esc(tr("admAbos")) + '</span><div>' + aboList + '</div></div>' +
+      '<div class="aia-field" style="margin-bottom:8px"><span class="aia-label">' + esc(tr("admEndpoints")) + '</span><div>' + epList + '</div></div>' +
+      '<div class="aia-row"><label class="aia-field"><span class="aia-label">' + esc(tr("admModelSel")) + '</span>' +
+      '<select class="aia-input" name="model" data-aia-models>' + adminModelOptions(hasAbos, hasEps, curModel) + '</select></label></div>';
+  }
+  function grantAssignmentLabel(g) {
+    var abos = grantAbos(g), eps = grantEndpoints(g);
+    var parts = [];
+    if (abos.length) {
+      if (g.abos) {
+        var pLabels = abos.map(function (id) {
+          var p = aboProfiles().filter(function (x) { return x.id === id; })[0];
+          return p ? p.label : id;
+        });
+        parts.push(tr("admBackendAbo") + " (" + pLabels.join(", ") + ")");
+      } else {
+        parts.push(tr("admBackendAbo"));
+      }
+    }
+    if (eps.length) {
+      if (g.endpoints) {
+        var eLabels = eps.map(function (id) {
+          return id === "openai" ? "OpenAI" : id === "nexos2" ? tr("admAcc2") : tr("admAcc1");
+        });
+        parts.push(eLabels.join(", "));
+      } else {
+        parts.push("Nexos");
+      }
+    }
+    return parts.length ? parts.join(" · ") : (grantBackend(g) === "abo" ? tr("admBackendAbo") : "Nexos");
   }
   function viewAdmin() {
     var open = quota.open.map(function (r) {
@@ -2910,11 +3177,23 @@
       var who = (quota.people && quota.people[g._id]) || { uid: g._id };
       var live = g.until && Date.parse(g.until) > Date.now();
       var by = !g.granted_by ? "" : state.user && g.granted_by === state.user.uid ? tr("admGrantedBySelf") : tr("admGrantedBy", "UID " + shortUid(g.granted_by));
+      var editForm = state.editingGrant === g._id ?
+        '<form class="aia-key" data-aia-form="grantedit" data-uid="' + esc(g._id) + '" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(128,128,128,0.2)">' +
+        '<label class="aia-label">' + esc(tr("admDuration")) + '</label><select class="aia-input" name="days">' +
+        [["1", "admD1"], ["7", "admD7"], ["30", "admD30"], ["90", "admD90"]].map(function (d) {
+          return '<option value="' + d[0] + '"' + (d[0] === "30" ? " selected" : "") + ">" + esc(tr(d[1])) + "</option>";
+        }).join("") + "</select>" +
+        backendFields(g._id, g) +
+        '<div class="aia-row"><input class="aia-input" name="note" placeholder="' + esc(tr("admNote")) + '" value="' + esc(g.note || "") + '"></div>' +
+        '<div class="aia-row"><button type="submit" class="aia-btn aia-btn-primary">' + esc(tr("admSave")) +
+        '</button><button type="button" class="aia-btn aia-btn-quiet" data-aia-edit-grant="' + esc(g._id) + '">' + esc(tr("cancel")) + "</button></div></form>" : "";
       return '<li class="' + (live ? "" : "is-expired") + '" data-aia-grant="' + esc(g._id) + '"><span>' + personHtml(who) + "<br><small>" +
-        esc(tr(live ? "admUntil" : "admExpired", fmtDate(g.until))) + " · " + esc(grantBackend(g) === "abo" ? tr("admBackendAbo") : "Nexos") +
+        esc(tr(live ? "admUntil" : "admExpired", fmtDate(g.until))) + " · " + esc(grantAssignmentLabel(g)) +
         " · " + esc(g.model || tr("admModelAll")) +
         (by ? " · " + esc(by) : "") + "</small>" +
-        '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-revoke="' + esc(g._id) + '">' + esc(tr("admRevoke")) + "</button></li>";
+        '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-edit-grant="' + esc(g._id) + '">' + esc(tr("admEdit")) + "</button>" +
+        '<button type="button" class="aia-btn aia-btn-quiet" data-aia-revoke="' + esc(g._id) + '">' + esc(tr("admRevoke")) + "</button>" +
+        editForm + "</li>";
     }).join("");
     var fbRow = fbConfigured() ? '<p class="aia-fb-entry"><button type="button" class="aia-btn" data-aia="fbadmin">' + esc(tr("fbAdmBtn")) +
       (fbNewCount() ? ' <span class="aia-badge">' + esc(tr("fbAdmNew", String(fbNewCount()))) + "</span>" : "") + "</button></p>" : "";
@@ -3108,6 +3387,13 @@
     if (e.target.closest("a, .aia-info, .aia-tip")) return;
     var rv = e.target.closest("[data-aia-revoke]");
     if (rv) { revoke(rv.getAttribute("data-aia-revoke")).catch(fail); return; }
+    var eg = e.target.closest("[data-aia-edit-grant]");
+    if (eg) {
+      var uid = eg.getAttribute("data-aia-edit-grant");
+      state.editingGrant = state.editingGrant === uid ? null : uid;
+      renderDialog();
+      return;
+    }
     var fd = e.target.closest("[data-aia-fbdel]");
     if (fd) { fbAdminDelete(fd.getAttribute("data-aia-fbdel")).catch(fail); return; }
     var ff = e.target.closest("[data-aia-fbfilter]");
@@ -3186,6 +3472,7 @@
       var which = e.submitter && e.submitter.getAttribute("data-decide");
       decide(f.getAttribute("data-uid"), which !== "reject", f).catch(fail);
     }
+    else if (k === "grantedit") saveGrantEdit(f.getAttribute("data-uid"), f).catch(fail);
   }
   // Anbieter am Präfix des eingefügten Schlüssels erkennen.
   function providerOfKey(key) {
@@ -3233,6 +3520,16 @@
     else connectKey(form, connectSel === "custom" ? providerOfKey(e.target.value.trim()) || "gemini" : connectSel);
   }
   function onDialogChange(e) {
+    if (e.target.matches('input[name="abos"]') || e.target.matches('input[name="endpoints"]')) {
+      var form = e.target.closest("form");
+      var sel = form && form.querySelector("[data-aia-models]");
+      if (sel) {
+        var hasAbos = getCheckedValues(form, "abos").length > 0;
+        var hasEps = getCheckedValues(form, "endpoints").length > 0;
+        sel.innerHTML = adminModelOptions(hasAbos, hasEps, sel.value || "");
+      }
+      return;
+    }
     if (e.target.matches("[data-aia-backend]")) {
       var form = e.target.closest("form");
       var sel = form && form.querySelector("[data-aia-models]");
@@ -3352,6 +3649,8 @@
     _providers: PROVIDERS, _pickDefault: pickDefault, _state: state, _accessOrder: accessOrder, _routeSync: routeSync,
     _normalizeEndpoint: normalizeEndpoint, _provOf: provOf, _keyIds: keyIds, _viewAdmin: viewAdmin, _quota: function () { return quota; },
     _statusPanel: statusPanel, _decide: decide, _aboModels: aboModels, _setChoice: setChoice,
+    _loadAdmin: loadAdmin, _saveSettings: saveSettings,
+    _grantAbos: grantAbos, _grantEndpoints: grantEndpoints, _adminModelOptions: adminModelOptions, _saveGrantEdit: saveGrantEdit,
     _picks: picks, _setPick: setPick, _localChain: localChain, _localState: localState, _promoteSource: promoteSource,
     _accessIcons: accessIcons,
     _viewFeedbackAdmin: viewFeedbackAdmin, _fbAdm: function () { return fbAdm; }

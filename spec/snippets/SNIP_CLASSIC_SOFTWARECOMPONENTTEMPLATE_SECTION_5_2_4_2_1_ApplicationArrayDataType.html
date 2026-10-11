@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -106,7 +107,153 @@ Element
 1
 aggr This association implements the concept of an
 array element. That is, in some cases it is
-necessary to be able to identify sin</div></section>
+necessary to be able to identify single array
+elements, e.g. as input values for an interpolation
+routine.
+Table 5.12: ApplicationArrayDataType
+Class
+ApplicationArrayElement
+Package
+M2::AUTOSARTemplates::SWComponentTemplate::Datatype::DataPrototypes
+Note
+Describes the properties of the elements of an application array data type.
+Base
+ARObject,ApplicationCompositeElementDataPrototype,AtpFeature,Atp
+Prototype,DataPrototype,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul. Kind Note
+arraySizeH
+andling
+ArraySizeHandli
+ngEnum
+0..1
+attr
+The way how the size of the array is handled.
+arraySizeS
+emantics
+ArraySizeSema
+nticsEnum
+0..1
+attr
+This attribute controls how the information about
+the array size shall be interpreted.
+maxNumb
+erOfEleme
+nts
+PositiveInteger
+1
+attr
+The maximum number of elements that the array
+can contain.
+Stereotypes: atpVariation
+Tags: vh.latestBindingTime=preCompileTime
+Table 5.13: ApplicationArrayElement
+Please note that the information about the number of elements of a speciﬁc Appli-
+cationArrayDataType is not absolute but allows for further interpretation.
+[TPS_SWCT_01076] Number of elements of a speciﬁc ApplicationArray-
+DataType might vary at run-time ⌈That is, there are cases where the number of
+elements of a speciﬁc ApplicationArrayDataType might vary at run-time.
+To be precise, the number of elements might vary between 0 and the value denoted by
+maxNumberOfElements.
+For this purpose an additional attribute arraySizeSemantics is available that can
+be used to clarify the meaning of maxNumberOfElements.
+Software Component Template
+For clariﬁcation, it might indeed happen that the actual number of elements in a speciﬁc
+ApplicationArrayDataType yields 0 simply because the respective DataProto-
+type is part of a higher-level protocol where under certain circumstances the Dat-
+aPrototype of ApplicationArrayDataType is simply not required for expressing
+a given semantics. ⌋(RS_SWCT_03180, RS_SWCT_03181, RS_SWCT_03144)
+Enumeration ArraySizeSemanticsEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ImplementationDataTypes
+Note
+This type controls how the information about the number of elements in an
+ApplicationArrayDataType is to be interpreted.
+Literal
+Description
+ﬁxedSize
+This means that the ApplicationArrayDataType will always have a ﬁxed number of
+elements.
+variableSize
+This implies that the actual number of elements in the ApplicationArrayDataType
+might vary at run-time. The value of arraySize represents the maximum number of
+elements in the array.
+Table 5.14: ArraySizeSemanticsEnum
+Please note that the ability to deﬁne the semantic meaning of maxNumberOfEle-
+ments is not only limited to the application data type level. The same approach also
+applies for ImplementationDataType.
+[constr_1152] category of ApplicationArrayElement and AutosarDataType
+referenced in the role type shall be kept in sync ⌈The value of category of an
+ApplicationArrayElement shall always be identical to the value of category of
+the AutosarDataType referenced by the ApplicationArrayElement. ⌋()
+[TPS_SWCT_01601] Size Indicator shall be updated by software-component
+⌈If a software-component changes the number of valid elements in a variable size
+array, it shall also update the Size Indicator in the ImplementationDataType.
+⌋(RS_SWCT_03181)
+[TPS_SWCT_01602] Size Indicator shall be read by the software-component
+⌈If a software-component receives a variable size array, it shall use the Size Indi-
+cator in the ImplementationDataType to determine the number of valid elements
+in the array. ⌋(RS_SWCT_03181)
+Enumeration ArraySizeHandlingEnum
+Package
+M2::AUTOSARTemplates::SWComponentTemplate::Datatype::Datatypes
+Note
+This enumeration deﬁnes different ways to handle the sizes of variable size arrays.
+Literal
+Description
+allIndices
+DifferentArray
+Size
+All elements of the variable size array may have different sizes.
+allIndices
+SameArray
+Size
+All elements of the variable size array have the same size.
+Software Component Template
+inheritedFrom
+ArrayElement
+TypeSize
+The size of all dimensions of the variable size array is determined by the size of the
+contained array element.
+Table 5.15: ArraySizeHandlingEnum
+[TPS_SWCT_01604] Enable Size Indicator ⌈To enable the RTE’s ability to
+consider the number of valid elements inside a Variable-Size Array Data
+Type the ApplicationArrayDataType.dynamicArraySizeProfile of Appli-
+cationArrayDataType and ApplicationArrayElement.arraySizeHandling
+shall be set. ⌋(RS_SWCT_03181)
+[TPS_SWCT_01605] Semantics of ApplicationArrayElement.arraySizeHan-
+dling ⌈The attribute ApplicationArrayElement.arraySizeHandling spec-
+iﬁes how the size is determined in case of multi-dimensional variable size array.
+⌋(RS_SWCT_03181)
+This allows to specify coherencies between the sizes of the nested variable size arrays
+in case of multiple dimensions.
+With a suitable ImplementationDataType, it is possible to enable other software-
+components, RTE, and other BSW modules to make use of the Size Indicator and
+only transfer the valid data elements from the sender to the receiver.
+[TPS_SWCT_01606] Internal structure of mapped ImplementationDataType ⌈
+The attribute dynamicArraySizeProfile speciﬁes which internal structure the Im-
+plementationDataType that is mapped to the ApplicationDataType shall fol-
+low. ⌋(RS_SWCT_03181)
+[TPS_SWCT_01607] Proﬁles for internal structure of mapped Implementa-
+tionDataType ⌈For the structure of the ImplementationDataType that is
+mapped to the ApplicationDataType the following proﬁles are deﬁned for dy-
+namicArraySizeProfile: VSA_LINEAR, VSA_SQUARE, VSA_RECTANGULAR, and
+VSA_FULLY_FLEXIBLE. ⌋(RS_SWCT_03181)
+[TPS_SWCT_01608] Custom proﬁles for internal structure of mapped Implemen-
+tationDataType ⌈Custom proﬁles can be added to dynamicArraySizeProfile.
+They shall have a company-speciﬁc preﬁx. ⌋(RS_SWCT_03181)
+As it is a general rule for the deﬁnition of custom proﬁles or values of category, the
+custom value should start with a company-speciﬁc preﬁx in order to avoid clashes with
+later extensions of the AUTOSAR standard.
+dynamicArraySizeProfile is used to specify how the number of elements of the
+multiple dimensions of a variable size array correlate. They could be totally indepen-
+dent (VSA_FULLY_FLEXIBLE) on the one hand or each dimension has the same num-
+ber of valid elements (VSA_SQUARE).
+[TPS_SWCT_01623] Justiﬁcation for the existence of attributes Application-
+ArrayDataType.dynamicArraySizeProfile
+and
+ApplicationArrayEle-</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

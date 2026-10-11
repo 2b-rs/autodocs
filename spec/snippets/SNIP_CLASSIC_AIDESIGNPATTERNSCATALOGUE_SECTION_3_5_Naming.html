@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_AIDESIGNPATTERNSCATALOGUE_SECTION_3_5_Naming</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AIDesignPatternsCatalogue.pdf</strong> (Seite 22)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_TR_AIDesignPatternsCatalogue.pdf#page=18" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AIDesignPatternsCatalogue.pdf</a></strong> (Seite 22)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_STDT_00055" class="swsref"><code>TPS_STDT_00055</code></a></span>
         </div>
@@ -125,7 +126,195 @@ Electrical
 Basic
 Fil-
 tered Value
-Basic filtered</div></section>
+Basic filtered electrical raw sensor value (e.g.
+maximum allowed phase shift is one schedul-
+ing raster or maximum 360 degree crankshaft
+rotation if exhaust gas pulsation dependent).
+Electrical representation of a technical signal
+[12]. This signal can only be represented in
+voltage, current, (period) time, binary value,
+frequency, dutycycle.
+Raw
+Raw Value of {any-
+LongNamePart}
+Raw Value
+Physical
+raw/base
+sensor
+value.
+Sim-
+ple conversion of basic filtered electrical
+(ElecBascFild) to physical value.
+Measd
+{anyLongName}
+(Measured)
+Measured
+Value
+Final filtered and offset corrected physical
+sensor value. Physical sensor value/standard
+sensor value. The physical sensor value is
+the linearized/filtered physical raw/base sen-
+sor value including offset. At this step a (sig-
+nificant) phase-shift could be possible.
+Consold
+{anyLongName}
+Value
+Consolidated physical value, either a mea-
+sured value (Measd) or a modeled value
+(Estimd). Final filtered and offset corrected
+consolidated actuator value/physical sensor
+value.
+Virtual physical sensor value/fused
+sensor value that comes as close as possi-
+ble to the technical signal. In case of inability
+to provide a physical sensor value (e.g. fail-
+ure, implausibility or other reasons) a substi-
+tute value/default value or a frozen value is
+provided.
+Estimd
+{anyLongName}
+(Estimated)
+Estimated
+Value
+Modelled value physical sensor value/stan-
+dard sensor value. Can be used as a replace-
+ment for final filtered and offset corrected
+physical sensor value.
+The interface is op-
+tional.
+Application Design Patterns Catalogue
+Outp
+Output
+of
+{any-
+LongNamePart}
+Output
+Value
+Final controller output (closed loop or open
+loop). It includes the necessary control ac-
+tions to reach the requested setpoint in the
+given system conditions.
+For example for realizing the requested ac-
+tuator position a precontrol impulse to over-
+come the static friction is needed. In case of
+a smart actuator the output value might add a
+dedicated initialization duty cycle to wakeup
+the actuator.
+Typically expressed as percentage.
+Sp
+Setpoint {anyLong-
+NamePart}
+Setpoint
+Value
+Final actuator setpoint. Typically expressed
+as percentage.
+Reqd
+Requested
+Set-
+point
+{anyLong-
+NamePart}
+Requested
+Setpoint
+Final requested physical setpoint.
+Typically
+expressed as percentage but could also be
+expressed e.g. as factor.
+Cpby
+Capability
+{any-
+LongNamePart}
+Capability
+Provides the dynamic instant capability typi-
+cally based on output limitation but could also
+contain the limitation on rate of change of the
+consolidated value.
+It is expressed as per-
+centage.
+Table 3.1: Signal Names and Semantics
+Some examples of short and long names for sensor/actuator signals or ports, resp.,
+are given in Table 3.2.
+Short Name
+Class
+Long Name (EN)
+TrboChrgrReqd
+PortPrototype
+Requested Setpoint for Turbo Charger
+Consold
+PortPrototype
+Consolidated Value
+TrboChrgrStg3AtBnk2
+FlatInstanceDescriptor
+Value of Turbo Charger at Third Stage
+at Second Bank
+TrboChrgr
+PortPrototype
+Value of Turbo Charger
+Table 3.2: Port Names Examples
+In grammar 3.2 the pattern for component types and component prototypes for the
+atomic components within a composition representing a sensor or an actuator is de-
+scribed.
+In some cases there might be parts of the implementation that can be reused for dif-
+ferent sensors/actuators. Therefore the name pattern for the component type name is
+more generic and does not necessarily contain the Sensor/Actuator name. In other
+cases the Sensor/Actuator names are not sufficient to make the component type
+names unique so an additional identifier can be added to the component type name.
+Listing 3.2: Name Pattern for Atomic Software Component Types in Device Abstraction
+grammar PSnsrActrAtomicSwcShortName;
+sensorActuatorComponentTypeName
+:
+sensorActuatorComponentName ;
+Application Design Patterns Catalogue
+sensorActuatorComponentPrototypeName
+:
+sensorActuatorComponentName ;
+sensorActuatorComponentName
+:
+(Drvr{Device}Elec | DevDrvr{Device} | Dev{Device}Virt | DevCoorrVirt
+)(’anyNamePart’) ;
+Device
+:
+( Snsr | Actr ) ;
+anyNamePart
+:
+(’keyword’)* ;
+In grammar 3.3 the pattern is more refined but still conforming to grammar 3.2 because
+”For” is a standardized keyword. Note: the refined grammar is following [TR_SWNR_-
+0034] that requests that field blocks are concatenated by adding an appropriate prepo-
+sition.
+Listing 3.3: Refined Name Pattern for Atomic Software Component Types in Device Ab-
+straction
+grammar PSnsrActrAtomicSwcShortNameRefined;
+sensorActuatorComponentTypeName
+:
+sensorActuatorComponentName ;
+sensorActuatorComponentPrototypeName
+:
+sensorActuatorComponentName ;
+sensorActuatorComponentName
+:
+(Drvr{deviceType}Elec | DevDrvr{deviceType} | Dev{deviceType}Virt |
+DevCoorrVirt) ({device}) ;
+deviceType
+:
+( Snsr | Actr ) ;
+device
+:
+( For{sensor}(’anyNamePart’) | For{actuator}(’anyNamePart’) ) ;
+sensor
+:
+’anyName’ ;
+actuator
+:
+’anyName’ ;
+anyName
+:
+(’keyword’)* ;
+anyNamePart
+:
+(’keyword’)* ;
+In grammar 3.4 the pattern for the corresponding English long names of the compo-
+nents is described.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -138,7 +327,7 @@ Basic filtered</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AIDesignPatternsCatalogue.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_TR_AIDesignPatternsCatalogue.pdf#page=18" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AIDesignPatternsCatalogue.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_7_Multiple_trigger_of_Runnable_Entities_and_Basic_Software_Schedulable_Entities</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 208)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=208" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 208)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07525" class="swsref internal-spec-ref"><code>SWS_Rte_07525</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07588" class="swsref internal-spec-ref"><code>SWS_Rte_07588</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,52 @@ to FALSE, concurrent activation of the runnable entity is forbidden. (see requir
 [SWS_Rte_05083])⌋
 The Basic Software Module Description Template [9] specifies the possible concurrent
 activation of BswModuleEntitys by the attribute isReentrant.
-[SWS_Rte_07525] ⌈The Basic Software</div></section>
+[SWS_Rte_07525] ⌈The Basic Software Scheduler shall support concurrent activa-
+tion of the same instance of a BswModuleEntity if the attribute isReentrant of
+the referenced BswModuleEntry in the role implementedEntry resp. the optional
+attribute BswModuleClientServerEntry.isReentrant (see [TPS_BSWMDT_-
+04099]) is set to true. This includes concurrent activation in several tasks/ISR2s.
+If the attribute is set to false concurrent activation of the BswModuleEntity is for-
+bidden. (see requirement [SWS_Rte_07588])⌋
+Concurrent activation of the same instance of an ExecutableEntity results in mul-
+tiple ExecutableEntity execution-instances. One for each context of activa-
+tion.
+Activation by several RTEEvents and BswEvents
+Nevertheless a Runnable whose attribute canBeInvokedConcurrently is NOT set
+to true might be still activated by several RTEEvents if activation configuration guar-
+antees that concurrent activation can never occur and the minimumStartInterval
+condition is kept. This includes activation in different tasks. In this case, the runnable
+is still considered to have only one ExecutableEntity execution-instances. A
+standard use case is the activation of same instance of a runnable in different modes.
+[SWS_Rte_03520]
+Upstream requirements: SRS_Rte_00072
+⌈The RTE shall support activation of same instance of a runnable entity by multiple
+RTEEvents.⌋
+RTEEvents are triggering runnable activation and may supply 0..several role param-
+eters, see section 5.7.3. Role parameters are not visible in the runnables signature -
+except in those triggered by an OperationInvokedEvent. With the exception of the
+RTEEvent OperationInvokedEvent all role parameters can be accessed by user
+with implicit or explicit Receiver API.
+[SWS_Rte_03524]
+Upstream requirements: SRS_Rte_00072
+⌈The RTE shall support activation of same instance of a runnable entity by RTEEvents
+of different kinds.⌋
+The RTE does NOT support a runnable entity triggered by an RTEEvent Opera-
+tionInvokedEvent to be triggered by any other RTEEvent except for other Opera-
+tionInvokedEvents of compatible operations. This limitation is stated in appendix
+in section A.2 ([SWS_Rte_03526]).
+The similar configuration as mentioned for the RunnableEntitys might be used for
+BswSchedulableEntitys. Therefore even a BswSchedulableEntity whose ref-
+erenced BswModuleEntry in the role implementedEntry has its isReentrant
+attribute set to false can be activated by several BswEvents.
+[SWS_Rte_07526] ⌈The Basic Software Scheduler shall support activation of same
+instance of a BswSchedulableEntity by multiple BswEvents.⌋
+[SWS_Rte_07527] ⌈The Basic Software Scheduler shall support activation of same
+instance of a BswSchedulableEntity by BswEvents of different kinds.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07525] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07588] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +144,7 @@ activation of BswModuleEntitys by the attribute isReentrant.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=208" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +156,7 @@ activation of BswModuleEntitys by the attribute isReentrant.
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07525" class="swsref internal-spec-ref"><code>SWS_Rte_07525</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_07588" class="swsref internal-spec-ref"><code>SWS_Rte_07588</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

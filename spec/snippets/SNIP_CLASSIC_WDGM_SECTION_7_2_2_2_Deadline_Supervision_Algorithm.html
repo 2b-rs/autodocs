@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_7_2_2_2_Deadline_Supervision_Algorithm</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 44)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=44" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 44)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_WdgM_CONSTR_06515</span>
         </div>
@@ -90,7 +91,82 @@ be configured to be also accessible from the OsApplication which calls WdgM_Main
 Function, if WdgMEnableTimeoutDetection is set to true.⌋
 [SWS_WdgM_00373]
 Upstream requirements: RS_HM_09235
-⌈To determine the timestamp and to compute the timestamp</div></section>
+⌈To determine the timestamp and to compute the timestamp differences, the func-
+tion WdgM_CheckpointReached (for detection of both early arrivals and delays) and
+the function WdgM_MainFunction (for detection of timeouts) shall use OS function
+GetElapsedValue, using as 1st parameter the CounterID that is configured for the
+Supervised Entity (see WdgMOSCounter, [ECUC_WdgM_00361])⌋
+The timestamps are in ticks. However, the Watchdog deadline configuration is in sec-
+onds. The scaling between ticks and seconds is configured in OS.
+[SWS_WdgM_00374]
+Upstream requirements: RS_HM_09235
+⌈For scaling of timestamp difference to the limit values (WdgMDeadlineMin
+and WdgMDeadlineMax) (see [SWS_WdgM_00294], the function WdgM_Check-
+pointReached (for detection of early arrivals and delays) and the function WdgM_
+MainFunction (for detection of timeouts) shall use OsSecondsPerTick configuration
+parameter.⌋
+During the initialization, all the timestamps of Deadline Start Checkpoints (i.e.
+Checkpoint referenced by WdgMDeadlineStartRef) are cleared – set to 0.
+[SWS_WdgM_00298]
+Upstream requirements: SRS_BSW_00101
+⌈The function WdgM_Init shall for all Deadline Start Checkpoints set their
+timestamps to 0.⌋
+When a Deadline Start Checkpoint (i.e.
+Checkpoint referenced by Wdg-
+MDeadlineStartRef) is reached, a Supervised Entity invokes the function WdgM_
+CheckpointReached, which results with the execution of Deadline Supervision.
+[SWS_WdgM_00228] ⌈When the Deadline Start Checkpoint is reached and
+this Checkpoint is referenced in the active Mode, then the function WdgM_Check-
+pointReached shall record the current timestamp under the timestamp of the reached
+Deadline Start Checkpoint. The current timestamp shall be used as the refer-
+ence for examining the time of the corresponding Deadline End Checkpoint.⌋
+The function WdgM_CheckpointReached shall determine the current timestamp by
+invoking the OS functions ()
+[SWS_WdgM_00228] means that the timestamp of the reached Deadline Start
+Checkpoint is overwritten by the current timestamp, regardless of the value (just
+before the overwriting) of the reached Deadline Start Checkpoint. Moreover,
+[SWS_WdgM_00228] means that it is not considered as an error by Deadline Super-
+vision if a given Deadline Start Checkpoint is reached several times without
+reaching the corresponding Deadline End Checkpoint (each time the timestamp
+is just updated).
+[SWS_WdgM_00229] ⌈When the Deadline End Checkpoint is reached and
+this Checkpoint is referenced in the active Mode, and timestamp of the corre-
+sponding Deadline Start Checkpoint is &lt;&gt;0, then the function WdgM_Check-
+pointReached shall measure the time difference between current timestamp and the
+corresponding Deadline Start Checkpoint timestamp. Then, the function shall
+clear (i.e. set to 0) the timestamp of the corresponding Deadline Start Check-
+point.⌋
+[SWS_WdgM_00354] ⌈When the Deadline End Checkpoint is reached and
+this Checkpoint is referenced in the active Mode, and timestamp of the corre-
+sponding Deadline Start Checkpoint is =0, then the function WdgM_Check-
+pointReached shall exit with success (without measuring the time difference).⌋
+[SWS_WdgM_00354] means that it is not considered as an error by Deadline Supervi-
+sion if a given Deadline End Checkpoint is reached several times in a sequence.
+[SWS_WdgM_00294] ⌈If the measured time difference (see [SWS_WdgM_00229]) is
+not within the minimum and the maximum limits (that is, the time difference is either
+less than WdgMDeadlineMin or greater than WdgMDeadlineMax), then the function
+WdgM_CheckpointReached shall define the result of Deadline Supervision for this
+Supervised Entity as incorrect. Otherwise, it shall be defined as correct.⌋
+Note: If the maximum limit (WdgMDeadlineMax) is configured with value ’INF’, it is not
+necessary to check whether time difference is greater than the limit.
+[SWS_WdgM_00299] ⌈For any reported Checkpoint that is neither a Deadline
+Start Checkpoint nor a Deadline End Checkpoint, the function WdgM_-
+CheckpointReached [SWS_WdgM_00263] shall ignore this Checkpoint and not
+update the result of the Deadline Supervision for the Supervised Entity.⌋
+[SWS_WdgM_00403]
+Upstream requirements: RS_HM_09235
+⌈If Deadline Timeout detection is enabled [i.e.
+WdgMEnableTimeoutDetection
+[ECUC_WdgM_00363] is set to ’true’] then, for all Deadline Supervisions configured
+in the active mode, if timestamp of the corresponding Deadline Start Check-
+point is &lt;&gt;0 (i.e. if the Start Checkpoint is reported but corresponding End Check-
+point is not yet reported), then the function WdgM_MainFunction shall measure the
+time difference between current timestamp and the corresponding Deadline Start
+Checkpoint timestamp. If the measured time difference exceeds (is greater than)
+maximum limit (WdgMDeadlineMax), then the function WdgM_MainFunction shall
+define the result of Deadline Supervision for the Supervised Entity as incorrect.⌋
+Note: With this, it is possible to detect error in case Deadline End Checkpoint is
+never reached (timeout detection part of Deadline Supervision).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +179,7 @@ Upstream requirements: RS_HM_09235
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=44" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

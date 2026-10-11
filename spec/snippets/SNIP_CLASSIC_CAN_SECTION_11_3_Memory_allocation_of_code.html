@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CAN_SECTION_11_3_Memory_allocation_of_code</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MemoryMapping.pdf</strong> (Seite 76)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_MemoryMapping.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MemoryMapping.pdf</a></strong> (Seite 76)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_MemMap_00003" class="swsref internal-spec-ref"><code>SWS_MemMap_00003</code></a></span>
         </div>
@@ -130,7 +131,254 @@ ApplicationSwComponentType
 Package
 M2::AUTOSARTemplates::SWComponentTemplate::Components
 Note
-Th</div></section>
+The ApplicationSwComponentType is used to represent the application software.
+Tags: atp.recommendedPackage=SwComponentTypes
+Base
+ARElement, ARObject, AtomicSwComponentType, AtpBlueprint, AtpBlueprintable, AtpClassifier, Atp
+Type, CollectableElement, Identifiable, MultilanguageReferrable, PackageableElement, Referrable, Sw
+ComponentType
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table A.1: ApplicationSwComponentType
+Class
+AtomicSwComponentType (abstract)
+Package
+M2::AUTOSARTemplates::SWComponentTemplate::Components
+Note
+An atomic software component is atomic in the sense that it cannot be further decomposed and
+distributed across multiple ECUs.
+Base
+ARElement, ARObject, AtpBlueprint, AtpBlueprintable, AtpClassifier, AtpType, CollectableElement,
+Identifiable, MultilanguageReferrable, PackageableElement, Referrable, SwComponentType
+Subclasses
+ApplicationSwComponentType, ComplexDeviceDriverSwComponentType, EcuAbstractionSwComponent
+Type, NvBlockSwComponentType, SensorActuatorSwComponentType, ServiceProxySwComponent
+Type, ServiceSwComponentType
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+internalBehavior
+SwcInternalBehavior
+0..1
+aggr
+The SwcInternalBehaviors owned by an AtomicSw
+ComponentType can be located in a different physical file.
+Therefore the aggregation is &lt;&lt;atpSplitable&gt;&gt;.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=internalBehavior.shortName, internal
+Behavior.variationPoint.shortLabel
+vh.latestBindingTime=preCompileTime
+symbolProps
+SymbolProps
+0..1
+aggr
+This represents the SymbolProps for the AtomicSw
+ComponentType.
+Stereotypes: atpSplitable
+Tags: atp.Splitkey=symbolProps.shortName
+Table A.2: AtomicSwComponentType
+Class
+BaseTypeDirectDefinition
+Package
+M2::MSR::AsamHdo::BaseTypes
+Note
+This BaseType is defined directly (as opposite to a derived BaseType)
+Base
+ARObject, BaseTypeDefinition
+Aggregated by
+BaseType.baseTypeDefinition
+Attribute
+Type
+Mult.
+Kind
+Note
+▽
+△
+Class
+BaseTypeDirectDefinition
+baseType
+Encoding
+BaseTypeEncoding
+String
+0..1
+attr
+This specifies, how an object of the current BaseType is
+encoded, e.g. in an ECU within a message sequence.
+Tags: xml.sequenceOffset=90
+baseTypeSize
+PositiveInteger
+0..1
+attr
+Describes the length of the data type specified in the
+container in bits.
+Tags: xml.sequenceOffset=70
+byteOrder
+ByteOrderEnum
+0..1
+attr
+This attribute specifies the byte order of the base type.
+Tags: xml.sequenceOffset=110
+memAlignment
+PositiveInteger
+0..1
+attr
+This attribute describes the alignment of the memory
+object in bits. E.g. "8" specifies, that the object in
+question is aligned to a byte while "32" specifies that it is
+aligned four byte. If the value is set to "0" the meaning
+shall be interpreted as "unspecified".
+Tags: xml.sequenceOffset=100
+native
+Declaration
+NativeDeclarationString
+0..1
+attr
+This attribute describes the declaration of such a base
+type in the native programming language, primarily in the
+Programming language C. This can then be used by a
+code generator to include the necessary declarations into
+a header file. For example
+BaseType with shortName: "MyUnsignedInt" native
+Declaration: "unsigned short"
+Results in
+typedef unsigned short MyUnsignedInt;
+If the attribute is not defined the referring Implementation
+DataTypes will not be generated as a typedef by RTE.
+If a nativeDeclaration type is given it shall fulfill the
+characteristic given by basetypeEncoding and baseType
+Size.
+This is required to ensure the consistent handling and
+interpretation by software components, RTE, COM and
+MCM systems.
+Tags: xml.sequenceOffset=120
+Table A.3: BaseTypeDirectDefinition
+Class
+BswImplementation
+Package
+M2::AUTOSARTemplates::BswModuleTemplate::BswImplementation
+Note
+Contains the implementation specific information in addition to the generic specification (BswModule
+Description and BswBehavior). It is possible to have several different BswImplementations referring to
+the same BswBehavior.
+Tags: atp.recommendedPackage=BswImplementations
+Base
+ARElement, ARObject, CollectableElement, Identifiable, Implementation, MultilanguageReferrable,
+PackageableElement, Referrable
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+arRelease
+Version
+RevisionLabelString
+0..1
+attr
+Version of the AUTOSAR Release on which this
+implementation is based. The numbering contains three
+levels (major, minor, revision) which are defined by
+AUTOSAR.
+▽
+△
+Class
+BswImplementation
+behavior
+BswInternalBehavior
+0..1
+ref
+The behavior of this implementation.
+This relation is made as an association because
+• it follows the pattern of the SWCT
+• since ARElement cannot be splitted, but we want
+supply the implementation later, the Bsw
+Implementation is not aggregated in BswBehavior
+preconfigured
+Configuration
+EcucModule
+ConfigurationValues
+*
+ref
+Reference to the set of preconfigured (i.e. fixed)
+configuration values for this BswImplementation.
+If the BswImplementation represents a cluster of several
+modules, more than one EcucModuleConfigurationValues
+element can be referred (at most one per module),
+otherwise at most one such element can be referred.
+Tags: xml.roleWrapperElement=true
+recommended
+Configuration
+EcucModule
+ConfigurationValues
+*
+ref
+Reference to one or more sets of recommended
+configuration values for this module or module cluster.
+vendorApiInfix
+Identifier
+0..1
+attr
+In driver modules which can be instantiated several times
+on a single ECU, SRS_BSW_00347 requires that the
+names of files, APIs, published parameters and memory
+allocation keywords are extended by the vendorId and a
+vendor specific name. This parameter is used to specify
+the vendor specific name. In total, the implementation
+specific API name is generated as follows: &lt;Module
+Name&gt;_&lt;vendorId&gt;_ &lt;vendorApiInfix&gt;_&lt;API name from
+SWS&gt;.
+E.g. assuming that the vendorId of the implementer is
+123 and the implementer chose a vendorApiInfix of
+"v11r456" an API name Can_Write defined in the SWS
+will translate to Can_123_v11r456_Write.
+This attribute is mandatory for all modules with upper
+multiplicity &gt; 1. It shall not be used for modules with
+upper multiplicity =1.
+See also SWS_BSW_00102.
+vendorSpecific
+ModuleDef
+EcucModuleDef
+*
+ref
+Reference to
+• the vendor specific EcucModuleDef used in this Bsw
+Implementation if it represents a single module
+• several EcucModuleDefs used in this Bsw
+Implementation if it represents a cluster of modules
+• one or no EcucModuleDefs used in this Bsw
+Implementation if it represents a library
+Tags: xml.roleWrapperElement=true
+Table A.4: BswImplementation
+Class
+BswModuleDescription
+Package
+M2::AUTOSARTemplates::BswModuleTemplate::BswOverview
+Note
+Root element for the description of a single BSW module or BSW cluster. In case it describes a BSW
+module, the short name of this element equals the name of the BSW module.
+Tags: atp.recommendedPackage=BswModuleDescriptions
+Base
+ARElement, ARObject, AtpBlueprint, AtpBlueprintable, AtpClassifier, AtpFeature, AtpStructureElement,
+CollectableElement, Identifiable, MultilanguageReferrable, PackageableElement, Referrable
+Aggregated by
+ARPackage.element, AtpClassifier.atpFeature
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -143,7 +391,7 @@ Th</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MemoryMapping.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_MemoryMapping.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MemoryMapping.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

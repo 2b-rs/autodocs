@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_10_2_4_XfrmDemEventParameterRefs</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ASWS_TransformerGeneral.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_ASWS_TransformerGeneral.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ASWS_TransformerGeneral.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00071" class="swsref internal-spec-ref"><code>SWS_Xfrm_00071</code></a></span>
         </div>
@@ -120,7 +121,224 @@ XFRM_E_MALFORMED_MESSAGE
 Parent Container
 XfrmDemEventParameterRefs
 Description
-Reference to configured DEM event to report if malf</div></section>
+Reference to configured DEM event to report if malformed messages were received by
+the transformer.
+Multiplicity
+0..1
+Type
+Symbolic name reference to DemEventParameter
+Post-Build Variant Multiplicity
+false
+Post-Build Variant Value
+false
+Pre-compile time
+X
+All Variants
+Link time
+–
+Multiplicity Configuration Class
+Post-build time
+–
+Pre-compile time
+X
+All Variants
+Link time
+–
+Value Configuration Class
+Post-build time
+–
+Dependency
+Dem
+⌋
+General Specification of Transformers
+A
+Referenced Meta Classes
+For the sake of completeness, this chapter contains a set of class tables representing
+meta-classes mentioned in the context of this document but which are not contained
+directly in the scope of describing specific meta-model semantics.
+Enumeration
+ArrayImplPolicyEnum
+Note
+This meta-class provides values to configure the implementation of the payload part of an array.
+Aggregated by
+ImplementationDataTypeElement.arrayImplPolicy
+Literal
+Description
+payloadAsArray
+This configuration demands the implementation of the payload as an array.
+Tags: atp.EnumerationLiteralIndex=0
+payloadAsPointerTo
+Array
+This configuration demands the implementation of the payload as a pointer to an array.
+Tags: atp.EnumerationLiteralIndex=1
+Table A.1: ArrayImplPolicyEnum
+Class
+AtomicSwComponentType (abstract)
+Note
+An atomic software component is atomic in the sense that it cannot be further decomposed and
+distributed across multiple ECUs.
+Base
+ARElement, ARObject, AtpBlueprint, AtpBlueprintable, AtpClassifier, AtpType, CollectableElement,
+Identifiable, MultilanguageReferrable, PackageableElement, Referrable, SwComponentType
+Subclasses
+ApplicationSwComponentType, ComplexDeviceDriverSwComponentType, EcuAbstractionSwComponent
+Type, NvBlockSwComponentType, SensorActuatorSwComponentType, ServiceProxySwComponent
+Type, ServiceSwComponentType
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+internalBehavior
+SwcInternalBehavior
+0..1
+aggr
+The SwcInternalBehaviors owned by an
+AtomicSwComponentType can be located in a different
+physical file. Therefore the aggregation is &lt;&lt;atp
+Splitable&gt;&gt;.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=internalBehavior.shortName, internal
+Behavior.variationPoint.shortLabel
+vh.latestBindingTime=preCompileTime
+symbolProps
+SymbolProps
+0..1
+aggr
+This represents the SymbolProps for the
+AtomicSwComponentType.
+Stereotypes: atpSplitable
+Tags: atp.Splitkey=symbolProps.shortName
+Table A.2: AtomicSwComponentType
+Class
+BswModuleEntry
+Note
+This class represents a single API entry (C-function prototype) into the BSW module or cluster.
+The name of the C-function is equal to the short name of this element with one exception: In case of
+multiple instances of a module on the same CPU, special rules for "infixes" apply, see description of class
+BswImplementation.
+Tags: atp.recommendedPackage=BswModuleEntrys
+This Class is only used by the AUTOSAR Classic Platform.
+Base
+ARElement, ARObject, AtpBlueprint, AtpBlueprintable, CollectableElement, Identifiable, Multilanguage
+Referrable, PackageableElement, Referrable
+Aggregated by
+ARPackage.element
+▽
+General Specification of Transformers
+△
+Class
+BswModuleEntry
+Attribute
+Type
+Mult.
+Kind
+Note
+argument
+(ordered)
+SwServiceArg
+*
+aggr
+An argument belonging to this BswModuleEntry.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=argument.shortName, argument.variation
+Point.shortLabel
+vh.latestBindingTime=blueprintDerivationTime
+xml.sequenceOffset=45
+bswEntryKind
+BswEntryKindEnum
+0..1
+attr
+This describes whether the entry is concrete or abstract.
+If the attribute is missing the entry is considered as
+concrete.
+Tags: xml.sequenceOffset=40
+callType
+BswCallType
+0..1
+attr
+The type of call associated with this service.
+Tags: xml.sequenceOffset=25
+execution
+Context
+BswExecutionContext
+0..1
+attr
+Specifies the execution context which is required (in case
+of entries into this module) or guaranteed (in case of
+entries called from this module) for this service.
+Tags: xml.sequenceOffset=30
+function
+Prototype
+Emitter
+NameToken
+0..1
+attr
+This attribute is used to control the generation of function
+prototypes. If set to "RTE", the RTE generates the
+function prototypes in the Module Interlink Header File.
+isReentrant
+Boolean
+0..1
+attr
+Reentrancy from the viewpoint of function callers:
+• true: Enables the service to be invoked again, before
+the service has finished.
+• false: It is prohibited to invoke the service again before
+is has finished.
+Tags: xml.sequenceOffset=15
+isSynchronous
+Boolean
+0..1
+attr
+Synchronicity from the viewpoint of function callers:
+• true: This calls a synchronous service, i.e. the service
+is completed when the call returns.
+• false: The service (on semantical level) may not be
+complete when the call returns.
+Tags: xml.sequenceOffset=20
+returnType
+SwServiceArg
+0..1
+aggr
+The return type belonging to this bswModuleEntry.
+Tags: xml.sequenceOffset=40
+role
+Identifier
+0..1
+attr
+Specifies the role of the entry in the given context. It shall
+be equal to the standardized name of the service call,
+especially in cases where no ServiceIdentifier is specified,
+e.g. for callbacks. Note that the ShortName is not always
+sufficient because it maybe vendor specific (e.g. for
+callbacks which can have more than one instance).
+Tags: xml.sequenceOffset=10
+serviceId
+PositiveInteger
+0..1
+attr
+Refers to the service identifier of the Standardized
+Interfaces of AUTOSAR basic software. For
+non-standardized interfaces, it can optionally be used for
+proprietary identification.
+Tags: xml.sequenceOffset=5
+swServiceImpl
+Policy
+SwServiceImplPolicy
+Enum
+0..1
+attr
+Denotes the implementation policy as a standard function
+call, inline function or macro. This has to be specified on
+interface level because it determines the signature of the
+call.
+Tags: xml.sequenceOffset=35
+Table A.3: BswModuleEntry</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -133,7 +351,7 @@ Reference to configured DEM event to report if malf</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ASWS_TransformerGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_ASWS_TransformerGeneral.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ASWS_TransformerGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

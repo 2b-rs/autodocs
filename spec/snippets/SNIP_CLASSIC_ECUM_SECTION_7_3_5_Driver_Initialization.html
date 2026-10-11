@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_7_3_5_Driver_Initialization</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 46)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 46)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04142" class="swsref internal-spec-ref"><code>SWS_EcuM_04142</code></a></span>
         </div>
@@ -93,7 +94,47 @@ using the EcuMDriverRestartList.⌋
 [SWS_EcuM_02562]
 Upstream requirements: SRS_ModeMgm_00001, SRS_ModeMgm_00004
 ⌈EcuMDriverRestartList may contain drivers that serve as wakeup sources.
-EcuM</div></section>
+EcuM_AL_DriverRestart shall re-arm the trigger mechanism of these drivers’
+’wakeup detected’ callback.⌋
+See Section 7.5.5 Activities in the WakeupRestart Sequence.
+[SWS_EcuM_02561]
+Upstream requirements: SRS_ModeMgm_00001
+⌈The ECU Manager module shall initialize the drivers in EcuMDriverRestartList in the
+same order as in the combined list of init block 0 and init block 1.⌋
+Hint for [SWS_EcuM_02561]: EcuMDriverRestartList will typically only contain a
+subset of the combined list of init block 0 and init block 1 drivers.
+Table 7.2 shows one possible (and recommended) sequence of activities for the Init
+Blocks 0 and I. Depending on hardware and software configuration, BSW modules
+may be added or left out and other sequences may also be possible.
+Recommended Init Block
+Initialization Activity
+Comment
+Init Block 04
+Default Error Tracer
+This should always be the first module to be initial-
+ized, so that other modules can report development
+errors.
+Diagnostic Event Manager
+Pre-Initialization
+Any drivers needed to access
+post-build configuration data
+These drivers shall not depend on the post-build
+configuration or on OS features.
+Init Block I5
+MCU Driver
+Port Driver
+General Purpose Timer
+Watchdog Driver
+Internal watchdogs only, external ones may need
+SPI
+Watchdog Manager
+ADC Driver
+ICU Driver
+PWM Driver
+OCU Driver
+Table 7.2: Driver Initialization Details, Sample Configuration
+4Drivers in Init Block 0 are listed in the EcuMDriverInitListZero configuration container.
+5Drivers in Init Block I are listed in the EcuMDriverInitListOne configuration container.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -106,7 +147,7 @@ EcuM</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_9_2_8_Process_Service_Request_with_paged_buffer</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 481)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=481" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 481)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -139,11 +140,140 @@ Figure 9.14: Process Service Request with paged-buffer
 The following flow is processed in case no error occurs on the Application side:
 Manager
 Start of process:
-4) DsdInternal_StartPagedProcessing(): With this A</div></section>
+4) DsdInternal_StartPagedProcessing(): With this API, the DSP submodule gives the
+complete response length to the Dcm module and starts paged-buffer handling. This
+API starts no transmission!
+5) UpdatePage(): The Dcm module requests data to be transmitted.
+6) DsdInternal_ProcessPage(): With this API, the DSP submodule requests transmis-
+sion of the current page.
+8) PduR_DcmTransmit(): The Dcm module requests transmission to the lower layers.
+9) Dcm_CopyTxData:
+The buffer is filled and the Dcm module shall return
+"BUFREQ_OK"(10).
+Start of the loop:
+11) Dcm_CopyTxData: The PduR module requests the buffer but the buffer is not
+filled by the DSP submodule.
+12 + 13) UpdatePage: The Dcm module requests the DSP submodule to fill the next
+page.
+14) By returning "BUFREQ_E_BUSY", the Dcm module indicates that the buffer has to
+be filled by the DSP submodule.
+15) DsdInternal_ProcessPage(): With this API, the DSP submodule requests transmis-
+sion of the current page.
+17) Then, on the next call of Dcm_CopyTxData the buffer is filled and the Dcm module
+shall return "BUFREQ_OK" (18).
+LOOP: The flow 10 to 18 is repeated as long data can be sent.
+End of the loop:
+n-2 -&gt; n) Dcm_TpTxConfirmation When all data is send, the PduR module indicates
+the sending with a confirmation, which is given to the DSP submodule.
+The APIs 4, 5 and 6 are needed only for paged-buffer transmission.
+Page buffer timeout handling:
+The Dcm module reacts in the following described way, when the DSP submodule starts
+paged-buffer handling, but is not able to process further on filling the response data.
+E.g. there are problems to access data from an EEPROM device. When providing
+the Pagebuffer to the DSP submodule (13: UpdatePage()), and getting a negative Tx
+confirmation from underlying Transport Layers, the following error handling is carried
+out in the Dcm module:
+• The Dcm module stops further processing of paged-buffer (item 15),
+• The
+Dcm
+module
+requests
+the
+DSP
+submodule
+(14:
+DspInter-
+nal_CancelPagedBufferProcessing()) to stop further processing of PagedBuffer.
+Manager
+«module»
+Dsd
+«module»
+Dsl
+«module»
+PduR
+«module»
+Dsp
+ 
+ 
+
+
+
+ 
+
+
+
+loop transmit
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dcm_CopyTxData(BufReq_ReturnType, PduIdType,
+PduInfoType*, RetryInfoType*, PduLengthType*)
+Dcm_CopyTxData=BUFREQ_E_NOT_OK()
+Dcm_CopyTxData=BUFREQ_E_BUSY()
+DsdInternal_StartPagedProcessing()
+DspInternal_DcmCancelPagedBufferProcessing()
+DspInternal_DcmUpdatePage()
+DspInternal_DcmUpdatePage(Dcm_MsgType, Dcm_MsgLenType)
+DspInternal_Dcm&lt;DiagnosticServices&gt;()
+DsdInternal_StartPagedProcessing(const Dcm_MsgContextType*)
+Dcm_CopyTxData=BUFREQ_OK()
+Data_Indication_functionality()
+Data_Confirmation_functionality()
+Dcm_CopyTxData(BufReq_ReturnType, PduIdType,
+PduInfoType*, RetryInfoType*, PduLengthType*)
+DspInternal_DcmUpdatePage(Dcm_MsgType,
+Dcm_MsgLenType)
+DspInternal_Dcm&lt;DiagnosticService&gt;(Dcm_MsgContextType)
+Dcm_TpRxIndication
+(PduIdType, Std_ReturnType)
+PduR_DcmTransmit(Std_ReturnType,
+PduIdType, const PduInfoType*):
+Std_ReturnType
+Dcm_CopyTxData(BufReq_ReturnType, PduIdType,
+PduInfoType*, RetryInfoType*, PduLengthType*)
+Transmit_functionality()
+Dcm_TpTxConfirmation(PduIdType, Std_ReturnType)
+DspInternal_DcmConfirmation(Dcm_IdContextType,
+PduIdType, Dcm_ConfirmationStatusType)
+Data_Confirmation_functionality()
+DsdInternal_ProcessPage(Dcm_MsgLenType)
+Data_Failed_Functionality()
+Figure 9.15: Process Service Request when paged-buffer Timeout occurs</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -152,7 +282,7 @@ Start of process:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=481" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_10_7_Transformer_Transaction_Handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 474)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=474" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 474)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07114" class="swsref internal-spec-ref"><code>SWS_Rte_07114</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00046" class="swsref internal-spec-ref"><code>SWS_Xfrm_00046</code></a></span>
         </div>
       </div>
 
@@ -86,11 +87,51 @@ cording to [SWS_Rte_07114] and [SWS_Rte_06812]) of a so-called transaction han-
 dle which is allocated by the RTE, filled by the inverse transformer for the reception of
 the request, and forwarded by the RTE without modification to the transformer for the
 transmission of the response.
-[SWS_Rte_03885] Ensuring correct type of the transaction handle ⌈The RT</div></section>
+[SWS_Rte_03885] Ensuring correct type of the transaction handle ⌈The RTE gen-
+erator shall reject configuration where an existing XfrmCSTansactionHandleIm-
+plementationDataTypeRef attribute (see [ECUC_Xfrm_00021]) of an XfrmIm-
+plementationMapping (see [ECUC_Xfrm_00001]) refers to something different
+than an ImplementationDataType of category STRUCTURE.⌋(SRS_Rte_00018)
+[SWS_Rte_03886] Ensuring consistency of the transaction handle ⌈The RTE gen-
+erator shall reject configuration where the XfrmCSTansactionHandleImplemen-
+tationDataTypeRef attributes (see [ECUC_Xfrm_00021]) of the XfrmImplemen-
+tationMappings (see [ECUC_Xfrm_00001]) of the corresponding transformer im-
+plementations (i.e., implementation of the inverse transformer handling the received
+request and the transformer handling the to be transmitted response) refer to different
+ImplementationDataTypes.⌋(SRS_Rte_00018)
+[SWS_Rte_03887]
+Allocation of transaction handle ⌈If the XfrmImplemen-
+tationMapping (see [ECUC_Xfrm_00001]) of a transformer contains an Xfrm-
+CSTansactionHandleImplementationDataTypeRef
+attribute
+(see
+[ECUC_-
+Xfrm_00021]), the RTE shall allocate a transaction handle of the type (according to
+[SWS_Rte_07114] and [SWS_Rte_06812]) defined by the referenced Implementa-
+tionDataType.⌋(SRS_Rte_00249)
+[SWS_Rte_03888] Passing the transaction handle - inverse transformer - server
+⌈If the XfrmImplementationMapping (see [ECUC_Xfrm_00001]) of the inverse
+transformer contains an XfrmCSTansactionHandleImplementationDataType-
+Ref attribute (see [ECUC_Xfrm_00021]), the RTE shall pass a reference to the allo-
+cated transaction handle (see [SWS_Rte_03887]) as additional argument csTrans-
+actionHandle to the call of &lt;Mip&gt;_Inv_&lt;transformerId&gt; (see [SWS_Xfrm_-
+00044] and [SWS_Xfrm_00046]).⌋(SRS_Rte_00249)
+Note: &lt;Mip&gt;_Inv_&lt;transformerId&gt; will fill the transaction handle passed via
+csTransactionHandle according to its needs.
+[SWS_Rte_03889] Propagating the transaction handle ⌈The RTE shall propagate
+the content of the transaction handle to the corresponding &lt;Mip&gt;_&lt;transformerId&gt;
+without altering its content.⌋(SRS_Rte_00249)
+[SWS_Rte_03890] Passing the transaction handle - transformer - server ⌈If the
+XfrmImplementationMapping (see [ECUC_Xfrm_00001]) of the transformer con-
+tains an XfrmCSTansactionHandleImplementationDataTypeRef attribute (see
+[ECUC_Xfrm_00021]), the RTE shall pass a reference to the allocated transaction
+handle (see [SWS_Rte_03887]) as additional argument csTransactionHandle to
+the call of &lt;Mip&gt;_&lt;transformerId&gt; (see [SWS_Xfrm_00038] and [SWS_Xfrm_-
+00040]).⌋(SRS_Rte_00249)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07114] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Xfrm_00046] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -99,7 +140,7 @@ transmission of the response.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=474" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -111,7 +152,7 @@ transmission of the response.
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07114" class="swsref internal-spec-ref"><code>SWS_Rte_07114</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Xfrm_00046" class="swsref internal-spec-ref"><code>SWS_Xfrm_00046</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_3_SomeIpXf_Inv__transformerId</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SOMEIPTransformer.pdf</strong> (Seite 85)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SOMEIPTransformer.pdf#page=83" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransformer.pdf</a></strong> (Seite 83)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SomeIpXf_00264" class="swsref internal-spec-ref"><code>SWS_SomeIpXf_00264</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00062" class="swsref internal-spec-ref"><code>SWS_Xfrm_00062</code></a></span>
         </div>
       </div>
 
@@ -117,11 +118,170 @@ malformed. The transformer is not able to produce an output.
 0x8a (E_SER_WRONG_MESSAGE_TYPE): The received message
 type was not expected.
 Description
-This function deserializes a Sender/Receiver communication usin</div></section>
+This function deserializes a Sender/Receiver communication using the deserialization of
+SOME/IP. It takes the uint8 array containing the serialized data as input and outputs the original
+data element which will be passed to the RTE.
+Available via
+SomeIpXf.h
+⌋
+Note: If variable size arrays with arrayImplPolicy set to payloadAsPointerToArray are
+received as serialized data input, the transformer may need to update the outgoing
+dataElement in response to the size and location of the payload once deserialised.
+[SWS_SomeIpXf_00231]
+Upstream requirements: SRS_Xfrm_00101
+⌈In function SomeIpXf_Inv_&lt;transformerId&gt; defined in [SWS_SomeIpXf_00144]
+• type shall be the data type of the data element before all data conversion activi-
+ties of the RTE
+• transformerId shall be the name pattern for the transformer specified in
+[SWS_Xfrm_00062] ([3, ASWS Transformer General]).
+⌋
+This function specified in [SWS_SomeIpXf_00144] exists for each transformed
+Sender/Receiver communication which uses the SOME/IP serialization.
+[SWS_SomeIpXf_00146]
+Upstream requirements: SRS_Xfrm_00106
+⌈The
+function
+SomeIpXf_Inv_&lt;transformerId&gt;
+specified
+in
+[SWS_SomeIpXf_00144] shall exist for the first reference in the list of ordered
+references transformerChain from a DataTransformation to a Transforma-
+tionTechnology if the DataTransformation is referenced by an ISignal in the
+role dataTransformation where the ISignal references a SystemSignal which
+is referenced by SenderReceiverToSignalMapping.⌋
+[SWS_SomeIpXf_00147]
+Upstream requirements: SRS_Xfrm_00106
+⌈The
+function
+SomeIpXf_Inv_&lt;transformerId&gt;
+specified
+in
+[SWS_SomeIpXf_00144] shall deserialize a linear byte array to primitive or complex
+data elements of Sender/Receiver communication using the SOME/IP deserialization.⌋
+[SWS_SomeIpXf_00264]
+Upstream requirements: SRS_Xfrm_00001, SRS_Xfrm_00004
+⌈If SomeIpXf_Inv_&lt;transformerId&gt; specified in [SWS_SomeIpXf_00144] is
+called with buffer equal to NULL_PTR and bufferLength equal to 0, the output buffer
+buffer shall not be changed and SomeIpXf_Inv_&lt;transformerId&gt; shall return with
+E_NO_DATA.⌋
+[SWS_SomeIpXf_00145] Definition of API function SomeIpXf_Inv_&lt;transformer
+Id&gt;
+Upstream requirements: SRS_Xfrm_00106
+⌈
+Service Name
+SomeIpXf_Inv_&lt;transformerId&gt;
+Syntax
+uint8 SomeIpXf_Inv_&lt;transformerId&gt; (
+Rte_Cs_TransactionHandleType* TransactionHandle,
+const uint8* buffer,
+uint32 bufferLength,
+[Std_ReturnType* returnValue],
+[&lt;type&gt;* data_1, ...
+&lt;type&gt;* data_n]
+)
+Service ID [hex]
+0x04
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+buffer
+Buffer allocated by the RTE, where the still serialized data are
+stored by the Rte
+Parameters (in)
+bufferLength
+Used length of the buffer
+data_1
+Client/Server operation argument which shall be transformed (in
+the same order as in the corresponding interface)
+...
+...
+Parameters (inout)
+data_n
+Client/Server operation argument which shall be transformed (in
+the same order as in the corresponding interface)
+TransactionHandle
+Transaction handle according to [SWS_Rte_08732] (clientId and
+sequenceCounter) needed to differentiate between multiple
+requests.
+Parameters (out)
+returnValue
+Return value from server side for transmission to the calling
+client. This argument is only available for serializers of the
+response of a Client/Server communication if
+• the ClientServerOperation has at least one PossibleError
+defined or
+• autonomous error reaction is activated
+Return value
+uint8
+0x00 (E_OK): Deserialization successful
+0x01 (E_NO_DATA): No data available which can be deserialized
+0x81 (E_SER_GENERIC_ERROR): A generic error occurred
+0x87 (E_SER_WRONG_PROTOCOL_VERSION): The version of the
+receiving transformer didn’t match the sending transformer.
+0x88 (E_SER_WRONG_INTERFACE_VERSION): Interface version
+of serialized data is not supported.
+0x89 (E_SER_MALFORMED_MESSAGE): The received message is
+malformed. The transformer is not able to produce an output.
+0x8a (E_SER_WRONG_MESSAGE_TYPE): The received message
+type was not expected.
+Description
+This function deserializes a Client/Server communication using the deserialization of SOME/IP.
+It takes the uint8 array containing the serialized data as input and outputs the return value of
+the server runnable and the operation arguments which have to be passed from the server to
+the client.
+Available via
+SomeIpXf.h
+⌋
+Note: If variable size arrays with arrayImplPolicy set to payloadAsPointerToArray are
+received as serialized data input, the transformer may need to update the outgoing
+parameters data_1, ..., data_n in response to the size and location of the payload
+once deserialised.
+[SWS_SomeIpXf_00232]
+Upstream requirements: SRS_Xfrm_00101
+⌈In function SomeIpXf_Inv_&lt;transformerId&gt; defined in [SWS_SomeIpXf_00145]
+• paramtype is derived from type according to the parameter passing rules rules
+defined by the [6, SRS BSW General] (see [SRS_BSW_00484], [SRS_BSW_
+00485], and [SRS_BSW_00486]) and [14, SWS BSW General] (see [SWS_-
+BSW_00186]).
+• type shall be the data type of the data element before all data conversion activi-
+ties of the RTE
+• transformerId shall be the name pattern for the transformer specified in
+[SWS_Xfrm_00062] ([3, ASWS Transformer General]).
+⌋
+This function specified in [SWS_SomeIpXf_00145] exists for the server and each client
+of each transformed Client/Server communication which uses the SOME/IP serializa-
+tion.
+It exists on both the Client and the Server but the arguments are different.
+On the server it deserializes the request of the Client/Server call. There, the data_1,
+..., data_n arguments of the API correspond to the IN and INOUT arguments of the
+ClientServerOperation. The argument returnValue doesn’t exist.
+On the client it deserializes the response of the Client/Server call. There, the data_1,
+..., data_n arguments of the API correspond to the INOUT and OUT arguments of
+the ClientServerOperation. If the ClientServerOperation has at least one pos-
+sibleError defined, the returnValue shall be determined by subtracting 0x1F from the
+Return Code value. Otherwise the return value shall be set to the actual value of the
+Return Code.
+[SWS_SomeIpXf_00148]
+Upstream requirements: SRS_Xfrm_00101
+⌈
+The
+function
+SomeIpXf_Inv_&lt;transformerId&gt;
+specified
+in
+[SWS_SomeIpXf_00145] shall exist for the first reference in the list of ordered
+references transformerChain from a DataTransformation to a Transfor-
+mationTechnology if the DataTransformation is referenced by an ISignal in
+the role dataTransformation where the ISignal references a SystemSignal
+which is referenced by ClientServerToSignalMapping in the callSignal or
+returnSignal.⌋
+Due to [SWS_SomeIpXf_00148], the API of [SWS_SomeIpXf_00145] exists both on
+client and server.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Return value on empty buffer for SomeIpXf_Inv</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Xfrm_00062] im Text von SWS_SOMEIPTransformer.</p>
       </section>
 
       <section class="snip-card">
@@ -130,11 +290,11 @@ This function deserializes a Sender/Receiver communication usin</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SOMEIPTransformer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SOMEIPTransformer.pdf#page=83" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransformer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 85</td>
+              <td>Seite 83</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -142,15 +302,15 @@ This function deserializes a Sender/Receiver communication usin</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SomeIpXf_00264" class="swsref internal-spec-ref"><code>SWS_SomeIpXf_00264</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Xfrm_00062" class="swsref internal-spec-ref"><code>SWS_Xfrm_00062</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

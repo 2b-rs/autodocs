@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_7_5_4_Transport_Layer_Security_TLS</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TcpIp.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TcpIp_00381" class="swsref internal-spec-ref"><code>SWS_TcpIp_00381</code></a></span>
         </div>
@@ -87,7 +88,119 @@ root certificate and is referenced by TcpIpTlsTrustedCAListEntry.⌋
 [SWS_TcpIp_00381] ⌈If TcpIpTlsUseExtensionCertificateStatusRequest
 is set to TRUE the status_request_v2 extension shall be supported according to IETF
 RFC 6961. The TLS Client shall transmit a CertificateStatusRequest containing the
-elements of TcpIpT</div></section>
+elements of TcpIpTlsUseExtensionTrustedCAKeys in its ClientHello message.
+If TcpIpTlsUseExtensionTrustedCAKeys contains more than one element, the
+CertificateStatusRequest shall be of type ocsp_multi.⌋
+[SWS_TcpIp_00300]
+Upstream requirements: SRS_Eth_00138
+⌈TcpIp shall support the Transport Layer Security for TCP communication according to
+IETF RFC5246, at least chapters 7 and 8.⌋
+At least those parts from IETF RFC5246 need to be implemented that are required for a
+basic and compatible interoperability with other nodes without any optional extensions.
+[SWS_TcpIp_00301] ⌈Further recommendation according to IETF RFC 7525 for a
+secure TLS implementation shall be considered.⌋
+[SWS_TcpIp_00302]
+Upstream requirements: SRS_Eth_00138
+⌈TLS connection requests with TLS version lower than 1.2 (IETF RFC5246) shall be
+disregarded respectively rejected with an alert. Thus, no backward compatibility han-
+dling to TLS versions lower than TLS 1.2 as described in IETF RFC5246, App. E shall
+be implemented or supported.⌋
+[SWS_TcpIp_00346] ⌈If the TLS connection references TlsCiphersuiteDefinition of
+type TLS_VERSION_V13, then TLS V1.3 shall be the preferred protocol version. Only
+if this fails and ciphersuites for TLS V1.2 are also assigned to the TLS connection, then
+a downgrade operation to TLS V1.2 shall be allowed.⌋
+Info: If the TLS connection does not contain ciphersuites for TLS V1.3, then the hand-
+shake shall be initiated indicating TLS V1.2 protocol.
+[SWS_TcpIp_00303] ⌈Session renegotiation shall be discarded by AUTOSAR TLS
+implementation.⌋
+The KeyExchange algorithms as described in section 7.4.7 and section 8 of IETF
+RFC5246 depend on the ciphersuites. The necessary CSM jobs for key exchange
+are therefore referenced in the ciphersuite configuration.
+[SWS_TcpIp_00304]
+Upstream requirements: SRS_Eth_00139
+⌈If ciphersuites for TLS include support for elliptic curves then mandatory parts of IETF
+RFC 4492 shall be supported accordingly.⌋
+At least, the corresponding Key Exchange algorithms according to section 2 of IETF
+RFC 4492 have to be implemented such as ECDHE. Extensions according to section
+5 only have to be supported if certificates with respective elliptic curve parameters are
+expected to be used.
+[SWS_TcpIp_00329] ⌈The TLS implementation must support at least one ciphersuite
+that corresponds to the DoIP specification ISO13400-2 so that an upper layer is able
+to connect such a socket to a diagnostic communication.⌋
+[SWS_TcpIp_00305] ⌈The TLS connection shall have a configuration parameter that
+defines if the socket is used for TLS client or TLS server communication from the node’s
+perspective.⌋
+[SWS_TcpIp_00306] ⌈A TLS connection that is used for TLS server requires a refer-
+ence to a local certificate with its private key.⌋
+In the configuration, TLS connections can be collected in TcpIpTlsConnection-
+Group. If one TLS connection in a group is already active, another TLS connection of
+the same group shall not be activated. In other words, only one TLS connection of a
+group shall be active at the same time. This allows to define exclusive resources for a
+TLS connection group and resources for TLS connections in the same group can be
+shared.
+[SWS_TcpIp_00315] ⌈A TLS Server shall request client authentication if the selected
+TLS connection is configured accordingly (i.e. the config parameter TcpIpTlsUse-
+ClientAuthenticationRequest is set to TRUE). In this case, a local certificate
+with its private key is also required for a TLS client and shall be provided to the server
+on demand during the TLS handshake.⌋
+[SWS_TcpIp_00349] ⌈If TcpIpTlsUseExtensionRecordSizeLimit is set to
+TRUE then the record_size_limit extension shall be used to negotiate the max. frag-
+ment length between TLS server and client according to IETF RFC 8449, chapter 4.1.⌋
+The assignment of TLS connections to TCP sockets is either based on static configu-
+ration (static TLS connection assignment) or done dynamically by means of an API call
+(dynamic TLS connection assignment).
+[SWS_TcpIp_00307] ⌈In dynamic TLS connection assignment a TLS connection shall
+be assigned to a TCP socket through a function call to TcpIp_ChangeParameter()
+with the ParameterId TCPIP_PARAMID_TLS_CONNECTION_ASSIGNMENT. The Pa-
+rameterValue of the function provides a reference to a TLS connection for this socket.⌋
+Note: A typical approach to dynamically assign a TLS connection to a socket is dur-
+ing the channel set-up before a socket connection has been established. However, it
+shall also be possible to perform this operation after the socket connection has been
+established. This might be useful starting with plain text communication and later on
+switching to TLS encrypted communication to accomplish for e.g. a STARTTLS opera-
+tion.
+[SWS_TcpIp_00337] ⌈For dynamic TLS connection assignment via TcpIp_-
+ChangeParameter(), the call to TcpIp_ChangeParameter() shall initiate the TLS
+handshake as follows:
+• a TLS Server shall wait for a ClientHello as the next message on this socket.
+• a TLS Client shall start sending a ClientHello message.
+• after that TcpIp shall no longer pass on plain messages to upper or lower layer
+but pass it on to TLS.
+⌋
+The
+successful
+completion
+of
+the
+TLS
+handshake
+is
+signaled
+according
+to
+[SWS_TcpIp_00345].
+[SWS_TcpIp_00308] ⌈For static TLS connection assignment a port and optionally an
+address is defined for at least one TLS connection, TCP shall check during TCP SYN
+(either reception or transmission of SYN) if a port assignment is available for any TLS
+connection and if this TLS connection is not in use. If so, the TCP shall check the ports
+and automatically assign this TLS connection to the socket if a port matches.⌋
+[SWS_TcpIp_00343] ⌈For static TLS connection assignment the TCP client shall
+check its remote port configuration when the SYN frame will be transmitted. If the
+TLS port configuration matches it shall assign the corresponding TLS connection to
+the socket.⌋
+Note: This approach rules out use cases where one client uses different TLS settings
+(including not using TLS at all) for different local sockets when connecting to the same
+remote listening socket. However, having one client connecting to the same remote
+listening socket via different local sockets using different TLS settings is deemed an
+exotic use case and is thus deliberately not supported.
+[SWS_TcpIp_00344] ⌈For static TLS connection assignment the TCP server shall
+check its local port configuration when the SYN frame is received. If the TLS port
+configuration matches it shall assign the corresponding TLS connection to the socket.⌋
+Note: This approach rules out use cases where one server uses different TLS settings
+(including not using TLS at all) for different remote sockets but the same local listening
+socket. However, having one server using different TLS settings for different clients
+with the same listening socket is deemed an exotic use case and is thus deliberately
+not supported.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +213,7 @@ elements of TcpIpT</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TcpIp.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

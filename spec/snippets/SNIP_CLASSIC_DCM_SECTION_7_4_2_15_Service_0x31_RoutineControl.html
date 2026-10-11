@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_15_Service_0x31_RoutineControl</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 194)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=189" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 189)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91013" class="swsref internal-spec-ref"><code>SWS_Dcm_91013</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06100</span>
         </div>
       </div>
 
@@ -94,11 +95,115 @@ routineIdentifier
 (see configuration parameters DcmDspRequestRoutineResultsFnc, DcmD-
 spRoutineUsePort and DcmDspRoutineFncSignature)
 • List of signal available in the request and in the response (see configuration
-parameters DcmDspRequestRoutineResultsIn and DcmDspRequestRou</div></section>
+parameters DcmDspRequestRoutineResultsIn and DcmDspRequestRou-
+tineResultsOut)
+[SWS_Dcm_01442]
+Upstream requirements: RS_Diag_04224
+⌈If DcmDspRoutineUsePort is set to true, the Dcm shall call the corresponding oper-
+ation of the C/S interfaces RoutineServices_RoutineName to process this routine.⌋
+A routine handler processes the diagnostic routine control request. The Dcm passes the
+routineControlOption as input parameters to the routine handler. The routine processes
+the request and writes the result to the output parameters of the routine handler call.
+In case of shared Rx and Tx buffer, there are two cases where writing to the output
+parameters of the routine control can cause overwriting of the input parameters:
+• a routine control uses arrays as output parameters (call by reference)
+• a routine control writes to output parameters and returns DCM_E_PENDING. It
+is called again with DcmOpstatus set to DCM_PENDING. The input parameters
+are derived from the Rx buffer that was overwritten by the previous write to the
+output parameters
+For efficient memory consumption it is controllable, if the Dcm applies further strategies
+to separate input and output parameters in those situations.
+Manager
+[SWS_Dcm_01580] Input and output consistency during C/S based routine han-
+dling
+Upstream requirements: RS_Diag_04224
+⌈If
+DcmDspRoutineUsePort
+is
+set
+to
+TRUE
+and
+the
+ClientServerOpera-
+tion.diagArgIntegrity of that operation is also set to TRUE, the Dcm shall ensure that
+the routine handler in the C/S interfaces RoutineServices_RoutineName writing to the
+output parameters will not overwrite the input parameters.⌋
+[SWS_Dcm_01581] "Routine argument integrity for C/S calls
+Upstream requirements: RS_Diag_04224
+⌈If DcmDspRoutineUsePort is set to true and DcmDspRoutineInterfaceAr-
+gumentIntegrity is configured, the Dcm shall create the corresponding oper-
+ation of the C/S interface RoutineServices_RoutineName with ClientServerOpera-
+tion.diagArgIntegrity set to DcmDspRoutineInterfaceArgumentIntegrity.⌋
+[SWS_Dcm_CONSTR_06097]
+Availability of DcmDspRoutineInterfaceArgu-
+mentIntegrity ⌈DcmDspRoutineInterfaceArgumentIntegrity shall only be
+available if the corresponding DcmDspRoutine has DcmDspRoutineUsePort is set
+to true.⌋
+[SWS_Dcm_01443]
+Upstream requirements: RS_Diag_04224
+⌈If DcmDspRoutineUsePort is set to false, the Dcm shall use the configured callout
+functions for routine operations.⌋
+[SWS_Dcm_00568] ⌈On reception of the UDS Service RoutineControl (0x31), the Dcm
+module shall check if the Routine is supported (see configuration parameter DcmD-
+spRoutine) If not, the Dcm module shall send NRC 0x31 (Request out of range).⌋
+[SWS_Dcm_00569] ⌈If a Routine is set as unused (DcmDspRoutineUsed set
+to FALSE), the Dcm shall consider the Routine as not supported (according to
+[SWS_Dcm_00568])⌋
+[SWS_Dcm_01555] StartRoutine authentication check
+Upstream requirements: RS_Diag_04233
+⌈On reception of the UDS Service RoutineControl (0x31) with sub-function startRou-
+tine, the Dcm shall check if the access to the requested routine identifier is authenti-
+cated and process the routine only if:
+• for this start routine service a role is configured via DcmDspStartRoutineRol-
+eRef and the verification according to [SWS_Dcm_01522] was successful or
+• the active white list on that connection has one RID entry with sub-function ac-
+cess set to startRoutine that matches that service and sub-function.
+⌋
+Manager
+[SWS_Dcm_01556] StopRoutine authentication check
+Upstream requirements: RS_Diag_04233
+⌈On reception of the UDS Service RoutineControl (0x31) with sub-function stopRou-
+tine, the Dcm shall check if the access to the requested routine identifier is authenti-
+cated and process the routine only if:
+• for this stop routine service a role is configured via DcmDspStopRoutineRol-
+eRef and the verification according to [SWS_Dcm_01522] was successful or
+• the active white list on that connection has one RID entry with sub-function ac-
+cess set to stopRoutine that matches that service and sub-function.
+⌋
+[SWS_Dcm_01557] RequestRoutineResult authentication check
+Upstream requirements: RS_Diag_04233
+⌈On reception of the UDS Service RoutineControl (0x31) with sub-function reque-
+stRoutineResult, the Dcm shall check if the access to the requested routine identifier
+is authenticated and process the routine only if:
+• for this request routine results service a role is configured via DcmD-
+spRequestRoutineResultsRoleRef
+and
+the
+verification
+according
+to
+[SWS_Dcm_01522] was successful or
+• the active white list on that connection has one RID entry with sub-function ac-
+cess set to requestRoutineResults that matches that service and sub-function.
+⌋
+According to [SWS_Dcm_01537] the authentication checks are only executed if
+DcmDspAuthentication is configured. In case of a failed authentication the NRC
+handling is according to [SWS_Dcm_01544] and [SWS_Dcm_01551] applies.
+The service RoutineControl (0x31) is of exotic nature and has both, a sub-function and
+an identifier. UDS defines a different behavior for this service. Permission checks for
+session and security are done on identifier level rather than on sub-function level.
+[SWS_Dcm_CONSTR_06100] Same session and security settings for same rou-
+tine identifier ⌈All DcmDspCommonAuthorization that are referenced via DcmD-
+spStartRoutineCommonAuthorizationRef, DcmDspStopRoutineCommonAu-
+thorizationRef or DcmDspRequestRoutineResultsCommonAuthorization-
+Ref from a the same DcmDspRoutine, shall have the same (identical) set of ref-
+erenced DcmDspCommonAuthorizationSecurityLevelRef and DcmDspCommo-
+nAuthorizationSessionRef.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06100] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -107,11 +212,11 @@ parameters DcmDspRequestRoutineResultsIn and DcmDspRequestRou</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=189" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 194</td>
+              <td>Seite 189</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -119,7 +224,7 @@ parameters DcmDspRequestRoutineResultsIn and DcmDspRequestRou</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_91013" class="swsref internal-spec-ref"><code>SWS_Dcm_91013</code></a></td>
+              <td>SWS_Dcm_CONSTR_06100</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

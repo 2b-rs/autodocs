@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_7_2_1_2_Alive_Supervision_Algorithm</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 42)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00263" class="swsref internal-spec-ref"><code>SWS_WdgM_00263</code></a></span>
         </div>
@@ -91,7 +92,27 @@ Note: During the intermediate Supervision Cycles of the Alive Supervision, the f
 WdgM_MainFunction does not perform the examination of Alive Counters.
 [SWS_WdgM_00074]
 Upstream requirements: SRS_ModeMgm_09112
-⌈The function WdgM_MainFunction shall examine an Alive Counter b</div></section>
+⌈The function WdgM_MainFunction shall examine an Alive Counter by checking if
+it is within the allowed tolerance (Expected - Min Margin; Expected + Max Margin)
+(see WdgMExpectedAliveIndications [ECUC_WdgM_00311], WdgMMinMargin,
+WdgMMaxMargin).⌋
+If any Checkpoint of a Supervised Entity fails the examination, then the result of Alive
+Supervision for the Supervised Entity is set to incorrect.
+[SWS_WdgM_00115]
+Upstream requirements: SRS_ModeMgm_09112
+⌈If the function WdgM_MainFunction detects a deviation between the counted Alive
+Indications and the expected amount of alive indications [ECUC_WdgM_00311] (in-
+cluding tolerance margins [ECUC_WdgM_00312], [ECUC_WdgM_00313]) for any
+Checkpoint of a Supervised Entity, then Alive Supervision at this Supervision
+Reference Cycle for this Supervised Entity shall be defined as incorrect. Other-
+wise, it shall be defined as correct.⌋
+If a Checkpoint is not Alive-Supervised in a mode, then it is ignored by Watchdog
+Manager.
+[SWS_WdgM_00083]
+Upstream requirements: SRS_ModeMgm_09112, SRS_ModeMgm_09143
+⌈The function WdgM_MainFunction shall not perform the examination of the Alive
+Counter of a Checkpoint if no corresponding Alive Supervision (WdgMAliveSuper-
+vision) is defined in the active Watchdog Manager Mode.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +125,7 @@ Upstream requirements: SRS_ModeMgm_09112
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

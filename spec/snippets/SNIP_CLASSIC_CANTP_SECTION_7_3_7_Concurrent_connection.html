@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: cantp</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANTP_SECTION_7_3_7_Concurrent_connection</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANTransportLayer.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></strong> (Seite 41)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTp_00289" class="swsref internal-spec-ref"><code>SWS_CanTp_00289</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTp_00337" class="swsref internal-spec-ref"><code>SWS_CanTp_00337</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,59 @@ or state machine.⌋
 [SWS_CanTp_00190] ⌈The CanTp module shall route the N-SDU through the cor-
 rectly configured connection channel.⌋
 [SWS_CanTp_00287] ⌈The CanTp module shall not accept the receiving or the trans-
-mission of N-SDU with the same identifier in parallel, because otherwise the received</div></section>
+mission of N-SDU with the same identifier in parallel, because otherwise the received
+frames cannot be assigned to the correct connection. When only specific connections
+(without MetaData) are used, this requirement is enforced by the configuration, be-
+cause each N-SDU is linked to only one connection channel.⌋
+If a user wants to dedicate a specific connection channel to only one N-SDU, they
+should assign this connection channel to one N-SDU only during the configuration
+process.
+[SWS_CanTp_00288] ⌈If a connection channel is assigned to multiple N-SDUs, then
+resources are shared between different N-SDUs, and the CAN Transport Layer will
+reject transmission or abort receiving, if no free connection channels are available.⌋
+[SWS_CanTp_00289] ⌈The number of connection channels is not directly config-
+urable. It will be determined by the configuration tools during the configuration process,
+by analyzing the N-SDU/Channel routing table.⌋
+[SWS_CanTp_00123]
+Upstream requirements: SRS_Can_01066
+⌈If
+the
+configured
+transmit
+connection
+channel
+is
+in
+use
+(state
+CANTP_TX_PROCESSING), the CanTp module shall reject new transmission re-
+quests linked to this channel.
+To reject a transmission, CanTp returns E_NOT_OK
+when the upper layer asks for a transmission with the CanTp_Transmit() function.⌋
+[SWS_CanTp_00124]
+Upstream requirements: SRS_Can_01066
+⌈When an SF or FF N-PDU without MetaData is received,
+and the corre-
+sponding connection channel is currently receiving the same connection (state
+CANTP_RX_PROCESSING, same N_AI), the CanTp module shall abort the reception
+in progress and shall process the received frame as the start of a new reception.
+When an SF or FF N-PDU without MetaData is received for another connection (dif-
+ferent N_AI) on an active connection channel, the SF or FF shall be ignored.⌋
+[SWS_CanTp_00337] ⌈When an SF or FF N-PDU with MetaData (indicating a
+generic connection) is received, and the corresponding connection channel is currently
+receiving, the SF or FF shall be ignored.⌋
+[SWS_CanTp_00248] ⌈When a Tx N-PDU is used by two or more different connec-
+tions on different channels, access to this N-PDU shall be serialized by using the Tx-
+Confirmation. An Rx N-PDU can only be used on two or more different connection
+channels if extended or mixed addressing is used in relation with this N-PDU or when
+it has MetaData (and thus belongs to a generic connection).⌋
+Note: CAN FD and CAN frames will be mapped to different PDUs by LSduR depending
+on the frame format (CAN FD or CAN 2.0). Therefore, it is possible to distinguish
+between CAN FD and classic CAN communication.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">connection channels configuration and routing</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CanTp_00337] im Text von SWS_CANTransportLayer.</p>
       </section>
 
       <section class="snip-card">
@@ -106,11 +155,11 @@ mission of N-SDU with the same identifier in parallel, because otherwise the rec
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANTransportLayer.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 42</td>
+              <td>Seite 41</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -118,15 +167,15 @@ mission of N-SDU with the same identifier in parallel, because otherwise the rec
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTp_00289" class="swsref internal-spec-ref"><code>SWS_CanTp_00289</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CanTp_00337" class="swsref internal-spec-ref"><code>SWS_CanTp_00337</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

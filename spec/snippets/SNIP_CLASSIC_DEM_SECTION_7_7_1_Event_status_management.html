@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_1_Event_status_management</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 81)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 81)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91037" class="swsref internal-spec-ref"><code>SWS_Dem_91037</code></a></span>
         </div>
@@ -91,11 +92,98 @@ Dem_SetEventStatus). After the call, the monitor status is not qualified or test
 Monitors will use the function Dem_ResetEventStatus in order to deactivate limp
 home and switch back to normal operation.
 At this point in time, the monitor has
-typically not been OK-tested a</div></section>
+typically not been OK-tested and therefore Dem_SetEventStatus with tested and
+passed cannot be used.
+[SWS_Dem_00187] Behavior of Dem_ResetEventStatus
+Upstream requirements: RS_Diag_04067
+⌈The function Dem_ResetEventStatus shall set the event status bit 0 (Test-
+Failed) to 0 and reset the Dem-internal debounce algorithm to initial values if config-
+ured. The Dem shall execute this action asynchronously at a later point in time.⌋
+A later point in time means that the exact moment is implementation specific. This
+could be the next main function and after Dem_ResetEventStatus has returned.
+Also a possible call of the status change callback is triggered asynchronously.
+Note: The function Dem_ResetEventStatus does not change the monitor status and
+UDS status bit 6 and does not clear the pre-stored freeze frame.
+[SWS_Dem_00638]
+Upstream requirements: RS_Diag_04067
+⌈The function Dem_ResetEventStatus shall return E_NOT_OK, if the event was
+already tested this operation cycle (UDS status bit 6 is set to 0).⌋
+[SWS_Dem_01390] Behavior of Dem_ResetMonitorStatus ⌈The function Dem_-
+ResetMonitorStatus shall set the monitor status bit 0 (TestFailed) to 0 and reset
+the Dem-internal debounce algorithm to initial values if configured.⌋
+Note: The function Dem_ResetMonitorStatus does not change the UDS status
+byte and does not clear the pre-stored freeze frame.
+[SWS_Dem_01401]
+⌈The
+function
+Dem_ResetMonitorStatus
+shall
+return
+E_NOT_OK, if the monitoring was already tested this operation cycle (monitor
+status byte, bit 1 set to 0).⌋
+[SWS_Dem_00051]
+Upstream requirements: RS_Diag_04067
+⌈If the API Dem_GetEventUdsStatus is called, the Dem shall provide the current
+event status byte of a specific event.⌋
+Note: The function Dem_GetEventUdsStatus is provided to be used by SW-Cs or
+other BSW modules (e.g. FiM) on event-level. The Dcm uses the function Dem_-
+GetStatusOfDTC on DTC-level instead.
+[SWS_Dem_00844]
+Upstream requirements: RS_Diag_04068
+⌈The Dem shall provide a function Dem_GetDebouncingOfEvent () that reports the
+debounce status of an event. The outparameter ‘DebouncingState’ returns the de-
+bouncing incl. intermediate states. One particular OBD specific bit shall support the
+DTR update trigger if test is complete and debouncing is at its limit while the enable
+and storage conditions are met.⌋
+The Dem supports a configuration per event to forbid to reset the event in the same
+operation cycle.
+[SWS_Dem_01208]
+Upstream requirements: RS_Diag_04151
+⌈If the configuration parameter DemEventRecoverableInSameOperationCycle is
+set to FALSE, a report of PASSED (directly via Dem_SetEventStatus or indirectly
+after Debouncing) will be ignored if the event status byte has the “TestFailedThisOper-
+ationCycle” flag is set to 1.⌋
+Note: Debouncing is done independently from the value DemEventRecoverableIn-
+SameOperationCycle. The FDC can reach -128 independently from the setting of
+DemEventRecoverableInSameOperationCycle.
+[SWS_Dem_01209]
+Upstream requirements: RS_Diag_04151
+⌈The Dem shall perform the configured debouncing independently from the setting of
+the configuration parameter DemEventRecoverableInSameOperationCycle. I.e.
+if DemEventRecoverableInSameOperationCycle is set to FALSE and the moni-
+tor for this event reports PREPASSED the Dem shall still process the debouncing (e.g.
+decrement the counter).⌋
+[SWS_Dem_01250]
+Upstream requirements: RS_Diag_04165
+⌈If DemMultiEventTriggering is configured and any of the APIs:
+• Dem_SetEventStatus
+• Dem_ResetEventStatus
+• Dem_PrestoreFreezeFrame
+• Dem_ClearPrestoredFreezeFrame
+• Dem_ResetEventDebounceStatus
+is called with an EventId that is referenced by DemMultiEventTriggeringMas-
+terEventRef of a DemMultiEventTriggering, for each DemMultiEventTrig-
+geringSlaveEventRef of this DemMultiEventTriggering the Dem shall trigger
+the same API calls with identical parameters only the EventId parameter shall be
+replaced with the event referenced from DemMultiEventTriggeringSlaveEven-
+tRef.⌋
+[SWS_Dem_01339]
+Upstream requirements: RS_Diag_04165
+⌈The Dem shall not support calls of
+• Dem_SetEventStatus
+• Dem_ResetEventStatus
+• Dem_PrestoreFreezeFrame
+• Dem_ClearPrestoredFreezeFrame
+• Dem_ResetEventDebounceStatus
+with an EventId that is referenced by any of the DemMultiEventTrigger-
+ingSlaveEventRef in container DemMultiEventTriggering or by DemStor-
+ageConditionReplacementEventRef. These events are exclusively used for in-
+ternal triggering. The behavior of the Dem is undefined if any of those APIs are called
+in this situation.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SetEventStatusWithMonitorData().</p>
       </section>
 
       <section class="snip-card">
@@ -104,7 +192,7 @@ typically not been OK-tested a</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_6_MKPDU_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MACsecKeyAgreement.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MACsecKeyAgreement.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MACsecKeyAgreement.pdf</a></strong> (Seite 26)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_00563" class="swsref internal-spec-ref"><code>SWS_EthIf_00563</code></a></span>
         </div>
@@ -88,7 +89,96 @@ DRAFT
 Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
 ⌈A MkaPaeRxPdu and a MkaPaeTxPdu of a specific MkaPaeInstance shall refer
 to PDUs of an EthIfController where the associated MACsec protected Ether-
-net port (e.g. PH</div></section>
+net port (e.g. PHY or Ethernet controller or Ethernet switch port) has either MAC-
+sec protection disabled or an EtherType bypass rule (e.g. EthTrcvMacSecBypas-
+sEtherType) configured with value set to the EAPoL Ethernet Type specified by [5,
+IEEE-802.1X-2020] and the corresponding EthIf PDU configuration fulfills the following
+constraints:
+• the MkaPaeRxPdu refers to a EthIfFrameRxPool and the MkaPaeTxPdu
+refers to a EthIfFrameTxPool, where both PDU pools belong to the same
+EthIfFrameConfig that has EthIfFrameType set to the value of the EAPoL
+Ethernet Type specified by [5, IEEE-802.1X-2020]
+• those PDU pools reference this EthIfController
+⌋
+[CP_SWS_Mka_00038] MAC source / destination address of a MKPDU to be
+transmitted
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If the MKA module need to generate a MKPDU for transmission of a specific Mka-
+PaeInstance, then the MKA module shall consider at least the following points:
+• the MKA shall retain the MAC source address of the Ethernet controller that be-
+longs to this MkaPaeInstance by calling EthIf_GetPhysAddr with CtrlIdx
+set to a EthIfController that references the EthIfPhysController which
+addresses this Ethernet controller
+• the MKA shall set the value of the meta data item ETHERNET_MAC_64 to the
+configured MkaDstMacAddress of the MkaKay that belongs to this MkaPaeIn-
+stance
+⌋
+[CP_SWS_Mka_00039] Call of LSduR_MkaTransmit for a generated MKPDU
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If the MKA module has generated a MKPDU for a specific MkaPaeInstance and
+this MKPDU needs to be transmitted, then the MKA module shall call LSduR_Mka-
+Transmit with TxPduId set to MkaPaeTxPduId that is configured for this MkaPae-
+Instance and SduDataPtr of PduInfoPtr set to the memory address of the gen-
+erated MKPDU.⌋
+Initialization and update of a MACsec Entity (SecY) need to be robust and consider
+hardware issues. API calls may be repeated multiple times to over come race con-
+ditions if hardware of the MACsec Entity react not as expected. The MKA module is
+responsible to retry function calls once a function to initialize, update or maintain the
+MACsec Entity returns with E_NOT_OK.
+[CP_SWS_Mka_00040] Retry to trigger transmission for a call of LSduR_Mka-
+Transmit
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If the MKA module has triggered a transmission of a MKPDU for a specific MkaPae-
+Instance and call of LSduR_MkaTransmit returns with E_NOT_OK, then the MKA
+module shall retry to trigger the transmission during the next main cycles again for this
+MkaPaeInstance until LSduR_MkaTransmit returns with E_OK or Mka_LinkStat-
+eChange with TransceiverLinkState set to ETHTRCV_LINK_STATE_DOWN and
+MkaPaeIdx set to the affected MkaPaeInstance.⌋
+[CP_SWS_Mka_00041] Retry of transmission for a generated MKPDU where the
+corresponding Mka_TxConfirmation returns with result set to E_NOT_OK
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If the MKA module triggered a transmission of a MKPDU for a specific MkaPaeIn-
+stance where the call of LSduR_MkaTransmit returned with E_OK and the indication
+of Mka_TxConfirmation with TxPduId set to the MkaPaeTxPduId that is used for
+this transmission process returns with result set to E_NOT_OK, then the MKA module
+shall retry the transmission process during the next main cycles again for this MkaPae-
+Instance until this transmission process is successfully finalized or Mka_LinkStat-
+eChange with TransceiverLinkState set to ETHTRCV_LINK_STATE_DOWN and
+MkaPaeIdx set to the affected MkaPaeInstance.⌋
+MKPDUs are transmitted to an MAC multicast address. The MAC multicast address is
+specified by IEEE and is mentioned in [5, IEEE-802.1X-2020]. The MKA module need
+to update the MAC filter at the affected Ethernet controller to enable the reception of
+MKPDUs. The update of the MAC address filter should be done as early as possible
+after the AUTOSAR stack is initialized and the BSW modules are running, e.g. first call
+of the Mka_MainFunction.
+[CP_SWS_Mka_00042] Update the MAC address filter in the Ethernet controller
+with the IEEE specified MAC multicast address for MKPDU exchange
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈After initialization and startup of the MKA module, the MKA module shall update the
+MAC address filter as early as possible for each different EthIfController that is
+referenced by the configured MkaPaeInstances via MkaEthIfControllerRef by
+calling EthIf_UpdatePhysAddrFilter with CtrlIdx set to index of the affected
+EthIfController, PhysAddrPtr set to the MAC multicast address for MKPDU
+exchange (see [5, IEEE-802.1X-2020]) and Action set to ETH_ADD_TO_FILTER.⌋
+[CP_SWS_Mka_00043] Retry to update the MAC address filter if EthIf_Up-
+datePhysAddrFilter returned with E_NOT_OK
+Status:
+DRAFT
+Upstream requirements: FO_RS_MACsec_00002, FO_RS_MACsec_00008
+⌈If a call of EthIf_UpdatePhysAddrFilter to update the MAC address filter re-
+turned with E_NOT_OK (see [CP_SWS_Mka_00042]), then the MKA module shall retry
+to update MAC address filter with a call of EthIf_UpdatePhysAddrFilter for the
+affected EthIfController latest in the next main function call.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +191,7 @@ net port (e.g. PH</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MACsecKeyAgreement.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MACsecKeyAgreement.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MACsecKeyAgreement.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

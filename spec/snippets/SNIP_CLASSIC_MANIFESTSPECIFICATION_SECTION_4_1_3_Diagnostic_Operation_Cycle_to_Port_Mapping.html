@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MANIFESTSPECIFICATION_SECTION_4_1_3_Diagnostic_Operation_Cycle_to_Port_Mapping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ManifestSpecification.pdf</strong> (Seite 245)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=243" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></strong> (Seite 245)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01132" class="swsref"><code>TPS_SWCT_01132</code></a></span>
         </div>
@@ -112,7 +113,211 @@ Identifiable
 ServiceNeeds
 DiagnosticCapabilityElement
 +
-audience</div></section>
+audience: DiagnosticAudienceEnum [0..*]
++
+diagRequirement: DiagRequirementIdString [0..1]
++
+securityAccessLevel: PositiveInteger [0..1]
+DiagnosticOperationCycleNeeds
++
+operationCycle: OperationCycleTypeEnum [0..1]
++
+operationCycleAutomaticEnd: Boolean [0..1]
++
+operationCycleAutostart: Boolean [0..1]
+RoleBasedPortAssignment
++
+role: Identifier [0..1]
+AtpBlueprintable
+AtpPrototype
+PortPrototype
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+PortInterface
+DiagnosticPortInterface
+DiagnosticOperationCycleInterface
+AbstractRequiredPortPrototype
+RPortPrototype
++portPrototype
+0..1
+«isOfType»
++requiredInterface
+0..1
+{redefines atpType}
+«atpVariation,atpSplitable»
++assignedPort
+0..*
++design
+0..1
+«atpSplitable»
++process
+0..1
++serviceNeeds
+0..1
+«instanceRef»
++swcServiceDependencyInExecutable
+0..1
++operationCycle
+0..1
+Figure 4.6: Modeling of DiagnosticOperationCyclePortMapping for the usage on
+the AUTOSAR adaptive platform
+Class
+DiagnosticOperationCycle
+Package
+M2::AUTOSARTemplates::DiagnosticExtract::Dem::DiagnosticOperationCycle
+Note
+Definition of an operation cycle that is the base of the event qualifying and for Dem scheduling.
+Tags:atp.recommendedPackage=DiagnosticOperationCycles
+Base
+ARElement, ARObject, CollectableElement, DiagnosticCommonElement, Identifiable, Multilanguage
+Referrable, PackageableElement, Referrable
+Attribute
+Type
+Mult.
+Kind
+Note
+▽
+△
+Class
+DiagnosticOperationCycle
+automaticEnd
+Boolean
+0..1
+attr
+If set to true the driving cycle shall automatically end at
+either Dem_Shutdown() or Dem_Init().
+This attribute is only relevant for the AUTOSAR adaptive
+platform. It no longer has a meaning on the AUTOSAR
+classic platform.
+cycleStatus
+Storage
+Boolean
+0..1
+attr
+Defines if the operation cycle state is available over the
+power cycle (stored non-volatile) or not.
+• true: the operation cycle state is stored
+non-volatile
+• false: the operation cycle state is only stored
+volatile
+This attribute is only relevant for the AUTOSAR adaptive
+platform. It no longer has a meaning on the AUTOSAR
+classic platform.
+type
+DiagnosticOperation
+CycleTypeEnum
+0..1
+attr
+Operation cycles types for the Dem.
+Table 4.8: DiagnosticOperationCycle
+Class
+DiagnosticOperationCyclePortMapping
+Package
+M2::AUTOSARTemplates::DiagnosticExtract::Dem::DiagnosticMapping
+Note
+Defines to which SWC service ports with DiagnosticOperationCycleNeeds the DiagnosticOperationCycle
+is mapped.
+Tags:atp.recommendedPackage=DiagnosticMappings
+Base
+ARElement, ARObject, CollectableElement, DiagnosticCommonElement, DiagnosticMapping,
+DiagnosticSwMapping, Identifiable, MultilanguageReferrable, PackageableElement, Referrable
+Attribute
+Type
+Mult.
+Kind
+Note
+operationCycle
+DiagnosticOperation
+Cycle
+0..1
+ref
+Reference to the DiagnosticOperationCycle that is
+assigned to SWC service ports with DiagnosticOperation
+CycleNeeds.
+process
+ProcessDesign
+0..1
+ref
+Reference to the representation of a Process that is
+required because the mapping could be different for
+different Processes referring to a specific Executable.
+Stereotypes: atpSplitable
+Tags:
+atp.Splitkey=process
+atp.Status=draft
+swcFlatService
+Dependency
+SwcService
+Dependency
+0..1
+ref
+Reference to a SwcServiceDependencyType that links
+ServiceNeeds to SWC service ports.
+swcService
+DependencyIn
+Executable
+SwcService
+Dependency
+0..1
+iref
+This aggregation allows for the usage of the Diagnostic
+OperationCyclePortMapping on the AUTOSAR adaptive
+platform.
+Tags:atp.Status=draft
+InstanceRef implemented by:SwcServiceDependency
+InExecutableInstanceRef
+swcService
+DependencyIn
+System
+SwcService
+Dependency
+0..1
+iref
+Instance reference to a SwcServiceDependency that links
+ServiceNeeds to SWC service ports.
+InstanceRef implemented by:SwcServiceDependency
+InSystemInstanceRef
+Table 4.9: DiagnosticOperationCyclePortMapping
+Class
+DiagnosticOperationCycleNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+This meta-class represents the needs of a software-component to provide information regarding the
+operation cycle management to the Dem module.
+Base
+ARObject, DiagnosticCapabilityElement, Identifiable, MultilanguageReferrable, Referrable, Service
+Needs
+Attribute
+Type
+Mult.
+Kind
+Note
+operationCycle
+OperationCycleType
+Enum
+0..1
+attr
+Operation cycles types for the Dem to be supported by
+cycle-state APIs.
+operationCycle
+AutomaticEnd
+Boolean
+0..1
+attr
+If this attribute is set to true the Dem shall automatically
+end the driving cycle at either Dem_Shutdown() or Dem_
+Init().
+operationCycle
+Autostart
+Boolean
+0..1
+attr
+If this attribute is set to true the operation cycles is
+automatically (re-)started during Dem_PreInit().
+Table 4.10: DiagnosticOperationCycleNeeds</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -125,7 +330,7 @@ audience</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/AP/AUTOSAR_TPS_ManifestSpecification.pdf#page=243" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

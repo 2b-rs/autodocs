@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_7_Notification_of_mode_switches</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 436)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=435" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 435)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07535" class="swsref internal-spec-ref"><code>SWS_Rte_07535</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07541" class="swsref internal-spec-ref"><code>SWS_Rte_07541</code></a></span>
         </div>
       </div>
 
@@ -201,11 +202,125 @@ atpFeature}
 «atpVariation,atpSplitable»
 +requiredModeGroup
 0..*
-{subse</div></section>
+{subsets
+atpFeature}
+«isOfType»
++type
+0..1
+{redefines
+atpType}
++initialMode
+0..1
+«atpVariation,atpSplitable»
++modeDeclaration
+0..*
+Figure 4.59: Definition of a ModeSwitchInterface.
+• [SWS_Rte_02549]
+Upstream requirements: SRS_Rte_00144
+⌈Mode switches shall be communicated via RTE by ModeDeclarationGroup-
+Prototypes of a ModeSwitchInterface as defined in [2].⌋
+See Fig. 4.59.
+The mode switch ports of the mode manager and the mode user are of
+the type of a ModeSwitchInterface.
+• [SWS_Rte_07538]
+Upstream requirements: SRS_Rte_00213
+⌈Mode switches shall be communicated via Basic Software Scheduler via
+providedModeGroup and requiredModeGroup ModeDeclarationGroupPro-
+totypes as defined in [9].
+Which ModeDeclarationGroupPrototypes are con-
+nected to each other is defined by the configuration of the Basic Software Sched-
+uler.⌋
+See Fig. 4.59.
+• RTE / Basic Software Scheduler only requires the notification of switches be-
+tween modes.
+• AUTOSAR does not support inter ECU communication of mode switch notifica-
+tions.
+For the distributed mode management mode requests can be distributed via
+ServiceProxySwComponentTypes and the BswM of each target ECU to the
+mode users of the BswMs.
+• [SWS_Rte_02508]
+Upstream requirements: SRS_Rte_00144
+⌈A mode switch shall be notified asynchronously as indicated by the use of a
+ModeSwitchInterface.⌋
+Rationale: This simplifies the communication.
+The communication of mode
+switch notifications is ECU local and no handshake is required to guarantee reli-
+able transmission.
+RTE offers the Rte_Switch API to the mode manager for this notification, see
+5.6.6.
+Basic Software Scheduler offers the SchM_Switch API to the mode manager
+for this notification, see 6.5.7.
+• The mode manager might still require a feedback to keep it’s internal state
+machine synchronized with the RTE / Basic Software Scheduler view of active
+modes.
+The RTE generator shall support an AcknowledgementRequest from the mode
+switch port / providedModeGroup ModeDeclarationGroupPrototype
+of a mode manager, see [SWS_Rte_02587], to notify the mode manager of the
+completion of a mode switch.
+• [SWS_Rte_02566]
+Upstream requirements: SRS_Rte_00144
+⌈A ModeSwitchInterface shall support 1:n communication.⌋
+Rationale: This simplifies the configuration and the communication. One mode
+switch can be notified to all receivers simultaneously.
+A
+ModeSwitchInterface
+does
+not
+support
+n:1
+communication,
+see
+[SWS_Rte_02670].
+• [SWS_Rte_07539]
+Upstream requirements: SRS_Rte_00213
+⌈The connection of providedModeGroup and requiredModeGroup Mod-
+eDeclarationGroupPrototype shall support 1:n communication.⌋
+• [SWS_Rte_02624]
+Upstream requirements: SRS_Rte_00144
+⌈A mode switch shall be notified with event semantics, i.e., the mode switch
+notifications shall be buffered by RTE or Basic Software Scheduler to which the
+mode machine instance is assigned.⌋
+The queueing of mode switches (and SwcModeSwitchEvents) depends like
+that of DataReceivedEvents on the settings for the receiving port, see sec-
+tion 4.3.1.10.2.
+• [SWS_Rte_02567]
+Upstream requirements: SRS_Rte_00144
+⌈A ModeSwitchInterface shall only indicate the next mode of the transition.⌋
+• [SWS_Rte_07541]
+Upstream requirements: SRS_Rte_00213
+⌈A providedModeGroup
+ModeDeclarationGroupPrototype shall only indicate the next mode of the
+transition.⌋
+The API takes a single parameter (plus, optionally, the instance handle) that in-
+dicates the requested ’next mode’. For this purpose, RTE and Basic Software
+Scheduler will use identifiers of the modes as defined in [SWS_Rte_02568] and
+[SWS_Rte_07294].
+• [SWS_Rte_02546]
+Upstream requirements: SRS_Rte_00143, SRS_Rte_00144
+⌈The RTE shall keep track of the active modes of a mode manager’s Mod-
+eDeclarationGroupPrototypes (mode machine instances) which is as-
+signed to the RTE.⌋
+• [SWS_Rte_07540]
+Upstream requirements: SRS_Rte_00213, SRS_Rte_00144
+⌈The Basic Software Scheduler shall keep track of the active modes of
+a mode manager’s ModeDeclarationGroupPrototypes (mode machine
+instances) which is assigned to the Basic Software Scheduler.⌋
+Rationale: This allows the RTE / Basic Software Scheduler to guarantee con-
+sistency between the timing for firing of SwcModeSwitchEvents / BswMod-
+eSwitchEvents and disabling the start of ExecutableEntities by mode dis-
+abling dependency without adding additional interfaces to a mode manager
+with fine grained substates on the transitions.
+• The RTE offers an Rte_Mode API to the SW-C to get information about the active
+mode, see section 5.6.32.
+• The Basic Software Scheduler offers an SchM_Mode API to the Basic Software
+Module to get information about the active mode, see section 6.5.8.
+• In addition to the mode switch ports, the mode manager may offer an AU-
+TOSAR interface for requesting and releasing modes as a means to keep modes
+alive like for ComM and EcuM.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">synchronized ModeDeclarationGroupPrototype instance</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07541] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -214,11 +329,11 @@ atpFeature}
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=435" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 436</td>
+              <td>Seite 435</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -226,15 +341,15 @@ atpFeature}
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07535" class="swsref internal-spec-ref"><code>SWS_Rte_07535</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_07541" class="swsref internal-spec-ref"><code>SWS_Rte_07541</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

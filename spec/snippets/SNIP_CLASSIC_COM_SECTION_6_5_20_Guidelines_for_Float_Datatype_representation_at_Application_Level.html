@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_6_5_20_Guidelines_for_Float_Datatype_representation_at_Application_Level</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TR_SWCModelingGuide.pdf</strong> (Seite 60)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TR_SWCModelingGuide.pdf#page=58" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_SWCModelingGuide.pdf</a></strong> (Seite 60)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01262" class="swsref"><code>TPS_SWCT_01262</code></a></span>
         </div>
@@ -115,7 +116,99 @@ SW-C and System Modeling Guide
 &lt;L-1 L="EN"&gt;This standard AUTOSAR type shall be mapped as a
 single precision (32 bit) floating-point number.&lt;/L-1&gt;
 &lt;/P&gt;
-&lt;/TRAC</div></section>
+&lt;/TRACE&gt;
+&lt;/INTRODUCTION&gt;
+&lt;SW-DATA-DEF-PROPS&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;BASE-TYPE-REF DEST="SW-BASE-TYPE"&gt;/AUTOSAR_PlatformTypes/
+SwBaseTypes/float32&lt;/BASE-TYPE-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/SW-DATA-DEF-PROPS&gt;
+&lt;/IMPLEMENTATION-DATA-TYPE&gt;
+&lt;!-- ... --&gt;
+&lt;/ELEMENTS&gt;
+&lt;/AR-PACKAGE&gt;
+&lt;/AR-PACKAGES&gt;
+&lt;/AR-PACKAGE&gt;
+In order to take into account some preliminary requirements for the usage of float
+datatypes definition at Application Level, some reccomendations are defined:
+Recommendations at PortprototypeBlueprint level:
+• Use Always 1:1 scaling: e.g. internal representation = 10.1 Physical Value 10.1Pa
+• Only single precision calculations shall be done (float 64 is not recommended)
+• In case the target ECU is known do not use float if the RAM/Stack resources are
+more critical than CPU load.
+• Float should always be used together with SI Unit as physical representation.
+• Float is strictly recommended if for one and the same signal either large range
+and low precision or small range and high precision is required. Examples:
+– Float is strictly recommended for Pressure ([Pa])
+SW-C and System Modeling Guide
+– Float is strictly recommended for Injection Quantity ([kg])
+• Float should not be used whenever integer precision is sufficient (e.g. Tempera-
+ture ([K]))
+Recommendations for the usage of Float data types in AUTOSAR for Flat Instance
+Descriptors (SW Signals):
+• The compatibility rules of AUTOSAR meta model have to be fulfilled
+• Any physical display representation can be used.
+Application datatype which are supposed to implemented with float datatypes simply
+differ from other continuos value datatypes in
+• Compumethod:
+They refer to the corresponding IDENTICAL compumethod related to involved Unit
+• DataConstrs: unlimited ([-INF..+INF]) range, defined once into Application level
+by dataconstrs element RngUnlimd
+• swIntendedResolution:
+the default value 0.0000001 represents machine epsilon for 32bits, IEEE754 (ISO C
+standard; C, C++ and Python language constants)
+E.g T6, float datatype for temperature:
+Definition of ApplicationDatatype:
+&lt;APPLICATION-PRIMITIVE-DATA-TYPE&gt;
+&lt;SHORT-NAME NAME-PATTERN="{anyName}"&gt;T6&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt;&lt;L-4 L="EN"&gt;Temperature 6&lt;/L-4&gt; &lt;/LONG-NAME&gt;
+&lt;DESC&gt; &lt;L-2 L="EN"&gt;Generic data type for temperature&lt;/L-2&gt; &lt;/DESC&gt;
+&lt;CATEGORY&gt;VALUE&lt;/CATEGORY&gt;
+&lt;INTRODUCTION&gt;
+&lt;P&gt; &lt;L-1 L="EN"&gt;Examples for usage: glow plugs temperature, oil
+temperature, environment temperature, temperature differences
+Remark: use for floating point implementation&lt;/L-1&gt;
+&lt;/P&gt;
+&lt;/INTRODUCTION&gt;
+&lt;SW-DATA-DEF-PROPS&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;SW-CALIBRATION-ACCESS&gt;READ-ONLY&lt;/SW-CALIBRATION-ACCESS&gt;
+&lt;COMPU-METHOD-REF BASE="CompuMethods" DEST="COMPU-METHOD"&gt;
+KelvinIdentcl&lt;/COMPU-METHOD-REF&gt;
+&lt;DATA-CONSTR-REF BASE="DataConstrs" DEST="DATA-CONSTR"&gt;RngUnlimd&lt;/
+DATA-CONSTR-REF&gt;
+&lt;SW-INTENDED-RESOLUTION&gt;0.0000001&lt;/SW-INTENDED-RESOLUTION&gt;
+&lt;UNIT-REF BASE="Units" DEST="UNIT"&gt;Kelvin&lt;/UNIT-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/SW-DATA-DEF-PROPS&gt;
+&lt;/APPLICATION-PRIMITIVE-DATA-TYPE&gt;
+SW-C and System Modeling Guide
+Definition of CompuMethod
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME NAME-PATTERN="{anyName}"&gt;KelvinIdentcl&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt; &lt;L-4 L="EN"&gt;Kelvin Identical&lt;/L-4&gt; &lt;/LONG-NAME&gt;
+&lt;DESC/&gt;
+&lt;CATEGORY&gt;IDENTICAL&lt;/CATEGORY&gt;
+&lt;UNIT-REF BASE="Units" DEST="UNIT"&gt;Kelvin&lt;/UNIT-REF&gt;
+&lt;/COMPU-METHOD&gt;
+Definition of unlimited DataConstrs
+&lt;DATA-CONSTR&gt;
+&lt;SHORT-NAME NAME-PATTERN="{anyName}"&gt;RngUnlimd&lt;/SHORT-NAME&gt;
+&lt;LONG-NAME&gt;&lt;L-4 L="EN"&gt;Range Unlimited&lt;/L-4&gt;&lt;/LONG-NAME&gt;
+&lt;DATA-CONSTR-RULES&gt;
+&lt;DATA-CONSTR-RULE&gt;
+&lt;PHYS-CONSTRS&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;-INF&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;+INF&lt;/UPPER-LIMIT&gt;
+&lt;/PHYS-CONSTRS&gt;
+&lt;/DATA-CONSTR-RULE&gt;
+&lt;/DATA-CONSTR-RULES&gt;
+&lt;/DATA-CONSTR&gt;</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -128,7 +221,7 @@ single precision (32 bit) floating-point number.&lt;/L-1&gt;
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TR_SWCModelingGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TR_SWCModelingGuide.pdf#page=58" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_SWCModelingGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

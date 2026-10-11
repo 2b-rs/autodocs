@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_2_9_3_Implementation_Aspect</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_BSWDistributionGuide.pdf</strong> (Seite 63)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_BSWDistributionGuide.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_BSWDistributionGuide.pdf</a></strong> (Seite 63)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BSW_00192" class="swsref internal-spec-ref"><code>SWS_BSW_00192</code></a></span>
         </div>
@@ -87,7 +88,39 @@ switched back.
 Guide to BSW Distribution
 Callbacks of asynchronous APIs shall be invoked in the context of the same partition
 as the corresponding API. This means that a caller can remain unchanged, the BSW
-service needs to take care for performing any in</div></section>
+service needs to take care for performing any internal partition transitions.
+How a component handles the concurrent access in multiple partitions is completely
+implementation specific.
+A simple solution for the components is to use a SchM_Call(). However, since this
+is in the end the same mechanism as the RTE uses for core-transitions, such an im-
+plementation will not bring significant efficiency-benefits (latency, CPU overhead). The
+motivation for the BSW vendors is to come up with more efficient alternatives instead.
+Still, SchM_Call() might be an attractive option for sparsely used interfaces because
+it is easy to implement respectively use in the service component.
+Another aspect are cyclic main functions of the service components. For some cases
+it may make sense to provide further, partition specific main functions, for others it will
+not. If additional main functions are provided, it is however recommended to add name
+suffixes that show the partition assignment and thus help during integration.
+This pattern must cover also multi-partition use cases in which the BSW services are
+used by SWC in partitions with different ASIL. The component must ensure, that it
+handles the different partition contexts correctly, because the RTE will not do it. This
+also includes protection of the component’s data. Measures must be taken that prevent
+corruption of data by a partition of lower ASIL (than any other that uses the service
+interfaces or C-APIs).
+Figure 2.27 shows how the implementation can realize this pattern.
+The service component provides common code that gets executed via the RTE on po-
+tentially any ECUC partition. On all partitions except Partition 0, the execution context
+is handed over to Partition 0. This is done implementation specific either synchronous
+or asynchronous.
+Any interaction to other BSW components is done on Partition 0 exclusively.
+Guide to BSW Distribution
+Figure 2.27: Implementation perspective on multi-partition service modules
+For processing in the context of the different partitions, the component may provide
+dedicated cyclic main functions.
+However, to avoid unnecessary effort in integration, the service components should
+restrain from creating elements (main functions, memory sections etc.) for partitions,
+on which its service interface is not needed.
+Guide to BSW Distribution</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +133,7 @@ service needs to take care for performing any in</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_BSWDistributionGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_BSWDistributionGuide.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_BSWDistributionGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

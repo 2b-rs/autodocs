@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 90%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_2_6_5_API_Parameters</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 573)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=572" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 572)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07086" class="swsref internal-spec-ref"><code>SWS_Rte_07086</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07661" class="swsref internal-spec-ref"><code>SWS_Rte_07661</code></a></span>
         </div>
       </div>
 
@@ -94,11 +95,79 @@ Type or Union Implementation Data Type shall be passed by reference.⌋
 [SWS_Rte_05107]
 Upstream requirements: SRS_Rte_00060, SRS_Rte_00061
 ⌈All input parameters that are an Array Implementation Data Type shall
-be passed as an array expression</div></section>
+be passed as an array expression (that is a pointer to the array base type).⌋
+Please note that in case the input parameters are defined as IN Argu-
+mentDataPrototypes, requirement [SWS_Rte_05107] applies in case the
+serverArgumentImplPolicy is not set.
+Otherwise [SWS_Rte_04647] or
+[SWS_Rte_04648] applies.
+[SWS_Rte_07661]
+Upstream requirements: SRS_Rte_00059, SRS_Rte_00061
+⌈All input parameters that are a data type of category DATA_REFERENCE shall be
+passed as a pointer to the data type specified by the SwPointerTargetProps.⌋
+[SWS_Rte_07086]
+Upstream requirements: SRS_Rte_00060, SRS_BSW_00007
+⌈All input parameters that are passed by reference ([SWS_Rte_01018]) or
+passed as an array expression ([SWS_Rte_05107]) shall be declared as pointer
+to const (const foo * where foo is the pointer’s type).⌋
+• “Out” Parameters
+[SWS_Rte_01019]
+Upstream requirements: SRS_Rte_00061
+⌈All output parameters that are of type Primitive Implementation Data
+Type shall be passed by reference.⌋
+[SWS_Rte_07082]
+Upstream requirements: SRS_Rte_00060, SRS_Rte_00061
+⌈All output parameters that are of type Structure Implementation Data
+Type or Union Implementation Data Type shall be passed by reference.⌋
+[SWS_Rte_05108]
+Upstream requirements: SRS_Rte_00060, SRS_Rte_00061
+⌈All output parameters that are an Array Implementation Data Type shall
+be passed as an array expression (that is a pointer to the array base type).⌋
+Please note that in case the output parameters are defined as OUT Argu-
+mentDataPrototypes, requirement [SWS_Rte_05108] applies in case the
+serverArgumentImplPolicy is not set.
+Otherwise [SWS_Rte_04647] or
+[SWS_Rte_04648] applies.
+[SWS_Rte_07083]
+Upstream requirements: SRS_Rte_00059, SRS_Rte_00061
+⌈All output parameters that are of type Pointer Implementation Data
+Type shall be passed as a pointer to the Pointer Implementation Data
+Type.⌋
+• “In/Out” Parameters
+[SWS_Rte_01020]
+Upstream requirements: SRS_Rte_00059, SRS_Rte_00061
+⌈All bi-directional parameters (i.e. both input and output) that are of type
+Primitive Implementation Data Type or
+Structure Implementa-
+tion Data Type or Union Implementation Data Type shall be passed
+by reference.⌋
+[SWS_Rte_05109]
+Upstream requirements: SRS_Rte_00061
+⌈All bi-directional parameters (i.e. both input and output) that are an Array Im-
+plementation Data Type shall be passed as an array expression (that is a
+pointer to the array base type).⌋
+Please note that in case the bi-directional parameters are defined as IN/OUT
+ArgumentDataPrototypes, requirement [SWS_Rte_05109] applies in case
+the serverArgumentImplPolicy is not set. Otherwise [SWS_Rte_04647] or
+[SWS_Rte_04648] applies.
+[SWS_Rte_07084]
+Upstream requirements: SRS_Rte_00059, SRS_Rte_00060, SRS_Rte_00061
+⌈All input, output and bi-directional parameters which related DataPrototype
+is typed or mapped to an Redefinition Implementation Data Type shall
+be treated according the kind of data type redefined by the Redefinition Im-
+plementation Data Type.⌋
+In order to indicate the direction of the individual API parameters, the descriptions
+of the API signatures in this API reference chapter use the direction qualifiers ”IN”,
+”OUT”, and ”INOUT”. These direction qualifiers are not part of the actual API proto-
+types. Especially, the user cannot expect that these direction qualifiers are available
+for the application.
+Example 5.9
+This would be the Rte_Write API generated for the example 5.5 (example of a two
+dimension array typed by an ImplementationDataType):</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Const reference and array pointer rules</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07661] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -107,11 +176,11 @@ be passed as an array expression</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=572" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 573</td>
+              <td>Seite 572</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -119,15 +188,15 @@ be passed as an array expression</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07086" class="swsref internal-spec-ref"><code>SWS_Rte_07086</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_07661" class="swsref internal-spec-ref"><code>SWS_Rte_07661</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.90</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

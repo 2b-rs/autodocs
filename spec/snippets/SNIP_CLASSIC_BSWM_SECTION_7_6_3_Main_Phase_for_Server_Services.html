@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_6_3_Main_Phase_for_Server_Services</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ServiceDiscovery.pdf</strong> (Seite 69)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></strong> (Seite 69)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Sd_00451" class="swsref internal-spec-ref"><code>SWS_Sd_00451</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Sd_00733" class="swsref internal-spec-ref"><code>SWS_Sd_00733</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,80 @@ be performed:
 ⌋
 Note: Currently this specification does not allow sending "FindService Entries" using
 unicast. For compatibility reasons receiving such entries shall be supported.
-Note to [SWS_Sd_00343]: For more</div></section>
+Note to [SWS_Sd_00343]: For more details on sending an "OfferService Entry" con-
+sidering the appropriate delay, see Chapter 7.5.3)
+[SWS_Sd_00344]
+Upstream requirements: SRS_Eth_00162
+⌈If the Service Discovery Module receives a "SubscribeEventgroup", the following
+step(s) shall be performed in the following order:
+• Send a SubscribeEventgroupAck / Nack entry using Unicast considering the ap-
+propriate delay without influencing the current running main phase timer.
+• Report to the BswM SD_EVENT_HANDLER_REQUESTED by calling the API
+BswM_Sd_EventHandlerCurrentState().
+• Start the TTL timer according to the value received via the "SubscribeEvent-
+group".
+⌋
+Note: Currently this specification does not allow sending "SubscribeEventgroup En-
+tries" using multicast. For compatibility reasons receiving such entries shall be sup-
+ported.
+Note to [SWS_Sd_00344]: For more details on sending a SubscribeEventgroupAck /
+Nack entry using Unicast considering the appropriate delay, see Chapter 7.5.3)
+[SWS_Sd_00345]
+Upstream requirements: SRS_Eth_00162
+⌈If the Service Discovery Module receives a "StopSubscribeEventgroup", the following
+step(s) shall be performed in the following order:
+• Stop the TTL timer and remove it from the notification list
+• If no other client is subscribed to this Eventgroup anymore, enter the State "SD_
+EVENT_HANDLER_RELEASED" and report it to the BswM by calling the API
+BswM_Sd_EventHandlerCurrentState () with state "SD_EVENT_HANDLER_RE-
+LEASED".
+⌋
+[SWS_Sd_00347]
+Upstream requirements: SRS_Eth_00022
+⌈If the API LocalIpAddrAssignmentChg has been called with a state other than TCPIP_
+IPADDR_STATE_ASSIGNED,
+• The Service Discovery Module shall leave the Main Phase and enter the DOWN
+Phase
+• All EventHandler which are not in state SD_EVENT_HANDLER_RELEASED
+shall be set to SD_EVENT_HANDLER_RELEASED and be indicated to the Bsw
+M module by calling the API BswM_Sd_EventHandlerCurrentState
+⌋
+[SWS_Sd_00733]
+Upstream requirements: SRS_Eth_00009, SRS_Eth_00008
+⌈If a TCP-based socket connection has been lost (i.e. Socket connection is other than
+SOAD_SOCON_ONLINE), the Service Discovery Module shall call:
+• SoAd_ReleaseRemoteAddr()
+• SoAd_DisableSpecificRouting()
+• SoAd_CloseSoCon()
+• delete all internally stored subscriptions belonging to that connection.
+• SoAd_OpenSoCon()
+The Service Discovery Module shall stay in the Main Phase.⌋
+[SWS_Sd_00348]
+Upstream requirements: SRS_Eth_00161, SRS_Eth_00009
+⌈If a SdServerService is set to state "SD_SERVER_SERVICE_DOWN" (indicated by a
+call of Sd_ServerServiceSetState() or Sd_ServiceGroupStop()) while the IP address is
+still assigned (i.e. Sd_LocalIpAddrAssignmentChg has been called with state TCPIP_
+IPADDR_STATE_ASSIGNED), the Service Discovery module shall
+• send a StopOfferService
+• enter the DOWN Phase
+• all subscriptions of the eventgroup(s) of this service instance shall be deleted
+and SD_EVENT_HANDLER_RELEASED and reported to BswM using the API
+BswM_Sd_EventHandlerCurrentState
+⌋
+[SWS_Sd_00349]
+Upstream requirements: SRS_Eth_00161
+⌈When the Main Phase is left, the routing of this Server Service Instance shall be
+disabled. See SdServerServiceActivationRef of this Server Service Instance.⌋
+[SWS_Sd_00403]
+Upstream requirements: SRS_Eth_00162
+⌈When the TTL timer (contained in TTL field find or Subscribe entry) expires in state
+"SD_EVENT_HANDLER_REQUESTED",
+enter the state SD_EVENT_HANDLER_RELEASED and report it to the BswM by call-
+ing the BswM_Sd_EventHandlerCurrentState().⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Sd_00451] im Text von SWS_ServiceDiscovery.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Sd_00733] im Text von SWS_ServiceDiscovery.</p>
       </section>
 
       <section class="snip-card">
@@ -110,7 +180,7 @@ Note to [SWS_Sd_00343]: For more</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ServiceDiscovery.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -122,7 +192,7 @@ Note to [SWS_Sd_00343]: For more</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Sd_00451" class="swsref internal-spec-ref"><code>SWS_Sd_00451</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Sd_00733" class="swsref internal-spec-ref"><code>SWS_Sd_00733</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

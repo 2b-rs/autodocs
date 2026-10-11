@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CAN_SECTION_7_3_5_State_transition_caused_by_function_Can_SetControllerMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANDriver.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANDriver.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANDriver.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Can_00398" class="swsref internal-spec-ref"><code>SWS_Can_00398</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Can_00411" class="swsref internal-spec-ref"><code>SWS_Can_00411</code></a></span>
         </div>
       </div>
 
@@ -86,11 +87,86 @@ Upstream requirements: SRS_SPAL_12077
 TimeoutDuration is elapsed, the function Can_SetControllerMode shall be left
 and the function Can_MainFunction_Wakeup shall continue to poll the flag.⌋
 [SWS_Can_00373] ⌈The function Can_MainFunction_Wakeup shall call the func-
-tion CanIf_ControllerModeIndication to notify the upper layer about a successful</div></section>
+tion CanIf_ControllerModeIndication to notify the upper layer about a successful state
+transition of the corresponding CAN controller referred by abstract CanIf ControllerId,
+in case the state transition was triggered by function Can_SetControllerMode.⌋
+State
+transition
+caused
+by
+function
+Can_SetControllerMode
+(CAN_CS_STARTED)
+• STOPPED -&gt; STARTED
+• software triggered
+[SWS_Can_00261] ⌈The function Can_SetControllerMode(CAN_CS_STARTED)
+shall set the hardware registers in a way that makes the CAN controller participating
+on the network.⌋
+[SWS_Can_00262] ⌈The function Can_SetControllerMode(CAN_CS_STARTED)
+shall wait for limited time until the CAN controller is fully operational.
+Compare to
+[SWS_Can_00398].⌋
+Transmit requests that are initiated before the CAN controller is operational get lost.
+The only indicator for operability is the reception of TX confirmations or RX indications.
+The sending entities might get a confirmation timeout and need to be able to cope with
+that.
+[SWS_Can_00409]
+⌈When
+the
+function
+Can_SetControllerMode
+(CAN_CS_STARTED) is entered and the CAN controller is not in state STOPPED it
+shall detect a invalid state transition (Compare to [SWS_Can_00200]).⌋
+State
+transition
+caused
+by
+function
+Can_SetControllerMode
+(CAN_CS_STOPPED)
+• STARTED -&gt; STOPPED
+• SLEEP -&gt; STOPPED
+• software triggered
+[SWS_Can_00263] ⌈The function Can_SetControllerMode(CAN_CS_STOPPED)
+shall set the bits inside the CAN hardware such that the CAN controller stops partici-
+pating on the network.⌋
+[SWS_Can_00264] ⌈The function Can_SetControllerMode(CAN_CS_STOPPED)
+shall wait for a limited time until the CAN controller is really switched off. Compare to
+[SWS_Can_00398].⌋
+[SWS_Can_00267] ⌈If the CAN HW does not support a sleep mode, the transition
+from SLEEP to STOPPED shall return from the logical sleep mode, but have no effect
+to the CAN controller state (as the controller is already in stopped state).⌋
+[SWS_Can_00268] ⌈The function Can_SetControllerMode(CAN_CS_STOPPED)
+shall wait for a limited time until the CAN controller is in STOPPED state. Compare to
+[SWS_Can_00398].⌋
+[SWS_Can_00282] ⌈The function Can_SetControllerMode(CAN_CS_STOPPED)
+shall cancel pending messages.⌋
+State transition caused by function Can_SetControllerMode(CAN_CS_SLEEP)
+• STOPPED -&gt; SLEEP
+• software triggered
+[SWS_Can_00265] ⌈The function Can_SetControllerMode(CAN_CS_SLEEP)
+shall set the controller into sleep mode.⌋
+[SWS_Can_00266] ⌈If the CAN HW does support a sleep mode, the function Can_-
+SetControllerMode(CAN_CS_SLEEP) shall wait for a limited time until the CAN
+controller is in SLEEP state and it is assured that the CAN hardware is wake able.
+Compare to [SWS_Can_00398].⌋
+[SWS_Can_00290] ⌈If the CAN HW does not support a sleep mode, the function
+Can_SetControllerMode(CAN_CS_SLEEP) shall set the CAN controller to the log-
+ical sleep mode.⌋
+[SWS_Can_00405] ⌈This logical sleep mode shall left only, if function Can_SetCon-
+trollerMode(CAN_CS_STOPPED) is called.⌋
+[SWS_Can_00411]
+⌈When
+the
+function
+Can_SetController-
+Mode(CAN_CS_SLEEP) is entered and the CAN controller is neither in state
+STOPPED nor in state SLEEP, it shall detect a invalid state transition (Compare to
+[SWS_Can_00200]).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Can_00398] im Text von SWS_CANDriver.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Can_00411] im Text von SWS_CANDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -99,7 +175,7 @@ tion CanIf_ControllerModeIndication to notify the upper layer about a successful
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANDriver.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -111,7 +187,7 @@ tion CanIf_ControllerModeIndication to notify the upper layer about a successful
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Can_00398" class="swsref internal-spec-ref"><code>SWS_Can_00398</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Can_00411" class="swsref internal-spec-ref"><code>SWS_Can_00411</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

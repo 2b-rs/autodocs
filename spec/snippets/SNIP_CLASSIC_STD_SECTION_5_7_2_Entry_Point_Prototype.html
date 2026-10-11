@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_7_2_Entry_Point_Prototype</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 789)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=789" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 789)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01312" class="swsref"><code>TPS_SWCT_01312</code></a></span>
         </div>
@@ -86,7 +87,101 @@ prototype via an external header (see [SWS_Rte_04639]).
 The prototype for a function implementing the entry point of a runnable entity is emitted
 for both “RTE Contract” and “RTE Generation” phases. The function name for the
 prototype is the runnable entity’s entry point. The prototype of the entry point function
-includes the runnable entity’s instance handle and its role parameters, see Listing</div></section>
+includes the runnable entity’s instance handle and its role parameters, see Listing 5.1.
+[SWS_Rte_07194]
+Upstream requirements: SRS_Rte_00148, SRS_Rte_00238, SRS_Rte_00011
+⌈The RTE Generator shall wrap each RunnableEntity’s Entry Point Prototype in the
+Application Header File with the Memory Mapping macro.
+1
+#define [Byps_]&lt;c&gt;_START_SEC_&lt;sadm&gt;
+2
+#include "[Byps_]&lt;c&gt;_MemMap.h"
+3
+4
+&lt;void|Std_ReturnType&gt; [Byps_]&lt;prefix&gt;&lt;name&gt; (
+5
+[IN Rte_Instance &lt;instance&gt;],
+6
+[IN Rte_ActivatingEvent_&lt;name&gt; &lt;activation&gt;],
+7
+[role parameters]);
+8
+9
+#define [Byps_]&lt;c&gt;_STOP_SEC_&lt;sadm&gt;
+10
+#include "[Byps_]&lt;c&gt;_MemMap.h"
+where &lt;c&gt; is the shortName of the software component type,
+&lt;sadm&gt; is the shortName of the referred swAddrMethod.
+&lt;prefix&gt; is the optional SymbolProps.symbol attribute of the AtomicSwCompo-
+nentType owning the RunnableEntity, i.e. &lt;prefix&gt; will only appear if the at-
+tribute SymbolProps.symbol exists.
+&lt;name&gt; is the attribute symbol describing the RunnableEntity’s entry point.
+The usage of Rte_ActivatingEvent is optional and defined in [SWS_Rte_08051].
+The Memory Mapping macros could wrap several Entry Point Prototype if these are
+referring to the same swAddrMethod. If RunnableEntity does not refer a swAd-
+drMethod the &lt;sadm&gt; is set to default CODE. [Byps_] is an optional infix used when
+component wrapper method for bypass support is enabled for the related software
+component type.⌋
+The definition of the role parameters is defined in Section 5.7.3.
+[SWS_Rte_06531]
+Upstream requirements: SRS_Rte_00201
+⌈The RTE Generator shall wrap each Entry Point Prototype in the Application Header
+File of a variant existent RunnableEntity if the variability shall be implemented.⌋
+1
+#if (&lt;condition&gt;)
+2
+3
+&lt;Entry Point Prototype&gt;
+4
+5
+#endif
+where condition is the Condition Value Macro of the VariationPoint relevant
+for the variant existence of the RunnableEntity (see [SWS_Rte_07706]), Entry
+Point Prototype is the code according an invariant Entry Point Prototype (see
+also [SWS_Rte_01131], [SWS_Rte_07177], [SWS_Rte_02512], [SWS_Rte_01133],
+[SWS_Rte_01359],
+[SWS_Rte_01166],
+[SWS_Rte_01135],
+[SWS_Rte_01137],
+[SWS_Rte_07207], [SWS_Rte_07208], [SWS_Rte_07379]).
+[SWS_Rte_01016]
+Upstream requirements: SRS_Rte_00011, SRS_Rte_00031
+⌈The function implementing the entry point of a runnable entity shall define an instance
+handle as the first formal parameter if and only if the software component’s support-
+sMultipleInstantiation attribute is set to TRUE.⌋
+The RTE will ensure that when the runnable entity is triggered the instance handle pa-
+rameter indicates the correct component instance. The remaining parameters passed
+to the runnable entity depend on the RTEEvent that triggers execution of the runnable
+entity.
+Due to the global name space of a C Linker Locater symbols of RunnableEntitys
+have to be unique in the ECU. When AtomicSwComponentTypes of several vendors
+are integrated in the same ECU name clashes might occur if the same symbol is ac-
+cidentally used twice. To ease the dissolving of name clashes the RTE supports an
+abstraction of the RunnableEntity symbol in the implementation of the software
+component.
+[SWS_Rte_06713]
+Upstream requirements: SRS_Rte_00087, SRS_Rte_00051, SRS_Rte_00031
+⌈The RTE generator shall emit for each RunnableEntity a define for a symbolic
+name of the RunnableEntity.
+1
+#define RTE_RUNNABLE_&lt;name&gt; &lt;prefix&gt;&lt;symbol&gt;
+where &lt;name&gt; is the shortName of the RunnableEntity,
+&lt;prefix&gt; is the optional SymbolProps.symbol attribute of the AtomicSwCompo-
+nentType owning the RunnableEntity.
+&lt;symbol&gt; is the attribute symbol describing the RunnableEntity’s entry point.
+⌋
+This symbolic name of the RunnableEntity can be used as follows in the software
+component implementation.
+Example 5.30
+For software component "‘HugeSwc"’ with a runnable "‘FOO"’ where the Symbol-
+Props.symbol is set to "‘TinySwc"’ the Application Header File contains the definition:
+1
+/* Application Header File of HugeSwc*/
+2
+#define RTE_RUNNABLE_FOO TinySwcfoo
+This can be used in the software components c file for the definition of the runnable:
+1
+/* software component c file */</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -99,7 +194,7 @@ includes the runnable entity’s instance handle and its role parameters, see Li
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=789" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

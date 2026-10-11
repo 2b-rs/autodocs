@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/platform.html">Modul: platform</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_7_7_4_Configuration_of_Event_related_data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 149)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=143" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 143)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_00040" class="swsref internal-spec-ref"><code>SWS_Dem_00040</code></a></span>
+          <span>Ziel-Element: SWS_Dem_CONSTR_06158</span>
         </div>
       </div>
 
@@ -106,11 +107,156 @@ DemExtendedDataClassRef:
 EcucReferenceDef
 upperMultiplicity = 1
 lowerMultiplicity = 0
-DemExtendedDataR</div></section>
+DemExtendedDataRecordClass:
+EcucParamConfContainerDef
+upperMultiplicity = 253
+lowerMultiplicity = 0
+DemExtendedDataRecordClassRef:
+EcucReferenceDef
+upperMultiplicity = 253
+lowerMultiplicity = 1
+requiresIndex = true
+DemDidDataElementClassRef:
+EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 255
+requiresIndex = true
+DemPidDataElementClassRef: EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+DemInternalDataElementClass: EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+DemExternalCSDataElementClass: EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+DemExternalSRDataElementClass: EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+DemDidClassRef: EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 255
+requiresIndex = true
+DemDataElementClassRef:
+EcucReferenceDef
+upperMultiplicity = 255
+lowerMultiplicity = 1
+requiresIndex = true
++choice
++choice
++reference
++destination
++subContainer
++subContainer
++reference
++destination
++subContainer
++choice
++subContainer
++destination
++reference
++destination
++destination
++destination
++reference
++destination
+Figure 7.38: Event related data configuration
+A data element is provided from a SW-C or BSW module, or is computed Dem-
+internally.
+For each external data element a respective require-port (refer to Service Interface
+DataServices_&lt;Data&gt;) or C-callback (refer to ReadDataElement) is generated based
+on the configuration DemExternalCSDataElementClass and DemExternalSR-
+DataElementClass. For each internal data element, the respective Dem-internal
+value is mapped.
+Note: These data elements are typically specified in a Diagnostic Data Template.
+DemGeneral:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 1
+DemDataElementClass:
+EcucChoiceContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 65535
+DemInternalDataElementClass:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+DemExternalCSDataElementClass:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+DemExternalSRDataElementClass:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+DemDataElementDataSize:
+EcucIntegerParamDef
+min = 1
+max = 255
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemInternalDataElement:
+EcucEnumerationParamDef
+DemDataElementUsePort:
+EcucBooleanParamDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+DemDataElementReadFnc:
+EcucFunctionNameDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemSRDataElementClass:
+EcucChoiceContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemDataElementDataType:
+EcucEnumerationParamDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+DemDataElementArraySize:
+EcucIntegerParamDef
+min = 1
+max = 4294967295
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemDataElementProvideMonitorData:
+EcucBooleanParamDef
+defaultValue = false
+lowerMultiplicity = 1
+upperMultiplicity = 1
+DemDataElementArraySize:
+EcucIntegerParamDef
+max = 4294967295
+min = 1
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemDataElementFncSignature:
+EcucEnumerationParamDef
+defaultValue = DATA_FNC_NORMAL
+lowerMultiplicity = 0
+upperMultiplicity = 1
++parameter
++parameter
++subContainer
++choice
++parameter
++choice
++parameter
++subContainer
++parameter
++choice
++parameter
++parameter
++parameter
++parameter
+Figure 7.39: Data element configuration
+[SWS_Dem_CONSTR_06158] ⌈Existence of size parameter DemDataElementAr-
+raySize [ECUC_Dem_00949] in container DemExternalCSDataElementClass
+shall be present if DemDataElementDataType [ECUC_Dem_00950] in the same</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Freeze frame record containing DIDs configuration.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_CONSTR_06158] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -119,11 +265,11 @@ DemExtendedDataR</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=143" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 149</td>
+              <td>Seite 143</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -131,15 +277,15 @@ DemExtendedDataR</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_00040" class="swsref internal-spec-ref"><code>SWS_Dem_00040</code></a></td>
+              <td>SWS_Dem_CONSTR_06158</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

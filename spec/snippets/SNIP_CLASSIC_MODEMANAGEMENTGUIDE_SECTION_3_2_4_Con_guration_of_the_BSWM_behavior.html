@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -95,11 +96,57 @@ CAN_SM_BSWM_NO_COMMUNICATION.
 processing immediate means that every evaluation rule, which refers to this Mod-
 eRequestSourcePort shall immediately be processed. If this parameter would be
 deferred in case of a ModeRequest, the evaluation of rules would be delayed until
-the next</div></section>
+the next run of the main function of the BSWM.
+The following example shows an arbitration rule called canIPDUActivation. The
+overall content is rather self explanatory. The initial parameters speciﬁes that the
+initial result of the rule evaluation is false.
+Guide to Modemanagement
+V1.0.0.
+R4.0 Rev 3
+Listing 3.23: Example for a rule
+canIPDUActivation initial false on TRIGGER {
+if (
+Can1_indication == FULL_COM )
+{
+activateCANPDUs
+} else {
+deactivateCANPDUs
+}
+}
+At which point in time a rule is executed, after an event has occurred depends on
+the parameter BswMActionListExecution.
+Either it is executed every time the
+rule is evaluated with the corresponding result, or only when the evaluation result has
+changed from the previous evaluation. This is called triggered respectively condi-
+tional execution.
+Table 3.1 gives an overview in which situations an ActionList is executed or not.
+Triggered ActionLists are executed (triggered) if the result of the rule evaluation
+changes. Conditional ActionLists depend only on the current result (condition) of
+the evaluation independent if it has changed or not.
+Table 3.1: Execution of Action Lists depending on parameter BswMActionListExecu-
+tion
+eval. result
+(old) -&gt; (new)
+true -&gt; true
+true -&gt; false
+false -&gt; false
+false -&gt; true
+TrueActionList
+CONDITION
+-
+-
+TRIGGERED/
+CONDITION
+FalseActionList
+-
+TRIGGERED/
+CONDITION
+CONDITION
+-</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von BswM_CanSM_CurrentState().</p>
       </section>
 
       <section class="snip-card">

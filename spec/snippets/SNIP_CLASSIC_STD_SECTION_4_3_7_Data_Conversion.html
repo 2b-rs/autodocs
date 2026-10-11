@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_7_Data_Conversion</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 385)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=385" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 385)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08801" class="swsref internal-spec-ref"><code>SWS_Rte_08801</code></a></span>
         </div>
@@ -93,7 +94,127 @@ Upstream requirements: SRS_Rte_00182
 representation to another mixed linear scaled and texttable data representation.⌋
 [SWS_Rte_03856]
 Upstream requirements: SRS_Rte_00182
-⌈The RTE shall support the con</div></section>
+⌈The RTE shall support the conversion between a texttable data representation (enu-
+meration) and a mixed linear scaled and texttable data representation. In this case only
+the enumeration part of the data representation shall be converted, the linear scaled
+part shall be handled as out of range data.⌋
+[SWS_Rte_03857]
+Upstream requirements: SRS_Rte_00182
+⌈The RTE shall support the conversion between an identical or linear scaled data rep-
+resentation and a mixed linear scaled and texttable data representation. A scale with
+a compuConst shall be handled as out of range data if the mapping to a value is not
+defined by a TextTableMapping.⌋
+[SWS_Rte_03860]
+Upstream requirements: SRS_Rte_00182
+⌈The RTE shall support the conversion of composite data representations.
+In
+this
+case,
+the
+respective
+requirements
+[SWS_Rte_03829],
+[SWS_Rte_03830],
+[SWS_Rte_03855],
+[SWS_Rte_03856],
+[SWS_Rte_03857],
+[SWS_Rte_03831],
+[SWS_Rte_03832], and [SWS_Rte_03833] are applicable to the individual composite
+elements.⌋
+[SWS_Rte_03831]
+Upstream requirements: SRS_Rte_00182, SRS_Rte_00018
+⌈The RTE generator shall reject any input that requires a conversion which is not
+supported according to [SWS_Rte_03829], [SWS_Rte_03830], [SWS_Rte_03855],
+[SWS_Rte_03856], or [SWS_Rte_03860] as an invalid configuration.⌋
+[SWS_Rte_07928]
+Upstream requirements: SRS_Rte_00182
+⌈The data conversion shall be supported for data types that refer to CompuMethods
+of category LINEAR, IDENTICAL, SCALE_LINEAR_AND_TEXTTABLE, TEXTTABLE ,
+BITFIELD_TEXTTABLE and CompuMethods of category RAT_FUNC with a reciprocal
+linear data scaling.⌋
+Note: The definition of a reciprocal linear data scaling is given in Software Component
+Template [2], [TPS_SWCT_01550]
+[SWS_Rte_03832]
+Upstream requirements: SRS_Rte_00182
+⌈For the conversion between two data representations with linear scaling described
+either by an ApplicationDataType or a combination of BaseType and Com-
+puMethod (used for the specification of the network representation at the ComSpec
+respectively the SystemSignal) the RTE generator shall derive the data conversion
+code automatically from the referred CompuMethods of the two representations. In this
+context the scaling of a data representation is linear if the referred CompuMethod is of
+category IDENTICAL, LINEAR, RAT_FUNC or SCALE_LINEAR_AND_TEXTTABLE. In
+case of a CompuMethod of category SCALE_LINEAR_AND_TEXTTABLE this require-
+ment applies to the linear scaled part only.⌋
+For a linear conversion the linear conversion factor can be calculated out of the fac-
+torSiToUnit and offsetSiToUnit attributes of the referred Units and the Com-
+puRationalCoeffs of a compuInternalToPhys of the referred CompuMethods.
+Further information about Linear Data Scaling is given in document Software Compo-
+nent Template [2].
+Example 4.11
+A software component SwcA on an ECU EcuA sends a data element u of a uint16
+type t_VoltageAtSender via its port SenderPort.
+The referenced CompuMethod
+is cm_VoltageAtSender, describing a fixpoint representation with offset 0 and LSB
+1
+4 = 2−2.
+The port SenderPort is connected to the port ReceiverPort of a soft-
+ware component SwcB that is deployed on a different ECU EcuB. The sent data el-
+ement u is mapped to a data element u of a uint16 type t_VoltageAtReceiver on
+the receiving side that references a CompuMethod named cm_VoltageAtReceiver.
+cm_VoltageAtReceiver describes a fixpoint representation with offset 16
+8
+= 2 and
+LSB 1
+8 = 2−3. For transportation over the bus a networkRepresentation that refer-
+ences a uint8 type t_VoltageOnNetwork is specified, using a fixpoint representation
+described by the CompuMethod cm_VoltageOnNetwork with offset 1
+2 = 0.5 and LSB
+1
+2 = 2−1.
+Definition of the CompuMethods in XML:
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;cm_VoltageAtSender&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;LINEAR&lt;/CATEGORY&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;COMPU-RATIONAL-COEFFS&gt;
+&lt;COMPU-NUMERATOR&gt;&lt;V&gt;0&lt;/V&gt;&lt;V&gt;1&lt;/V&gt;&lt;/COMPU-NUMERATOR&gt;
+&lt;COMPU-DENOMINATOR&gt;&lt;V&gt;4&lt;/V&gt;&lt;/COMPU-DENOMINATOR&gt;
+&lt;/COMPU-RATIONAL-COEFFS&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;cm_VoltageAtReceiver&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;LINEAR&lt;/CATEGORY&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;COMPU-RATIONAL-COEFFS&gt;
+&lt;COMPU-NUMERATOR&gt;&lt;V&gt;16&lt;/V&gt;&lt;V&gt;1&lt;/V&gt;&lt;/COMPU-NUMERATOR&gt;
+&lt;COMPU-DENOMINATOR&gt;&lt;V&gt;8&lt;/V&gt;&lt;/COMPU-DENOMINATOR&gt;
+&lt;/COMPU-RATIONAL-COEFFS&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;cm_VoltageOnNetwork&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;LINEAR&lt;/CATEGORY&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;COMPU-RATIONAL-COEFFS&gt;
+&lt;COMPU-NUMERATOR&gt;&lt;V&gt;1&lt;/V&gt;&lt;V&gt;1&lt;/V&gt;&lt;/COMPU-NUMERATOR&gt;
+&lt;COMPU-DENOMINATOR&gt;&lt;V&gt;2&lt;/V&gt;&lt;/COMPU-DENOMINATOR&gt;
+&lt;/COMPU-RATIONAL-COEFFS&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;
+Implementation of Rte_Send on the sending ECU EcuA:</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -106,7 +227,7 @@ Upstream requirements: SRS_Rte_00182
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=385" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

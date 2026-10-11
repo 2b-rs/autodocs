@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_ComM_channel_state_machine</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 61)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 61)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_01068" class="swsref internal-spec-ref"><code>SWS_ComM_01068</code></a></span>
         </div>
@@ -95,7 +96,194 @@ inactive.
 COMM_FULL_COMMUNICATION
 COMM_NO_COMMUNICATION
 COMM_SILENT_COMMUNICATION
-COMM_FULL</div></section>
+COMM_FULL_COM_READY_SLEEP
+COMM_FULL_COM_NETWORK_REQUESTED
+COMM_NO_COM_NO_PENDING_REQUEST
+COMM_NO_COM_REQUEST_PENDING
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION)
+[Communication limitation
+disabled]
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION)
+[EcuM entered RUN for the channel]
+[CommunicationAllowed=TRUE]
+ComM_&lt;Bus&gt;SM_BusSleepMode(ChX)
+[ComMNmVariant = SLAVE_ACTIVE or
+SLAVE_PASSIVE]
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION)
+[Communication limitation disabled]
+ComM_Nm_BusSleepMode(ChX)
+ComM_RequestComMode(&lt;user&gt;,
+COMM_NO_COMMUNICATION)
+ComM_EcuM_PNCWakeUpIndication(PNC)or
+ComM_EcuM_WakeUpIndication(ChX) or
+ComM_Nm_RestartIndication(ChX) or
+ComM_Nm_NetworkStartIndication(ChX)
+No user request ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION [ComMNmVariant =
+SLAVE_ACTIVE]
+ComM_DCM_ActiveDiagnostic(ChX)
+ComM_DCM_ActiveDiagnostic(ChX)
+ComM_RequestComMode(&lt;user&gt;,
+COMM_NO_COMMUNICATION)
+Timer ComMLightTimeout
+has expired
+[ComMNmVariant = LIGHT]
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION)
+[Communication limitation disabled]
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION) [Communication
+limitation enabled]
+[ComMBusType =
+COMM_BUS_TYPE_INTERNAL]
+[ComMNmVariant = PASSIVE | SLAVE_PASSIVE]
+ComM_DCM_ActiveDiagnostic(ChX)
+ComM_Nm_NetworkMode(ChX)
+No user request ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION) and No
+ComM_DCM_ActiveDiagnostic(ChX)
+[ComMNmVariant = FULL]
+ComM_Nm_BusSleepMode(ChX)
+Communication limitation requested [No
+active Diagnostic on ChX]
+ComM_RequestComMode(&lt;user&gt;,
+COMM_NO_COMMUNICATION)
+ComM_Nm_PrepareBusSleepMode(ChX)
+Pending request for
+COMM_FULL_COMMUNICATION canceled
+Timer ComMTMinFullComModeDuration has
+expired No user request
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION) and No
+ComM_DCM_ActiveDiagnostic(ChX)
+[ComMNmVariant = LIGHT | NONE]
+ComM_RequestComMode(&lt;user&gt;,
+COMM_FULL_COMMUNICATION)
+Figure 7.7: ComM channel state machine
+State
+Section / Requirement
+COMM_NO_COMMUNICATION
+Chapter 7.2.2
+Entering state: [SWS_ComM_00898],
+[SWS_ComM_00313], [SWS_ComM_00073],
+[SWS_ComM_00288]
+In sub-state COMM_NO_COM_NO_PENDING_REQUEST:
+[SWS_ComM_00875], [SWS_ComM_00876],
+[SWS_ComM_00893], [SWS_ComM_00894],
+[SWS_ComM_00694], [SWS_ComM_01014],
+[SWS_ComM_01015]
+In sub-state COMM_NO_COM_REQUEST_PENDING:
+[SWS_ComM_00895] ,[SWS_ComM_00897]
+COMM_SILENT_COMMUNICATION
+Chapter 7.2.3
+Entering state: [SWS_ComM_00071]
+In state: [SWS_ComM_00877], [SWS_ComM_00878]
+[SWS_ComM_00295], [SWS_ComM_00296]
+COMM_FULL_COMMUNICATION
+Chapter 7.2.4
+Entering state: [SWS_ComM_00069]
+In state: [SWS_ComM_00637], [SWS_ComM_00826]
+Chapter 7.2.4.1
+sub-state COMM_FULL_COM_NETWORK_REQUESTED:
+In sub-state: [SWS_ComM_00869], [SWS_ComM_00870],
+[SWS_ComM_00665], [SWS_ComM_00888],
+[SWS_ComM_00889], [SWS_ComM_00890]
+Chapter 7.2.4.2
+sub-state COMM_FULL_COM_READY_SLEEP
+Entering sub-state: [SWS_ComM_00133]
+In sub-state: [SWS_ComM_00610], [SWS_ComM_00671],
+[SWS_ComM_00882], [SWS_ComM_00883]
+Transition
+Requirement
+COMM_NO_COMMUNICATION
+COMM_FULL_COMMUNICATION
+[SWS_ComM_00893], [SWS_ComM_00894],
+[SWS_ComM_00694], [SWS_ComM_00875]
+[SWS_ComM_00876], [SWS_ComM_01014],
+[SWS_ComM_01015]
+COMM_FULL_COM_NETWORK_REQUESTED COMM_FULL_
+COM_READY_SLEEP
+[SWS_ComM_00665]
+COMM_FULL_COM_READY_SLEEP COMM_FULL_COM_
+NETWORK_REQUESTED
+[SWS_ComM_00882], [SWS_ComM_00883]
+COMM_FULL_COMMUNICATION COMM_SILENT_
+COMMUNICATION
+[SWS_ComM_00826]
+COMM_FULL_COM_READY_SLEEP COMM_NO_
+COMMUNICATION
+[SWS_ComM_00610], [SWS_ComM_00671]
+COMM_FULL_COMMUNICATION COMM_NO_COMMUNICATION
+[SWS_ComM_00637]
+COMM_SILENT_COMMUNICATION COMM_FULL_
+COMMUNICATION
+[SWS_ComM_00877], [SWS_ComM_00878]
+COMM_SILENT_COMMUNICATION COMM_FULL_COM_
+READY_SLEEP
+[SWS_ComM_00296]
+COMM_SILENT_COMMUNICATION COMM_NO_
+COMMUNICATION
+[SWS_ComM_00295]
+Table 7.1: Link to detailed explanation of the channel state machine resp. transition
+[SWS_ComM_00879]
+Upstream requirements: SRS_ModeMgm_09083
+⌈The ComM channel state machine shall consist of the three main states correspond-
+ing to the Communication Modes: COMM_NO_COMMUNICATION, COMM_SILENT_COM-
+MUNICATION and COMM_FULL_COMMUNICATION.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -108,7 +296,7 @@ COMM_FULL</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

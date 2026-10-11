@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_14_Receive_indication</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 50)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 50)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_91005" class="swsref internal-spec-ref"><code>SWS_CANIF_91005</code></a></span>
         </div>
@@ -89,11 +90,39 @@ Note for [SWS_CANIF_00389]: See 7.20.
 [SWS_CANIF_00390] ⌈If CanIf accepts an L-PDU received via CanIf_RxIndica-
 tion() during Software Filtering (see [SWS_CANIF_00389]), CanIf shall process
 the Data Length check afterwards, if configured (see CanIfPrivateDataLength-
-Ch</div></section>
+Check and CanIfRxPduDataLengthCheck).⌋
+For further details, please refer to Chapter 7.21 “Data Length Check”.
+[SWS_CANIF_00297] ⌈If CanIf has accepted a L-PDU received via CanIf_-
+RxIndication() during Data Length Check (see [SWS_CANIF_00390]), CanIf
+shall copy the number of bytes according to the configured Data Length (see
+ECUC_CanIf_00599) to the static receive buffer, if configured for that L-PDU
+(see [SWS_CANIF_00198], ECUC_CanIf_00600).⌋
+[SWS_CANIF_00851] ⌈If MetaData item CAN_ID_32 is configured for a received L-
+SDU, CanIf shall copy the PDU payload to the static receive buffer and the CAN ID to
+the MetaDataItem of type CAN_ID_32.⌋
+[SWS_CANIF_00967] Support of meta data type TIMETUPLE_TYPE_PTR at recep-
+tion indication
+Status:
+DRAFT
+Upstream requirements: SRS_Can_02004
+⌈If MetaData item TIMETUPLE_TYPE_PTR is configured for a received L-SDU, CanIf
+shall transfer the ingress time stamp of the received L-SDU to the MetaDataItem of
+type TIMETUPLE_TYPE_PTR.⌋
+[SWS_CANIF_00056]
+Upstream requirements: SRS_Can_02004, SRS_Can_02005
+⌈If CanIf accepts a L-PDU received via CanIf_RxIndication() during Data
+Length Check (see [SWS_CANIF_00390], [SWS_CANIF_00026]), CanIf shall call the
+target upper layer module was configured via LSduR_CanIfRxIndication() based
+on the parameters of CanIf_RxIndication().⌋
+Overview: CanIf performs the following steps at a call of CanIf_RxIndication():
+• Software Filtering (only BasicCAN), if configured
+• Data Length Check, if configured
+• buffer received L-SDU if configured
+• call upper layer receive indication callback service, if configured.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von CanIf_EnableBusMirroring().</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +131,7 @@ Ch</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

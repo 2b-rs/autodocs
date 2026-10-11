@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_12_Rte_Receive</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 726)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=726" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 726)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00021" class="swsref internal-spec-ref"><code>SWS_Std_00021</code></a></span>
         </div>
@@ -105,11 +106,130 @@ tics.⌋
 Upstream requirements: SRS_Rte_00018
 ⌈The RTE Generator shall reject configurations were a Variable-
 DataPrototype with ‘event’ semantics is referenced by a Vari-
-ableAccess in the dataReceivePointBy</div></section>
+ableAccess in the dataReceivePointByValue role.⌋
+[SWS_Rte_01290]
+Upstream requirements: SRS_Rte_00051
+⌈A blocking Rte_Receive API shall be generated if a Vari-
+ableAccess in the dataReceivePointByArgument role refer-
+ences a required VariableDataPrototype with ‘event’ seman-
+tics that is, in turn, referenced by a DataReceivedEvent and the
+DataReceivedEvent is referenced by a WaitPoint.⌋
+[SWS_Rte_CONSTR_09023]Rte_Receive API may only be used
+by the runnable that describe its usage ⌈The Rte_Receive API
+may only be used by the runnable that contains the corresponding
+VariableAccess in the dataReceivePointByArgument role⌋
+A DataReceivedEvent that references a runnable entity and is refer-
+enced by a WaitPoint has to be treated as an invalid configuration.
+[SWS_Rte_01313]
+[SWS_Rte_08564]
+Upstream requirements: SRS_Rte_00249
+⌈The optional OUT parameter transformerError of the API shall
+be generated if the PortPrototype of port &lt;p&gt; is referenced by
+a PortAPIOption which has the attribute errorHandling set to
+transformerErrorHandling.⌋
+The optional OUT parameter metaDataPtr contains a pointer to
+the meta data byte array which is to be forwarded from COM. See
+[SWS_Rte_03620].
+Description:
+The Rte_Receive API call includes the IN/OUT|OUT parameter
+&lt;data&gt; to pass back the received data element.
+For each ImplementationDataTypeElement of &lt;data&gt; where
+an arrayImplPolicy is set to payloadAsPointerToArray, the
+SWC has to allocate an array of sufficient size and set the respective
+pointer to it. In that case, &lt;data&gt; is treated as an IN/OUT parameter,
+otherwise its direction is OUT.
+The pointers to the IN/OUT|OUT parameters must remain valid un-
+til the API call returns.
+This also applies to all sub elements of
+a Structure Implementation Data Type or Union Imple-
+mentation Data Type that are pointers (e.g. due to payload-
+AsPointerToArray).
+[SWS_Rte_07673]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00141
+⌈In
+case
+return
+value
+is
+RTE_E_NO_DATA,
+RTE_E_TIMEOUT,
+RTE_E_UNCONNECTED
+or
+RTE_E_IN_EXCLUSIVE_AREA
+or
+RTE_E_INVALID_LENGTH
+the
+OUT
+parameters
+shall
+remain
+unchanged.⌋
+The OUT parameter transformerError contains the transformer
+error which occured during execution of the transformer chain. See
+chapter 4.10.5.
+The OUT parameter Rte_ComErrorInfo is a structure that con-
+tains the data and transport error counts. See chapter 4.3.9
+Return Value:
+None in case returnValueProvision of the related dataRe-
+ceivePointByArgument(s) is set to noReturnValueProvided.
+Otherwise, the return value is used to indicate errors detected by the
+RTE during execution of the Rte_Receive API call or errors de-
+tected by the communication system.
+• [SWS_Rte_02598]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_OK – data read successfully.⌋
+• [SWS_Rte_01094]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_NO_DATA – (explicit non-blocking read) no events were
+received and no other error occurred when the read was at-
+tempted.⌋
+• [SWS_Rte_01095]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00069
+⌈RTE_E_TIMEOUT – (explicit blocking read) no events were
+received and no other error occurred when the read was at-
+tempted.⌋
+• [SWS_Rte_02572]
+Upstream requirements: SRS_Rte_00107,
+SRS_Rte_00110,
+SRS_-
+Rte_00094
+⌈RTE_E_LOST_DATA – Indicates that some incoming data has
+been lost due to an overflow of the receive queue. This is not an
+error of the data returned in the parameters. This Overlayed
+Error can be combined with any other error.⌋
+• [SWS_Rte_08930]
+RTE_E_INVALID_LENGTH returned by
+Rte_Receive
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_INVALID_LENGTH – The RTE could not perform the
+operation because the COM service was invoked with the
+Length (as in-parameter) being smaller than the received length
+of the dynamic length signal (inter ECU communication only).⌋
+Note: E_NOT_OK is only returned by the COM service when the
+length is inappropriate (See [SWS_COM_00690]).
+• [SWS_Rte_08931]
+RTE_E_UNCONNECTED returned by
+Rte_Receive
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_UNCONNECTED – indicates that the receiver port is not
+connected [SWS_Rte_01331]. Unlike RTE_E_NO_DATA, there
+is no need to retry receiving an event in this case.⌋
+• [SWS_Rte_02743]
+Upstream requirements: SRS_Rte_00092,
+SRS_Rte_00046,
+SRS_-
+Rte_00032
+⌈RTE_E_IN_EXCLUSIVE_AREA – Used only for the blocking
+API. RTE_E_IN_EXCLUSIVE_AREA indicates that the runnable
+can not enter wait, as one of the ExecutableEntitys in the
+call stack of this task is currently in an exclusive area, see
+[SWS_Rte_02739]. - In a properly configured system, this er-
+ror should not occur. The check can be disabled according to
+[SWS_Rte_08320].⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerError().</p>
       </section>
 
       <section class="snip-card">
@@ -118,7 +238,7 @@ ableAccess in the dataReceivePointBy</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=726" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ADC_SECTION_8_3_12_Adc_GetStreamLastPointer</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ADCDriver.pdf</strong> (Seite 72)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></strong> (Seite 72)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Adc_00518" class="swsref internal-spec-ref"><code>SWS_Adc_00518</code></a></span>
         </div>
@@ -109,11 +110,60 @@ Upstream requirements: SRS_Adc_12292, SRS_Adc_12802
 channel of the last completed conversion round.⌋
 [SWS_Adc_00418] ⌈All values which the ADC driver stores in the ADC result buffer,
 are left without further scaling and shall be aligned according the configuration param-
-eter setting of ADC_RESULT_ALI</div></section>
+eter setting of ADC_RESULT_ALIGNMENT.⌋
+[SWS_Adc_00387] ⌈The function Adc_GetStreamLastPointer shall return the number
+of valid samples per channel, stored in the ADC result buffer.⌋
+Note: Valid samples are in the ADC result buffer when the group is in state ADC_
+COMPLETED or ADC_STREAM_COMPLETED. In state ADC_BUSY or ADC_IDLE
+the value 0 is returned.
+Note: The return value is 1 for groups with single access mode configuration, if valid
+samples are stored in the ADC result buffer.
+[SWS_Adc_00216]
+Upstream requirements: SRS_Adc_12802
+⌈When called while the group status is ADC_BUSY (a conversion of the group is in
+progress), the function Adc_GetStreamLastPointer shall set the pointer, passed as pa-
+rameter (PtrToSamplePtr), to NULL and return 0.⌋
+[SWS_Adc_00219]
+Upstream requirements: SRS_Adc_12291, SRS_Adc_12802
+⌈The ADC module’s environment shall guarantee the consistency of the data that has
+been read by checking the return value of Adc_GetGroupStatus.⌋
+Note: See also SWS_Adc_00140.
+[SWS_Adc_00326]
+Upstream requirements: SRS_Adc_12291
+⌈Calling function Adc_GetStreamLastPointer while group status is ADC_STREAM_
+COMPLETED shall trigger a state transition to ADC_BUSY for continuous conversion
+modes (single access mode or circular streaming buffer mode) and hardware triggered
+groups in single access mode or circular streaming access mode.⌋
+[SWS_Adc_00327]
+Upstream requirements: SRS_Adc_12291
+⌈Calling function Adc_GetStreamLastPointer while group status is ADC_STREAM_
+COMPLETED shall trigger a state transition to ADC_IDLE for software conversion
+modes which automatically stop the conversion (streaming buffer with linear access
+mode or one-shot conversion mode with single access) and for the hardware triggered
+conversion mode in combination with linear streaming access mode.⌋
+[SWS_Adc_00328]
+Upstream requirements: SRS_Adc_12291
+⌈Calling function Adc_GetStreamLastPointer while group status is ADC_COMPLETED
+shall trigger a state transition to ADC_BUSY.⌋
+[SWS_Adc_00215] ⌈When called while the group status is ADC_IDLE and the group
+conversion was not started (no results are available from previous conversions) , the
+function Adc_GetStreamLastPointer shall report a runtime error ADC_E_IDLE.⌋
+[SWS_Adc_00218]
+Upstream requirements: SRS_BSW_00386
+⌈If development error detection for the ADC moduleis enabled: if the group ID is non-
+existent, the function Adc_GetStreamLastPointer shall raise development error ADC_
+E_PARAM_GROUP, set the pointer, passed as parameter (PtrToSamplePtr), to NULL
+and return 0 without any further action.⌋
+[SWS_Adc_00302]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection for the ADC moduleis enabled:if called prior to initial-
+izing the driver, the function Adc_GetStreamLastPointer shall raise development error
+ADC_E_UNINIT, set the pointer, passed as parameter (PtrToSamplePtr), to NULL and
+return 0 without any further action.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Adc_StreamNumSampleType().</p>
       </section>
 
       <section class="snip-card">
@@ -122,7 +172,7 @@ eter setting of ADC_RESULT_ALI</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ADCDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

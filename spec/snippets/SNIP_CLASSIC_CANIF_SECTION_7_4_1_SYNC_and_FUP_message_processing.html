@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_4_1_SYNC_and_FUP_message_processing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverCAN.pdf</strong> (Seite 31)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></strong> (Seite 31)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTSyn_00028" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00028</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanTSyn_00159" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00159</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,80 @@ CanTSynGlobalTimeTxPeriod
 The cyclic transmission shall be started in the earliest possible CanTSyn_MainFunc-
 tion call once the requirements above are fulfilled.⌋(RS_TS_20031, RS_TS_20035)
 Note: "earliest possible" means:
-• In the</div></section>
+• In the next CanTSyn_MainFunction, because GLOBAL_TIME_BASE is set out-
+side the CanTSyn_MainFunction.
+• In the current CanTSyn_MainFunction, when switching from immediate to
+cyclic transmission (because this decision is made inside the CanTSyn_Main-
+Function).
+[SWS_CanTSyn_00029] ⌈The SYNC and FUP sequence shall not be interrupted, nei-
+ther by Time Synchronization messages of the same Time Domain nor by Time Syn-
+chronization messages of other Time Domains if the same CAN ID is used for the Time
+Synchronization messages.⌋(RS_TS_20035)
+[SWS_CanTSyn_00031] ⌈If the CanTSynGlobalTimeTxIcvSecured is ICV_-
+NOT_SUPPORTED, then depending on CanTSynGlobalTimeTxCrcSecured the
+SYNC / FUP message shall be of type:
+CanTSynGlobalTimeTxCrcSecured Value
+SYNC Message Type
+FUP Message Type
+CRC_NOT_SUPPORTED
+0x10
+0x18
+SYNC message,
+FUP message,
+not CRC protected
+not CRC protected
+CRC_SUPPORTED
+0x20
+0x28
+SYNC message,
+FUP message,
+CRC protected
+CRC protected
+Table 7.16: Settings of CanTSynGlobalTimeTxCrcSecured for SYNC / FUP messages
+without ICV
+⌋(RS_TS_20033, RS_TS_20035)
+[SWS_CanTSyn_00159]{DRAFT} ⌈If the CanTSynGlobalTimeTxIcvSecured is
+ICV_SUPPORTED and CanTSynUseExtendedMsgFormat is TRUE, then depending
+on CanTSynGlobalTimeTxCrcSecured the SYNC / FUP message shall be of type:
+CanTSynGlobalTimeTxCrcSecured Value
+SYNC Message Type
+FUP Message Type
+CRC_NOT_SUPPORTED
+0x10
+0x78
+SYNC message,
+FUP message, not CRC
+not CRC protected
+protected, ICV secured
+CRC_SUPPORTED
+0x20
+0x88
+SYNC message,
+FUP message, CRC
+CRC protected
+protected, ICV secured
+Table 7.17: Settings of CanTSynGlobalTimeTxCrcSecured for SYNC / FUP messages
+with ICV
+⌋(RS_TS_20073)
+[SWS_CanTSyn_00032] ⌈A transmitter of FUP messages (Time Master) is using as
+trigger condition for SYNC to FUP that the debounceCounter value reaches 0.⌋(RS_-
+TS_20031, RS_TS_20035)
+Note: Refer to chapter 7.4.4 for the use of the debounceCounter.
+[SWS_CanTSyn_00033] ⌈Each transmission request of a SYNC message shall be
+monitored for a transmit confirmation timeout.
+If CanTSyn_TxConfirmation is not called within 2 sec after transmission request,
+CanTSyn shall
+• wait until CanTSyn_TxConfirmation is called (with E_OK or E_NOT_OK) and
+• send no FUP message and
+• instead reset the state machine to start with a new SYNC transmission once it is
+due.
+⌋(RS_TS_20034, RS_TS_20035)
+Note: A timeout of 2 sec is used to avoid an overflow of the OVS value in the FUP
+message (value range: 0 .. 3 sec), if CanTSyn_TxConfirmation is called late.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_CanTSyn_00028] im Text von SWS_TimeSyncOverCAN.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CanTSyn_00159] im Text von SWS_TimeSyncOverCAN.</p>
       </section>
 
       <section class="snip-card">
@@ -106,7 +176,7 @@ Note: "earliest possible" means:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverCAN.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverCAN.pdf#page=31" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverCAN.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,7 +188,7 @@ Note: "earliest possible" means:
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanTSyn_00028" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00028</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CanTSyn_00159" class="swsref internal-spec-ref"><code>SWS_CanTSyn_00159</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

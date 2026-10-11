@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -94,7 +95,60 @@ ular’.
 • BswModuleDependency.expectedCalback.callType
 must
 always
-be</div></section>
+be
+’callback’.
+⌋
+Figure 5.3 shows another example for an M1 model of a dependency between two hy-
+pothetical BSW modules. The dependency includes one regular function implemented
+by the lower layer module “Any” (which could stand for an MCAL module) and two
+callbacks implemented by the upper layer Module “MyComplexDriver”4.
+:BswModuleDescription
+shortName = MyComplexDriver
+:BswModuleDescription
+moduleId = 42
+shortName = Any
+:BswModuleDependency
+targetModuleId = 42
+shortName = MyDependency
+:BswModuleEntry
+callType = callback
+shortName = Any_Job1Done
+:BswModuleEntry
+serviceId = 111
+callType = regular
+shortName = Any_DoJob
+:BswModuleEntry
+callType = callback
+shortName = Any_Job2Done
++providedEntry
++requiredEntry
++outgoingCallback
++expectedCallback
++bswModuleDependency
++outgoingCallback
++expectedCallback
+Figure 5.3: Example for an M1 model of a dependency between two modules
+Note that the model of the outgoing callbacks can (in general) only be completed at
+conﬁguration time, because the number and names of the BswModuleEntrys used
+as callbacks might be unknown at the time the BSWMD of the lower level module is
+delivered. However at that point in time it is still possible to describe the signature of
+the callback function by using a Blueprint of the intended BswModuleEntry and to
+deliver this description together with the BSWMD of the lower level module. For more
+details on the blueprint concept refer to [15].
+4The AUTOSAR BSW architecture distinguishes the semantics of callback and callout: Whereas a
+callback notiﬁes something to an upper layer module, a callout is used to add functionality to the calling
+module. Within the BSWMD, these two mechanisms can be described in the same way.
+Speciﬁcation of BSW Module Description Template
+R4.0 Rev 3
+In addition to direct function calls, two BSW modules can also be connected via trig-
+gers or modes declared in their interfaces. This does not show up as a dependency,
+because the actual connection is created by the conﬁguration of the BSW Scheduler.
+Note that a BswModuleDependency can also contain ServiceNeeds. However, this
+is a deprecated relationship (only allowed for backwards compatibility) since the dec-
+laration of ServiceNeeds has been moved to the internal behavior level, see chap-
+ter 6.8.
+Speciﬁcation of BSW Module Description Template
+R4.0 Rev 3</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

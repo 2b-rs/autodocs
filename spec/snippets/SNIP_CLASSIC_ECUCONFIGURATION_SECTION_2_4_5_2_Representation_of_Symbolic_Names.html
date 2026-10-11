@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUCONFIGURATION_SECTION_2_4_5_2_Representation_of_Symbolic_Names</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ECUConfiguration.pdf</strong> (Seite 143)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_ECUConfiguration.pdf#page=141" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ECUConfiguration.pdf</a></strong> (Seite 143)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUC_03037" class="swsref"><code>TPS_ECUC_03037</code></a></span>
         </div>
@@ -87,7 +88,146 @@ tination is expected to be the provided symbolic name in the implementation late
 on. Therefore the code generator of the providing module has the responsibility to
 associate the provided symbolic name24 to its actual value.⌋()
 [TPS_ECUC_02107] Values of parameters with the symbolicNameValue set to
-TRUE that are assigned by the config</div></section>
+TRUE that are assigned by the configuration editor or module generator shall
+be stored in the XML file ⌈Configuration parameter values which represent symbolic
+name values shall be stored in the corresponding XML file after the configuration editor
+or module generator assigned the actual value.⌋()
+Example 2.45 depicts the configuration description of definition type EcucRefer-
+enceDef with requiresSymbolicNameValue set to true for example 2.22. To
+give a better impression how the referencing mechanism and code generation may
+work the EcucModuleConfigurationValues of the using and the providing mod-
+ules are shown here.
+Example 2.45
+&lt;ECUC-MODULE-CONFIGURATION-VALUES&gt;
+&lt;SHORT-NAME&gt;myCorTst&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-MODULE-DEF"&gt;/AUTOSAR/EcucDefs/CorTst&lt;/
+DEFINITION-REF&gt;
+&lt;CONTAINERS&gt;
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;Dem_PLL_lock_error&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/CorTst/CorTstDemEventParameterRefs&lt;/DEFINITION-REF&gt;
+&lt;REFERENCE-VALUES&gt;
+&lt;ECUC-REFERENCE-VALUE&gt;
+24The one that is referenced to
+&lt;DEFINITION-REF DEST="ECUC-REFERENCE-DEF"&gt;/AUTOSAR/EcucDefs/
+CorTst/CorTstDemEventParameterRefs/CORTST_E_CORE_FAILURE&lt;/
+DEFINITION-REF&gt;
+&lt;VALUE-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/ECUC/myDem/
+CORTST_E_CORE_FAILURE_1&lt;/VALUE-REF&gt;
+&lt;/ECUC-REFERENCE-VALUE&gt;
+&lt;/REFERENCE-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;/CONTAINERS&gt;
+&lt;/ECUC-MODULE-CONFIGURATION-VALUES&gt;
+[TPS_ECUC_02108] Rule for the creation of #define symbols in the header
+file for parameters with the symbolicNameValue set to TRUE ⌈The values of
+EcucParameterDefs with effective configuration class PreCompile and symbol-
+icNameValue set to TRUE shall be generated into the header file of the declaring
+module as #defines. The symbol shall be composed of
+• either
+– the module implementation prefix {Mip} of the declaring BSW Module (ac-
+cording to BswModuleList [13])
+– or the apiServicePrefix for Complex Driver Modules
+– or the apiServicePrefix for Xfrm Modules
+• followed by the literal "Conf_" followed by
+• the shortName of the EcucParamConfContainerDef of the declaring module
+followed by "_" followed by
+• the shortName of the EcucContainerValue container which holds the sym-
+bolicNameValue configuration parameter value.
+⌋()
+Taking the specification requirements above the configuration snippet results in the
+according symbolic name definition in the header file of the providing Dem module:
+...
+#define DemConf_DemEventParameter_CORTST_E_CORE_FAILURE_1 17
+...
+Especially in case of production error reporting this pattern is used extensively: The
+integrator has the freedom to call the DemEventParameter container name arbitrarily.
+In general it is reasonable to name the DemEventParameter like the actual production
+error (e.g. FLS_E_ERASE_FAILED), however there are use-cases where the same
+production error shall be reported for several instances / channels individually, thus it
+is required to distinguish between these different production error occurrences (e.g.
+FRIF_E_NIT_CH_A_CLUSTER_1 where FRIF_E_NIT_CH_A is the production error
+name and _CLUSTER_1 encodes one specific FlexRay cluster). This needs to be kept
+in mind when accessing the production error symbolic name from the reporting module,
+e.g. FrIf shall call:
+Dem_SetEventStatus(DemConf_DemEventParameter_FRIF_E_NIT_CH_A_CLUSTER_1,
+DEM_EVENT_STATUS_PASSED);
+In figure 2.31 another example of a symbolic name value configuration setup is shown.
+The example 2.46 shows a possible value description for this definition.
+ComSignal:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = *
+ComConfig:
+EcucParamConfContainerDef
+ComMPncComSignal:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+ComMPncComSignalRef:
+EcucReferenceDef
+requiresSymbolicNameValue = true
+ComHandleId:
+EcucIntegerParamDef
+symbolicNameValue = true
+min = 0
+max = 65535
+DbgAddInfoComSignal:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DbgComSignalRef: EcucReferenceDef
+requiresSymbolicNameValue = true
++reference
++reference
++destination
++subContainer
++parameter
++destination
+Figure 2.31: Example of ComSignal symbolic name definition
+Example 2.46
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;myComConfig&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig&lt;/DEFINITION-REF&gt;
+&lt;SUB-CONTAINERS&gt;
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;PNC_02&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig/ComSignal&lt;/DEFINITION-REF&gt;
+&lt;PARAMETER-VALUES&gt;
+&lt;ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;DEFINITION-REF DEST="ECUC-INTEGER-PARAM-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig/ComSignal/ComHandleId&lt;/DEFINITION-
+REF&gt;
+&lt;VALUE&gt;231&lt;/VALUE&gt;
+&lt;/ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;/PARAMETER-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;ECUC-CONTAINER-VALUE&gt;
+&lt;SHORT-NAME&gt;Debuging_Sig5&lt;/SHORT-NAME&gt;
+&lt;DEFINITION-REF DEST="ECUC-PARAM-CONF-CONTAINER-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig/ComSignal&lt;/DEFINITION-REF&gt;
+&lt;PARAMETER-VALUES&gt;
+&lt;ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;DEFINITION-REF DEST="ECUC-INTEGER-PARAM-DEF"&gt;/AUTOSAR/
+EcucDefs/Com/ComConfig/ComSignal/ComHandleId&lt;/DEFINITION-
+REF&gt;
+&lt;VALUE&gt;245&lt;/VALUE&gt;
+&lt;/ECUC-NUMERICAL-PARAM-VALUE&gt;
+&lt;/PARAMETER-VALUES&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+&lt;/SUB-CONTAINERS&gt;
+&lt;/ECUC-CONTAINER-VALUE&gt;
+This leads to the generation of the following definitions in the Com header file:
+#define ComConf_ComSignal_PNC_02 231
+#define ComConf_ComSignal_Debuging_Sig5 245
+Such that the other BSW Modules - which include the Com header file - can call the
+Com module using these symbols:
+ComM: Com_SendSignal(ComConf_ComSignal_PNC_02, value)
+Dgb:
+Com_SendSignal(ComConf_ComSignal_Debuging_Sig5, value)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +240,7 @@ TRUE that are assigned by the config</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ECUConfiguration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_ECUConfiguration.pdf#page=141" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ECUConfiguration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

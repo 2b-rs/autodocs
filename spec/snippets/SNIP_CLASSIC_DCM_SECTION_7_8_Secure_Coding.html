@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_8_Secure_Coding</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 236)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=236" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 236)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01684" class="swsref internal-spec-ref"><code>SWS_Dcm_01684</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06111</span>
         </div>
       </div>
 
@@ -90,11 +91,93 @@ DcmDspAuthenticationTransmitCertificateFunction that is set to = SE-
 CURE_CODING, the Dcm shall (re-)start the secure coding mechanism and use this
 certificate to validate the secure coding data.⌋
 Special attention needs to be given to the mechanism to buffer the coding data until
-it is protec</div></section>
+it is protected. The secure coding procedure can contain multiple consecutively sent
+WriteDataByIdentifier requests. The written data can only be applied and forwarded to
+the application of the signature calculated over all the data is valid. In the meantime, the
+data is buffered. There are various approaches for resource-efficient buffer handling.
+AUTOSAR does not have the goal of providing solutions for all possible strategies.
+Rather two strategies are taken into consideration:
+1. Buffer all coding data within the Dcm prior to persisting. This approach works fine
+for smaller write data but scales less well for larger coding data.
+2. This strategy is an outlook to use the BndM module. It might be part of future
+AUTOSAR releases. The BndM allows direct a/b partition NV memory access
+and does not require a further RAM buffer.
+Manager
+The Dcm derives the used strategy directly from the configured used port interfaces
+DcmDspDataUsePort for the DID data elements. In the current version only strat-
+egy 1) is supported which means that all configured port interfaces are valid with the
+exception of [SWS_Dcm_CONSTR_06108].
+[SWS_Dcm_CONSTR_06108] Not supported port interfaces for secure coding
+⌈A DcmDspDid that is referenced by DcmSecureCodingDataIdentifier shall
+not have a DcmDspData with DcmDspDataUsePort set to USE_ECU_SIGNAL or
+USE_BLOCK_ID.⌋
+The data that is stored during the secure coding process is a sequential chain of stored
+data identifiers as shown in Figure 7.13. For each data identifier, the 2-byte data iden-
+tifier number followed by the data record of the data identifier is stored. This is sequen-
+tially repeated for each secure data identifier. The signature validation is run over the
+entire buffer.
+Figure 7.14: Dcm Secure Coding Buffer Layout
+The data identifier number in the signature check ensures that the written data matches
+the intended write operation of the manufacturer and avoids misuse to a data record
+as data of a different DID. The signature validation over the entire buffer only allows
+one explicit order of DIDs in which the data has to be written. Even if the order might
+be irrelevant for coding data for some users, the order needs to be kept.
+[SWS_Dcm_01685] Write Secure Coding DID for started secure coding sequence
+Upstream requirements: RS_Diag_04272
+⌈If the Dcm receives a write data by identifier request for a data identifier referenced
+by DcmSecureCodingDataIdentifier and the secure coding sequence has been
+started according to [SWS_Dcm_01684], the Dcm shall sequentially store the data in
+the buffer defined by DcmSecureCodingDataBufferSize and store the 2 byte DID
+number followed by the data in it.⌋
+[SWS_Dcm_CONSTR_06109] Static length of secure coding DIDs ⌈A DcmDspDid
+that is referenced by DcmSecureCodingDataIdentifier shall have a static length.
+This means that the DcmDspData of that DID shall not have any DcmDspDataType
+set to UINT8_DYN.⌋
+With [SWS_Dcm_01685] the Dcm stores the data in a temporary local buffer that is
+not visible to the outside. Applications have therefore no access to the data at this
+Manager
+point. This also implies that the configured callouts in DcmDspDataUsePort are not
+yet invoked.
+Apart from this local data storage, the Dcm processes a secure coding DID diagnostic
+request in the same way as any other diagnostic request. In particular, all service
+validation checks are executed.
+[SWS_Dcm_01686] Write Secure Coding DID without a started secure coding
+sequence
+Upstream requirements: RS_Diag_04272
+⌈If the Dcm receives a write data by identifier request for a data identifier referenced by
+DcmSecureCodingDataIdentifier and the secure coding sequence has not been
+started according to [SWS_Dcm_01684], the Dcm shall return an NRC 0x22 (condition-
+sNotCorrect) as a response to the write data by identifier request.⌋
+[SWS_Dcm_01687] Write Secure Coding DID buffer overflow
+Upstream requirements: RS_Diag_04272
+⌈If the Dcm is storing secured coding DID data within the buffer provided by Dcm-
+SecureCodingDataBufferSize and the data of the DID written to it exceeds the
+configured size, the Dcm shall send an NRC 0x22 (conditionsNotCorrect) and stop the
+secure coding sequence.⌋
+The secure coding sequence is finalized by a dedicated routine control service. It is
+responsible for verifying the authenticity of the written data and triggers the final data
+write operations.
+[SWS_Dcm_01688] Secure Coding validation trigger on inactive secure coding
+sequence
+Upstream requirements: RS_Diag_04272
+⌈If the Dcm receives the routine control service referred by DcmSecureCodingVali-
+dationRoutine and the secure coding sequence has not been started according to
+[SWS_Dcm_01684], the Dcm shall return an NRC 0x22 (conditionsNotCorrect).⌋
+[SWS_Dcm_01689] Secure Coding validation trigger without written data
+Upstream requirements: RS_Diag_04272
+⌈If the Dcm receives the routine control service referred by DcmSecureCodingVali-
+dationRoutine and no secure data according to [SWS_Dcm_01685] has been writ-
+ten so far, the Dcm shall return an NRC 0x22 (conditionsNotCorrect).⌋
+[SWS_Dcm_CONSTR_06110] Secure Coding validation routine input parameter
+⌈A DcmDspRoutine that is referenced by DcmSecureCodingValidationRoutine
+shall only have a single configured DcmDspStartRoutineInSignal with DcmD-
+spRoutineSignalType set to UINT8_N.⌋
+[SWS_Dcm_CONSTR_06111] Secure Coding validation routine output parameter
+⌈A DcmDspRoutine that is referenced by DcmSecureCodingValidationRoutine</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01684] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06111] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +186,7 @@ it is protec</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=236" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,7 +198,7 @@ it is protec</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01684" class="swsref internal-spec-ref"><code>SWS_Dcm_01684</code></a></td>
+              <td>SWS_Dcm_CONSTR_06111</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

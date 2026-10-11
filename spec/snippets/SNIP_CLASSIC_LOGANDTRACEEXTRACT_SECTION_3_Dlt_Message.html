@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LOGANDTRACEEXTRACT_SECTION_3_Dlt_Message</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>LogAndTraceExtract.pdf</strong> (Seite 20)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_TPS_LogAndTraceExtract.pdf#page=11" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LogAndTraceExtract.pdf</a></strong> (Seite 20)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=PRS_Dlt_00401" class="swsref"><code>PRS_Dlt_00401</code></a></span>
         </div>
@@ -137,7 +138,249 @@ offsetSiToUnit: Float [0..1]
 PrivacyLevel
 +
 privacyLevel: PositiveInteger [0..1]
-«atpVariation,atp</div></section>
+«atpVariation,atpSplitable»
++context
+0..*
++unit
+0..1
++dltArgument
+0..* {ordered}
++unit
+0..1
+«atpVariation,atpSplitable»
++application
+0..*
++compuMethod
+0..1
+«atpVariation,atpSplitable»
++dltMessage
+0..*
+«atpVariation,atpSplitable»
++dltMessage
+0..*
++compuMethod
+0..1
++dltArgumentEntry 0..*
++baseType
+0..1
++privacyLevel
+0..1
++dataConstr
+0..1
+«atpSplitable»
++networkRepresentation
+0..1
+Figure 3.1: Modeling of DltMessages
+Log And Trace Extract Template
+Class
+LogAndTraceMessageCollectionSet
+Package
+M2::AUTOSARTemplates::LogAndTraceExtract
+Note
+Collection of DltMessages
+Tags:atp.recommendedPackage=LogAndTraceMessageCollectionSets
+Base
+ARElement, ARObject, CollectableElement, Identifiable, MultilanguageReferrable, Packageable
+Element, Referrable
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+dltMessage
+DltMessage
+*
+aggr
+Collection of DltMessages in the DltMessageCollection
+Set.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=dltMessage.shortName, dlt
+Message.variationPoint.shortLabel
+vh.latestBindingTime=systemDesignTime
+Table 3.1: LogAndTraceMessageCollectionSet
+Class
+DltMessage
+Package
+M2::AUTOSARTemplates::LogAndTraceExtract
+Note
+This element defines a DltMessage.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+LogAndTraceMessageCollectionSet.dltMessage
+Attribute
+Type
+Mult.
+Kind
+Note
+dltArgument
+(ordered)
+DltArgument
+*
+aggr
+Ordered collection of DltArguments in the DltMessage.
+messageId
+PositiveInteger
+0..1
+attr
+This attribute defines the unique Id for the DltMessage.
+messageLine
+Number
+PositiveInteger
+0..1
+attr
+This attribute describes the position in the source file in
+which this log message was called.
+messageSource
+File
+String
+0..1
+attr
+This attribute describes the source file in which this log
+message was called.
+messageType
+Info
+String
+0..1
+attr
+This attribute describes the message Type
+privacyLevel
+PrivacyLevel
+0..1
+aggr
+The Privacy Level helps to identify the Log and Trace
+content towards the degree of privacy to it.
+Table 3.2: DltMessage
+[TPS_DLTXT_00001] Log or trace message representation ⌈One log or trace mes-
+sage is represented by one DltMessage element.⌋()
+[constr_5301] Existence of DltMessage.messageId ⌈For each DltMessage, the
+attribute messageId shall exist when the Log And Trace Extract is created.⌋()
+[TPS_DLTXT_00002]DLT message ⌈The DltMessage is described with the following
+information:
+• Message Type (MSTP) - shall be derived from DltMessage.messageTypeInfo
+• Message Info (MSIN) - shall be derived from DltMessage.messageTypeInfo
+• Source file - shall be derived from DltMessage.messageSourceFile
+• Line Number - shall be derived from DltMessage.messageLineNumber
+Log And Trace Extract Template
+⌋()
+Please note that the source file and the line number described in [TPS_DLTXT_00002]
+are not applicable to standardized DltMessages or to DltMessages that are meant
+to be reused in multiple locations.
+Class
+DltArgument
+Package
+M2::AUTOSARTemplates::LogAndTraceExtract
+Note
+This element defines an Argument in a DltMessage.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+DltArgument.dltArgumentEntry, DltMessage.dltArgument
+Attribute
+Type
+Mult.
+Kind
+Note
+dltArgument
+Entry
+DltArgument
+*
+aggr
+This aggregation is used to describe subElements of a Dlt
+Argument that defines a Structure.
+length
+PositiveInteger
+0..1
+attr
+Describes the DltArgument length in case of Arrays and
+Strings in number of BaseTypes.
+network
+Representation
+SwDataDefProps
+0..1
+aggr
+Definition of the networkRepresentation of the Dlt
+Argument.
+Stereotypes: atpSplitable
+Tags:atp.Splitkey=networkRepresentation
+optional
+Boolean
+0..1
+attr
+This attribute defines whether the argument is optional or
+not. If set to true, the argument can be omitted from the
+payload of a DLT message.
+predefinedText
+Boolean
+0..1
+attr
+This attribute defines whether the DltArgument is a
+predefinedText (Static Data).
+variableLength
+Boolean
+0..1
+attr
+This attribute defines whether the length of the Dlt
+Argument is variable (determined at runtime) or not.
+Table 3.3: DltArgument
+[TPS_DLTXT_00003] User data of the log or trace message ⌈The user data of the
+log or trace message shall be represented by DltArguments that are ordered in the
+DltMessage.⌋()
+[TPS_DLTXT_00004] DltArgument kinds ⌈Each DltArgument can be either:
+• predefined text (static)
+• assembled data
+⌋()
+Please note that the Log and Trace Protocol Specification [1] is using the terms “Static-
+Data” for predefined text and “Non-Static-Data” for assembled data.
+[TPS_DLTXT_00005] predefined text DltArgument ⌈If a DltArgument is a prede-
+fined text, then the DltArgument shall only contain a shortName, a desc and the
+predefinedText. The text shall be placed into the desc field. The predefined-
+Text attribute of the DltArgument shall be set to true.⌋()
+[TPS_DLTXT_00006] assembled data DltArgument ⌈If a DltArgument represents
+assembled data then DltArgument.networkRepresentation.unit and the Dl-
+tArgument.networkRepresentation.baseType shall be defined.⌋()
+Log And Trace Extract Template
+Please note that only the assembled data of the DltMessage is send to external Dlt
+Log Viewers. The “predefined text” is available only in the ARXML File.
+[TPS_DLTXT_00014] Semantics of DltArgument.optional ⌈The optional at-
+tribute defines whether the DltArgument is optional (true) or mandatory (false) in the
+Dlt payload.⌋()
+[constr_5302] Restriction in usage of DltArgument.optional attribute ⌈The
+optional attribute shall not be set in a DltArgument that represents an array di-
+mension.⌋()
+The meaning of the term “array dimension” in [constr_5302] refers to table Table 3.4.
+[TPS_DLTXT_00009] Semantics of DltArgument.length ⌈The length attribute
+defines the length of the DltArgument of an Array or a String. If the DltArgument.
+variableLength is set to true this attribute defines the maximum length of the Dl-
+tArgument.⌋()
+Please note that for primitive types like Boolean, Signed Integer, Unsigned Integer, and
+Float the length of the DltArgument shall be derived from the baseTypeSize.
+[constr_5303] Restriction of baseTypeSize of a DltArgument ⌈The baseType-
+Size in the networkRepresentation of a DltArgument is restricted to 8, 16, 32,
+and 64 Bits.⌋()
+[TPS_DLTXT_00010] Semantics of DltArgument.length in case of a String ⌈If
+the networkRepresentation of a DltArgument is a String which is described
+with a SwBaseType that has a String baseTypeEncoding then the length attribute
+specifies the text size in characters. Please note the size in bytes depends on the
+encoding in the corresponding SwBaseType.⌋()
+[TPS_DLTXT_00011] Description of DltArgument with one-dimensional Array
+type ⌈A DltArgument that has a one-dimensional Array type is described by a Dl-
+tArgument that has the length attribute set to a value. The data type of the array is
+described by the SwBaseType in the networkRepresentation.⌋()
+Please note that a DltArgument of type String is described as an Array of characters.
+[TPS_DLTXT_00012] Description of DltArgument with n-dimensional Array type
+⌈A DltArgument that has a n-dimensional Array type is described by a DltArgu-
+ment that aggregates further DltArguments in the role dltArgumentEntry and
+all the aggregated DltArguments have the length attribute set to a value. Each
+dltArgumentEntry defines one dimension in the Array that is represented by the
+aggregating DltArgument.
+The length attribute of the aggregating DltArgument defines the number of dimen-
+sions.
+The length attribute in the dltArgumentEntry defines the number of entries in the
+dimension.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -150,7 +393,7 @@ privacyLevel: PositiveInteger [0..1]
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>LogAndTraceExtract.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_TPS_LogAndTraceExtract.pdf#page=11" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LogAndTraceExtract.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

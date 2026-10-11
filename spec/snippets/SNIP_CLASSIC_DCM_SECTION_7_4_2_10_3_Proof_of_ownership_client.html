@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_10_3_Proof_of_ownership_client</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 152)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=152" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 152)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dcm_CONSTR_6098</span>
         </div>
@@ -91,7 +92,85 @@ CsmJob.CsmJobId
 mode: set to CRYPTO_OPERATIONMODE_SINGLECALL
 dataPtr: challenge generated [SWS_Dcm_01493]
 dataLength: length of the challenge generated in [SWS_Dcm_01493]
-signaturePtr: proofOfOwnerShipCli</div></section>
+signaturePtr: proofOfOwnerShipClient from request
+signatureLength: lengthOfProofOfOwnerShipClient from request
+⌋
+[SWS_Dcm_CONSTR_06098]
+Require asynchronous signature verification ⌈
+DcmDspAuthenticationVerifyProofOfOwnerShipClientJobRef is only valid
+if the referenced CsmJob itself:
+Manager
+• has a CsmProcessingMode set to CRYPTO_PROCESSING_ASYNC
+• references a CsmPrimitive with an aggregated CsmSignatureVerify.
+⌋
+[SWS_Dcm_01512] Failed ownership verification
+Upstream requirements: RS_Diag_04230
+⌈If
+the
+result
+of
+Csm_SignatureVerify
+from
+[SWS_Dcm_01511]
+is
+Crypto_VerifyResultType equal to CRYPTO_E_VER_NOT_OK, the Dcm shall send a
+negative response with NRC ’Ownership verification failed’.⌋
+[SWS_Dcm_01513] SessionKey support
+Upstream requirements: RS_Diag_04230
+⌈Upon sending a positive response for an authentication request with sub-function
+equal to proofOfOwnership, the Dcm shall:
+• set all bytes of lengthOfSessionKeyInfo to 0x00
+• omit the sessionKeyInfo
+⌋
+Set current role
+[SWS_Dcm_01514] Update the current role
+Upstream requirements: RS_Diag_04233
+⌈If the proof of ownership verification in [SWS_Dcm_01511] was successful and re-
+sulted in CRYPTO_E_VER_OK, the Dcm shall use the value read from the certificate
+extension DcmDspAuthenticationRoleElementRef as new role for the current
+authenticated state.⌋
+[SWS_Dcm_01515] Role size check
+Upstream requirements: RS_Diag_04230
+⌈If the size of the read role information in [SWS_Dcm_01514] is different than the size
+in DcmDspAuthenticationRoleSize, the Dcm shall send a negative response with
+NRC ’Certificate verification failed - Invalid Content’.⌋
+Set white list
+[SWS_Dcm_01516] Update the current whitelist
+Upstream requirements: RS_Diag_04232
+⌈If the proof of ownership verification in [SWS_Dcm_01511] was successful and re-
+sulted in CRYPTO_E_VER_OK, the Dcm shall use the white list read from the certifi-
+cate according to [SWS_Dcm_01517] as new white list for the current authenticated
+state.⌋
+Manager
+[SWS_Dcm_01517]
+White list access ⌈To read the white list from a certificate,
+the Dcm shall read all child elements from the referenced DcmDspAuthentica-
+tionWhiteListServicesElementRef,
+DcmDspAuthenticationWhiteList-
+DIDElementRef,
+DcmDspAuthenticationWhiteListRIDElementRef
+and
+DcmDspAuthenticationWhiteListMemorySelectionElementRef
+certificate
+data.⌋
+[SWS_Dcm_01518] White list size check
+Upstream requirements: RS_Diag_04230
+⌈If the size of the read white list information in [SWS_Dcm_01516] is larger
+than the size in DcmDspAuthenticationWhiteListServicesMaxSize or
+DcmDspAuthenticationWhiteListDIDMaxSize or DcmDspAuthentication-
+WhiteListRIDMaxSize or DcmDspAuthenticationWhiteListMemorySelec-
+tionMaxSize , the Dcm shall send a negative response with NRC ’Certificate verifi-
+cation failed - Invalid Content’ (0x25).⌋
+[SWS_Dcm_CONSTR_06087] Required size for white lists
+Upstream requirements: RS_Diag_04232
+⌈If
+any
+of
+the
+optional
+DcmDspAuthenticationWhiteListMemorySelec-
+tionElementRef are configured, the corresponding DcmDspAuthentication-
+WhiteListMemorySelectionMaxSize shall be configured for that white list.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +183,7 @@ signaturePtr: proofOfOwnerShipCli</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=152" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

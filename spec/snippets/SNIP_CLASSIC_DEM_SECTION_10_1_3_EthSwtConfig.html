@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_10_1_3_EthSwtConfig</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetSwitchDriver.pdf</strong> (Seite 211)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetSwitchDriver.pdf#page=211" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetSwitchDriver.pdf</a></strong> (Seite 211)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_EthSwt_CONSTR_00438</span>
         </div>
@@ -139,7 +140,105 @@ which shall be invoked using the API Dem_SetEventStatus in
 case the corresponding error occurs. The EventId is taken from
 the referenced DemEventParameter’s DemEventId symbolic
 value. The standardized errors are provided in this container and
-can be extended by vendor-specific</div></section>
+can be extended by vendor-specific error references.
+EthSwtMacForwardingTable
+0..*
+Represents a MAC forwarding table.
+EthSwtNvm
+0..1
+Configuration of one Ethernet Switch Nvm usage in case the
+module requires non volatile memory in the Ecu to store switch
+configuration.
+EthSwtPSCM
+0..1
+Per stream classification and metering.
+Tags: atp.Status=draft
+EthSwtPort
+1..*
+Configuration of one Ethernet Switch Port.
+EthSwtSpi
+0..1
+Configuration of one Ethernet Switch SPI access (if SPI is used).
+EthSwtStreamIdentificationTable
+0..1
+Configuration of a stream identification table.
+Tags: atp.Status=draft
+▽
+△
+Included Containers
+Container Name
+Multiplicity
+Dependency
+EthSwtUnknownMacDestAddress
+Config
+1..*
+Definition to which EthSwtPorts an Ethernet frame shall be
+forwarded if the destination MAC address is not present in the
+address resolution lookup (ARL) table.
+EthSwtVlanMembership
+0..4095
+Determines the membership of this Ethernet switch and the
+referenced ports to the virtual network, i.e. frames with this VID
+can be received and transmitted via the referenced ports.
+⌋
+[ECUC_EthSwt_00127]
+Definition of EcucFloatParamDef EthSwtArlTableEntry
+Timeout ⌈
+Parameter Name
+EthSwtArlTableEntryTimeout
+Parent Container
+EthSwtConfig
+Description
+If present, this parameter specifies the timeout in seconds for removing unused entries
+from the ARL table of the Ethernet switch. If the parameter is not configured, entries
+are not removed automatically.
+Multiplicity
+0..1
+Type
+EcucFloatParamDef
+Range
+[1 .. 65535]
+Default value
+300
+Post-Build Variant Multiplicity
+false
+Post-Build Variant Value
+false
+Pre-compile time
+X
+All Variants
+Link time
+–
+Multiplicity Configuration Class
+Post-build time
+–
+Pre-compile time
+X
+All Variants
+Link time
+–
+Value Configuration Class
+Post-build time
+–
+Dependency
+⌋
+[ECUC_EthSwt_00128]
+Definition of EcucBooleanParamDef EthSwtClockSyn-
+chronizationSupport ⌈
+Parameter Name
+EthSwtClockSynchronizationSupport
+Parent Container
+EthSwtConfig
+Description
+This parameter defines, if a Ethernet switch shall enable clock synchronization with
+another Ethernet switch to which it is connected via uplink port.
+If this parameter is set to TRUE the clock synchronization between connected Ethernet
+switches is activated and the clocks of the Ethernet switches are synchronized. If this
+parameter is set to FALSE the clock synchronization between connected Ethernet
+switches is deactivated.
+This parameter shall only be set to TRUE if the Ethernet switch hardware supports
+clock synchronization.
+Multiplicity</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -152,7 +251,7 @@ can be extended by vendor-specific</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetSwitchDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetSwitchDriver.pdf#page=211" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetSwitchDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

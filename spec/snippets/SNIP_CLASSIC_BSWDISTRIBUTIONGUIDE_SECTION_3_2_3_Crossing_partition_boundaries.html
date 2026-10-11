@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWDISTRIBUTIONGUIDE_SECTION_3_2_3_Crossing_partition_boundaries</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>BSWDistributionGuide.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_BSWDistributionGuide.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWDistributionGuide.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00816" class="swsref internal-spec-ref"><code>SWS_Os_00816</code></a></span>
         </div>
@@ -87,7 +88,22 @@ tion. After entering the function can be called directly. CallTrustedFunction
 makes sure that the caller gets the appropriate rights to make the call, e.g. chang-
 ing the memory protection to the setting of the called function.
 3. The call of the function may be directly possible if the called function does not
-write to own data or calls other functions which write to such data. E.g. i</div></section>
+write to own data or calls other functions which write to such data. E.g. if the
+function just reads out a value and return it. Basically, such a function behaves
+like a library.
+Dependent on the mapping of the BSW modules to different partitions the right option
+has to be chosen. For all function calls between BSW modules located in different
+partitions which are synchronous, we will focus on the calling possibilities (2) and (3).
+Because as already stated QM modules are not changed, we have to encapsulate
+calls which are made from QM partitions to ASIL and vice versa. The ASIL module
+is always responsible to handle the boundary crossing since the QM module is not
+touched and does not know this border. This means that if the ASIL module is the
+caller, the boundary handling needs to take place on the caller side, and if the ASIL
+module is the callee, the boundary handling needs to take place on the callees side
+The following descriptions focus on ASIL and QM BSW modules. Besides BSW mod-
+ules also CDD might be included in the system. For CDDs the same rules and restric-
+tions apply (if not otherwise explicitly stated)
+Guide to BSW Distribution</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +116,7 @@ write to own data or calls other functions which write to such data. E.g. i</div
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>BSWDistributionGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_BSWDistributionGuide.pdf#page=66" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWDistributionGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

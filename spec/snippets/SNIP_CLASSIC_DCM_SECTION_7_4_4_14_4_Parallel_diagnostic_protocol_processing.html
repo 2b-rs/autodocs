@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_4_14_4_Parallel_diagnostic_protocol_processing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 71)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 71)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01603" class="swsref internal-spec-ref"><code>SWS_Dcm_01603</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06103</span>
         </div>
       </div>
 
@@ -86,11 +87,61 @@ non-default session, the Dcm shall accept the new incoming request and process i
 (RS_Diag_04021)
 [SWS_Dcm_01603] No parallel processing in non-default session ⌈If the Dcm
 receives a request and a further protocol with a higher priority is currently in a
-non-default session, the Dcm shall decline the new received req</div></section>
+non-default session, the Dcm shall decline the new received request according to
+[SWS_Dcm_00727].⌋(RS_Diag_04021)
+Some Dcm interfaces provide access to different diagnostic services, e.g. interface
+RoutineService for subfunctions Start, Stop and Request Result of a RoutineControl
+(0x31) or the interface DataServices for the Read and Write operations. On these
+interfaces only a single client shall access to the data at any point in time.
+[SWS_Dcm_01604] Delay parallel processing on the same interface ⌈If the Dcm
+receives a request and the service processing of this request requires a call to the
+same interface that is currently processing another request, the Dcm shall delay the
+call to the interface until the running operation on that interface has finished.⌋(RS_-
+Diag_04021)
+If the Dcm delays the service processing due to [SWS_Dcm_01604] the standard timing
+behavior with P2 and NRC 0x78 apply. From an outside perspective, the delayed call
+to the application looks like that the application itself is taking more time for execution.
+[SWS_Dcm_01367] ⌈The Dcm shall process incoming OBD-II requests in parallel
+to a running UDS request.
+In this case the protocol priority check according to
+[SWS_Dcm_00015] is skipped and no protocol pre-emption is done.⌋(RS_Diag_-
+04163)
+With the container DcmDslProtocolRow, the Dcm configuration supports multiple pro-
+tocols. Each protocol has a configured DcmDemClientRef defining the Dem client in-
+teracting with the Dem. This client Id allows the Dem to distinguish between concurrent
+calls of the Dcm of the same function or set of functions to process a certain request.
+[SWS_Dcm_01369] ⌈While processing a diagnostic request received from a given pro-
+tocol, the Dcm shall determine the DcmDemClientRef of the DcmDslProtocolRow
+of the processed protocol. The Dcm shall use this value in all Dem API calls that have a
+ClientId as parameter.⌋(RS_Diag_04162)
+[SWS_Dcm_01370] Serialization of multiple calls to the same interface ⌈The Dcm
+shall internally serialize all asynchronous C/S interface or C function calls to the same
+Manager
+port interface or C function during parallel diagnostic services processing and return a
+pending to the re-entrant caller.⌋(RS_Diag_04162)
+[SWS_Dcm_01371] ⌈If the Dcm receives a request on a higher priority protocol than
+the currently processed request and a diagnostic service in a non-default session is
+currently processed, the Dcm shall cancel the running diagnostic request, make a tran-
+sition into default session and process the new received request.⌋(RS_Diag_04162)
+Integrators will assign OBD protocols the highest priority to meet the legislated response
+and timing requirements. Therefore, all definitions of ’higher priority protocols’ apply to
+the use case where OBD is used.
+[SWS_Dcm_01372] ⌈If the Dcm processes a request from a high priority protocol in
+default session and the Dcm is receiving a diagnostic request to change in a non-
+default session, the Dcm shall delay the session change request until the high priority
+protocol service is finished according to [SWS_Dcm_01371] and make a transition into
+the requested non-default session.⌋(RS_Diag_04162)
+[SWS_Dcm_CONSTR_06102] Limitation to one single OBD protocol ⌈The Dcm shall
+support only one DcmDslProtocolRow with a configured DcmDslProtocolType set
+to DCM_OBD_ON_&lt;XYZ&gt;.⌋()
+[SWS_Dcm_CONSTR_06103]
+OBD procotol shall have highest priority ⌈The
+Dcm shall support a DcmDslProtocolRow with DcmDslProtocolType set to
+DCM_OBD_ON_&lt;XYZ&gt; as the highest priority.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01603] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06103] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -99,7 +150,7 @@ non-default session, the Dcm shall decline the new received req</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=71" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -111,7 +162,7 @@ non-default session, the Dcm shall decline the new received req</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01603" class="swsref internal-spec-ref"><code>SWS_Dcm_01603</code></a></td>
+              <td>SWS_Dcm_CONSTR_06103</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

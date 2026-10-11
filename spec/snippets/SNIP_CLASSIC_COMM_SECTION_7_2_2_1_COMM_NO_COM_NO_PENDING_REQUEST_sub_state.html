@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_2_2_1_COMM_NO_COM_NO_PENDING_REQUEST_sub_state</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 69)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=68" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 69)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01376" class="swsref internal-spec-ref"><code>SWS_Dcm_01376</code></a></span>
         </div>
@@ -98,7 +99,69 @@ PENDING_REQUEST and configuration parameter ComMSynchronousWakeUp is set
 to FALSE (see [ECUC_ComM_00695]), the ComM module shall switch the re-
 quested ComM channel state machine (resp.
 channels) to sub-state COMM_-
-NO_</div></section>
+NO_COM_REQUEST_PENDING. If the indicated ComM channel is a managed chan-
+nel, then the ComM channel state machine of the referencing managing channel
+(see [ECUC_ComM_00893]) shall also be switched to sub-state COMM_NO_COM_-
+REQUEST_PENDING.⌋
+[SWS_ComM_00894]
+Upstream requirements: SRS_ModeMgm_09087
+⌈In sub-state COMM_NO_COM_NO_PENDING_REQUEST and the NM module indicates
+a restart, ComM_Nm_RestartIndication() [SWS_ComM_00792], the ComM channel
+state machine shall immediately switch to sub-state COMM_NO_COM_REQUEST_PEND-
+ING.⌋
+Rationale for [SWS_ComM_00893] and [SWS_ComM_00894]: It must be guaranteed
+that communication starts as soon as possible after a bus wake up.
+Comment: The ComM channel state machine switches immediately to sub-state
+COMM_FULL_COM_NETWORK_REQUESTED after entering the COMM_FULL_COMMUNI-
+CATION state.
+If no user requests COMM_FULL_COMMUNICATION mode, the AU-
+TOSAR NM resp.
+the ComM module timer for ComMTMinFullComModeDura-
+tion([ECUC_ComM_00557]) prevent toggling between COMM_NO_COMMUNICATION
+and COMM_FULL_COMMUNICATION to overcome the init-/start-up time of the system,
+before possible user requests occur.
+[SWS_ComM_00694]
+Upstream requirements: SRS_ModeMgm_09248
+⌈If ComM_EcuM_WakeUpIndication is called in sub-state COMM_NO_COM_NO_-
+PENDING_REQUEST and configuration parameter ComMSynchronousWakeUp is set to
+TRUE (see [ECUC_ComM_00695]), the ComM module shall switch all ComM channel
+state machines (resp. channels) to sub-state COMM_NO_COM_REQUEST_PENDING.⌋
+[SWS_ComM_01014]
+Upstream requirements: SRS_ModeMgm_09248
+⌈If
+ComM_EcuM_PNCWakeUpIndication(&lt;PNC&gt;)
+(see
+[SWS_ComM_91001])
+is
+called in sub-state COMM_NO_COM_NO_PENDING_REQUEST, the configuration param-
+eters ComMSynchronousWakeUp is set to FALSE (see [ECUC_ComM_00695]) and
+ComMPncSupport is set to TRUE (see [ECUC_ComM_00839]), the ComM module
+shall switch those ComM channel state machines (resp. channels) which are refer-
+enced via ComMChannelPerPnc (see [ECUC_ComM_00880]) by the given PNC to
+sub-state COMM_NO_COM_REQUEST_PENDING.⌋
+Note for [SWS_ComM_01014]:
+• This includes ComM channel state machines of managing channels, which are
+referenced by the indicated managed channels, as ComMPncs reference always
+both types (see [11] [constr_3484])
+• A channel which is referenced via ComMChannelPerTxOnlyPnc, ComMSyn-
+chronousWakeUp is set to FALSE and a PNC related wake-up is configured (call
+of EcuM_ComM_PNCWakeupIndication()), need always a EcuMWakeupSource
+which refer to this channel to ensure a proper ComMChannel handling. A wake
+up on this channel would bring the channel to a defined state, but the PNC will
+stay in COMM_PNC_NO_COMMUNICATION, since this PNC reference the channel
+via ComMChannelPerTxOnlyPnc
+[SWS_ComM_01015]
+Upstream requirements: SRS_ModeMgm_09248
+⌈If
+ComM_EcuM_PNCWakeUpIndication(&lt;PNC&gt;)
+(see
+[SWS_ComM_91001])
+is
+called in sub-state COMM_NO_COM_NO_PENDING_REQUEST and configuration param-
+eters ComMSynchronousWakeUp is set to TRUE (see [ECUC_ComM_00695]) and
+ComMPncSupportis set to TRUE (see [ECUC_ComM_00839]), the ComM module
+shall switch all ComM channel state machines (resp. channels) to sub-state COMM_
+NO_COM_REQUEST_PENDING.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -111,7 +174,7 @@ NO_</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=68" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

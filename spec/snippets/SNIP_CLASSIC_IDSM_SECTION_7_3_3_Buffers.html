@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_IDSM_SECTION_7_3_3_Buffers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IntrusionDetectionSystemManager.pdf</strong> (Seite 24)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></strong> (Seite 24)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_91015" class="swsref internal-spec-ref"><code>SWS_IdsM_91015</code></a></span>
         </div>
@@ -92,7 +93,88 @@ NumberOfContextDataBuffers with different configurable sizes IdsMContext-
 DataBufferSize in order to satisfy different sensor use cases.⌋
 Rationale: There can be significant differences in the size of the context data depend-
 ing on the type of event being processed. These sizes have to be configured suitably
-to utilize the memory resour</div></section>
+to utilize the memory resources effectively.
+[SWS_IdsM_00705] Suitable Buffer Size
+Upstream requirements: RS_Ids_00210
+⌈Upon reception of a SEv with context data, the IdsM shall store the context data in an
+Context Data Buffer with the most adequate size available. A configured Context
+Data Buffer Pool shall be searched in order to find a buffer with the same size as the
+reported context data, or find the next larger buffer. These buffers shall be handled and
+filtered asynchronously in the IdsM_MainFunction service.⌋
+[SWS_IdsM_00706] Link Event to Context Data Buffer
+Upstream requirements: RS_Ids_00210
+⌈Once an appropriate Context Data Buffer has been found, it shall be linked to
+the corresponding Event Buffer for further processing.⌋
+[SWS_IdsM_00707] No Suitable Buffer Size
+Upstream requirements: RS_Ids_00210
+⌈In case there is no appropriate Context Data Buffer of the same size or larger
+than the context data, the event shall be processed as an event without context data.
+Thus no context data buffer shall be linked to the processed SEv.⌋
+[SWS_IdsM_00708] Availability of Context Data Buffer
+Upstream requirements: RS_Ids_00210
+⌈In case no appropriate Context Data Buffer is found. The IdsM internal SEv ’No
+Context Data Buffer Available’ shall be triggered, in case it has been configured.⌋
+See
+SEV_IDSM_EVENT_NO_CONTEXT_DATA_BUFFER_AVAILABLE
+in
+[SWS_IdsM_91015].
+Manager
+[SWS_IdsM_00709] SEv without Context Data
+Upstream requirements: RS_Ids_00210
+⌈Upon reception of a SEv with no Context Data, the IdsM shall not use any Con-
+text Data Buffer. Thus no Context Data Buffer will be linked to the pro-
+cessed SEv.⌋
+[SWS_IdsM_00710] Reception SEv with higher priority
+Upstream requirements: RS_Ids_00210
+⌈Where IdsMEventDisplacementStrategy is IDSM_BUFFER_DISPLACEMENT_-
+SEVERITY_BASED, when a new SEv is received and no suitable IdsMEventBuffers is
+found and the severity of the new SEv is higher than the severity of at least one SEv
+already in the buffer, IdsM shall replace the least severe SEv already in the buffer with
+the new SEv.
+Note: In case where multiple events in the IdsMEventBuffers have the same least
+severity, it is left to the implementer which SEv to discard.
+Example: Where the IdsMEventBuffers is 5 and all the buffers are full, when a new
+security event is reported, IdsM shall drop the least severe event amongst all
+the 6 events.
+Rationale: Dropping a security event is inevitable when all the IdsMEventBuffers
+are full. In this case, dropping the least severe event minimizes the values of the
+security information lost.⌋
+[SWS_IdsM_00711] Reception SEv with lower priority
+Upstream requirements: RS_Ids_00210
+⌈Where IdsMEventDisplacementStrategy is IDSM_BUFFER_DISPLACEMENT_-
+SEVERITY_BASED, when a new SEv is received and no suitable IdsMEventBuffers is
+found and the severity of the new SEv is lower than or equal to the severity value of the
+least severe SEvs already in the buffer, IdsM shall drop the newly received SEv.⌋
+[SWS_IdsM_00712] Configuration Drop Latest
+Upstream requirements: RS_Ids_00210
+⌈Where IdsMEventDisplacementStrategy is IDSM_BUFFER_DISPLACEMENT_-
+DROP_LATEST, when a new SEv is received and no suitable IdsMEventBuffers is
+found, IdsM shall drop the newly received SEv.⌋
+Manager
+Event Data
+Buffer Filled
+Optional Context
+Data Buffer Linked
+Event Buffer
+Pool
+Context Data
+Buffer Pool
+Collection of events
+to be processed asynchronously
+Unused
+Unused
+In Use
+Unused
+Unused
+Size
+Status
+Figure 7.4: Use of Event Buffers and Context Data Buffers
+Figure 7.4 shows how event buffers and context buffers are used when security events
+are set via the IdsM API as this chapter explains. Upon reception of a SEv, the event
+is stored in a buffer from the event buffer pool and its corresponding context data
+is stored in a buffered of the most adequate size from the context data buffer pool.
+These two buffers are linked and processed together asynchronously in the IdsM_
+MainFunction service.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +187,7 @@ to utilize the memory resour</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IntrusionDetectionSystemManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

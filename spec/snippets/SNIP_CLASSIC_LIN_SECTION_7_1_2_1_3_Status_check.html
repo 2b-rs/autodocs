@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LIN_SECTION_7_1_2_1_3_Status_check</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINInterface.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mirror_01027" class="swsref internal-spec-ref"><code>SWS_Mirror_01027</code></a></span>
         </div>
@@ -87,7 +88,45 @@ ceived, the following interpretation for different types of frames takes place:
 LinIfBusMirroringSupported) and has been activated with a call to LinIf_-
 EnableBusMirroring() for a LIN channel, the LIN Interface shall call Mirror_-
 ReportLinFrame() each time after reading the LIN Driver’s status for an Rx slot on
-that channel, providing the received data w</div></section>
+that channel, providing the received data when the status is LIN_RX_OK, and otherwise
+a NULL pointer.⌋
+[SWS_LinIf_00033]
+Status:
+OBSOLETE
+Use instead:
+SWS_LinIf_00890
+Upstream requirements: SRS_Lin_01502, SRS_Lin_01558
+⌈The LIN Interface shall invoke &lt;User_RxIndication&gt; with the received data only
+when LIN Interface determines the LIN Driver module’s status is LIN_RX_OK.⌋
+[SWS_LinIf_00890] Limitation on invocation of LSduR_LinIfRxIndication in
+master nodes
+Status:
+DRAFT
+Upstream requirements: SRS_Lin_01502, SRS_Lin_01558, SRS_Lin_01599
+⌈The LIN Interface shall invoke LSduR_LinIfRxIndication with the received data
+only when LIN Interface determines the LIN Driver module’s status is LIN_RX_OK.⌋
+[SWS_LinIf_00259] ⌈When the LIN Interface is receiving an Event-triggered
+frame and the LIN Driver module’s status is LIN_RX_BUSY or LIN_RX_ERROR, the
+LIN Interface shall not consider the status as an error.⌋
+This is considered that a collision may occur, which is handled as described in Section
+7.1.1.2. The following shall apply, if none of the slave reply on the Event-triggered
+frame header.
+[SWS_LinIf_00258] ⌈When the LIN Interface has received an Event-triggered
+frame and determined the LIN Driver module’s status to be LIN_RX_NO_RESPONSE,
+the LIN Interface shall not consider this status as an error.⌋
+[SWS_LinIf_00254] ⌈When the LIN Interface has determined the LIN Driver module’s
+status as LIN_RX_BUSY or LIN_RX_ERROR, the LIN Interface shall consider the re-
+ceived frame as lost. Therefore, the LIN Interface shall report the runtime error code
+LINIF_E_RESPONSE to the Default Error Tracer, if this frame is an Unconditional
+frame.⌋
+[SWS_LinIf_00466] ⌈When the LIN Interface has determined the LIN Driver module’s
+status as LIN_RX_NO_RESPONSE, the LIN Interface shall consider the expected frame
+as lost. Therefore, the LIN Interface shall report the runtime error code LINIF_E_-
+RESPONSE to the Default Error Tracer, if this frame is an Unconditional frame.⌋
+If there is disturbance on the bus, the LIN Interface may have problems sending out
+the header. The philosophy of the ISO 17987 specifications [1] in this case is not
+reporting the error to upper layers. The same behavior applies also for transmitted and
+Slave-to-slave frames.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +139,7 @@ that channel, providing the received data w</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

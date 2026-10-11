@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/os.html">Modul: os</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_4_1_3_1_3_Multi_Core</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_SRS_ModeManagement.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_SRS_ModeManagement.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_ModeManagement.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: SWS_CP_SYS_00002</span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00713" class="swsref internal-spec-ref"><code>SWS_Os_00713</code></a></span>
         </div>
       </div>
 
@@ -99,11 +100,68 @@ Use Case:
 Without coordination, start of RTE [7] on slave cores could happen much
 earlier than on the main core, on which much more modules are running, each
 requiring init time.
-Depend</div></section>
+Dependencies:
+–
+Supporting
+Material:
+AUTOSAR Specification of Multi-Core OS Architecture
+⌋(RS_BRF_01160, RS_BRF_00206, RS_BRF_01448)
+[SRS_ModeMgm_09238] State changes shall be ECU global ⌈
+Description:
+State changes shall be ECU global (all cores are switching into a validstate).
+Only the entire ECU changes into either "off", "fully functional" or "sleeping"
+(halted or set to poll)
+Rationale:
+The complexity and problems that would be introduced with multiple parallel
+existing states shall be reduced/avoided. (at least for R 4.0)
+Use Case:
+Every state change
+Dependencies:
+–
+Supporting
+Material:
+AUTOSAR Specification of Multi-Core OS Architecture
+⌋(RS_BRF_01160, RS_BRF_00206, RS_BRF_01448)
+[SRS_ModeMgm_09239] To shutdown, ShutdownAllCores shall be called on the
+master core after synchronizing all cores ⌈
+Description:
+To go Down (Shutdown the ECU) , ShutdownAllCores shall be called on the
+master core after synchronizing all cores
+Rationale:
+It is in the responsibility of the application developer/system integrator to make
+sure that any preparations for shutdown on application and basic software level
+are completed before calling "ShutdownAllCores". Core individual shutdown is
+not supportded by AUTOSAR R4.0
+Use Case:
+Synchronized shutdown of the whole ECU
+Dependencies:
+–
+Supporting
+Material:
+AUTOSAR Specification of Multi-Core OS Architecture
+⌋(RS_BRF_01160, RS_BRF_00206, RS_BRF_01448) [SRS_ModeMgm_09254] Val-
+idation and handling of a wakeup event shall be done locally ⌈
+Description:
+Validation and handling of a wakeup event shall be done locally on the core
+where the wakeup is assigned per configuration.
+Rationale:
+Each wakeup event is configured exactly in the EcuM instance of one specific
+core. The wakeup handling, including its validation, shall be done locally on that
+core.
+Use Case:
+Wakeup of a core and validation of wakeup event in a multicore architecture.
+Dependencies:
+Where the wakeup occurs typically depends on hardware. E.g. on the
+assignment of a specific interrupt source to a core, location of integration code
+which polls wakeup sources.
+Supporting
+Material:
+Concept EnhancedBSWAllocation
+⌋(RS_BRF_01104, RS_BRF_01448)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EcuM_Init in multi-core environment</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von ShutdownAllCores().</p>
       </section>
 
       <section class="snip-card">
@@ -112,7 +170,7 @@ Depend</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_SRS_ModeManagement.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_SRS_ModeManagement.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_ModeManagement.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -124,15 +182,15 @@ Depend</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>SWS_CP_SYS_00002</td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00713" class="swsref internal-spec-ref"><code>SWS_Os_00713</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

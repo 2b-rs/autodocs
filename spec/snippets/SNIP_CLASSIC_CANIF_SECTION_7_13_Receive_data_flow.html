@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_13_Receive_data_flow</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=48" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 48)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00662" class="swsref internal-spec-ref"><code>SWS_CANIF_00662</code></a></span>
         </div>
@@ -88,7 +89,77 @@ identifies one CAN hardware receive object, where a new CAN L-PDU was received.
 After the indication of a received L-PDU by CanDrv (CanIf_RxIndication() is
 called) the CanIf shall proceed as described in 7.14 Receive indication. CanIf is
 not able to recognize, whether CanDrv uses temporary buffering or a direct hardware
-access. It expects normalized L-PDU data in calls of the C</div></section>
+access. It expects normalized L-PDU data in calls of the CanIf_RxIndication().
+The CAN hardware receive object is locked until the end of the copy process to the tem-
+porary or upper layer module buffer. The hardware object will be immediately released
+after CanIf_RxIndication() of CanIf returns to avoid loss of data.
+CanDrv, CanIf and the upper layer module, which belongs to the received L-PDU,
+access the same temporary intermediate buffer, which can be located either in the CAN
+hardware receive object of the CAN Controller or as temporary buffer in CanDrv.
+Receive Interrupt
+Call CanIf_RxIndication()
+Data
+normalization
+necessary?
+«datastore»
+Temporary buffer in CAN
+Driver
+Rx L-PDU
+received in
+BasicCAN ?
+Software filtering
+Data Length
+Check enabled?
+Data Length
+Check failed ?
+Call Det_ReportRuntimeError() with
+error code
+CANIF_E_INVALID_DATA_LENGTH
+LSduR_CanIfRxIndication() returns
+CanIf_RxIndication() returns
+
+
+ 
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+Call
+LSduR_CanIfRxIndication()
+«datastore»
+Copy data to L-PDU
+buffer
+ 
+
+
+
+
+
+
+[L-PDU passed]
+[L-PDU not
+passed]
+[Yes]
+[No]
+[Yes]
+[Yes]
+[No]
+[No]
+[Yes]
+[No]
+Figure 7.6: Receive data flow</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +172,7 @@ access. It expects normalized L-PDU data in calls of the C</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=48" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

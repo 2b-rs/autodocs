@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DLT_SECTION_7_1_8_Sending_of_Log_and_Trace_Messages</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticLogAndTrace.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticLogAndTrace.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticLogAndTrace.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dlt_91012" class="swsref internal-spec-ref"><code>SWS_Dlt_91012</code></a></span>
         </div>
@@ -92,7 +93,45 @@ Status: DRAFT
 ⌈Calling the function Dlt_SendLogMessageWithAttributes with the parameter
 attributes set to NULL shall be equivalent to calling the function Dlt_SendLogMes-
 sage with the remaining parameters.⌋
-[SWS_Dlt_0078</div></section>
+[SWS_Dlt_00782]
+Status: DRAFT
+⌈Calling the function Dlt_SendTraceMessageWithAttributes with the parameter
+attributes set to NULL shall be equivalent to calling the function Dlt_SendTraceMes-
+sage with the remaining parameters.⌋
+[SWS_Dlt_00783]
+Status: DRAFT
+⌈If the configuration parameter DltProtocolVersion is set to 1, a call to
+Dlt_SendLogMessageWithAttributes
+or
+Dlt_SendTraceMessageWithAt-
+tributes where the attribute’s argument is non-NULL, shall return with DLT_E_-
+NOT_SUPPORTED.⌋
+[SWS_Dlt_00650] ⌈The following steps describe the logical order, in the context of
+calls to Dlt_SendLogMessage or Dlt_SendTraceMessage:
+• Generate timestamp (see chapter "Generating the timestamp")
+• Filter message (see chapter "Message filtering")
+• Select target LogChannel(s) (see chapter "Select target LogChannel")
+• Check Message length (see chapter "Check message length")
+• Apply the current LogChannel threshold (see chapter "Apply LogChannel
+LogLevelThreshold")
+• Copy Dlt message to LogChannel specific buffer (see chapter "Copying Dlt mes-
+sage to the LogChannel buffer")
+• Apply the message attributes, if any are present and supported (see chapter
+"Apply the message attributes, if any are present and supported")
+⌋
+Note: Because of optimizations in an implementation, the order might be changed.
+For instance, a typical optimization could be, that the Dlt header, which is created by
+Dlt module for each Dlt message, is NOT saved to the LogChannel specific buffer per
+Dlt message, but is created on-the-fly directly before sending the message to PduR.
+[SWS_Dlt_00651] ⌈The following steps have to be taken deferred/decoupled from the
+context of calls to Dlt_SendLogMessage or Dlt_SendTraceMessage:
+• Send Dlt message to PduR according to TrafficShaping settings (see chapter
+"Sending messages from LogChannel Buffer")
+• Create Dlt Header according to header settings (see chapter "Create Dlt message
+header")
+• Remove the Dlt message from the LogChannel specific buffer (see chapter "Re-
+moving messages from LogChannel buffer")
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +144,7 @@ sage with the remaining parameters.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticLogAndTrace.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticLogAndTrace.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticLogAndTrace.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

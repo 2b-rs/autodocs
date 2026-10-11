@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_9_Rte_SwitchAck</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 716)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=716" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 716)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -105,11 +106,118 @@ SRS_Rte_
 00139
 ⌈A blocking Rte_SwitchAck API shall return:
 • if the mode machine instance behaves as unconnected or
-• if the calling runnable runs in an exclusive ar</div></section>
+• if the calling runnable runs in an exclusive area or
+• if no mode switch in the related mode machine instance is on-
+going or
+• when the wait point timeout occurs or
+• when the related ModeSwitchedAckEvent is triggered.
+⌋
+[SWS_Rte_02678]
+Upstream requirements: SRS_Rte_00051, SRS_Rte_00122
+⌈A non-blocking Rte_SwitchAck API shall be generated for a pro-
+vided ModeDeclarationGroupPrototype if acknowledgement is
+enabled but no WaitPoint references a ModeSwitchedAckEvent
+that references the ModeDeclarationGroupPrototype.
+Please note that a non-blocking API does not require the existence
+of a ModeSwitchedAckEvent.
+If the ModeSwitchedAckEvent
+exists it can be used to trigger the execution of a RunnableEntity
+in which the non-blocking API function may be called.⌋
+[SWS_Rte_CONSTR_09020] The blocking Rte_SwitchAck API
+may only be used by the runnable that describes its usage. ⌈A
+blocking Rte_SwitchAck API must only be used by the runnable
+that contains the corresponding WaitPoint⌋
+Description:
+The Rte_SwitchAck API takes no parameters other than the in-
+stance handle – the return value is used to indicate the acknowledge-
+ment status to the caller.
+Return Value:
+The return value is used to indicate the status of a mode switch and
+errors detected by the RTE.
+• [SWS_Rte_02727]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈RTE_E_NO_DATA – (non-blocking read) The mode switch is still
+in progress.⌋
+• [SWS_Rte_02728]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00210
+⌈RTE_E_TIMEOUT – The configured timeout exceeds before the
+mode transition was completed.⌋
+• [SWS_Rte_02729]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈RTE_E_TRANSMIT_ACK – The mode switch has been com-
+pleted (see [SWS_Rte_02587]).⌋
+• [SWS_Rte_07659]
+Upstream requirements: SRS_Rte_00094,
+SRS_Rte_00122,
+SRS_-
+Rte_00139
+⌈RTE_E_UNCONNECTED – Indicates that the mode provider port
+is not connected.⌋
+• [SWS_Rte_02741]
+Upstream requirements: SRS_Rte_00092,
+SRS_Rte_00046,
+SRS_-
+Rte_00032
+⌈RTE_E_IN_EXCLUSIVE_AREA – Used only for the blocking
+API. RTE_E_IN_EXCLUSIVE_AREA indicates that the runnable
+can not enter wait, as one of the ExecutableEntitys in the
+call stack of this task is currently in an exclusive area, see
+[SWS_Rte_02739]. - In a properly configured system, this er-
+ror should not occur. The check can be disabled according to
+[SWS_Rte_08319].⌋
+• [SWS_Rte_08319]
+Upstream requirements: SRS_Rte_00092,
+SRS_Rte_00046,
+SRS_-
+Rte_00032
+⌈If
+RteInExclusiveAreaCheckEnabled
+is
+set
+to
+false
+the
+RTE
+generator
+shall
+omit
+the
+check
+and
+return
+of
+[SWS_Rte_02741].⌋
+The RTE_E_TRANSMIT_ACK return value is not considered to be
+an error but rather indicates correct operation of the API call.
+When RTE_E_NO_DATA occurs, a component is free to re-invoke
+Rte_SwitchAck and thus repeat the attempt to read the status of
+the mode switch.
+[SWS_Rte_07848]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈The initial return value of the Rte_SwitchAck API before any at-
+tempt to switch a mode shall be RTE_E_TRANSMIT_ACK.⌋
+[SWS_Rte_07849]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈In case of multiple faults during a call of Rte_SwitchAck the
+resulting return value shall be derived according to the following
+priority rules (highest priority first):
+(1) RTE_E_UNCONNECTED,
+(2)
+RTE_E_IN_EXCLUSIVE_AREA,
+(3)
+RTE_E_TIMEOUT,
+(4)
+RTE_E_NO_DATA, (5) RTE_E_TRANSMIT_ACK.⌋
+Notes:
+If multiple mode switches of the same mode machine instance
+are outstanding, it is not possible to determine which is acknowl-
+edged first. If this is important, switches should be serialized with
+the next switch occurring only when the previous switch has been
+acknowledged. The queue length should be 1.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -118,7 +226,7 @@ SRS_Rte_
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=716" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

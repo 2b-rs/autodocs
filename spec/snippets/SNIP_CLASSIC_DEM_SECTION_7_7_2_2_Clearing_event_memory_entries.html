@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_2_2_Clearing_event_memory_entries</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 98)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=98" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 98)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91002" class="swsref internal-spec-ref"><code>SWS_Dem_91002</code></a></span>
         </div>
@@ -124,7 +125,114 @@ the clear request is finished and the result is returned to the requesting user.
 [SWS_Dem_01240]
 Upstream requirements: RS_Diag_04185
 ⌈If DemClearDtcNotificationTime is configured to START, the Dem shall inform
-the application about the start of a clear DTC operation. If the DemClearDtcNot</div></section>
+the application about the start of a clear DTC operation. If the DemClearDtcNoti-
+ficationFnc is configured, the Dem shall shall call this configured function otherwise
+the Dem shall call the R-Port ClearDtcNotification.⌋
+[SWS_Dem_01241]
+Upstream requirements: RS_Diag_04185
+⌈If DemClearDtcNotificationTime is configured to FINISH, the Dem shall inform
+the application about the end of a clear DTC operation. The Dem shall consider the
+configuration parameter DemClearDTCBehavior which defines the clearing process
+of diagnostic information including clearing completion. If the DemClearDtcNotifi-
+cationFnc is configured, the Dem shall call this configured function otherwise the Dem
+shall call the R-Port ClearDtcNotification.⌋
+[SWS_Dem_00661]
+Upstream requirements: RS_Diag_04194
+⌈In case of multiple clients are requesting Dem_ClearDTC in parallel, the Dem shall
+internally process the different requests.⌋
+[SWS_Dem_00664] ⌈If the clear DTC process is started by one client and still ongoing,
+then in case another client calls Dem_ClearDTC, the Dem shall return DEM_PENDING⌋
+[SWS_Dem_00670]
+Upstream requirements: RS_Diag_04117
+⌈If the configuration parameter DemClearDTCLimitation is set to DEM_ONLY_-
+CLEAR_ALL_DTCS, the APIs Dem_ClearDTC are called with a selected DTC group
+different to DEM_DTC_GROUP_ALL_DTCS the Dem shall return DEM_WRONG_DTC.⌋
+[SWS_Dem_00570]
+Upstream requirements: RS_Diag_04194
+⌈If the Dem module is requested to clear diagnostic information and the configura-
+tion parameter DemClearDTCBehavior is set to DEM_CLRRESP_VOLATILE, the Dem
+module shall return E_OK after the volatile memory is cleared.⌋
+[SWS_Dem_00571]
+Upstream requirements: RS_Diag_04194
+⌈If the Dem module is requested to clear diagnostic information and the configuration
+parameter DemClearDTCBehavior is set to DEM_CLRRESP_NONVOLATILE_TRIG-
+GER, the Dem module shall return E_OK after the volatile memory is cleared and clear-
+ing of the non-volatile memory is triggered.⌋
+[SWS_Dem_00572]
+Upstream requirements: RS_Diag_04194
+⌈If the Dem module is requested to clear diagnostic information and the configura-
+tion parameter DemClearDTCBehavior is set to DEM_CLRRESP_NONVOLATILE_-
+FINISH, the Dem module shall return E_OK after the volatile memory and the non-
+volatile memory is cleared.⌋
+Note: The Dem implementation is responsible for consistency of the persistant data.
+(See SWS_NvM_00698: Contents of RAM buffer passed to NvM_WriteBlock may not
+change while the NvM processes the job). How to ensure data consistency (UDS sta-
+tus byte, freeze frame data and all other related information) is implementation spe-
+cific (depends on the implemented NvM strategy). Options include, but are not re-
+stricted to, additional RAM mirrors and queuing of changes until the RAM area can be
+modified again.
+Note: If the Dcm module receives the return type DEM_CLEAR_OK of the API Dem_
+ClearDTC, the Dcm module sends the positive response (refer to [9]).
+[SWS_Dem_01057] ⌈If the Dem module is requested to clear diagnostic information
+and the configuration parameter DemClearDTCBehavior is set to DEM_CLRRESP_
+NONVOLATILE_FINISH, the Dem module shall return DEM_CLEAR_MEMORY_ERROR if
+the clearing of the non-volatile memory fails.⌋
+[SWS_Dem_01202] Defintion of a failed clear DTC operation
+Upstream requirements: RS_Diag_04150, RS_Diag_04214
+⌈If the Dem module is requested to clear diagnostic information, the Dem shall return
+DEM_CLEAR_FAILED:
+• in case of clearing a single DTC at least one DemClearEventAllowed callback
+assigned to the event of the DTC returns FALSE.
+• in case of clearing a DTC group or all DTCs, the individual DTCs shall be cleared
+like described in clearing single DTC. The resulting return value shall be DEM_
+CLEAR_FAILED if the clearing of all individual DTCs returned DEM_CLEAR_-
+FAILED.
+⌋
+[SWS_Dem_00573]
+Upstream requirements: RS_Diag_04194
+⌈If DemTriggerMonitorInitBeforeClearOk is set to TRUE, the Dem_ClearDTC
+shall not return E_OK until the events intialization is triggered (callback function
+InitMonitorForEvent is called). If DemTriggerMonitorInitBeforeClearOk
+is set to FALSE, DEM_CLEAR_OK is not considering Event initialization (InitMoni-
+torForEvent).⌋
+This functionality is intended for some special events, which must never be cleared
+from event memory within specific states, like for example special operation modes
+of the ECU (e.g. assembly-, transport-, or flash-mode) or Dcm sessions (which can be
+determined, using API Dcm_GetSesCtrType).
+It is configurable per event (refer to DemCallbackClearEventAllowed), whether a
+SW-C / BSW module shall be requested about the event-deletion allowance from this
+callback function. One callback (representing a specific condition) can be assigned
+per event. If multiple conditions apply, they need to be summarized by one callback
+individually.
+[SWS_Dem_00515]
+Upstream requirements: RS_Diag_04194
+⌈The Dem module shall call the callback DemClearEventAllowed for each event it
+is configured for, before clearing this event.⌋
+[SWS_Dem_00667]
+Upstream requirements: RS_Diag_04194
+⌈If the DTC is not configured to use event combination, the out-parameter Allowed
+of the callback DemClearEventAllowed returns “false” and the return value is equal
+to E_OK, the Dem shall not clear the respective event memory entry and Dem-
+internal data values.⌋
+[SWS_Dem_01295]
+Upstream requirements: RS_Diag_04194
+⌈If the DTC is configured to use event combination, if only one DemClearEventAl-
+lowed callback has the out-parameter Allowed set to FALSE and returns E_OK, the
+Dem shall not clear the event status, respective event memory entry and Dem-
+internal data values.⌋
+[SWS_Dem_00668]
+Upstream requirements: RS_Diag_04194
+⌈If the out-parameter ‘Allowed’ of the callback DemClearEventAllowed returns
+“false” and the configuration parameter DemClearEventAllowedBehavior is set to
+DEM_NO_STATUS_BYTE_CHANGE, the related UDS status byte shall not be modi-
+fied.⌋
+[SWS_Dem_00669]
+Upstream requirements: RS_Diag_04194
+⌈If the out-parameter Allowed of the callback DemClearEventAllowed returns
+“false” and the configuration parameter DemClearEventAllowedBehavior is set
+to DEM_ONLY_THIS_CYCLE_AND_READINESS, the related UDS status bits 1 (Test-
+FailedThisOperationCycle), 4 (TestNotCompletedSinceLastClear), 5 (TestFailedSince-
+LastClear), and 6 (TestNotCompletedThisOperationCycle) shall be reset.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -137,7 +245,7 @@ the application about the start of a clear DTC operation. If the DemClearDtcNot<
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=98" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

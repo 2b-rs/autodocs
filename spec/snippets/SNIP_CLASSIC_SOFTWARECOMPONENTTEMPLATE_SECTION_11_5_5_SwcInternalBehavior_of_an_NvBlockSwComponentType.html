@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -90,7 +91,174 @@ SwComponentType needs to support further model elements.
 Particularly, In addition to the model elements listed in [TPS_SWCT_01150], the fol-
 lowing list of model elements can be used in the InternalBehavior of a NvBlock-
 SwComponentType for implementing writing strategies:
-•</div></section>
+• TimingEvents (which may include references to ModeDeclarations in the
+role disabledMode)
+• DataReceivedEvents (which may include references to ModeDeclarations
+in the role disabledMode)
+• SwcModeSwitchEvents
+• RunnableEntitys
+⌋(RS_SWCT_03225)
+Software Component Template
+NvBlockSwComponentType
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+SwComponentType
+AtpBlueprintable
+AtpPrototype
+PortPrototype
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+PortInterface
++
+isService  :Boolean
++
+serviceKind  :ServiceProviderEnum [0..1]
+RoleBasedPortAssignment
++
+role  :Identifier
+AtpStructureElement
+Identifiable
+NvBlockDescriptor
++
+supportDirtyFlag  :Boolean [0..1]
+ClientServerInterface
+AtpStructureElement
+Identifiable
+ClientServerOperation
+InternalBehavior
+SwcInternalBehavior
+AtpStructureElement
+ExecutableEntity
+RunnableEntity
+OperationInvokedEvent
+AbstractEvent
+AtpStructureElement
+RTEEvent
+AtomicSwComponentType
+PortDefinedArgumentValue
+PortAPIOption
+«atpVariation» Tags:
+vh.latestBindingTime =
+preCompileTime
+«atpVariation» Tags:
+vh.latestBindingTime =
+preCompileTime
+«atpVariation» Tags:
+vh.latestBindingTime =
+preCompileTime
+Relation of PortPrototype to
+PortInterface is documented
+elsewhere.
+«atpVariation» Tags:
+vh.latestBindingTime =
+blueprintDerivationTim
+e
+«atpVariation» Tags:
+vh.latestBindingTime =
+preCompileTime
+«instanceRef»
++operation
++clientServerPort 0..*
+«atpVariation»
++portPrototype
+1
++portArgValue
+0..*
+{ordered}
++portAPIOption
+0..*
+«atpVariation,atpSplitable»
+0..1
++port
+1
+«atpVariation,atpSplitable»
++internalBehavior
+0..1
++operation
+1..*
+«atpVariation»
++runnable
+1..*
+«atpVariation,atpSplitable»
++startOnEvent
+0..1
++event
+*
+«atpVariation,atpSplitable»
+«atpVariation,atpSplitable»
++nvBlockDescriptor
+0..*
++port
+0..*
+«atpVariation,atpSplitable»
++component
+Figure 11.14: NvBlockSwComponentType and SwcInternalBehavior
+[TPS_SWCT_01152] InternalBehavior does not have further attributes ⌈It is
+not expected, that such InternalBehavior do have further attributes like Exclu-
+siveAreas, per-instance memory or inter-runnable variables, etc. ⌋()
+[TPS_SWCT_01151] RunnableEntitys do not have further attributes ⌈The same
+condition exists for the RunnableEntitys of such InternalBehavior which shall
+Software Component Template
+not deﬁne further attributes, e.g. data access points (implemented by means of refer-
+ences from SwcInternalBehavior to VariableAccess) or ServerCallPoints.
+⌋()
+[constr_1234] Value of RunnableEntity.symbol ⌈The value of a RunnableEn-
+tity.symbol owned by an NvBlockSwComponentType that is triggered by an Op-
+erationInvokedEvent shall only be taken from the set of API names associated
+with the NvM. ⌋()
+For example, RunnableEntity.symbol owned by an NvBlockSwComponentType
+could rightfully be set to NvM_ReadBlock [31] but an arbitrary value like ReadThis-
+Block is not permitted.
+The rationale for [constr_1234] is that the RunnableEntitys that are triggered by an
+OperationInvokedEvent are not existing as such but are mapped to the respective
+function calls of the NvM. For more details of how this mapping can be achieved please
+refer to [7].
+Please note that no restriction applies for the value of attribute RunnableEn-
+tity.symbol of any RunnableEntity owned by an NvBlockSwComponentType
+that is triggered by an RTEEvent other than OperationInvokedEvent.
+[constr_2015] Limitation of SwcInternalBehavior of a NvBlockSwComponent-
+Type ⌈The SwcInternalBehavior of a NvBlockSwComponentType is only per-
+mitted to deﬁne
+• OperationInvokedEvents
+• RunnableEntitys
+triggered
+by
+OperationInvokedEvents
+(server
+RunnableEntitys)
+• RunnableEntitys which deﬁnes only the mandatory attributes symbol and
+canBeInvokedConcurrently
+• PortAPIOptions deﬁning PortDefinedArgumentValues
+• TimingEvents (which may include references to ModeDeclarations in the
+role disabledMode)
+• DataReceivedEvents (which may include references to ModeDeclarations
+in the role disabledMode)
+• SwcModeSwitchEvents
+• RunnableEntitys triggered by TimingEvents
+• RunnableEntitys triggered by DataReceivedEvents
+• RunnableEntitys triggered by SwcModeSwitchEvents
+⌋()
+Software Component Template
+[constr_1309] Existence of NvBlockDescriptor.timingEvent ⌈The attribute
+NvBlockDescriptor.timingEvent shall exist if and only if the NvBlockDescrip-
+tor.nvBlockNeeds.storeCyclic exists and is set to the value true. ⌋()
+Note that there is a conceptual connection between the values of the two attributes
+NvBlockDescriptor.timingEvent.period and SwcServiceDependency.ser-
+viceNeeds.cyclicWritingPeriod.
+Speciﬁcally,
+the
+SwcServiceDependency.serviceNeeds.cyclicWritingPe-
+riod represents a requirement and the NvBlockDescriptor.timingEvent.pe-
+riod is supposed to fulﬁll the requirement.
+[TPS_SWCT_01585] Relevance of NvBlockDescriptor.timingEvent.period ⌈
+For any given NvBlockDescriptor, the value of the attribute NvBlockDescrip-
+tor.nvBlockNeeds.cyclicWritingPeriod shall be ignored and the value of
+NvBlockDescriptor.timingEvent.period shall be taken to specify the effective
+writing frequency for cyclic storage. ⌋(RS_SWCT_03225)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

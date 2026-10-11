@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: nvdatahandling</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVDATAHANDLING_SECTION_5_1_2_Case_1_b_NvM_fetches_application_RAM_data_via_callback_NvM_Explicit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>NVDataHandling.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_NVDataHandling.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">NVDataHandling.pdf</a></strong> (Seite 26)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00706" class="swsref internal-spec-ref"><code>SWS_NvM_00706</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -94,11 +95,121 @@ use case. For details about interaction between these modules refer sequence
 diagram in figure 10.
 Figure 8: Overview of memory allocation for use case 1b
 Figure 9 shows port configuration used to access NvM interfaces by user (SWC1 /
-SWC2), here NvM is configured</div></section>
+SWC2), here NvM is configured as ServiceSwComponentType.
+NV Data Handling Guideline
+Figure 9: Port configuration for use case 1b
+Refer section 5.1.1 for details of operation for ports NvMService, NvMAdmin,
+NvM_NotifyInitBlock and NvM_NotifyJobFinished.
+Following ports are required –
+ NvM_Mirror interface used to update data from NvM Mirror to application
+RAM data or from application RAM data to NvM Mirrors. Following
+operations are supported.
+ ReadRamBlockFromNvM
+ WriteRamBlockToNvM
+Figure 10 shows how application can access NvM in this scenario:
+NvMService
+NvMAdmin
+NvM_NotifyInitBlock
+NvM_NotifyJobFinished
+NvM_Mirror
+SWC1
+SWC1
+NvMService
+NvMAdmin
+NvM_NotifyInitBlock
+NvM_NotifyJobFinished
+NvM_Mirror
+NvMServices
+NvMAdmin
+NvM_NotifyInitBlock
+NvM_NotifyJobFinished
+NvM_Mirror
+SWC2
+SWC2
+NvMServices
+NvMAdmin
+NvM_NotifyInitBlock
+NvM_NotifyJobFinished
+NvM_Mirror
+NvM_PS_NvMBlock0
+NvM_PAdmin_NvMBlock0
+NvM_PNIB_NvMBlock0
+NvM_PNJF_NvMBlock0
+NvM_PS_NvMBlock1
+NvM_PAdmin_NvMBlock1
+NvM_PNIB_NvMBlock1
+NvM_PNJF_NvMBlock1
+NvM_PM_NvMBlock0
+NvM_PM_NvMBlock1
+NvMSWC
+NvMSWC
+«ServiceSwComponentType»
+NvM_PS_NvMBlock0
+NvM_PAdmin_NvMBlock0
+NvM_PNIB_NvMBlock0
+NvM_PNJF_NvMBlock0
+NvM_PS_NvMBlock1
+NvM_PAdmin_NvMBlock1
+NvM_PNIB_NvMBlock1
+NvM_PNJF_NvMBlock1
+NvM_PM_NvMBlock0
+NvM_PM_NvMBlock1
+NvM
+NVMBuffer[size = biggest block]
+Request1
+Request2
+...
+NVM Mirror
+NvM_WriteBlock/
+NvM_ReadBlock/
+NvM_SetRamBlockStatus/...
+Rte_Call_&lt;P&gt;_ReadRamBlockFromNvM /
+Rte_Call_&lt;P&gt;_WriteRamBlockToNvM /
+Rte_Call_&lt;P&gt;_NvMNotifyJobFinished/
+Rte_Call_&lt;P&gt;_NvMNotifyInitBlock
+NV Data Handling Guideline
+Figure 10: Sequence diagram of NvM access for use case 1b
+ Applicability:
+In this use case, NvM users (SW-C) can control their data in a more efficient
+way as they are responsible for copying consistent data to and from the NvM
+module’s RAM mirror. It is possible to modify application data just before writing
+into RAM mirror.
+The drawback is need of an additional RAM in NvM module that needs to have
+the same size as the NVRAM block and the necessity of an additional copy for
+read / write operation.
+Rte
+SWC1
+NvM
+Ea/Fee
+Scheduler/OS
+Copy
+SWC1_RamBlk
+to NvMBuffer
+NvM_WritePRAMBlock(NvMBlock0):
+Std_ReturnType
+Rte_Call_NvM_Service_WritePRAMBlock()
+Rte_Call_NvM_PM_NvMBlock0_WriteRamBlockToNvM
+(&amp;NvMBuffer)
+NvM_JobEndNotification()
+SWC1_RamBlk protection ends
+NvM_MainFunction()
+SWC1_NvMJobFinishedNotification
+(SID_WriteBlock.NVM_REQ_OK)
+:E_OK
+Ram Block Provided -&gt;
+NvMBuffer
+Fee_Write/Ea_Write()
+Operation Invoked Event()
+Rte_Call_NvM_PNJF_NvMBlock0_JobFinished
+(SID_WriteBlock,NVM_REQ_OK)
+SWC1_RamBlk protection starts
+SWC1_NvMGetMirror(&amp;DstPtr)
+Set Event
+(SWC1_EvTask,OpInvokedEv_NJF)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Rules for read request with explicit sync</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -107,7 +218,7 @@ SWC2), here NvM is configured</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>NVDataHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_NVDataHandling.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">NVDataHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -119,15 +230,15 @@ SWC2), here NvM is configured</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_NvM_00706" class="swsref internal-spec-ref"><code>SWS_NvM_00706</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

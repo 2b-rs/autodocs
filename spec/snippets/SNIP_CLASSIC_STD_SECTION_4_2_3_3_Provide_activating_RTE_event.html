@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_3_3_Provide_activating_RTE_event</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 176)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=176" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 176)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08071" class="swsref internal-spec-ref"><code>SWS_Rte_08071</code></a></span>
         </div>
@@ -91,7 +92,45 @@ tionReason.bitPosition has a value higher than 31 (see [constr_1226] in soft-
 ware component template [2])
 [SWS_Rte_08053]
 Upstream requirements: SRS_Rte_00238
-⌈If the provide activating RTE event feature is enabled, the RTE</div></section>
+⌈If the provide activating RTE event feature is enabled, the RTE generator in
+contract phase shall generate for each ExecutableEntityActivationReason
+of one executable entity a definition to provide the specific bit position in the
+Rte_ActivatingEvent_&lt;name&gt; data type:
+#define Rte_ActivatingEvent_&lt;name&gt;_&lt;activation&gt; xxU
+The value of xx is defined by the bitPosition xx = 2∧bitPosition.⌋
+Example: runnable entity symbol = "greek" and has 3 ExecutableEntityActiva-
+tionReasons aggregated. Those are referenced by 4 RTE events:
+• RTEEvent: "alpha"
+symbol: aleph
+• RTEEvent: "beta"
+symbol: beth
+• RTEEvent: "gamma"
+symbol: gimel
+• RTEEvent: "delta"
+symbol: gimel
+This will result in a uint8 Rte_ActivatingEvent_&lt;name&gt; data type: typedef
+uint8 Rte_ActivatingEvent_greek and 3 definitions:
+• #define Rte_ActivatingEvent_greek_aleph 01U
+• #define Rte_ActivatingEvent_greek_beth 02U
+• #define Rte_ActivatingEvent_greek_gimel 04U
+Generation Phase:
+[SWS_Rte_08054]
+Upstream requirements: SRS_Rte_00238
+⌈If the provide activating RTE event feature is enabled, the RTE shall collect the ac-
+tivating RTE events, which have the activationReason reference defined, in the
+context of the OS task the runnable entity is mapped to in an activation vector at the
+corresponding bit position as defined in [SWS_Rte_08053].⌋
+[SWS_Rte_08055]
+Upstream requirements: SRS_Rte_00238
+⌈If the provide activating RTE event feature is enabled, the RTE shall provide the col-
+lected activating RTE events (activation vector) to the runnable entity API when the
+runnable entity is "started". The activation vector shall be reset immediately after it has
+been provided.⌋
+Since it is possible that there is a time gap between the activation and the execution
+(start) of a runnable entity the subsequent activations are summed up and provided
+with the start of the runnable entity.
+Activations during the execution of a runnable entity are collected for the next start of
+that runnable entity.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +143,7 @@ Upstream requirements: SRS_Rte_00238
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=176" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

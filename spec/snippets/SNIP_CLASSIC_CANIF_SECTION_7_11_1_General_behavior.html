@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: canif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_11_1_General_behavior</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 43)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=43" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 43)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00835" class="swsref internal-spec-ref"><code>SWS_CANIF_00835</code></a></span>
         </div>
@@ -89,11 +90,29 @@ HthRef) and can be configured to buffer one or multiple Tx L-PDUs.
 But as al-
 ready mentioned above only one instance per Tx L-PDU can be buffered in the overall
 amount of CanIfBufferCfg.
-The behavior of CanIf d</div></section>
+The behavior of CanIf during L-PDU transmission differs whether transmit buffering
+is enabled in the configuration setup for the corresponding Tx L-PDU, or not. If trans-
+mit buffering is disabled and a transmit request to CanDrv fails (CAN Controller
+mailbox is in use, BasicCAN), the L-PDU is not copied to the CAN Controller’s
+mailbox and CanIf_Transmit() returns the value E_NOT_OK. If transmit buffering is
+enabled and a transmit request to CanDrv fails, depending on the CanIfTxBuffer
+configuration the L-PDU can be stored in a CanIfTxBuffer. In this case the API
+CanIf_Transmit() returns the value E_OK although the transmission could not be
+performed. In this case CanIf takes care of the outstanding transmission of the L-
+-PDU via CanIf_TxConfirmation() callback and the upper layer doesn’t have to
+retry the transmit request.
+The number of available transmit CanIf Tx L-PDU Buffers can be configured
+completely independent from the number of used Transmit L-PDUs defined in the
+CAN network description file for this ECU.
+As per [SWS_CANIF_00835] a Tx L-PDU refers HTHs via the CanIfBufferCfg con-
+figuration container (see CanIfBufferCfg). This is valid if transmit buffering is not
+needed as well. In this case, the buffer size (see CanIfBufferSize) of the Can-
+IfBufferCfg has to be set to 0. Then CanIfBufferCfg configuration container is
+only used to refer a HTH.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Tx L-PDU buffering condition check</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CANIF_00835] im Text von SWS_CANInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +121,7 @@ The behavior of CanIf d</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=43" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,11 +137,11 @@ The behavior of CanIf d</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

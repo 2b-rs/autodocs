@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -90,7 +91,206 @@ the blueprint. This is done in blueprintCondition resp. blueprintValue. See
 [constr_2543] Specify a name pattern in blueprints ⌈For each blueprint, a
 namePattern shall be speciﬁed if the shortName respectively a symbol is not ﬁxed
 but intended to be deﬁned when objects are derived from a blueprint. This is used to
-verify the</div></section>
+verify the appropriate naming of the derived objects ([constr_2553]). ⌋
+Standardization Template
+R4.0 Rev 3
+[constr_2553] shortName shall follow the pattern deﬁned in the Blueprint ⌈The
+shortName respectively symbol of the derived objects shall follow the pattern deﬁned
+in namePattern of the blueprint according to [constr_2543] ⌋
+[constr_2570] No Blueprints in system descriptions ⌈There shall be no blueprints
+in system descriptions. In consequence of this blueprint elements shall be referenced
+only from blueprints and BlueprintMaps. Due to ≪atpUriDef≫, the references
+from BlueprintMap do not need to be resolved in system descriptions. ⌋
+[constr_2571] Outgoing references from Blueprints ⌈Note that outgoing references
+from Blueprints are basically not limited. Practically, references to objects living in a
+package of category EXAMPLE should not occur. ⌋
+Reason for [constr_2571] is the fact that these examples then also shall exist in the
+target system description but not as example. In such a case the example would take
+the role of a blueprint.
+Figure 3.6 illustrates a scenario with standardized objects, blueprints and project re-
+lated objects.
+&lt;&lt;Standard&gt;&gt;
+x
+&lt;&lt;Standard&gt;&gt;
+y
+&lt;&lt;Blueprint&gt;&gt;
+bp1
+&lt;&lt;Blueprint&gt;&gt;
+bp2
+&lt;&lt;derived&gt;&gt;
+obj1
+&lt;&lt;derived&gt;&gt;
+obj2
+(1)
+(1)
+(3)
+(3)
+(2)
+(2)
+&lt;&lt;derived from&gt;
+&lt;&lt;derived from&gt;
+( forbidden )
+obj_x
+(4)
+(4) obj_x
+Figure 3.6: Relations between Blueprints, "Derived Objects" and "Standardized Objects"
+This diagram in particular illustrates how references in blueprints shall be handled:
+[TPS_STDT_0051] Handling references when deriving objects from blueprints ⌈
+• Blueprints may reference standardized objects. These references also exist in
+the derived objects (1), (2).
+• Blueprints may reference other blueprints (3). These references need to be re-
+placed in order to meet [constr_2546].
+Therefore a reference from a derived
+object to a blueprint is not allowed.
+Standardization Template
+R4.0 Rev 3
+• Blueprints may contain references to arbitrary objects (4).
+According to
+[TPS_STDT_0041] it is allowed that these objects even do not exist. Neverthe-
+less to meet [constr_2554] such references shall be copied to the derived objects
+and the referenced objects shall exist in the target system description.
+⌋(RS_STDT_0013, RS_STDT_0017)
+[TPS_STDT_0034] Integrity of Blueprints ⌈The integrity of blueprints can be es-
+tablished by applying references to blueprints of related objects.
+For example, a
+blueprint of a BswModuleDescription may refer to a blueprint of BswModuleEn-
+try. ⌋(RS_STDT_0027)
+[constr_2546] References from Blueprint to Blueprint need to be replaced in de-
+rived objects ⌈A blueprint may refer to another blueprint. When deriving objects such
+a reference shall be replaced such that the new reference target is an object derived
+from the corresponding reference target in the blueprint. ⌋
+[TPS_STDT_0048] Express Decisions when Deriving Objects ⌈Applying Vari-
+ationPoint is a suitable way to express intended decisions to be made
+when
+deriving
+objects
+from
+blueprints.
+In
+this
+case
+the
+value
+of
+the
+UML tag Vh.latestBindingTime is BlueprintDerivationTime and Vari-
+ationPoint.blueprintCondition respectively AttributeValueVariation-
+Point.blueprintValue
+shall
+be
+used
+to
+express
+the
+intended
+derivation.
+⌋(RS_STDT_0008, RS_STDT_0018, RS_STDT_0019)
+[TPS_STDT_0028] Resolving VariationPoint in Blueprints ⌈If a Variation-
+Point has only blueprintValue respectively blueprintCondition but not
+swSyscond nor postBuildVariantCondition it shall be resolved when deriving
+elements. ⌋(RS_STDT_0014, RS_STDT_0015, RS_STDT_0019, RS_STDT_0020)
+Please refer to Generic Structure Template [6] for the following aspects:
+• Even if BindingTimeEnum does not contain the value BlueprintDeriva-
+tionTime, there are sill VariationPoints which shall be bound on blueprint
+derivation. This is speciﬁed as BlueprintDerivationTime in the UML tag
+Vh.latestBindingTime at the variation point in the meta model.
+• In [constr_2537] VariationPoint is limited to SwComponentType, BSWmod-
+uleDescription, Documentation, even if the meta model supports variation
+point on any PackageableElement.
+[constr_2564] VariationPoint in Blueprints of PackageableElements
+⌈To support standardization, constraint [constr_2537] in [6] is relaxed for
+blueprints. This means in particular, that all PackageableElements which in-
+herit from AtpBlueprint and live in a package of category BLUEPRINT may
+have a VariationPoint.
+In this case Vh.latestBindingTime is considered BlueprintDerivation-
+Time even if the meta model still states SystemDesignTime for Package-
+ableElements. ⌋
+Standardization Template
+R4.0 Rev 3
+See chapter 4 for such elements.
+• [constr_2557]: System conﬁgurations shall not contain VariationPoints with
+Vh.latestBindingTime set to BlueprintDerivationTime.
+• [constr_2558]: If Vh.latestBindingTime is BlueprintDerivationTime
+then there shall only be blueprintCondition/blueprintValue.
+• [constr_2559]: VariationPoint shall not be nested. In particular this means
+that there shall not exist a VariationPoint within the DocumentationBlock
+in the role blueprintCondition in a VariationPoint.
+• [constr_2567]: Attribute Value Blueprints should contain undefined.
+VariationPoint
++
+shortLabel:  Identifier [0..1]
+«enumeration»
+BindingTimeEnum
+SystemDesignTime
+CodeGenerationTime
+PreCompileTime
+LinkTime
+ARElement
+PostBuildVariantCriterion
+SwSystemconstDependentFormula
+ConditionByFormula
++
+bindingTime:  BindingTimeEnum
+Vh.LatestBindingtime=PreCompileTime
+PostBuildVariantCondition
+«atpVariation»
++
+value:  Integer
+MultiLanguageOverviewParagraph
+Sdg
++
+gid:  NameToken
+«atpMixed»
+DocumentationBlock
++blueprintCondition
+0..1
++sdg
+0..1
++postBuildVariantCondition
+0..*
++matchingCriterion
+1
++desc
+0..1
++swSyscond
+0..1
+Figure 3.7: Variation Point
+Class
+VariationPoint
+Package
+M2::AUTOSARTemplates::GenericStructure::VariantHandling
+Note
+This meta-class represents the ability to express a "structural variation point". The
+container of the variation point is part of the selected variant if swSyscond evaluates
+to true and each postBuildVariantCriterion is fulﬁlled.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+desc
+MultiLanguage
+OverviewParagr
+aph
+0..1
+aggr
+This allows to describe shortly the purpose of the
+variation point.
+Tags: xml.sequenceOffset=20
+blueprintC
+ondition
+Documentation
+Block
+0..1
+aggr
+This represents a description that documents how
+the variation point shall be resolved when deriving
+objects from the blueprint.
+Note that variationPoints are not allowed within a
+blueprintCondition.
+Tags: xml.sequenceOffset=28</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

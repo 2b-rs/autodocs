@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_5_4_3_IocSendGroup_IocWriteGroup</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 221)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=221" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 221)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -119,11 +120,136 @@ IOC_E_OK: The data has been passed successfully to the
 communication service.
 IOC_E_LIMIT: IOC internal communication buffer is full (Case:
 Receiver is slower than sender). This error produces an IOC_E_
-LOST_DATA Overlayed Error on the rece</div></section>
+LOST_DATA Overlayed Error on the receiver side at the next data
+reception.
+IOC_E_LENGTH: Al least one of the &lt;numberOfBytesIN&lt;x&gt;&gt;
+exceeds either the internal buffer or is equal zero, so no data is
+send.
+Description
+Performs an "explicit" sender-receiver transmission of data elements with "event" semantic for a
+unidirectional 1:1 communication between OS-Applications located on the same or on different
+cores.
+This API involves a group of data elements which values are specified in parameter.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 communication involving many
+data elements.
+The optional parameter &lt;numberOfBytesIN&lt;x&gt;&gt; specifies the size of the data to be transmitted
+(in bytes) for parameter &lt;IN&lt;x&gt;&gt;.
+Available via
+Ioc.h
+⌋
+[SWS_Os_91004] Definition of API function IocWriteGroup_&lt;IocId&gt;
+Upstream requirements: SRS_Os_80020
+⌈
+Service Name
+IocWriteGroup_&lt;IocId&gt;
+Syntax
+Std_ReturnType IocWriteGroup_&lt;IocId&gt; (
+&lt;Data1&gt; IN1,
+[uint16 numberOfBytesIN1],
+&lt;Data2&gt; IN2,
+[uint16 numberOfBytesIN2],
+...
+)
+Service ID [hex]
+0x21
+Sync/Async
+Asynchronous
+▽
+△
+Reentrancy
+This function is generated individually for each sender. The individual function is not reentrant
+(if called from different runnable entities that belong to the same sender), but different functions
+can be called in parallel.
+IN1
+List of parameters with data values to be sent over a
+communication identified by the &lt;IocId&gt;. The parameters will be
+passed by value for simple data elements and by reference for all
+other types.
+Example:
+Std_ReturnType IocWriteGroup_RTE_G1 (const uint32 UI_
+Value1, const uint16 Value2, const uint8 Value3, const uint16
+Value4);
+numberOfBytesIN1
+(optional) number of bytes for parameter IN1 to be send.
+IN2
+–
+numberOfBytesIN2
+–
+Parameters (in)
+–
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+IOC_E_OK: The data has been passed successfully to the
+communication service.
+IOC_E_LENGTH: Al least one of the &lt;numberOfBytesIN&lt;x&gt;&gt;
+exceeds either the internal buffer or is equal zero, so no data is
+send.
+Description
+Performs an "explicit" sender-receiver transmission of data elements with "data" semantic for a
+unidirectional 1:1 communication between OS-Applications located on the same or on different
+cores.
+This API involves a group of data elements which values are specified in parameter.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 communication involving many
+data elements.
+The optional parameter &lt;numberOfBytesIN&lt;x&gt;&gt; specifies the size of the data to be transmitted
+(in bytes) for parameter &lt;IN&lt;x&gt;&gt;.
+Available via
+Ioc.h
+⌋
+General:
+[SWS_Os_00729]
+Upstream requirements: SRS_Os_80020
+⌈IocSendGroup/IocWriteGroup is asynchronous in that way it shall not have to
+wait for the reception of the data on the receiving side to return from execution.⌋
+[SWS_Os_00730]
+Upstream requirements: SRS_Os_80020
+⌈The IocSendGroup/IocWriteGroup function shall not return until the data given in
+parameter have been completely physically sent over the communication medium. For
+example in case of communication over shared RAM, an IocSendGroup/IocWrite-
+Group shall return when all data have been copied in the target shared RAM.⌋
+[SWS_Os_00731]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic, the IocSendGroup function shall guarantee the order of
+delivery.⌋
+[SWS_Os_00732]
+Upstream requirements: SRS_Os_80020
+⌈The IocSendGroup/IocWriteGroup function shall support mechanisms to guar-
+antee data-Integrity during transmission.
+The IocSendGroup/IocWriteGroup function shall solve the crossing of the protec-
+tion boundaries of OS-Applications. It has to be generated in case of intra-core and
+inter-core communication.⌋
+Parameters:
+[SWS_Os_00733]
+Upstream requirements: SRS_Os_80020
+⌈The IN &lt;DataN&gt; parameters of the IocSendGroup/IocWriteGroup function shall
+be passed by values for primitive data types, as pointer to the array base type for arrays
+and by references for all other types.⌋
+[SWS_Os_00734]
+Upstream requirements: SRS_Os_80020
+⌈For data passed as an pointer to the array base type or by reference, the IocSend-
+Group/IocWriteGroup function shall guarantee upon return that the parameter is
+safe for re-use.⌋
+Returned values:
+[SWS_Os_00735]
+Upstream requirements: SRS_Os_80020
+⌈The IocSendGroup/IocWriteGroup function shall return IOC_E_OK if the data
+was passed successfully to the communication service.⌋
+[SWS_Os_00736]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic the IocSendGroup function shall return IOC_E_LIMIT
+if an IOC internal transmission buffer got full (Case: Receiver is slower than sender or/
+and configured internal IOC buffer size is too small).
+If this error occurs the IOC Internal buffer could not be filled with the parameter. In that
+case this error produces an IOC_E_LOST_DATAOverlayed Error on the receiver side
+at the next data reception.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -132,7 +258,7 @@ LOST_DATA Overlayed Error on the rece</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=221" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

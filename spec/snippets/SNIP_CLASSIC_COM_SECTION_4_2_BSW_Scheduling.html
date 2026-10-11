@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_2_BSW_Scheduling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>RS_BSWModuleDescriptionTemplate.pdf</strong> (Seite 24)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_RS_BSWModuleDescriptionTemplate.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_BSWModuleDescriptionTemplate.pdf</a></strong> (Seite 24)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Com_00399" class="swsref internal-spec-ref"><code>SWS_Com_00399</code></a></span>
         </div>
@@ -111,11 +112,133 @@ Supporting
 Material:
 –
 ⌋
-[RS_BSWMD_00055] Simultaneous Mod</div></section>
+[RS_BSWMD_00055] Simultaneous Mode transitions
+Upstream requirements: RS_BRF_01048, RS_BRF_01320, RS_BRF_01448, RS_BRF_01472,
+RS_BRF_01480
+⌈
+Description:
+The BSWMD template SHALL provide means to specify the required
+simultaneous switching of a Mode controlling BSW Modules and Application
+Software Components.
+Rationale:
+Synchronized behavior during a mode transition controlling AUTOSAR BSW
+Modules and Application Software Components
+Dependencies:
+–
+Use Case:
+ECU global Initialization and finalization phase
+Supporting
+Material:
+–
+⌋
+Description Template
+[RS_BSWMD_00056] API for Mode switch notification of BSW modules
+Upstream requirements: RS_BRF_01048, RS_BRF_01320, RS_BRF_01448, RS_BRF_01472,
+RS_BRF_01480
+⌈
+Description:
+The BSWMD template SHALL provide means to describe that a particular
+BswModuleEntity communicates modes.
+Rationale:
+The code generator for the BSW Scheduler shall generate the Mode Switch
+API used by the BSW module service as Mode Manager.
+Dependencies:
+–
+Use Case:
+EcuM communicates the ECU’s operating state to all BSW modules via BSW
+Scheduler.
+Supporting
+Material:
+–
+⌋
+[RS_BSWMD_00057] Triggering of BSW Main Functions by Triggered Events
+Upstream requirements: RS_BRF_01048, RS_BRF_01328, RS_BRF_01320
+⌈
+Description:
+The BSWMD template SHALL provide means to describe the triggering of
+BSW Main Functions by the occurrence of Triggered Events.
+Particular BSW Main Functions in BSW dependent from Triggered Events shall
+be executed after occurrence of the event.
+The occurrence of the Triggered Event is either reported via API to the BSW
+Scheduler or by means of the OS (e.g. expiration of an OS Alarm).
+Restriction: This is only applicable for intra-ECU usage.
+Rationale:
+Sporadic and non timing based periodic activation of BSW Main Functions in
+different BSW Modules.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the ignition for a combustion engine.
+Supporting
+Material:
+–
+⌋
+[RS_BSWMD_00058] Simultaneous Triggering by Triggered Events
+Upstream requirements: RS_BRF_01048, RS_BRF_01328, RS_BRF_01320
+⌈
+Description:
+The BSWMD template SHALL provide means to specify the required
+synchronized triggering of Runnable Entities and BSW Main Functions by
+shared Triggered Events.
+▽
+Description Template
+△
+Rationale:
+Synchronized activation of routines in AUTOSAR BSW modules and
+Application Software Components.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the routines in Application Software Components
+and Complex Device Drivers for a combustion engine.
+Supporting
+Material:
+–
+⌋
+[RS_BSWMD_00059] API for Triggering BSW modules by Triggered Events
+Upstream requirements: RS_BRF_01048, RS_BRF_01328, RS_BRF_01320
+⌈
+Description:
+The BSWMD template SHALL provide means to describe that a particular
+BswModuleEntity raises Triggered Events.
+Rationale:
+The code generator for the BSW Scheduler shall generate the Trigger API used
+by the BSW module capturing the source of the Triggered Events.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the routines in Application Software Components
+and Complex Device Drivers for a combustion engine.
+Supporting
+Material:
+–
+⌋
+[RS_BSWMD_00060] Support exclusive areas in BSW Modules and Application
+Software Components
+Upstream requirements: RS_BRF_01048, RS_BRF_01320, RS_BRF_01360, RS_BRF_02040
+⌈
+Description:
+The BSWMD template SHALL provide means to define exclusive areas used
+by particular BswModuleEntitys to allow priority determination for preventing
+simultaneous access to shared resources.
+The exclusive areas shall be defined with a name and the accessing
+BswModuleEntitys.
+Exclusive areas shall only protect module internal data.
+Rationale:
+Decouple the module implementation from applying data consistency
+mechanisms.
+The code generator for BSW Scheduler shall provide APIs to enter or exit
+exclusive areas for BSW Modules.
+Dependencies:
+–
+Use Case:
+Provide data consistency for a data buffer shared between a
+BswSchedulableEntity and a BswInterruptEntity.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Com_MainFunctionTx().</p>
       </section>
 
       <section class="snip-card">
@@ -124,7 +247,7 @@ Material:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>RS_BSWModuleDescriptionTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_RS_BSWModuleDescriptionTemplate.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_BSWModuleDescriptionTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

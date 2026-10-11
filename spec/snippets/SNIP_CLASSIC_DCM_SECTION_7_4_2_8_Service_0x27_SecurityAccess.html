@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_8_Service_0x27_SecurityAccess</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 143)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=143" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 143)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_91004" class="swsref internal-spec-ref"><code>SWS_Dcm_91004</code></a></span>
+          <span>Ziel-Element: SWS_Dcm_CONSTR_06077</span>
         </div>
       </div>
 
@@ -89,11 +90,84 @@ operation Xxx_GetSeed() (in case "request seed" is received) or Xxx_CompareKey()
 (in case "send key" is received).⌋
 [SWS_Dcm_00862] ⌈On reception of the UDS Service SecurityAccess (0x27) with sub-
 function type "requestSeed" and if the requested access type is not already active, the
-Dc</div></section>
+Dcm module shall request a seed by calling the configured Xxx_GetSeed() function (if
+the configuration parameter DcmDspSecurityUsePort is set to USE_ASYNCH_FNC,
+refer to configuration parameter DcmDspSecurityGetSeedFnc).⌋
+Note : If the static seed mechanism is used, the processing needs to be done by the
+application implementing the Xxx_GetSeed() and Xxx_CompareKey() functions.
+[SWS_Dcm_CONSTR_06077] Dependency for DcmDspSecurityGetSeedFnc ⌈
+DcmDspSecurityGetSeedFnc shall be present only if DcmDspSecurityUsePort
+is set to USE_ASYNCH_FNC.⌋
+[SWS_Dcm_00863] ⌈On reception of the UDS Service SecurityAccess (0x27) with
+subfunction type "sendKey", if the requested access type is not already active and
+if the "request seed" for the related access type was executed successfully, the
+Dcm module shall request the result of a key comparison by calling the configured
+Xxx_CompareKey() function (if the configuration parameter DcmDspSecurityUse-
+Port is set to USE_ASYNCH_FNC, refer to configuration parameter DcmDspSecuri-
+tyCompareKeyFnc).⌋
+[SWS_Dcm_CONSTR_06075] Dependency for DcmDspSecurityCompareKeyFnc
+⌈DcmDspSecurityCompareKeyFnc shall be configured only if DcmDspSecuri-
+tyUsePort is set to USE_ASYNCH_FNC.⌋
+The following list gives as an example, which errors can be detected by the security
+access service and stored in the error code information:
+• RequestSequenceError (NRC 0x24), when invalid access type is send at "send
+key",
+• RequiredTimeDelayNotExpired (NRC 0x37), when time delay is active (see con-
+figuration parameter DcmDspSecurityDelayTime),
+Manager
+• ExceededNumberOfAttempts (NRC 0x36), when number of attempts to get secu-
+rity access reaches or exceeds the configured limit (see configuration parameter
+DcmDspSecurityNumAttDelay), and
+• InvalidKey (NRC 0x35), when invalid key is send at "send key".
+[SWS_Dcm_00325] ⌈If the operation CompareKey() returns E_OK, the DSP submod-
+ule shall set the new access type with DslInternal_SetSecurityLevel()(see the conver-
+sion formula given in ECUC_Dcm_00754 DcmDspSecurityLevel).⌋
+[SWS_Dcm_01397]
+Upstream requirements: RS_Diag_04005
+⌈If Xxx_CompareKey() returns value DCM_E_COMPARE_KEY_FAILED and DcmD-
+spSecurityNumAttDelay is configured, the Dcm shall increment the attempt counter
+of the security level for which the sendKey subfunction request failed.⌋
+[SWS_Dcm_00660]
+⌈If
+Xxx_CompareKey()
+returns
+value
+DCM_E_COMPARE_KEY_FAILED and if the number of failed attempts to enter
+the requested security level (AttemptCounter) is less than the value configured for
+the DcmDspSecurityNumAttDelay parameter of the requested security level, the
+Dcm module shall send a negative response with NRC 0x35 (InvalidKey) and shall not
+change the Dcm internal security level.
+Note: if DcmDspSecurityNumAttDelay
+parameter is not configured, the number of failed attempts to enter the requested
+security level (AttemptCounter) is not considered.⌋
+[SWS_Dcm_01349]
+⌈If
+Xxx_CompareKey()
+returns
+value
+DCM_E_COMPARE_KEY_FAILED and if the number of failed attempts to enter
+the requested security level (AttemptCounter) is greater or equal than the value con-
+figured for the DcmDspSecurityNumAttDelay parameter of the requested security
+level, the Dcm module shall start the SecurityDelayTimer with the value configured in
+DcmDspSecurityDelayTime for the SecurityLevel which was requested in the failed
+request, send a negative response with NRC 0x36 (exceededNumberOfAttempts) and
+shall not change the Dcm internal security level.⌋
+[SWS_Dcm_01150] ⌈If Xxx_CompareKey() returns value E_NOT_OK, the Dcm mod-
+ule shall send a negative response with NRC code equal to the ErrorCode parameter
+value and shall not increment the attempt counter or change the Dcm internal security
+level.⌋
+[SWS_Dcm_01350] ⌈While the SecurityDelayTimer of SecurityLevel is not yet
+elapsed, the Dcm module shall send a negative response with NRC 0x37 (required-
+TimeDelayNotExpired) on a SecurityAccess (0x27) requestSeed subfunction request
+for that Security Level.⌋
+Manager
+[SWS_Dcm_00659] ⌈If Xxx_GetSeed() returns value E_NOT_OK, the Dcm module
+shall send a negative response with NRC code equal to the ErrorCode parameter
+value.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_CONSTR_06077] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +176,7 @@ Dc</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=143" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +188,7 @@ Dc</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_91004" class="swsref internal-spec-ref"><code>SWS_Dcm_91004</code></a></td>
+              <td>SWS_Dcm_CONSTR_06077</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

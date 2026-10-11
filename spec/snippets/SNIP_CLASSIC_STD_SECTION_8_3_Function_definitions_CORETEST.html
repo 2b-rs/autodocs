@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_Function_definitions_CORETEST</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CoreTest.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CoreTest.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CoreTest.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CorTst_01004" class="swsref internal-spec-ref"><code>SWS_CorTst_01004</code></a></span>
         </div>
@@ -114,7 +115,125 @@ not touch resources that are not configured in the configuration file. ⌋
 state CORTST_UNINIT. ⌋()
 [SWS_CorTst_00178]
 ⌈ If CorTst_Init is called again while not in state CORTST_UNINIT a development
-error CORTST_</div></section>
+error CORTST_E_ALREADY_INITIALIZED is reported. Execution state remains
+unchanged, the API call CorTst_Init() is ignored. ⌋()
+[SWS_CorTst_00044]
+⌈The function CorTst_Init shall be called first before calling any other CoreTest
+functions except the functions CorTst_GetState and CorTst_GetVersionInfo.
+If this sequence is not respected, the error code CORTST_E_UNINIT shall be
+reported to the Default Error Tracer (if development error detection is
+enabled). ⌋(SRS_BSW_00406)
+CorTst_DeInit
+[SWS_CorTst_00045]⌈
+Service Name
+CorTst_DeInit
+Syntax
+void CorTst_DeInit (
+void
+)
+Service ID [hex]
+0x01
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+Parameters (in)
+None
+Parameters
+(inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+Service to change from CORTST_ABORT or CORTST_INIT to CORTST_
+UNINIT state
+Available via
+CorTst.h
+⌋(SRS_BSW_00336, SRS_SPAL_12163)
+[SWS_CorTst_00046]
+⌈ The function API CorTst_DeInit shall initialize all data structures, global
+variables, registers and special test hardware (if existing) with the default values after
+running the startup software (variable/structures) or power-on (HW-default). ⌋
+(SRS_BSW_00336)
+[SWS_CorTst_00047]
+⌈ If in state CORTST_INIT: The state shall be changed from CORTST_INIT to
+CORTST_UNINIT state. ⌋()
+[SWS_CorTst_00136]
+⌈ If in state CORTST_ABORT: The state shall be changed from CORTST_ABORT to
+CORTST_UNINIT state. ⌋()
+[SWS_CorTst_00149]
+⌈ If the DET is enabled and the status of the CORE Test module is
+CORTST_RUNNING_BGND, the function CortTst_DeInit shall report the error value
+CORTST_E_STATUS_FAILURE to the DET, and then immediately return. ⌋()
+CorTst_Abort
+[SWS_CorTst_00048]⌈
+Service Name
+CorTst_Abort
+Syntax
+void CorTst_Abort (
+void
+)
+Service ID [hex]
+0x02
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+Parameters (in)
+None
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+None
+Description
+Service to change from CORTST_INIT to CORTST_ABORT state
+Available via
+CorTst.h
+⌋(SRS_CoreTst_14126)
+[SWS_CorTst_00049]
+⌈ If the current state is CORTST_INIT the state shall be changed from CORTST_INIT
+to CORTST_ABORT state. ⌋()
+[SWS_CorTst_00105]
+⌈ If the current state is CORTST_RUNNING_BGND the state shall be changed from
+CORTST_RUNNING_BGND to CORTST_ABORT state. ⌋()
+[SWS_CorTst_00050]
+⌈ When the CorTst_Abort function is called, CorTst_MainFunction shall finish
+the current atomic sequence it is executing plus shall provide already finished atomic
+test sequence results, before changing from CORTST_RUNNING_BGND to
+CORTST_ABORT state. ⌋(SRS_CoreTst_14126)
+[SWS_CorTst_00051]
+⌈ After a call to CorTst_Abort, CorTst_MainFunction shall not begin testing
+again when called by the scheduler before a complete re-initialization of the Core test
+module takes place by calling CorTst_DeInit and CorTst_Init again. ⌋()
+[SWS_CorTst_00052]
+⌈ A call to CorTst_Abort while already being in state CORTST_ABORT does not
+change the state. ⌋()
+[SWS_CorTst_00152]
+⌈ A call to CorTst_Abort shall set the result of function
+CorTst_GetCurrentStatus to return CORTST_E_NOT_TESTED. ⌋()
+CorTstGetState
+[SWS_CorTst_00053]⌈
+Service Name
+CorTst_GetState
+Syntax
+CorTst_StateType CorTst_GetState (
+void
+)
+Service ID [hex]
+0x03
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+Parameters (in)
+None
+Parameters
+(inout)
+None</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -127,7 +246,7 @@ error CORTST_</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CoreTest.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_CoreTest.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CoreTest.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

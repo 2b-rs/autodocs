@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_5_2_1_Mapping_of_Variable_Data_Prototypes_on_System_Signals</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SystemTemplate.pdf</strong> (Seite 253)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=253" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></strong> (Seite 253)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01033" class="swsref"><code>TPS_SYST_01033</code></a></span>
         </div>
@@ -90,7 +91,50 @@ type.
 In a complete System with category SYSTEM_DESCRIPTION, it is sufficient to refer
 to the VariableDataPrototype in the PPortPrototype or the RPortPrototype
 to define the mapping of the communication between a provider and its receivers.
-This</div></section>
+This is possible since the connectors implicitly define which RPortPrototype are
+connected to which PPortPrototype. In case the System with category SYS-
+TEM_DESCRIPTION does not use a complete Software Component Description (VFB
+View) the data mapping needs not to be defined. This supports the inclusion of legacy
+signals.
+[TPS_SYST_01137] Several DataMappings may be defined for the same Sys-
+temSignal ⌈For a SystemSignal which is
+• part in several SystemSignalGroups
+• part in at least one SystemSignalGroup and at the same time is transmitted
+additionally as standalone SystemSignal
+• used in N:1 sender-receiver communication where the same SystemSignal is
+mapped to compatible VariableDataPrototypes with DataMappings on dif-
+ferent SwComponentPrototypes. Please note that in this case [constr_9330]
+applies.
+• used in a ClientServer communication where the same SystemSignal is used
+for a compatible ClientServerOperation in DataMappings on the different
+clients
+several DataMappings may be defined.⌋
+System Template
+[constr_9330]
+Derivation of network representation in case that several
+DataMappings are defined that map the same SystemSignal to different Vari-
+ableDataPrototypes
+Imposition time: CP: IT_SysDesc
+⌈If several DataMappings are defined that map the same SystemSignal to different
+VariableDataPrototypes then
+• all ISignals that reference this SystemSignal shall define networkRepre-
+sentationProps or
+• if networkRepresentationProps are not specified on the ISignal level
+(and are therefore derived from the ImplementationDataType) then the dif-
+ferent DataMappings shall reference VariableDataPrototypes that in turn
+reference the identical ImplementationDataType.
+⌋
+Please note that [constr_9330] was introduced to forbid cases in which a serializing
+transformer will get contradicting requirements regarding the network representation.
+As an alternative the scenario sketched on the left side in Figure 5.20 may be used in
+which only one data mapping on the composition is defined.
+As the SystemSignal represents a specific information this information may appear
+in different delivery units, but it is still the same information.
+One example could be the tire pressure sensor value. At first each wheel’s tire pressure
+value exists alone, as they are captured at each wheel individually. So there are 4
+SystemSignals defined for a 4 wheel vehicle. If now some Software Component
+receives all 4 tire pressure values and puts them inside a SystemSignalGroup for
+consistent handling, then those 4 tire pressure values are still represented by the same</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +147,7 @@ This</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=253" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

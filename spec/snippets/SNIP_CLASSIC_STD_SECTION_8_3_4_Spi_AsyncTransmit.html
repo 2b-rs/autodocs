@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_4_Spi_AsyncTransmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SPIHandlerDriver.pdf</strong> (Seite 45)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SPIHandlerDriver.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SPIHandlerDriver.pdf</a></strong> (Seite 45)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -114,11 +115,59 @@ SRS_Spi_12101, SRS_Spi_12103)
 [SWS_Spi_00194] ⌈When the function Spi_AsyncTransmit is called, shall take over
 the given parameter and set the Job status to SPI_JOB_QUEUED, which can be ob-
 tained by calling the API service Spi_GetJobResult.⌋()
-[SWS_Spi_00157]  ⌈When the function Spi_AsyncTransmit is called</div></section>
+[SWS_Spi_00157]  ⌈When the function Spi_AsyncTransmit is called, the SPI Han-
+dler/Driver shall handle the Job results. Result shall be SPI_JOB_PENDING when
+the transmission of Jobs is started.⌋()
+[SWS_Spi_00292]  ⌈When the function Spi_AsyncTransmit is called, the SPI Han-
+dler/Driver shall handle the Job results. Result shall be SPI_JOB_OK when the
+transmission of Jobs is success.⌋()
+[SWS_Spi_00293]  ⌈When the function Spi_AsyncTransmit is called, the SPI Han-
+dler/Driver shall handle the Job results. Result shall be SPI_JOB_FAILED when the
+transmission of Jobs is failed.⌋()
+[SWS_Spi_00081]  ⌈When the function Spi_AsyncTransmit is called and the re-
+quested Sequence is already in state SPI_SEQ_PENDING, the SPI Handler/Driver
+shall not take in account this new request and this function shall return with value
+E_NOT_OK, in this case.⌋()
+[SWS_Spi_00266]  ⌈When the function Spi_AsyncTransmit is called and the re-
+quested Sequence is already in state SPI_SEQ_PENDING the SPI Handler/Driver
+shall report the SPI_E_SEQ_PENDING error according to [SWS_BSW_00042] and
+[SWS_BSW_00045].⌋()
+[SWS_Spi_00086] ⌈When the function Spi_AsyncTransmit is called and the re-
+quested Sequence shares Jobs with another sequence that is in the state
+SPI_SEQ_PENDING, the SPI Handler/Driver shall not take into account this new re-
+quest and this function shall return the value E_NOT_OK. In this case and according
+to [SWS_BSW_00042] and [SWS_BSW_00045], the SPI Handler/Driver shall report
+the SPI_E_SEQ_PENDING error.⌋()
+[SWS_Spi_00035] ⌈When the function Spi_AsyncTransmit is used with EB and the
+source data pointer has been provided as NULL using the Spi_SetupEB method, the
+default transmit data configured for each channel shall be transmitted. (See also
+[SWS_SPI_00028])⌋(SRS_Spi_12200, SRS_Spi_12201)
+[SWS_Spi_00036] ⌈When the function Spi_AsyncTransmit is used with EB and
+the destination data pointer has been provided as NULL using the Spi_SetupEB
+method, the SPI Handler/Driver shall ignore receiving data (See also
+[SWS_Spi_00030])⌋()
+[SWS_Spi_00055] ⌈When the function Spi_AsyncTransmit is used for a Se-
+quence with linked Jobs, the function shall transmit from the first Job up to the last
+Job in the sequence.⌋(SRS_Spi_12181)
+[SWS_Spi_00057] ⌈ At the end of a sequence transmission initiated by the function
+Spi_AsyncTransmit and if configured, the SPI Handler/Driver shall invoke the se-
+quence notification call-back function after the last Job end notification if this one is
+also configured.⌋(SRS_SPAL_00157, SRS_Spi_12108)
+[SWS_Spi_00133] ⌈The function Spi_AsyncTransmit is pre-compile time se-
+lectable by the configuration parameter SpiLevelDelivered. This function is only
+relevant for LEVEL 1 and LEVEL 2.⌋()
+[SWS_Spi_00173] ⌈The SPI Handler/Driver’s environment shall call the function
+Spi_AsyncTransmit after a function call of Spi_SetupEB for EB Channels or a
+function call of Spi_WriteIB for IB Channels but before the function call
+Spi_ReadIB.⌋()
+Parameters of the function Spi_AsyncTransmit shall be checked as explained in
+section API parameter checking
+The SPI Handler/Driver shall have been initialized before the function
+Spi_AsyncTransmit is called otherwise see [SWS_Spi_00046].</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +176,7 @@ tained by calling the API service Spi_GetJobResult.⌋()
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SPIHandlerDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SPIHandlerDriver.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SPIHandlerDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

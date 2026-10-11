@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_8_4_20_TerminateApplication</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 194)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=194" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 194)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00788" class="swsref internal-spec-ref"><code>SWS_Os_00788</code></a></span>
         </div>
@@ -117,11 +118,38 @@ Upstream requirements: SRS_BSW_00323
 ⌈If the input parameter &lt;Application&gt; in a call of TerminateApplication is valid
 AND the caller belongs to a non-trusted OS-Application AND the caller does not belong
 to &lt;Application&gt; TerminateApplication shall return E_OS_ACCESS.⌋
-[SW</div></section>
+[SWS_Os_00507]
+Upstream requirements: SRS_BSW_00323
+⌈If the state of &lt;Application&gt; in a call of TerminateApplication is APPLICA-
+TION_TERMINATED TerminateApplication shall return E_OS_STATE.⌋
+[SWS_Os_00287]
+Upstream requirements: SRS_Os_11022
+⌈If the parameters in a call of TerminateApplication are valid and the above cri-
+teria are met TerminateApplication shall terminate &lt;Application&gt; (i.e. to kill all
+Tasks, disable the interrupt sources of those ISRs which belong to the OS-Application
+and free all other OS resources associated with the application). The &lt;Application&gt;
+state is set to APPLICATION_TERMINATED. If the caller belongs to &lt;Application&gt;
+TerminateApplication shall not return, otherwise it shall return E_OK.⌋
+[SWS_Os_00535]
+Upstream requirements: SRS_Os_11022
+⌈Caveats of TerminateApplication:
+• If no applications are configured the implementation shall make sure that this
+service is not available.
+• Tasks and interrupts that are owned by a trusted application can terminate any
+OS-Application. Tasks and interrupts that are owned by a non-trusted application
+can only terminate their owning OS-Application.
+⌋
+Note: Although trusted OS-Application can be forcibly terminated by Tasks/Interrupts
+of other trusted OS-Applications it is not recommended. This may have further impacts,
+e.g. to users who are currently part of such an OS-Application via a CallTrusted-
+Function call.
+[SWS_Os_00536]
+Upstream requirements: SRS_Os_11016
+⌈Availability of TerminateApplication: Available in Scalability Classes 3 and 4.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von RestartType().</p>
       </section>
 
       <section class="snip-card">
@@ -130,7 +158,7 @@ to &lt;Application&gt; TerminateApplication shall return E_OS_ACCESS.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=194" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

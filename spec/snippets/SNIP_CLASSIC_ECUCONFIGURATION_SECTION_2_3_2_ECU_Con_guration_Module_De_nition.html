@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -107,7 +108,188 @@ apiServicePreﬁx.
 The shortName of the module deﬁnition of a
 Complex Driver is always "Cdd". Therefore for
 CDD modules the module apiServicePreﬁx is
-described wit</div></section>
+described with this attribute.
+container
+EcucContainerD
+ef
+1..*
+aggr
+Aggregates the top-level container deﬁnitions of
+this speciﬁc module deﬁnition.
+Stereotypes: atpSplitable
+Tags: atp.Splitkey=shortName
+xml.sequenceOffset=11
+postBuildV
+ariantSupp
+ort
+Boolean
+0..1
+attr
+Indicates if a module supports different post-build
+variants (previously known as post-build
+selectable conﬁguration sets). TRUE means yes,
+FALSE means no.
+refinedMod
+uleDef
+EcucModuleDef
+0..1
+ref
+Optional reference from the Vendor Speciﬁc
+Module Deﬁnition to the Standardized Module
+Deﬁnition it reﬁnes. In case this EcucModuleDef
+has the category
+STANDARDIZED_MODULE_DEFINITION this
+reference shall not be provided. In case this
+EcucModuleDef has the category
+VENDOR_SPECIFIC_MODULE_DEFINITION
+this reference is mandatory.
+Stereotypes: atpUriDef
+supported
+ConfigVari
+ant
+EcucConfigurati
+onVariantEnum
+*
+attr
+Speciﬁes which ConﬁgurationVariants are
+supported by this software module. This attribute
+is optional if the EcucModuleDef has the category
+STANDARDIZED_MODULE_DEFINITION. If the
+category attribute of the EcucModuleDef is set to
+VENDOR_SPECIFIC_MODULE_DEFINITION
+then this attribute is mandatory.
+Table 2.2: EcucModuleDef
+Speciﬁcation of ECU Conﬁguration
+[TPS_ECUC_02094] EcucModuleDef is able to aggregate container deﬁnitions
+⌈The EcucModuleDef aggregates container deﬁnitions (EcucContainerDef) with
+the role name container which may hold other container deﬁnitions, parameter deﬁ-
+nitions and reference deﬁnitions. ⌋()
+[TPS_ECUC_08012] Module support for post-build variants ⌈The postBuild-
+VariantSupport attribute of the EcucModuleDef speciﬁes if this EcucModuleDef
+supports different variants bound at post-build time (post-build variants)6. true means
+yes, false means no. ⌋()
+[constr_5507] Value of EcucContainerDef.postBuildVariantMultiplicity
+if postBuildVariantSupport is set to false ⌈If postBuildVariantSupport
+is set to false, every EcucContainerDef in this EcucModuleDef with upperMul-
+tiplicity greater than lowerMultiplicity shall have its postBuildVariant-
+Multiplicity attribute set to false. ⌋()
+[constr_5509] Value of postBuildVariantMultiplicity if postBuildVari-
+antSupport is set to false ⌈If postBuildVariantSupport is set to false, ev-
+ery EcucCommonAttributes in this EcucModuleDef with upperMultiplicity
+greater than lowerMultiplicity shall have its postBuildVariantMultiplic-
+ity attribute set to false. ⌋()
+[constr_5510] Value of postBuildVariantValue if postBuildVariantSup-
+port is set to false ⌈If postBuildVariantSupport is set to false, every Ecuc-
+CommonAttributes in this EcucModuleDef shall have its postBuildVariant-
+Value attribute set to false. ⌋()
+[TPS_ECUC_02095]
+VSMD
+reﬁnes
+the
+StMD
+⌈
+The
+reference
+re-
+finedModuleDef
+from
+an
+EcucModuleDef
+with
+the
+category
+VEN-
+DOR_SPECIFIC_MODULE_DEFINITION to an EcucModuleDef with the category
+STANDARDIZED_MODULE_DEFINITION speciﬁes that the source EcucModuleDef
+is the Vendor Speciﬁc Module Deﬁnition which reﬁnes the referenced Standardized
+EcucModuleDef. ⌋()
+[TPS_ECUC_06076] Use cases where the reference refinedModuleDef is
+mandatory ⌈The refinedModuleDef reference is mandatory if the Ecuc-
+ModuleDef
+with
+the
+category
+VENDOR_SPECIFIC_MODULE_DEFINITION
+actually
+reﬁnes
+the
+EcucModuleDef
+with
+the
+category
+STANDARD-
+IZED_MODULE_DEFINITION (e.g.
+Vendor Speciﬁc Module Deﬁnition of Com
+BSW module reﬁnes Standardized Module Deﬁnition of Com BSW module). ⌋()
+[TPS_ECUC_06077] Use cases where the reference refinedModuleDef is
+optional ⌈The refinedModuleDef reference is not necessary if the Ecuc-
+ModuleDef with the category VENDOR_SPECIFIC_MODULE_DEFINITION does
+not
+actually
+reﬁnes
+any
+EcucModuleDefs
+with
+the
+category
+STANDARD-
+IZED_MODULE_DEFINITION (e.g. Vendor Speciﬁc Module Deﬁnition of CDD which
+does not contribute to the ComStack conﬁguration). ⌋()
+6Note that post-build variants were previously known as post-build selectable conﬁguration sets.
+Speciﬁcation of ECU Conﬁguration
+[TPS_ECUC_06044] refinedModuleDef reference in the StMD ⌈
+The refer-
+ence refinedModuleDef from an EcucModuleDef with the category STANDARD-
+IZED_MODULE_DEFINITION shall not be used. ⌋()
+[TPS_ECUC_06043] EcucModuleDef categories ⌈The category attribute shall be
+used to clearly distinguish between the different roles of the EcucModuleDef class.
+⌋()
+category
+Meaning
+STANDARDIZED_
+MODULE_DEFINITION
+The EcucModuleDef class is used to describe the Standardized Module
+Deﬁnition (StMD)
+VENDOR_SPECIFIC_
+MODULE_DEFINITION
+The EcucModuleDef class is used to describe Vendor Speciﬁc Module
+Deﬁnition
+Table 2.3: EcucModuleDef class categories
+[constr_3022] EcucModuleDef category restriction ⌈The category deﬁnition shall
+be restricted to exactly the two deﬁned ones:
+• VENDOR_SPECIFIC_MODULE_DEFINITION
+• STANDARDIZED_MODULE_DEFINITION
+⌋()
+[TPS_ECUC_02096] Supported conﬁguration variants in a BSW module ⌈The
+EcucModuleDef speciﬁes which conﬁguration variants are supported by this software
+modules conﬁguration using the element supportedConfigVariant. For each con-
+ﬁguration variant that is supported one entry shall be provided. ⌋()
+For a detailed description how the conﬁguration variants are related to the conﬁguration
+classes please refer to section 2.3.4.3.2.
+In ﬁgure 2.4 an example of the top-level structure is provided and in the example 2.6
+the corresponding ECU Conﬁguration Parameter Deﬁnition XML ﬁle extract is shown.
+In the example XML also the overall XML structure of AUTOSAR descriptions is shown.
+The corresponding ECU Conﬁguration Value description XML ﬁle extract is shown in
+example 2.28.
+AUTOSARParameterDefinition :
+EcucDefinitionCollection
+Rte :EcucModuleDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+RteGeneration :
+EcucParamConfContainerDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
++container
++module
+Figure 2.4: ECU Conﬁguration Deﬁnition example
+Example 2.6
+&lt;AR-PACKAGE&gt;
+&lt;SHORT-NAME&gt;EcucDefs&lt;/SHORT-NAME&gt;
+&lt;ELEMENTS&gt;
+&lt;ECUC-DEFINITION-COLLECTION&gt;
+&lt;SHORT-NAME&gt;AUTOSARParameterDefinition&lt;/SHORT-NAME&gt;
+&lt;MODULE-REFS&gt;</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

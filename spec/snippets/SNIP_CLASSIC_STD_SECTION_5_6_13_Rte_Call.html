@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_13_Rte_Call</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 731)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=731" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 731)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00021" class="swsref internal-spec-ref"><code>SWS_Std_00021</code></a></span>
         </div>
@@ -119,11 +120,117 @@ ClientServerOperation.⌋
 A configuration that includes both synchronous and asynchronous
 ServerCallPoints for a given ClientServerOperation is invalid
 ([SWS_Rte_03014]).
-[SWS_Rte_CONSTR_09024] Rte_Call API may only be us</div></section>
+[SWS_Rte_CONSTR_09024] Rte_Call API may only be used by
+the runnable that describe its usage ⌈The Rte_Call API may only
+be used by the runnable that contains the corresponding Server-
+CallPoint⌋
+[SWS_Rte_08566]
+Upstream requirements: SRS_Rte_00249
+⌈The optional OUT parameter transformerError of the API shall
+be generated if the PortPrototype of port &lt;p&gt; is referenced by
+a PortAPIOption which has the attribute errorHandling set to
+transformerErrorHandling.⌋
+Description:
+Client function to initiate client-server communication. The Rte_-
+Call API is used for both synchronous and asynchronous calls.
+The Rte_Call API includes zero or more IN, IN/OUT and OUT pa-
+rameters.
+[SWS_Rte_06639]
+Upstream requirements: SRS_Rte_00051, SRS_Rte_00111
+⌈IN/OUT parameters are passed by value when they are "Primitive
+Implementation Data Type"s and the call is asynchronous.⌋
+Rational: In case of an asynchronous call, the IN/OUT parameters
+are only IN parameters.
+The IN, IN/OUT and OUT parameters are passed by value or refer-
+ence according to the ImplementationDataType as described in
+the section 5.2.6.5.
+The pointers to all parameters passed by reference must remain valid
+until the API call returns.
+The OUT parameter transformerError contains the transformer
+error which occured during execution of the transformer chain. See
+chapter 4.10.5.
+Return Value:
+None in case returnValueProvision of the related Server-
+CallPoint(s) is set to noReturnValueProvided. Otherwise:
+[SWS_Rte_01103]
+Upstream requirements: SRS_Rte_00094,
+SRS_Rte_00123,
+SRS_Rte_
+00124
+⌈The return value shall be used to indicate infrastructure errors de-
+tected by the RTE during execution of the Rte_Call call and, for syn-
+chronous communication, infrastructure and application errors during
+execution of the server.⌋
+• [SWS_Rte_01104]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_OK – The API call completed successfully.⌋
+Note: This means that RTE_E_OK is returned when neither an
+infrastructure error nor an overlay error occurred at the invoca-
+tion of the server runnable and the invoked server runnable was
+returning a value equal to E_OK.
+• [SWS_Rte_01105]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00079
+⌈RTE_E_LIMIT – The client has multiple outstanding asyn-
+chronous client-server invocations of the same operation in
+the same port. The server invocation shall be discarded, the
+buffers of the return parameters shall not be modified (see also
+[SWS_Rte_02658]).⌋
+• [SWS_Rte_08727]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_TRANSFORMER_LIMIT – The RTE is not able to allo-
+cate the buffer needed to transform the data.⌋
+• [SWS_Rte_08728]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_HARD_TRANSFORMER_ERROR – The return value of
+one transformer in the transformer chain represented a hard
+transformer error.⌋
+• [SWS_Rte_08555]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_SOFT_TRANSFORMER_ERROR – The return value of at
+least one transformer in the transformer chain was a soft error
+and no hard error occurred in the transformer chain.⌋
+• [SWS_Rte_01106]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_COM_STOPPED – the RTE could not perform the op-
+eration because the communication service is currently not
+available (inter ECU communication only).
+RTE shall return
+RTE_E_COM_STOPPED when:
+– in
+case
+of
+COM
+the
+corresponding
+service
+returns
+COM_SERVICE_NOT_AVAILABLE
+– in case of Large Data Path in COM the corresponding
+Com_Transmit returns E_NOT_OK
+The buffers of the return parameters shall not be modified.⌋
+• [SWS_Rte_01107]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00069
+⌈RTE_E_TIMEOUT – (synchronous inter-task and inter-ECU
+only) No reply was received within the configured timeout. The
+buffers of the return parameters shall not be modified.⌋
+• RTE_E_UNCONNECTED – Indicates that the client port is not con-
+nected [SWS_Rte_01334].
+• [SWS_Rte_02744]
+Upstream requirements: SRS_Rte_00092,
+SRS_Rte_00046,
+SRS_-
+Rte_00032
+⌈RTE_E_IN_EXCLUSIVE_AREA – Used only for the blocking
+API. RTE_E_IN_EXCLUSIVE_AREA indicates that the runnable
+can not enter wait, as one of the ExecutableEntitys in the
+call stack of this task is currently in an exclusive area, see
+[SWS_Rte_02739]. - In a properly configured system, this er-
+ror should not occur. The check can be disabled according to
+[SWS_Rte_08321].⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerError().</p>
       </section>
 
       <section class="snip-card">
@@ -132,7 +239,7 @@ ServerCallPoints for a given ClientServerOperation is invalid
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=731" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

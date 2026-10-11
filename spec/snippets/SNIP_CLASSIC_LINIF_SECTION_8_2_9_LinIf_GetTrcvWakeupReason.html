@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LINIF_SECTION_8_2_9_LinIf_GetTrcvWakeupReason</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINInterface.pdf</strong> (Seite 92)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=92" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></strong> (Seite 92)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -111,11 +112,29 @@ transceiver.⌋
 for Channel is given, the function LinIf_GetTrcvWakeupReason shall report
 LINIF_E_NONEXISTENT_CHANNEL to the default error tracer.⌋
 [SWS_LinIf_00573] ⌈If development error detection is enabled and the parameter Tr-
-cvWuReasonPtr has an invalid value, the</div></section>
+cvWuReasonPtr has an invalid value, the function LinIf_GetTrcvWakeupReason
+shall raise the development error code LINIF_E_PARAM_POINTER.⌋
+[SWS_LinIf_00572] ⌈If development error detection is enabled and the current mode
+is not LINTRCV_TRCV_MODE_NORMAL, the function LinIf_GetTrcvWakeupReason
+shall report LINIF_E_TRCV_NOT_NORMAL to the default error tracer.⌋
+[SWS_LinIf_00636] ⌈The function LinIf_GetTrcvWakeupReason is required only
+if at least one LIN channel uses the LIN transceiver driver. This function shall be pre-
+compile time configurable On/Off by the configuration parameter LinIfTrcvDriver-
+Supported.⌋
+Caveats:
+• The LIN Interface has to be initialized with a call of LinIf_Init before this API
+service may be called, see [SRS_BSW_00487].
+• Please be aware, that if more than one network is available, each network may
+report a different wake up reason. This API has a“per network” view and does not
+vote the more important reason or sequence internally. The same may be true if
+e.g. one transceiver controls the power supply and the other is just powered or
+un-powered. Then one may be able to return LINTRCV_WU_POWER_ON, whereas
+the other may state e.g. LINTRCV_WU_RESET.
+It is up to the EcuM to decide how to handle that wake up information.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -124,7 +143,7 @@ cvWuReasonPtr has an invalid value, the</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=92" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

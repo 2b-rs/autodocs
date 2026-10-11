@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_2_4_5_2_1_Invalid_configuration_due_to_symbolic_name_values</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ECUConfiguration.pdf</strong> (Seite 149)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=149" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></strong> (Seite 149)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUC_06074" class="swsref"><code>TPS_ECUC_06074</code></a></span>
         </div>
@@ -119,7 +120,155 @@ PostBuildVariantCondition
 value = 0
 :VariationPoint
 :
-PostBuildVariantCondition</div></section>
+PostBuildVariantCondition
+value = 1
+:PostBuildVariantCriterion
+:VariationPoint
+:PostBuildVariantCriterion
+:VariationPoint
+:
+PostBuildVariantCondition
+value = 0
+:
+PostBuildVariantCondition
+value = 1
+IcuChannelId:
+EcucNumericalParamValue
+value = 0
++subContainer
++parameter
++container
+Figure 2.43: SymbolicNameValues and the generation of #defines: valid and invalid con-
+figurations due to the existence of post-build variations
+The valid example in figure 2.43 does lead to the following definition:
+#define IcuConf_IcuChannel_IcuChannel0 0
+The invalid example in figure 2.43 would possibly lead to the following definitions:
+#define IcuConf_IcuChannel_IcuChannel0 0
+#define IcuConf_IcuChannel_IcuChannel0 1
+where a different value would be assigned to the same symbol. This is an invalid
+configuration.
+Example 2.44 and 2.45 shows a valid and an invalid configuration due to the hierarchi-
+cal structure of the EcucParameterValues.
+Valid CanNm Configuration
+DEFINITION
+CanNmChannelConfig:
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 1
+CanNmTxPdu:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+CanNmRxPdu:
+EcucParamConfContainerDef
+lowerMultiplicity = 1
+upperMultiplicity = *
+CanNmTxConfirmationPduId:
+EcucIntegerParamDef
+min = 0
+max = 65535
+withAuto = true
+symbolicNameValue = true
+CanNmRxPduId:
+EcucIntegerParamDef
+min = 0
+max = 65535
+withAuto = true
+symbolicNameValue = true
+Channel_01: EcucContainerValue
+Foo:
+EcucContainerValue
+Bar:
+EcucContainerValue
+CanNmRxPduId:
+EcucNumericalParamValue
+value = 1
+CanNmTxConfirmationId:
+EcucNumericalParamValue
+value = 2
+Channel_02: EcucContainerValue
+Foo2:
+EcucContainerValue
+Bar2:
+EcucContainerValue
+CanNmRxPduId:
+EcucNumericalParamValue
+value = 3
+CanNmTxConfirmationId:
+EcucNumericalParamValue
+value = 4
++subContainer
++subContainer
++parameter
++parameter
+Figure 2.44: SymbolicNameValues and the generation of #defines: valid configuration
+due to the hierarchical structure of the EcucParameterValues
+Invalid CanNm Configuration
+DEFINITION
+CanNmChannelConfig:
+EcucParamConfContainerDef
+upperMultiplicity = *
+lowerMultiplicity = 1
+CanNmTxPdu:
+EcucParamConfContainerDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+CanNmRxPdu:
+EcucParamConfContainerDef
+lowerMultiplicity = 1
+upperMultiplicity = *
+CanNmTxConfirmationPduId:
+EcucIntegerParamDef
+min = 0
+max = 65535
+withAuto = true
+symbolicNameValue = true
+CanNmRxPduId:
+EcucIntegerParamDef
+min = 0
+max = 65535
+withAuto = true
+symbolicNameValue = true
+Channel_01: EcucContainerValue
+Foo:
+EcucContainerValue
+Bar:
+EcucContainerValue
+CanNmRxPduId:
+EcucNumericalParamValue
+value = 1
+CanNmTxConfirmationId:
+EcucNumericalParamValue
+value = 2
+Channel_02: EcucContainerValue
+Foo:
+EcucContainerValue
+Bar:
+EcucContainerValue
+CanNmRxPduId:
+EcucNumericalParamValue
+value = 3
+CanNmTxConfirmationId:
+EcucNumericalParamValue
+value = 4
++parameter
++subContainer
++subContainer
++parameter
+Figure 2.45: SymbolicNameValues and the generation of #defines: invalid configuration
+due to the hierarchical structure of the EcucParameterValues
+The valid example in figure 2.44 does lead to the following definition:
+#define CanNmConf_CanNmRxPdu_Foo 1
+#define CanNmConf_CanNmTxPdu_Bar 2
+#define CanNmConf_CanNmRxPdu_Foo2 3
+#define CanNmConf_CanNmTxPdu_Bar2 4
+The invalid example in figure 2.45 would possibly lead to the following definitions:
+#define CanNmConf_CanNmRxPdu_Foo 1
+#define CanNmConf_CanNmTxPdu_Bar 2
+#define CanNmConf_CanNmRxPdu_Foo 3
+#define CanNmConf_CanNmTxPdu_Bar 4
+where different values would be assigned to the same symbol. The value 1 would be
+redefined to 3 and the value 2 would be redefined to 4. This is an invalid configuration.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -132,7 +281,7 @@ PostBuildVariantCondition</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ECUConfiguration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=149" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

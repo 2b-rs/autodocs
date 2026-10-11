@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_9_3_5_7_Calibration_parameter_allocation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 242)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=241" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 242)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01423" class="swsref"><code>TPS_SWCT_01423</code></a></span>
         </div>
@@ -89,7 +90,71 @@ calibration parameters.
 To support online and offline calibration (see section 4.2.9.1) all parameter values for
 all instances have to be provided.
 Background:
-• For online calibration often initially the same default values for calibrati</div></section>
+• For online calibration often initially the same default values for calibration param-
+eters can be applied. Variation is then handled later by post link tools. Initial
+ECU startup is not jeopardized. This allows the usage of a default value e.g. by
+AUTOSAR SW-C or ParameterSwComponentType supplier for all instances of
+a ParameterDataPrototype.
+• On the other hand applying separate default values for the different instances of
+a ParameterDataPrototype will be required often for online calibration too, to
+make a vehicle run initially. This requires additional configuration work e.g. for
+integrator.
+• Offline calibration based on new SW build including new RTE build and com-
+pilation process requires all calibration parameter values for all instances to be
+available for RTE.
+Shared ParameterDataPrototypes
+[SWS_Rte_03962]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00156
+⌈For accesses to a shared ParameterDataPrototype the RTE API shall deliver the
+same one value independent of the instance the calibration parameter is assigned to.⌋
+[SWS_Rte_03963]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00156
+⌈The calibration parameter of a shared ParameterDataPrototype shall be stored
+in one memory location only.⌋
+Requirements [SWS_Rte_03962] and [SWS_Rte_03963] are to guarantee that only
+one physical location in memory has to be modified for a change of a shared
+ParameterDataPrototype. Otherwise this could lead to unforeseeable confusion.
+Multiple locations are possible for calibration parameters stored in NVRAM. But there
+a shared ParameterDataPrototype is allowed to have only one logical data too.
+Instance specific ParameterDataPrototypes
+[SWS_Rte_03964]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00156
+⌈For accesses to an instance specific ParameterDataPrototype the RTE API shall
+deliver a separate calibration parameter value for each instance of a ParameterDat-
+aPrototype.⌋
+[SWS_Rte_03965]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00156
+⌈For an instance specific ParameterDataPrototype the calibration parameter value
+of each instance of the ParameterDataPrototype shall be stored in a separate
+memory location.⌋
+Usage of swAddrMethod
+SwDataDefProps contain the optional property swAddrMethod.
+It contains meta
+information about the memory section in which a measurement data store resp. a
+calibration parameter shall be allocated in. This abstraction is needed to support the
+reuse of unmodified AUTOSAR SW-Cs resp.
+ParameterSwComponentTypes in
+different projects but allowing allocation of measurement data stores resp. calibration
+parameters in different sections.
+Section usage typically depends on availability of HW resources. In one project the
+micro controller might have less internal RAM than in another project, requiring that
+most measurement data have to be placed in external RAM. In another project one
+addressing method (e.g. indexed addressing) might be more efficient for most of the
+measurement data - but not for all. Or some calibration parameters are accessed
+less often than others and could be - depending on project specific FLASH availability
+- placed in FLASH with slower access speed, others in FLASH with higher access
+speed.
+[SWS_Rte_03981]
+Upstream requirements: SRS_Rte_00153
+⌈The memory section used to store measurement values in shall be the memory sec-
+tions associated with the swAddrMethod enclosed in the SwDataDefProps of a mea-
+surement definition.⌋
+Since it’s measurement data obviously this must be in RAM.
+[SWS_Rte_03982]
+Upstream requirements: SRS_Rte_00153
+⌈The memory section used to store calibration parameters in shall be the memory
+sections associated with the swAddrMethod enclosed in the SwDataDefProps of a
+calibration parameter definition.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +167,7 @@ Background:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=241" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

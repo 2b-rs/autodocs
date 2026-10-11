@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_5_1_3_General_Rules_for_Compliance_of_blueprint_and_blueprinted_element</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_FO_TPS_StandardizationTemplate.pdf</strong> (Seite 53)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_TPS_StandardizationTemplate.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_StandardizationTemplate.pdf</a></strong> (Seite 53)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_STDT_00087" class="swsref"><code>TPS_STDT_00087</code></a></span>
         </div>
@@ -94,7 +95,89 @@ Note that introduction should not be used to describe the derivation of objects 
 the blueprint. See [TPS_STDT_00048] for details.
 [TPS_STDT_00086] Specify a name pattern or a blueprint value in blueprints
 ⌈For each blueprint, a namePattern or a blueprintValue shall be specified if the
-shortName respectively a symbol is</div></section>
+shortName respectively a symbol is not fixed but intended to be defined when objects
+are derived from a blueprint. This is used to verify the appropriate naming of the derived
+objects ([constr_2553]).⌋
+[constr_2553]
+shortName shall follow the pattern defined in the Blueprint
+⌈The shortName respectively symbol of the derived objects shall follow the pat-
+tern defined in namePattern or blueprintValue of the blueprint according to
+[TPS_STDT_00086]⌋
+[constr_2570] No Blueprints in system descriptions ⌈There shall be no blueprints
+in system descriptions. In consequence of this blueprint elements shall be referenced
+only from blueprints and AtpBlueprintMappings. Due to ≪atpUriDef≫, the ref-
+erences from AtpBlueprintMapping do not need to be resolved in system descrip-
+tions.⌋
+[constr_2571] Outgoing references from Blueprints ⌈Note that outgoing references
+from Blueprints are basically not limited. Practically, references to objects living in a
+package of category EXAMPLE should not occur.⌋
+Reason for [constr_2571] is the fact that these examples then also shall exist in the
+target system description but not as example. In such a case the example would take
+the role of a blueprint.
+Figure 5.6 illustrates a scenario with standardized objects, blueprints and project re-
+lated objects.
+Standardization Template
+Figure 5.6: Relations between Blueprints, "Derived Objects" and "Standardized Objects"
+This diagram in particular illustrates how references in blueprints shall be handled:
+[TPS_STDT_00051] Handling references when deriving objects from blueprints ⌈
+• Blueprints may reference standardized objects. These references also exist in
+the derived objects (1), (2).
+• Blueprints may reference other blueprints (3). These references need to be re-
+placed in order to meet [constr_2546]. Therefore a reference from a derived
+object to a blueprint is not allowed.
+• Blueprints may contain references to arbitrary objects (4).
+According to
+[TPS_STDT_00041] it is allowed that these objects even do not exist. Neverthe-
+less to meet [constr_2554] such references shall be copied to the derived objects
+and the referenced objects shall exist in the target system description.
+⌋
+[TPS_STDT_00034] Integrity of Blueprints ⌈The integrity of blueprints can be estab-
+lished by applying references to blueprints of related objects. For example, a blueprint
+of a BswModuleDescription may refer to a blueprint of BswModuleEntry.⌋
+[constr_2546] References in derived model elements ⌈Model elements derived
+from blueprints shall never refer to model elements that are blueprints.⌋
+Note: A blueprint may refer to another blueprint. When deriving objects such a refer-
+ence shall be replaced such that the new reference target is an object derived from the
+corresponding reference target in the blueprint.
+Standardization Template
+[TPS_STDT_00065] Nested Blueprint Can be Used as Blueprint of its own ⌈If spe-
+cialization of AtpBlueprint aggregates specialization of AtpBlueprint, then the
+such aggregated specialization of AtpBlueprint acts as a blueprint on its own and
+can be derived beyond the context of objects derived from the aggregating special-
+ization of AtpBlueprint. This definition allows to create blueprints which are not
+specializations of ARElement.
+In other words, If a blueprint contains blueprints, the "inner" blueprints can be derived
+independent from derived objects of the "outer" blueprint.⌋
+See chapter 5.2.8 for an use case of [TPS_STDT_00065].
+[TPS_STDT_00047] Ignore Blueprint Attributes in Non Blueprints ⌈AUTOSAR
+Tools which do not process blueprints such as RTE-generator shall ignore Identi-
+fier.namePattern resp. CIdentifier.namePattern and blueprintValue.
+The attributes Identifier.namePattern resp. CIdentifier.namePattern and
+blueprintValue should be removed when deriving objects from blueprints.⌋
+[TPS_STDT_00048]
+Express Decisions when Deriving Objects ⌈Applying
+VariationPoint is a suitable way to express intended decisions to be made
+when deriving objects from blueprints.
+In this case the value of the UML tag
+vh.latestBindingTime is blueprintDerivationTime and VariationPoint.
+blueprintCondition, VariationPoint.formalBlueprintGenerator respec-
+tively AttributeValueVariationPoint.blueprintValue shall be used to ex-
+press the intended derivation.⌋
+[TPS_STDT_00028] Resolving VariationPoint in Blueprints ⌈If a Variation-
+Point has only blueprintValue respectively blueprintCondition, formal-
+BlueprintGenerator but not swSyscond nor postBuildVariantCondition it
+shall be resolved when deriving elements.⌋
+Please refer to Generic Structure Template [2] for the following aspects:
+• Even if BindingTimeEnum does not contain the value blueprintDeriva-
+tionTime, there are still VariationPoints which shall be bound on blueprint
+derivation. This is specified as blueprintDerivationTime in the UML tag
+vh.latestBindingTime at the variation point in the meta-model.
+See chapter 5.2 for such elements.
+• See [constr_2557]: System configurations shall not contain VariationPoints
+with vh.latestBindingTime set to blueprintDerivationTime.
+• [constr_2558]: If vh.latestBindingTime is blueprintDerivationTime
+then there shall only be blueprintCondition, formalBlueprintGener-
+ator respectively blueprintValue.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +190,7 @@ shortName respectively a symbol is</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_FO_TPS_StandardizationTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_TPS_StandardizationTemplate.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_StandardizationTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

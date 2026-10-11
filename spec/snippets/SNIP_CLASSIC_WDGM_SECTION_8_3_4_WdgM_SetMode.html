@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: wdgm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDGM_SECTION_8_3_4_WdgM_SetMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogManager.pdf</strong> (Seite 75)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=75" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></strong> (Seite 75)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00186" class="swsref internal-spec-ref"><code>SWS_WdgM_00186</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_WdgM_00392" class="swsref internal-spec-ref"><code>SWS_WdgM_00392</code></a></span>
         </div>
       </div>
 
@@ -114,11 +115,36 @@ the Default Error Tracer a runtime error with the value WDGM_E_SET_MODE.⌋
 Upstream requirements: SRS_BSW_00323, SRS_BSW_00452, SRS_ModeMgm_09109
 ⌈If disabling the watchdog is not allowed by setting the parameter WdgMOffModeEn-
 abled [ECUC_WdgM_00340] to FALSE, the routine shall check if the requested mode
-would disable the watc</div></section>
+would disable the watchdog (WDGIF_OFF_MODE). In this case (i.e. it would disable
+while it is not allowed),
+1. The mode switch shall not be executed.
+2. The error shall be reported to the Default Error Tracer with the runtime error code
+WDGM_E_DISABLE_NOT_ALLOWED.
+3. The routine shall return the value E_NOT_OK.
+⌋
+There are optional checks that are executed if and only if WdgMDevErrorDetect is
+enabled.
+[SWS_WdgM_00020]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00350
+⌈If the configuration parameter WdgMDevErrorDetect [ECUC_WdgM_00301] is en-
+abled, the parameter Mode shall be checked for being in the allowed range. In case of
+an error, the mode switch shall not be executed and the error shall be reported to the
+Default Error Tracer with the value WDGM_E_PARAM_MODE.⌋
+[SWS_WdgM_00021]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00350, SRS_BSW_00406
+⌈If the configuration parameter WdgMDevErrorDetect [ECUC_WdgM_00301] is en-
+abled: The function WdgM_SetMode shall report the error to default error tracer with
+error code WDGM_E_UNINIT, without any further effect, if the Watchdog Manager is in
+WDGM_GLOBAL_STATUS_DEACTIVATED.⌋
+[SWS_WdgM_00392]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00350
+⌈If the configuration parameter WdgMDevErrorDetect [ECUC_WdgM_00301] is dis-
+abled: The function WdgM_SetMode shall return without any effect if the Watchdog
+Manager is in WDGM_GLOBAL_STATUS_DEACTIVATED.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">WdgM_SetMode applies watchdog mode via WdgIf</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_WdgM_00392] im Text von SWS_WatchdogManager.</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +153,7 @@ would disable the watc</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogManager.pdf#page=75" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -139,15 +165,15 @@ would disable the watc</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00186" class="swsref internal-spec-ref"><code>SWS_WdgM_00186</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_WdgM_00392" class="swsref internal-spec-ref"><code>SWS_WdgM_00392</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

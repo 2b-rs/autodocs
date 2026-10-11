@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_9_2_User_controlled_WarningIndicatorRequested_bit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 162)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=161" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 161)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01303" class="swsref internal-spec-ref"><code>SWS_Dem_01303</code></a></span>
         </div>
@@ -106,11 +107,35 @@ the
 WarningIndicatorRequested-bit of a configured event (in Dem) regarding to e.g. failsafe
 state.⌋
 [SWS_Dem_00832] ⌈Setting of the WIR-bit of an event can be controlled via Dem_
-SetWIRStatus OR by the Dem internal WIR-bit handling. (OR-Opera</div></section>
+SetWIRStatus OR by the Dem internal WIR-bit handling. (OR-Operation).⌋
+Note: The parallel use of Dem_SetWIRStatus and the Dem internal WIR-Bit handling
+(at the same time) is needed for example for OBD systems, where the WIR-Bit needs
+to be activated according to the legislation (Dem-Internal) and a system reaction is
+controlled by the same event. Therefore the WIR-Bit needs to stay active until the
+system reaction is deactivated (Dem_SetWIRStatus).
+[SWS_Dem_00833] ⌈The WIR-bit of the corresponding event shall be set to "1" if
+Dem_SetWIRStatus is called with parameter WIRStatus = TRUE .⌋
+[SWS_Dem_00834] ⌈The WIR-bit of the corresponding event shall be set to "0" if
+Dem_SetWIRStatus is called with WIRStatus = FALSE and no referenced Dem Indi-
+cator(s) are set.⌋
+[SWS_Dem_00836] ⌈During disabled ControlDTCSettings the WIR-bit of an event
+shall not be changed via Dem_SetWIRStatus and the function shall return
+E_NOT_OK.⌋
+Note: In case the failsafe application is not able to set the WIR bit (Dem_SetWIRSta-
+tus returned E_NOT_OK), the failsafe application needs to observe the general status
+of the event and coordinate the retry of Dem_SetWIRStatus itself e.g. by using the
+callback function InitMonitorForEvent with parameter DEM_INIT_MONITOR_-
+REENABLED.
+[SWS_Dem_01303] Asynchronous behavior of Dem_SetWirStatus ⌈The Dem shall
+process a call of the Dem_SetWIRStatus asynchronously. This means that the final
+result is available at a later point in time.⌋
+.
+A later point in time is meant to be implementation specific, it could be the next main
+function and after Dem_SetWIRStatus has returned.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Asynchronous Dem_SetWIRStatus behavior.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01303] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -119,11 +144,11 @@ SetWIRStatus OR by the Dem internal WIR-bit handling. (OR-Opera</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=161" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 162</td>
+              <td>Seite 161</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -135,11 +160,11 @@ SetWIRStatus OR by the Dem internal WIR-bit handling. (OR-Opera</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

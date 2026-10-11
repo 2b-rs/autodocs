@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LAYEREDSOFTWAREARCHITECTURE_SECTION_3_BSW</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>LayeredSoftwareArchitecture.pdf</strong> (Seite 155)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_EXP_LayeredSoftwareArchitecture.pdf#page=137" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LayeredSoftwareArchitecture.pdf</a></strong> (Seite 155)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_SYST_00031" class="swsref"><code>RS_SYST_00031</code></a></span>
         </div>
@@ -126,7 +127,107 @@ User
 Mode
 User
 Mode
-Reque</div></section>
+Request
+Mode
+Switch
+Mode
+Manager
+Mode
+Manager
+Mode
+User
+Mode
+User
+Mode
+Switch
+150
+Integration and Runtime Aspects
+Vehicle and application mode management (3)
+The distribution of mode requests is performed by the RTE and the RTE also implements
+the handling of mode switches.
+E.g. for vehicle modes, a mode request originates from one central mode requestor SW-C
+and has to be received by the BswMs in many ECUs. This is an exception of the rule that
+SW-Cs may only communicate to local BSW.
+BswMs running in different OS-Applications can propagate mode requests by Sender-
+Receiver communication (SchMWrite, SchMRead).
+Microcontroller (µC)
+RTE
+System Services
+Application Layer
+page id: q222c
+BswM
+Mode Control
+Mode Arbitration SW-C
+RTE
+Mode Arbitration
+App
+BSW
+Layer
+Functionality per module
+Mode Request Distribution + Mode Handling
+The major part of the needed functionality is
+placed in the Basic Software Mode Manager
+(BswM for short). Since the BswM is located
+in the BSW, it is present in every OS-
+Application and local to the mode users as
+well as the controlled BSW modules.
+151
+Integration and Runtime Aspects
+Vehicle and application mode management (4)
+page id: q222d
+BswM
+Mode
+Control
+Applications
+RTE
+Mode
+Arbitration
+Mode requesting
+SW-C
+Mode using
+SW-C
+Mode request
+distribution
+Mode arbitration
+overrides the
+request for mode
+A with mode A´.
+3: switch
+mode A´
+1: request
+mode A
+2: execute
+associated
+action list
+Action list
+Action 1
+Action 2
+…
+RteSwitch(mode A´)
+Local mode
+handling
+Mode Processing Cycle
+The mode requester SW-C requests mode
+A through its sender port. The RTE
+distributes the request and the BswM
+receives it through its receiver port.
+The BswM evaluates its rules and if a
+rule triggers, it executes the corresponding
+action list.
+When executing the action list, the BswM
+may issue a (configurable optional) RTE
+call to the mode switch API as a last action
+to inform the mode users about the
+arbitration result, e.g. the resulting mode A’.
+Any SW-C, especially the mode
+requester can register to receive the
+mode switch indication.
+The mode requests can originate from
+local and remote ECUs or OS-Applications.
+Note that the mode requestor can only
+receive the mode switch indications from
+the local BswM, even if the requests are
+sent out to multiple OS-Applications.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -139,7 +240,7 @@ Reque</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>LayeredSoftwareArchitecture.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/CP/AUTOSAR_EXP_LayeredSoftwareArchitecture.pdf#page=137" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LayeredSoftwareArchitecture.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

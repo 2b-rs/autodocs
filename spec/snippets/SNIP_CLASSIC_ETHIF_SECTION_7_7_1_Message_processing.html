@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_7_1_Message_processing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverEthernet.pdf</strong> (Seite 34)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></strong> (Seite 34)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthTSyn_00265" class="swsref internal-spec-ref"><code>SWS_EthTSyn_00265</code></a></span>
         </div>
@@ -103,7 +104,96 @@ PduRef of the corresponding port
 ⌋
 Note: The timeBaseStatus can be read from StbM by StbM_GetTimeBaseStatus
 or StbM_GetCurrentTime.
-Note: For further details refer t</div></section>
+Note: For further details refer to sequence diagram Figure 9.4.
+[SWS_EthTSyn_00211]
+Upstream requirements: RS_TS_20047
+⌈If
+• the protocol requirement [PRS_TS_00016] is fulfilled,
+Ethernet
+• and the associated cyclicMsgResumeCounter is equal to or less than 0
+the Time Master shall start cyclic transmission of Sync messages in the earliest possi-
+ble EthTSyn_MainFunction call.⌋
+Note: "earliest possible" means:
+• In the next EthTSyn_MainFunction, because GLOBAL_TIME_BASE is set out-
+side the EthTSyn_MainFunction.
+• In the current EthTSyn_MainFunction, when switching from immediate to
+cyclic transmission (because this decision is made inside the EthTSyn_Main-
+Function).
+[SWS_EthTSyn_00127]
+Upstream requirements: RS_TS_20048, SRS_BSW_00496
+⌈On invocation of EthTSyn_TxConfirmation with parameter ’Result’ equal to E_
+OK the egress time stamp of the Sync message shall be retrieved via EthIf_GetE-
+gressTimeStamp from the EthIf and converted to the Virtual Local Time T2V LT ac-
+cording to EthTSyn_Egress_Time_Stamping, if EthTSynHardwareTimestampSup-
+port is set to TRUE.
+⌋
+Note: EthTSyn_Egress_Time_Stamping is shown in Figure 9.4.
+[SWS_EthTSyn_00017]
+Upstream requirements: RS_TS_20048
+⌈If EthTSynHardwareTimestampSupport is set to TRUE and if the StbM does not
+use the Ethernet hardware counter as Virtual Local Time Source for the Time Base,
+the following sequence shall be applied on invocation of EthTSyn_TxConfirmation
+with parameter ’Result’ equal to E_OK or in the following EthTSyn_MainFunction
+call:
+1. Protect the following two steps against interruptions:
+2. the current time of the Ethernet hardware counter shall be retrieved via parameter
+currentTimeTuplePtr -&gt;timestampClockValue of EthIf_GetCurrent-
+TimeTuple from theEthIf and converted to the Virtual Local Time T3V LT .
+3. the current value of the Virtual Local Time of the Time Base shall be retrieved as
+T4V LT via StbM_GetCurrentVirtualLocalTime
+4. the preciseOriginTimestamp shall be calculated as T0 - (T3V LT - T2V LT) +
+(T4V LT - T0V LT)
+⌋
+Ethernet
+Note: When using interrupt mode with interrupt nesting disabled, the EthTSyn does
+not need to explicitly establish a protection against interruptions in EthTSyn_TxCon-
+firmation, because this is implicitly done by the controller.
+[SWS_EthTSyn_00188]
+Upstream requirements: RS_TS_20048
+⌈If EthTSynHardwareTimestampSupport is set to TRUE and if the StbM does use
+the Ethernet hardware counter as Virtual Local Time Source for the Time Base, the
+preciseOriginTimestamp shall be calculated as T0 + (T2V LT - T0V LT).⌋
+[SWS_EthTSyn_00189]
+Upstream requirements: RS_TS_20048
+⌈If EthTSynHardwareTimestampSupport is set to FALSE the preciseOriginTimes-
+tamp shall be calculated as T0 + (T4V LT - T0V LT).⌋
+[SWS_EthTSyn_00204]
+Upstream requirements: RS_TS_20048
+⌈The Time Master shall consider the debounceCounter, which represents a time
+offset between Sync and Follow_Up message, before transmitting the Follow_Up
+message.⌋
+[SWS_EthTSyn_00226]
+Upstream requirements: RS_TS_20069
+⌈The following parameters provided by the invocation of EthTSyn_SetProtocol-
+Param in argument protocolParam, shall be used by EthTSyn for the next Follow_Up
+information TLV message:
+• cumulativeScaledRateOffset
+• gmTimeBaseIndicator
+• lastGmPhaseChange
+• scaledLastGmFreqChange
+⌋
+[SWS_EthTSyn_00203]
+Upstream requirements: RS_TS_20048
+⌈The Time Master shall transmit a Follow_Up message (refer to [PRS_TS_00018]
+in
+[1,
+PRS
+Time
+Synchronization
+Over
+Ethernet
+Protocol]),
+by
+calling
+LS-
+duR_EthTSynTransmit with
+• parameter TxPduId derived from the configuration parameter EthTSynTxPdu
+of the corresponding port
+Ethernet
+• and parameter SduDataPtr set to the Follow_Up message data including the
+calculated preciseOriginTimestamp
+• and parameter SduLength set to length of the Follow_Up message data
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -116,7 +206,7 @@ Note: For further details refer t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverEthernet.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWDISTRIBUTIONGUIDE_SECTION_2_2_7_Kernel_based_Master_Satellite_Realization</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>BSWDistributionGuide.pdf</strong> (Seite 18)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_BSWDistributionGuide.pdf#page=17" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWDistributionGuide.pdf</a></strong> (Seite 18)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Nm_00484" class="swsref internal-spec-ref"><code>SWS_Nm_00484</code></a></span>
         </div>
@@ -89,7 +90,73 @@ ations into the interface part of the BSW module, adding an according data prote
 mean (e.g. spinlock) if necessary.
 For transferring control flow, one will implement on the one hand side the user API
 operation and on the other hand the same operation inside the kernel API. The relation
-can be 1:1 (one</div></section>
+can be 1:1 (one user API matches one kernel API) or n:1 (several user API match one
+kernel API).
+All local API have to be allocated with local core scope and all global API with global
+core scope applying the memory allocation specification (AUTOSAR_SWS_Memory
+Mapping, see [2]).
+Applying this idea to the PWM driver, one would get the following API distribution:
+Control API with local scope:
+CONTROL API
+Core Scope
+Pwm_Init
+local (same partition as kernel)
+Pwm_DeInit
+local (same partition as kernel)
+Pwm_Main_PowerTransitionManager
+local (same partition as kernel)
+Note that these API’s are restricted to the local kernel partition. The task calling the
+transition manager needs to be scheduled within the same partition / on the same core.
+User read/write API with global scope:
+USER_RW API
+Access / Core Scope
+Pwm_GetOutputState
+read global data
+Pwm_GetCurrentPowerState
+read global data
+Pwm_GetTargetPowerState
+read global data
+Pwm_GetVersionInfo
+read static information
+Pwm_DisableNotification
+write to global data (atomic flag)
+Pwm_EnableNotification
+write to global data (atomic flag)
+Note that these API’s are available to any partition, so these are also used if the call is
+done from the same partition where the kernel resides.
+User trigger API with global scope and related kernel API with local scope:
+USER_TRIG_API / Global Scope
+KERNEL_API / Local Scope
+Pwm_SetDutyCycle
+Pwm_SetPeriodAndDuty
+Pwm_Kernel_SetValues
+Pwm_SetOutputToIdle
+Pwm_Kernel_SetOutputToIdle
+Pwm_SetPowerState
+Pwm_PreparePowerState
+Pwm_Kernel_PowerStateManager
+Note that the USER_TRIG_API is available to any partition, so these are also used
+if the call is done from the same partition where the kernel resides. The KERNEL_
+Guide to BSW Distribution
+API however is not accessible to the user. It is internal only. The calls from the local
+partition are passed through the USER_TRIG_API.
+Finally, the picture below shall summarize the interface availability along the cores /
+partitions for the given example, while the kernel API is hidden inside the BSW module
+not visible to the outside.
+Figure 2.4
+The following points shall be noted in addition:
+• All user callbacks shall be called in the local partition. The user needs then to
+provide similarly a service API with global scope, which can be called. This is
+useful as the implementer of each BSW module or CDD knows ideally how its
+module is designed. Doing the other way around could waste CPU resources
+instead as caller and called module might implement the partition transfer twice.
+• It is strongly not recommended to apply this or other master-satellite concepts for
+crossing partitions on the same core, e.g. motivated by safety, as this will also
+waste CPU resources.
+When choosing the according protection and multi-core means one shall always try
+to achieve a blockade free implementation to allow parallel operation along multiple
+cores.
+Guide to BSW Distribution</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +169,7 @@ can be 1:1 (one</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>BSWDistributionGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_BSWDistributionGuide.pdf#page=17" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWDistributionGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comstack</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_3_7_Error_Handling_of_the_FT_Field</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayARTransportLayer.pdf</strong> (Seite 41)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayARTransportLayer.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayARTransportLayer.pdf</a></strong> (Seite 40)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrArTp_00283" class="swsref internal-spec-ref"><code>SWS_FrArTp_00283</code></a></span>
         </div>
@@ -145,11 +146,42 @@ Idle
 Process the SF-I as the
 start of a new reception
 Process the FF-I as the
-start of a new recepti</div></section>
+start of a new reception
+Ignore
+Ignore
+Ignore
+⌋
+Otherwise, the behavior is explained below:
+[SWS_FrArTp_00283] SF-x, FF-x, CF/CF2 and FC frames ⌈The behavior shall be as
+depicted in [SWS_FrArTp_00083] (also for 1:n connections).
+The ignoring of an FF-E shall be according to the value of FrArTpLm.
+Regarding CF and CF2 frames there is a special error handling in case Retry is con-
+figured (otherwise CF2 frames are ignored):
+If the sender starts a block with another frame than expected, i.e. CF instead of CF2
+or CF2 instead of CF, then the sender is doing a Retry that has not been requested by
+the receiver (maybe because of losing the FC-CTS frame on the bus). Therefore, the
+receiver always has to remember the old block size and send another FC-CTS at the
+end of this retransmitted block. Errors in the unnecessarily retransmitted block shall be
+ignored.⌋
+[SWS_FrArTp_00252] AF frame ⌈If no acknowledgement is activated, this frame shall
+be ignored. Otherwise, on the receiver side or in idle state, these frames shall be
+ignored, too.⌋
+On the sender side, the behavior in case of an incoming AF shall be the following:
+• [SWS_FrArTp_00269] ⌈If an AF arrives when it is expected, the action is as
+described in section 7.2.1.3 and in section error handling of section 7.3.6.⌋
+Layer
+• [SWS_FrArTp_00270] ⌈If a non-faulty AF with positive acknowledgement arrives
+during a block, it shall be ignored.⌋
+• [SWS_FrArTp_00271] ⌈If a non-faulty AF with negative acknowledgement ar-
+rives during a block, it shall be processed depending on the activation of the
+Retry mechanism. If no Retry is configured the transfer shall be aborted. Other-
+wise, the AF shall be processed, i.e. starting with the stated sequence number
+the Retry shall take place.⌋
+• [SWS_FrArTp_00272] ⌈If a faulty AF arrives during a block, it shall be ignored.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">FrArTp frame reception behavior and states</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrArTp_00283] im Text von SWS_FlexRayARTransportLayer.</p>
       </section>
 
       <section class="snip-card">
@@ -158,11 +190,11 @@ start of a new recepti</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayARTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayARTransportLayer.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayARTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 41</td>
+              <td>Seite 40</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -174,11 +206,11 @@ start of a new recepti</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

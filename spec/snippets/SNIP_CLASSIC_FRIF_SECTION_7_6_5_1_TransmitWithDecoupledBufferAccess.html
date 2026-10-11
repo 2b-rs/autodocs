@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: frif</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_7_6_5_1_TransmitWithDecoupledBufferAccess</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayInterface.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05287" class="swsref internal-spec-ref"><code>SWS_FrIf_05287</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05726" class="swsref internal-spec-ref"><code>SWS_FrIf_05726</code></a></span>
         </div>
       </div>
 
@@ -91,11 +92,69 @@ TxCounter = 0, do not decrement.
 ii. Call the upper layer’s function LSduR_FrIfTriggerTransmit() with the as-
 sociated PDUId (defined by the upper layer) and pass a pointer to a
 temporary buffer within the FrIf that assembles the L-SDU. The pointer
-shall consider the byte offset [Conf</div></section>
+shall consider the byte offset [Configuration Parameter FrIfPduOffset,
+see FrIf06070]] of the PDU within the frame. If LSduR_FrIfTriggerTrans-
+mit() returns E_NOT_OK, the TrigTxCounter value has to be rolled back
+to the previous value.
+iii. Remember that a transmission for this PDU is pending if a transmis-
+sion confirmation is needed for this PDU [Configuration Parameter Fr
+IfConfirm, see FrIf06075] increment TxConfCounter, where the maxi-
+mum value is limited by static configuration [Configuration Parameter FrIf
+CounterLimit, see FrIf06076]. If the FrIfCounterLimit has been reached,
+the FrIfCounterLimit value is kept and not incremented any more.
+iv. Set the update-bit if configured for this PDU [Configuration Parameter Fr
+IfPduUpdateBitOffset, see FrIf06071]. In case the API LSduR_FrIfTrig-
+gerTransmit() does not return E_OK, or the API FrIf_CancelTransmit
+()for the corresponding PDU has been called, reset the update-bit to
+"not updated".
+2. If at least one PDU was requested for transmission or for at least one PDU FrIf
+NoneMode == true and LSduR_FrIfTriggerTransmit() returned E_OK or the frame
+is configured to be always transmitted [Configuration Parameter FrIfAlwaysTrans-
+mit == true] then the FlexRay Driver’s API service Fr_TransmitTxLPdu() is called:
+(a) Fr_CtrlIdx is derived according to the indexing scheme described in chapter
+of indexing.
+(b) Fr_LPduIdx is set to the configured L-PDU index [Configuration Parameter
+(c) FrIfLPduIdx, see FrIf06058] associated with the Communication Operation
+(d) Fr_LSduPtr is set to the temporary FrIf L-SDU assembling buffer.
+(e) d. Fr_LSduLength is set to the L-SDU length [Configuration Parameter FrIf
+LSduLength, see FrIf06054]
+(f) Fr_SlotAssignmentPtr is set to a temporary slot assignment buffer if Bus
+Mirroring is enabled globally (see FrIfBusMirroringSupport), otherwise to the
+NULL_PTR.
+3. If Bus Mirroring is enabled globally (see FrIfBusMirroringSupport) and has
+been activated with a call to FrIf_EnableBusMirroring() for the Fr_CtrlIdx and Fr_
+TransmitTxLPdu() returned E_OK (indicating that the transmission succeeded),
+call Mirror_ReportFlexRayFrame() with "controllerId" set to Fr_CtrlIdx, , "slotId",
+"cycle", and "channel" taken from Fr_SlotAssignmentPtr, "frame" constructed
+from Fr_LSduPtr and Fr_LSduLength, and "txConflict" set to false.
+4. In case the Driver’s API Fr_TransmitTxLPdu() returned E_NOT_OK (indicating
+that the transmission failed) changes on TrigTxCounter and TxConfCounter must
+be rolled back (see 4. and 5.) for each PDU contained in the FlexRay L-SDU.
+⌋
+Note: All described actions in SWS_FrIf_05287 are depicted in detail in the sequence
+chart in Section 9.1.2.
+[SWS_FrIf_05435] ⌈If FrIfAllowDynamicLSduLength exists and is set to TRUE for the
+associated frame triggering, the actual L-SDU length, that is passed to the driver by
+calling Fr_TransmitTxLPdu(), shall be determined (i.e. shortened as much as possi-
+ble) by taking only those PDUs into account, which have been indicated via LSduR_
+FrIfTriggerTransmit() and consider the following points:
+• the position of the respective PDU within the L-SDU
+• the actual length of the respective PDU as passed via LSduR_FrIfTriggerTrans-
+mit()
+⌋
+[SWS_FrIf_05436] ⌈A shortened L-Sdu (see [SWS_FrIf_05435]) shall always contain
+all configured update bits.⌋
+Note:
+[SWS_FrIf_05435] and [SWS_FrIf_05436] ensure that on one hand all the
+needed information for disassembling the L-SDU is available on receiver side (PDU(s)
+itself and the corresponding update-bit(s) if configured), and on the other hand that the
+payload can be reduced as much as possible by taking the position of all the required
+data for disassembling contained in the frame construction plan into account when
+shortening the L-SDU to be passed to the driver.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_FrIf_05287] im Text von SWS_FlexRayInterface.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von FrIf_EnableBusMirroring().</p>
       </section>
 
       <section class="snip-card">
@@ -104,11 +163,11 @@ shall consider the byte offset [Conf</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 37</td>
+              <td>Seite 38</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -116,7 +175,7 @@ shall consider the byte offset [Conf</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrIf_05287" class="swsref internal-spec-ref"><code>SWS_FrIf_05287</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrIf_05726" class="swsref internal-spec-ref"><code>SWS_FrIf_05726</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -124,7 +183,7 @@ shall consider the byte offset [Conf</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

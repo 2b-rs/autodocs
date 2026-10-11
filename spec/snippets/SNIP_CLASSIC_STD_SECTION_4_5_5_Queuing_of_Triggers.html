@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_5_5_Queuing_of_Triggers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 457)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=456" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 457)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01199" class="swsref"><code>TPS_SWCT_01199</code></a></span>
         </div>
@@ -89,7 +90,66 @@ Upstream requirements: SRS_Rte_00235
 • Inter Runnable Triggering
 • Inter Basic Software Module Entity Triggering
 regardless of the value of the attribute swImplPolicy of the trigger entity or the ex-
-istence or value of</div></section>
+istence or value of RteTriggerSourceQueueLength / RteBswTriggerSource-
+QueueLength.⌋
+[SWS_Rte_07088]
+Upstream requirements: SRS_Rte_00235
+⌈The RTE shall enqueue a trigger when the RTE gets informed about the occurrence
+of a trigger by the call of the related API (Rte_IrTrigger, Rte_Trigger, SchM_
+Trigger, SchM_ActMainFunction) if the maximum queue length (RteTrigger-
+SourceQueueLength / RteBswTriggerSourceQueueLength) is not exceeded.⌋
+[SWS_Rte_07089]
+Upstream requirements: SRS_Rte_00235
+⌈The RTE shall dequeue a trigger when the RTE is informed about the end of exe-
+cution of all triggered ExecutableEntitys which are triggered by this trigger
+emitter. In the case of triggered ExecutableEntityss whose execution is dis-
+abled by a mode disabling dependency then the trigger is dequeued as if the entities
+ran. This behaviour prevents the dequeue operation from being blocked indefinitely.⌋
+[SWS_Rte_07090]
+Upstream requirements: SRS_Rte_00235
+⌈The RTE shall activate all triggered ExecutableEntitys associated to a
+trigger emitter when it has successfully dequeued a trigger from the trigger
+queue of the trigger emitter except for the last dequeued trigger.⌋
+Figure 4.61: Queued activation of ExecutableEntitys
+The figure 4.61 illustrates the basic behavior of a trigger queue.
+• At "‘A"’ the RTE gets informed by the call of the API about the occurrence
+of a Trigger.
+Since no trigger is in the queue all associated triggered
+ExecutableEntitys are activated ([SWS_Rte_07544], [SWS_Rte_07555],
+[SWS_Rte_07552]) and the trigger is enqueued ([SWS_Rte_07088]).
+• At "‘B"’ all triggered ExecutableEntitys which are triggered by this trig-
+ger emitter have terminated. The RTE dequeues the trigger but since it is the
+last dequeued trigger the associated triggered ExecutableEntitys are
+not activated again.
+• At "‘C"’ the RTE gets informed by the call of the API about the occurrence of a
+Trigger. Enqueuing of triggers and activating of triggered ExecutableEn-
+titys is done as in "‘A"’
+• At "‘D"’ the RTE gets informed again by occurrence of a trigger. Since a trigger
+is already in the queue the associated triggered ExecutableEntitys are
+not activated ([SWS_Rte_07544], [SWS_Rte_07555], [SWS_Rte_07552]). Nev-
+ertheless the trigger is enqueued ([SWS_Rte_07088]).
+• At "‘E"’ all triggered ExecutableEntitys which are triggered by this
+trigger emitter
+have
+terminated.
+The
+RTE
+dequeues
+the
+trigger
+([SWS_Rte_07089]) and activates all associated triggered ExecutableEn-
+titys ([SWS_Rte_07090]).
+• At "‘E"’ all triggered ExecutableEntitys which are triggered by this trig-
+ger emitter have terminated. Dequeuing of triggers is done as in "‘B"’
+Implementation hint:
+One possible solution to implement the queue for the number of released triggers is
+to use the means of the operation systems which already can queue the activation
+requests for a OS task (OsTaskActivation &gt; 1).
+This for sure is only possible
+if all ExternalTriggerOccurredEvents, InternalTriggerOccurredEvents,
+BswExternalTriggerOccurredEvent and BswInternalTriggerOccurredE-
+vent connected to the same trigger emitter are mapped exclusively to one OS
+task.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +162,7 @@ istence or value of</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=456" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

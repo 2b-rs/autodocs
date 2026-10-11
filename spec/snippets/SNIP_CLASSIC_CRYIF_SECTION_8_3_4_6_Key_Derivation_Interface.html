@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYIF_SECTION_8_3_4_6_Key_Derivation_Interface</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoInterface.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoInterface.pdf#page=39" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoInterface.pdf</a></strong> (Seite 42)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,191 @@ yet initialized.⌋
 ror for cryIfKeyId parameter
 Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
 ⌈If development error detection for the CRYIF module is enabled:
-T</div></section>
+The function
+CryIf_KeyDerive shall report CRYIF_E_PARAM_HANDLE to the DET if the parame-
+ter cryIfKeyId is out of range.⌋
+[SWS_CryIf_00122] CryIf_KeyDerive API: Report CRYIF_E_PARAM_HANDLE er-
+ror for targetCryIfKeyId parameter
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyDerive shall report CRYIF_E_PARAM_HANDLE to the DET if the parame-
+ter targetCryIfKeyId is out of range.⌋
+[SWS_CryIf_00081] CryIf_KeyDerive API: Forward key job to the mapped driver
+Upstream requirements: SRS_CryptoStack_00104
+⌈If no errors are detected by CRYIF, the service CryIf_KeyDerive shall call
+Crypto_&lt;vi&gt;_&lt;ai&gt;_KeyDerive for the driver configuration mapped to the service and
+pass on the return value.⌋
+The key derivation service needs a salt and password to derivate a new key. The
+salt and the password therefore are stored as key elements in the key referred by
+cryIfKeyId.
+[SWS_CryIf_91010] Definition of API function CryIf_KeyExchangeCalcPubVal ⌈
+Service Name
+CryIf_KeyExchangeCalcPubVal
+Syntax
+Std_ReturnType CryIf_KeyExchangeCalcPubVal (
+uint32 cryIfKeyId,
+uint8* publicValuePtr,
+uint32* publicValueLengthPtr
+)
+Service ID [hex]
+0x0a
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+Parameters (in)
+cryIfKeyId
+Holds the identifier of the key which shall be used for the key
+exchange protocol.
+Parameters (inout)
+publicValueLengthPtr
+Holds a pointer to the memory location in which the public value
+length information is stored. On calling this function, this
+parameter shall contain the size of the buffer provided by public
+ValuePtr. When the request has finished, the actual length of the
+returned value shall be stored.
+Parameters (out)
+publicValuePtr
+Contains the pointer to the data where the public value shall be
+stored.
+▽
+△
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, Crypto Driver Object is busy
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key state of
+the key identified by cryptoKeyId is "invalid".
+Description
+This function shall dispatch the key exchange public value calculation function to the configured
+crypto driver object.
+Available via
+CryIf.h
+⌋
+[SWS_CryIf_00082]
+CryIf_KeyExchangeCalcPubVal
+API:
+Report
+CRYIF_E_UNINIT error
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369, SRS_BSW_00406
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcPubVal shall report CRYIF_E_UNINIT to the DET if the
+module is not yet initialized.⌋
+[SWS_CryIf_00083]
+CryIf_KeyExchangeCalcPubVal
+API:
+Report
+CRYIF_E_PARAM_HANDLE error
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcPubVal shall report CRYIF_E_PARAM_HANDLE to the
+DET if the parameter cryIfKeyId is out of range.⌋
+[SWS_CryIf_00084]
+CryIf_KeyExchangeCalcPubVal
+API:
+Report
+CRYIF_E_PARAM_POINTER error for publicValuePtr
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcPubVal shall report CRYIF_E_PARAM_POINTER to the
+DET if the parameter publicValuePtr is a null pointer.⌋
+[SWS_CryIf_00085]
+CryIf_KeyExchangeCalcPubVal
+API:
+Report
+CRYIF_E_PARAM_POINTER error for publicValueLengthPtr
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcPubVal shall report CRYIF_E_PARAM_POINTER to the
+DET if the parameter publicValueLengthPtr is a null pointer.⌋
+[SWS_CryIf_00086]
+CryIf_KeyExchangeCalcPubVal
+API:
+Report
+CRYIF_E_PARAM_VALUE error
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcPubVal shall report CRYIF_E_PARAM_VALUE to the DET
+if the value, which is pointed by publicValueLengthPtr, is zero.⌋
+[SWS_CryIf_00087] CryIf_KeyExchangeCalcPubVal API: Forward key job to the
+mapped driver
+Upstream requirements: SRS_CryptoStack_00104
+⌈If no errors are detected by CRYIF, the service CryIf_KeyExchangeCalcPub-
+Val shall call Crypto_&lt;vi&gt;_&lt;ai&gt;_KeyExchangeCalcPubVal for the driver configuration
+mapped to the service and pass on the return value.⌋
+[SWS_CryIf_91011] Definition of API function CryIf_KeyExchangeCalcSecret ⌈
+Service Name
+CryIf_KeyExchangeCalcSecret
+Syntax
+Std_ReturnType CryIf_KeyExchangeCalcSecret (
+uint32 cryIfKeyId,
+const uint8* partnerPublicValuePtr,
+uint32 partnerPublicValueLength
+)
+Service ID [hex]
+0x0b
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+cryIfKeyId
+Holds the identifier of the key which shall be used for the key
+exchange protocol.
+partnerPublicValuePtr
+Holds the pointer to the memory location which contains the
+partner’s public value.
+Parameters (in)
+partnerPublicValueLength
+Contains the length of the partner’s public value in bytes.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, Crypto Driver Object is busy
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key state of
+the key identified by cryIfKeyId is "invalid".
+Description
+This function shall dispatch the key exchange common shared secret calculation function to the
+configured crypto driver object.
+Available via
+CryIf.h
+⌋
+[SWS_CryIf_00090] CryIf_KeyExchangeCalcSecret API: Report CRYIF_E_UNINIT
+error
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369, SRS_BSW_00406
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcSecret shall report CRYIF_E_UNINIT to the DET if the
+module is not yet initialized.⌋
+[SWS_CryIf_00091]
+CryIf_KeyExchangeCalcSecret
+API:
+Report
+CRYIF_E_PARAM_HANDLE error
+Upstream requirements: SRS_CryptoStack_00034, SRS_BSW_00369
+⌈If development error detection for the CRYIF module is enabled:
+The function
+CryIf_KeyExchangeCalcSecret shall report CRYIF_E_PARAM_HANDLE to the
+DET if the parameter cryIfKeyId is out of range.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +310,7 @@ T</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoInterface.pdf#page=39" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

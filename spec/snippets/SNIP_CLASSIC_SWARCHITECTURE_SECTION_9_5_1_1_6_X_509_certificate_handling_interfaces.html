@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SWARCHITECTURE_SECTION_9_5_1_1_6_X_509_certificate_handling_interfaces</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWArchitecture.pdf</strong> (Seite 102)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/AP/AUTOSAR_EXP_SWArchitecture.pdf#page=100" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWArchitecture.pdf</a></strong> (Seite 102)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CRYPT_50185" class="swsref internal-spec-ref"><code>SWS_CRYPT_50185</code></a></span>
         </div>
@@ -184,7 +185,255 @@ Check certificate status by directly provided
 OCSP response.
 CheckCertStatusOnline
 Check certificate status via On-line
-Certi</div></section>
+Certificate Status Protocol (OCSP).
+Operations:
+CleanupVolatileStorage
+Cleanup the volatile certificates storage.
+▽
+Architecture
+△
+CountCertsInChain
+Count number of certificates in a serialized
+certificate chain represented by a single
+BLOB.
+CreateCertSignRequest
+Create certification request for a private key
+loaded to the context.
+CreateEmptyDn
+Create an empty X.500 Distinguished Name
+(DN) structure.
+CreateEmptyExtensions
+Create an empty X.509 Extensions structure.
+CreateOcspRequest
+Create OCSP request for specified
+certificate(s).
+DecodeDn
+Decode X.500 Distinguished Name structure
+from the provided serialized format.
+FindCertByDn
+Find a certificate by the subject and issuer
+Distinguished Names (DN).
+FindCertByKeyIds
+Find a certificate by its SKID &amp;amp; AKID.
+FindCertBySn
+Find a certificate by its serial number and
+issue DN.
+Import
+Import the certificate to volatile or persistent
+storage.
+ImportCrl
+Import Certificate Revocation List (CRL) or
+Delta CRL from a memory BLOB.
+LoadCertificate
+Load a certificate from the persistent
+certificate storage.
+ParseCert
+Parse a serialized representation of the
+certificate and create its instance.
+ParseCertChain
+Parse a serialized representation of the
+certificate chain and create their instances.
+ParseCertSignRequest
+Parse a certificate signing request (CSR)
+provided by the user.
+ParseCustomCertExtensions
+Parse the custom X.509 extensions.
+ParseOcspResponse
+Parse serialized OCSP response and create
+correspondent interface instance.
+Remove
+Remove specified certificate from the
+storage (volatile or persistent) and destroy it.
+SendRequest
+Send prepared certificate request to CA and
+save it to volatile or persistent storage.
+SetAsRootOfTrust
+Set specified CA certificate as a "root of
+trust".
+SetPendingStatus
+Set the "pending" status associated to the
+CSR that means that the CSR already sent
+to CA.
+UpdateCrlOnline
+Get Certificate Revocation List (CRL) or
+Delta CRL via on-line connection.
+VerifyCert
+Verify status of the provided certificate by
+locally stored CA certificates and CRLs only.
+▽
+Architecture
+△
+VerifyCertChain
+Verify status of the provided certification
+chain by locally stored CA certificates and
+CRLs only.
+Name:
+X509CustomExtensionsParser
+Technology:
+Native interface
+Usage:
+Public API
+Description:
+X.509 custom extensions parser. This callback interface is to be implemented
+by an application.
+OnBitString
+Called when a bit string is encountered.
+OnBool
+Called when a boolean is encountered.
+OnGeneralizedTime
+Called when a generalized time is
+encountered.
+OnIa5String
+Called when an IA5 string is encountered.
+OnInteger
+Called when an integer is encountered.
+OnNull
+Called when a NULL is encountered.
+OnOctetString
+Called when an octet string is encountered.
+OnOid
+Called when an oid is encountered.
+OnParsingEnd
+Called when the parsing is completed.
+OnPrintableString
+Called when a printable string is
+encountered.
+OnSequenceEnd
+Called when a sequence ends.
+OnSequenceStart
+Called when a sequence starts.
+OnSetEnd
+Called when a set ends.
+OnSetStart
+Called when a set starts.
+OnUtcTime
+Called when a UTC time is encountered.
+Operations:
+OnUtf8String
+Called when an UTF8 string is encountered.
+Architecture
+«aapFunctionalCluster»
+Cryptography
+daemon-based
+BasicCertInfo
+«aapAPI,aapNativeInterface»
+CertSignRequest
++
+ExportASN1CertSignRequest()
++
+GetSignature()
++
+Verify()
++
+Version()
+BasicCertInfo
+«aapAPI,aap...
+Certificate
++
+AuthorityKeyId()
++
+EndTime()
++
+GetFingerprint()
++
+GetStatus()
++
+IsRoot()
++
+IssuerDn()
++
+SerialNumber()
++
+StartTime()
++
+SubjectKeyId()
++
+VerifyMe()
++
+X509Version()
+X509Object
+«aapAPI,...
+OcspRequest
++
+Version()
+X509Object
+«aapAPI,...
+OcspResponse
++
+Version()
+X509Object
+«aapAPI,aa...
+X509DN
++
+GetAttribute()
++
+GetDnString()
++
+SetAttribute()
++
+SetDn()
+X509Object
+«aapAPI,aa...
+X509Extensions
++
+Count()
+Serializable
+«aapAPI,aapNativeInt...
+X509PublicKeyInfo
++
+GetAlgorithmId()
++
+GetPublicKey()
++
+GetRequiredHashAlgId()
++
+GetRequiredHashSize()
++
+GetSignatureSize()
++
+IsSameKey()
+Adaptive Application
+«use»
+«use»
+«use»
+«use»
+«use»
+«use»
+«use»
+Figure 9.54: X.509 Certificate Object Interfaces
+«aapAPI,aapNativeI...
+X509Object
+«aapAPI,aapNativeI...
+BasicCertInfo
+«aapAPI,aapNativeI...
+CertSignRequest
+«aapAPI,aapPortInt...
+Certificate
+«aapAPI,aapNativeI...
+OcspRequest
+«aapAPI,aapNativeI...
+OcspResponse
+«aapAPI,aapNativeI...
+X509DN
+«aapAPI,aapNativeI...
+X509Extensions
+«aapAPI,aapNativeI...
+Serializable
+«aapAPI,aapNativeI...
+X509PublicKeyInfo
+Figure 9.55: Taxonomy of X.509 Certificate Object Interfaces
+Name:
+OcspRequest
+Extended
+interface:
+X509Object
+Technology:
+Native interface
+Usage:
+Public API
+Description:
+On-line Certificate Status Protocol Request.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -197,7 +446,7 @@ Certi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWArchitecture.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R21-11/AP/AUTOSAR_EXP_SWArchitecture.pdf#page=100" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWArchitecture.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

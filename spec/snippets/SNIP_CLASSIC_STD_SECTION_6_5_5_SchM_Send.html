@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_6_5_5_SchM_Send</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 902)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=902" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 902)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -103,11 +104,48 @@ a system with the BSW running on multiple partitions, it shall invoke
 SchM_Send_&lt;bsnp&gt;[_&lt;vi&gt;_&lt;ai&gt;]_&lt;name&gt;(&lt;data&gt;).
 The
 SchM_Send API call initiates a sender-receiver communication
-where</div></section>
+where the transmission occurs at the point the API call is made (cf.
+explicit transmission). The SchM_Send API call includes the IN pa-
+rameter &lt;data&gt; to pass the data element to write. The IN parameter
+&lt;data&gt; is passed by value or reference according to the Imple-
+mentationDataType as described in the section 5.2.6.5. If the IN
+parameter &lt;data&gt; is passed by reference, the pointer must remain
+valid until the API call returns.
+Return Value:
+The return value is used to indicate errors detected by the SchM dur-
+ing execution of the SchM_Send.
+• [SWS_Rte_08749] ⌈SCHM_E_OK - data passed to communica-
+tion service successfully.⌋
+• [SWS_Rte_08750] ⌈SCHM_E_LIMIT - an ’event’ has been dis-
+carded due to a full queue by one of the partition local re-
+ceivers.⌋
+Notes:
+The SchM_Send API is used to transmit data with "events" semantics
+which means that they are getting queued.
+[SWS_Rte_08751]
+Upstream requirements: SRS_Rte_00243
+⌈In case of inter partition communication, the SchM_Send API call
+shall cause an immediate transmission request.⌋
+For inter-partition communication the IOC can be used for transmit-
+ting the data to the other partition.
+[SWS_Rte_08752]
+Upstream requirements: SRS_Rte_00243
+⌈If the VariableDataPrototype in the providedData role is
+connected to multiple VariableDataPrototypes in the role re-
+quiredData, then the SchM shall ensure that writes to all receivers
+are independent.⌋
+This ensures that an error detected by the SchM when writing to one
+receiver does not prevent the transmission of this message to other
+BSW modules.
+[SWS_Rte_08753]
+Upstream requirements: SRS_Rte_00243
+⌈In case of intra partition communication, the SchM_Send API call
+shall return after copying the data to RTE local memory or using IOC
+buffers.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -116,7 +154,7 @@ where</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=902" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

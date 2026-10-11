@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_1_2_Monitor_status_and_UDS_status_update</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 83)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=82" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 82)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01286" class="swsref internal-spec-ref"><code>SWS_Dem_01286</code></a></span>
+          <span>Ziel-Element: SWS_Dem_CONSTR_06120</span>
         </div>
       </div>
 
@@ -92,11 +93,105 @@ The monitor status byte processing shall be done synchronously within the contex
 the calling Dem_SetEventStatus function.⌋
 [SWS_Dem_01281]
 Upstream requirements: RS_Diag_04067
-⌈If the parameter DemGeneralCallbackMonitorStatusCha</div></section>
+⌈If the parameter DemGeneralCallbackMonitorStatusChangedFnc is config-
+ured, the Dem shall call this configured C function with the signature of &lt;Module&gt;
+_DemTriggerOnMonitorStatus.⌋
+[SWS_Dem_01282]
+Upstream requirements: RS_Diag_04067
+⌈Upon processing the monitor status, the Dem shall call the monitor status changed
+callback functions:
+• &lt;Module&gt;_DemTriggerOnMonitorStatus
+whenever the monitor status has changed.⌋
+[SWS_Dem_01283]
+Upstream requirements: RS_Diag_04067
+⌈Upon processing the monitor status for reported event with DemEventKind = DEM_-
+EVENT_KIND_SWC, the Dem shall call the monitor status changed callback C/S Inter-
+face CallbackMonitorStatusChange whenever the monitor status has changed
+and a C/S interface is configured for this event.⌋
+[SWS_Dem_CONSTR_06120] Dependency for DemGeneralCallbackMonitorSta-
+tusChangedFnc ⌈The DemGeneralCallbackMonitorStatusChangedFnc shall
+only be present if DemGeneralInterfaceSupport is set to TRUE."⌋
+Limitation: The usage of monitorStatusChange via RTE is limited to SWC-monitorings.
+All basic software monitorings cannot be covered with this callback via RTE. To get com-
+plete statusChange information of all monitorings in a SW-C, the eventStatusChange
+callbacks should be used.
+The
+CallbackMonitorStatusChange
+and
+GeneralCallbackMonitorSta-
+tusChanged via RTE is furthermore limited to monitorings, which are exclusively
+changing its status in known contexts. E.g. if a monitor status is changed from CDD
+(e.g. Dem_SetEventAvailable via C-function call), the monitor status change call-
+back via RTE must not be used.
+Rational: AUTOSAR RTE requires that calls from a BSW to a SW-C via RTE are done
+in a known call context. For the synchronous monitor status changed callbacks, this
+is only possible for events reported from a SW-C. For events reported from a BSW
+module it is not possible to provide the calling context to the RTE. As a result of this, the
+Dem provides the C/S interface CallbackMonitorStatusChange only for events that are
+reported from a SW-C. For events reported from BSW modules, no such C/S interface
+is provided. Furthermore, the interface GeneralCallbackMonitorStatusChanged is not
+provided as C/S via RTE, as this callback could only be called for events reported from
+a SW-C and not for events reported from BSW modules. This would obviously lead to
+confusion.
+If it is required to have a general synchronous reaction in a SW-C on monitor status
+changed callbacks, the synchronous reaction could be handled within the scope of
+a CDD using &lt;Module&gt;_DemGeneralTriggerOnMonitorStatus or &lt;Module&gt;_-
+DemTriggerOnMonitorStatus.
+[SWS_Dem_CONSTR_06116] Limited use of monitor status change callbacks to
+events reported from SW-Cs only ⌈If Dem_SetEventAvailable is called from a
+Cdd or BSW module, the corresponding monitor status changed callback can only be
+used as C-function, but not via RTE interface.⌋
+[SWS_Dem_01284]
+Upstream requirements: RS_Diag_04067
+⌈When processing a clear DTC command (e.g. via Dem_ClearDTC), the Dem shall set
+the monitor status assigned to the cleared DTCs to 0x02.⌋
+[SWS_Dem_01285]
+Upstream requirements: RS_Diag_04067
+⌈The Dem shall process the UDS status asynchronously. This means it is calculated
+outside the context of the calling Dem_SetEventStatus function.⌋
+[SWS_Dem_01286]
+Upstream requirements: RS_Diag_04067
+⌈If the API Dem_SetEventStatus is called and the Dem has synchronously pro-
+cessed the reported monitor status according to [SWS_Dem_01280] and the corre-
+sponding UDS status (see [SWS_Dem_01285]) cannot be processed, the Dem shall
+report the runtime error DEM_E_UDS_STATUS_PROCESSING_FAILED.⌋
+Dem main function
+SW-C or BSW Task
+SW-C or BSW
+Dem processing
+«module»
+Dem
+
+
+
+
+
+
+
+
+
+
+
+
+
+Process  UDS status()
+Ask for queued events()
+Dem_SetEventStatus()
+Figure 7.15: Synchronous and asynchronous event processing
+Note: Refer to chapter 7.7.2 for a detailed description about the event memory man-
+agement.
+[SWS_Dem_01287]
+Upstream requirements: RS_Diag_04067
+⌈If the API Dem_GetMonitorStatus is called, the Dem shall copy the current monitor
+status into the out parameter MonitorStatus and return E_OK.⌋
+[SWS_Dem_01326]
+Upstream requirements: RS_Diag_04031
+⌈The monitor status shall be initialized within Dem_Init. Any call to Dem_GetMoni-
+torStatus shall return E_NOT_OK if the monitor status is uninitialized.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">UDS status processing failed runtime error</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_CONSTR_06120] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -105,11 +200,11 @@ Upstream requirements: RS_Diag_04067
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=82" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 83</td>
+              <td>Seite 82</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -117,15 +212,15 @@ Upstream requirements: RS_Diag_04067
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01286" class="swsref internal-spec-ref"><code>SWS_Dem_01286</code></a></td>
+              <td>SWS_Dem_CONSTR_06120</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

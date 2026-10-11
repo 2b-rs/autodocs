@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETH_SECTION_8_4_22_Eth_ProvideTxBuffer</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetDriver.pdf</strong> (Seite 108)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=108" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></strong> (Seite 108)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00414" class="swsref internal-spec-ref"><code>SWS_Eth_00414</code></a></span>
         </div>
@@ -119,7 +120,23 @@ Upstream requirements: SRS_Eth_00188
 ⌈The returned buffer index value of type Eth_BufIdxType shall be greater then 216-1.
 The value range for the buffer index shall be:
 • 0x00 01 00 00 ... 0xFF FF FF FF: valid
-•</div></section>
+• 0x00 00 00 00 ... 0x00 00 FF FF: reserved for TxHandleId of Eth_Immedi-
+ateTransmit
+⌋
+Note: Constraining the buffer index is needed, since TxHandleId of Eth_Immedi-
+ateTransmit used for direct data provision (used as PDU-ID) and BufIdxPtr of
+Eth_ProvideTxBuffer used for indirect data provision could overlap. EthIf need
+an unambiguous id (non-overlapping value range) that corresponds to a transmission
+request, to idenfy the affected tranmssion request for transmission confirmation via
+EthIf_TxConfirmation.
+[SWS_Eth_00280] ⌈All locked transmit buffers shall be released if the Rx/Tx commu-
+nication of the indexed controller is disabled via Eth_SetControllerMode.⌋
+[SWS_Eth_00079] ⌈If a buffer requested with Eth_ProvideTxBuffer that is larger than
+the available buffer length, the buffer shall not be locked but return the available length
+and BUFREQ_E_OVFL.⌋
+[SWS_Eth_00080] ⌈If all available buffers are in use the component shall return
+BUFREQ_E_BUSY.⌋
+[SWS_Eth_00086] ⌈Eth_Init() shall be called before Eth_ProvideTxBuffer().⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -132,7 +149,7 @@ The value range for the buffer index shall be:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=108" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

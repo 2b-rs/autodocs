@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_9_12_BusOff_recovery</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 169)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=169" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 169)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -208,11 +209,31 @@ Stop CAN controller
 CAN controller is set to STOPPED mode by the CanDrv, if
 necessary
 BusOff indication to CanIf
-BusOff is notified to the CanIf by ca</div></section>
+BusOff is notified to the CanIf by calling of
+CanIf_ControllerBusOff(). The transmit buffers inside
+CanIf will be reset.
+BusOff indication to upper
+layer
+BusOff is notified to the upper layer by calling of
+&lt;User_ControllerBusOff&gt;()
+Upper Layer (CanSM)
+initiates BusOff Recovery
+After a time specified by the BusOff Recovery algorithm the
+Recovery process itself in initiated by
+CanIf_SetControllerMode(ControllerId,
+CAN_CS_STARTED).
+Restart of CAN controller
+The driver restarts the CAN controller by call of
+Can_SetControllerMode(Controller, CAN_CS_STARTED)
+.
+CAN controller started
+CanDrv informs CanIf about the successful start by calling
+CanIf_ControllerModeIndication(). CanIf informs in turn
+upper layers about the mode change.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -221,7 +242,7 @@ BusOff is notified to the CanIf by ca</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=169" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

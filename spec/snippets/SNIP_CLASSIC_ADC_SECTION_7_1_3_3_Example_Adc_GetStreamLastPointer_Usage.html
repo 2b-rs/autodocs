@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ADC_SECTION_7_1_3_3_Example_Adc_GetStreamLastPointer_Usage</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ADCDriver.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Adc_00387" class="swsref internal-spec-ref"><code>SWS_Adc_00387</code></a></span>
         </div>
@@ -85,7 +86,14 @@ channel of the according group. Both groups have only one channel. G2_SamplePtr
 points to one of the G2_CH2 results (the latest result). Because group 3 is configured
 in single access mode, G3_SamplePtr points always to G3_CH3.
 Adc_GetStreamLastPointer returns the number of valid samples per channel, stored
-in the application r</div></section>
+in the application result buffer (number of complete group conversion rounds). If the
+return value is equal to the configured parameter ’number of streaming samples’, all
+conversion results in the streaming buffer are valid. If the return value is 0, no conver-
+sion results are available in the streaming buffer (the sample pointer will be aligned to
+NULL).
+To enable Adc_GetStreamLastPointer to align the sample pointer (G1_SamplePtr, G2_
+SamplePtr and G3_SamplePtr) to point to the latest channel result, the API is defined
+to pass a pointer to the result pointer instead the result pointer itself.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -98,7 +106,7 @@ in the application r</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ADCDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

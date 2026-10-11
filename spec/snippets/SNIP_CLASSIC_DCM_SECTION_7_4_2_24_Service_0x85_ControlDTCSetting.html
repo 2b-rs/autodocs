@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_24_Service_0x85_ControlDTCSetting</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 211)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=210" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 211)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_00243" class="swsref internal-spec-ref"><code>SWS_Dem_00243</code></a></span>
         </div>
@@ -113,11 +114,69 @@ ModeDeclarationGroupPrototype
 DcmControlDTC-
 Setting
 by
-call</div></section>
+calling
+SchM_Switch_&lt;bsnp&gt;_DcmControlDTCSetting
+(RTE_MODE_DcmControlDTCSetting_ENABLEDTCSETTING).⌋
+[SWS_Dcm_00406]
+Upstream requirements: RS_Diag_04115
+⌈On reception of UDS Service 0x85 with subfunction 0x02 (DTCSettingType "OFF"), the
+Dcm shall call Dem_DisableDTCSetting() with ClientId = Client Id for this Dcm instance
+(see DcmDemClientRef).⌋
+[SWS_Dcm_00784]
+⌈In
+case
+of
+Dem_DisableDTCSetting
+returns
+E_OK
+(see
+[SWS_Dcm_00406]
+),
+the
+Dcm
+shall
+invoke
+a
+mode
+switch
+of
+the
+ModeDeclarationGroupPrototype
+DcmControlDTC-
+Setting
+by
+calling
+SchM_Switch_&lt;bsnp&gt;_DcmControlDTCSetting
+(RTE_MODE_DcmControlDTCSetting_DISABLEDTCSETTING).⌋
+[SWS_Dcm_00751] ⌈In case the DTCSetting is disabled and a transitions to de-
+fault session or upon any diagnostic session change where the new session does
+not support UDS Service ControlDTCsetting anymore, the Dcm module shall call
+Dem_EnableDTCSetting() with the following parameters
+• ClientId: Client Id for this Dcm instance (see DcmDemClientRef)
+Manager
+and switch the mode DcmControlDTCSetting to DCM_ENABLEDTCSETTING.⌋
+For some use-cases the Dcm may re-enable the controlDTCsetting due to external
+changed mode conditions:
+[SWS_Dcm_00752] ⌈In case the DTCSetting is disabled and at least one ref-
+erenced arbitrary ModeDeclarationGroupPrototypes (see configuration parameter
+DcmDspControlDTCSettingReEnableModeRuleRef) for service ControlDTCSet-
+ting (0x85) with DTCSettingType "OFF" (0x02) are not fulfilled anymore, the Dcm mod-
+ule shall call Dem_EnableDTCSetting() with the following parameters:
+• ClientId: Client Id for this Dcm instance (see DcmDemClientRef)
+and switch the mode DcmControlDTCSetting to DCM_ENABLEDTCSETTING⌋
+Note: If at least one ModeDeclarationGroupPrototypes is configured (see configuration
+parameter DcmDspControlDTCSettingReEnableModeRuleRef) for service Con-
+trolDTCSetting (0x85) with DTCSettingType "OFF" (0x02), it is recommended to acti-
+vate the condition check for the according sub-function 0x02(see configuration param-
+eter DcmDsdSubServiceModeRuleRef).
+Note: This active observation of the referenced mode declaration groups can either be
+achieved by polling the mode condition in each MainFunction cycle or by attaching to
+the change notification of mode declaration group (SchM will trigger a BSWEntitiy in
+Dcm on changes of this mode declaration group).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_EnableDTCSetting().</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +185,7 @@ call</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=210" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

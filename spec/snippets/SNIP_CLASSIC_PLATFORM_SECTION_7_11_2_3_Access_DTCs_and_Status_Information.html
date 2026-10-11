@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/platform.html">Modul: platform</a></span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_11_2_3_Access_DTCs_and_Status_Information</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 216)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=216" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 218)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01342" class="swsref internal-spec-ref"><code>SWS_Dem_01342</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -110,11 +111,110 @@ shall calculate the DTC severity availability mask in accordance to ISO 14229-1 
 from the severity configuration of each supported DTC.⌋
 [SWS_Dem_00657] ⌈The Dem module shall mask all DTC status bytes (API param-
 eters DTCStatus) provided to the Dcm with the DTC status availability mask (by per-
-forming a bit-wise AND oper</div></section>
+forming a bit-wise AND operation).⌋
+[SWS_Dem_00059]
+Upstream requirements: RS_Diag_04067
+⌈The function Dem_GetStatusOfDTC shall copy the status of the selected DTC to the
+parameter DTCStatus. The DTCStatus format is according to ISO-14229-1[2].⌋
+[SWS_Dem_01259] ⌈If the API Dem_GetStatusOfDTC is called on a selected DTC
+that does not exist in the selected format or if the selected DTC is a group of DTC or no
+DTC was selected, the Dem shall return DEM_WRONG_DTC.⌋
+[SWS_Dem_01260] ⌈If the API Dem_GetStatusOfDTC is called on a not existing
+selected DTCOrigin, the Dem shall return DEM_WRONG_DTCORIGIN.⌋
+[SWS_Dem_01275] ⌈If the API Dem_GetStatusOfDTC is called on a selected DTC
+that does not have an assigned DTC status, the Dem shall return DEM_NO_SUCH_-
+ELEMENT.⌋
+[SWS_Dem_00057]
+Upstream requirements: RS_Diag_04057
+⌈The function Dem_SetDTCFilter shall set the filter criteria for the client with the
+same client ID for subsequent calls of::
+• Dem_GetNumberOfFilteredDTC
+• Dem_GetNextFilteredDTC
+• Dem_GetNextFilteredDTCAndFDC
+• Dem_GetNextFilteredDTCAndSeverity.
+⌋
+Note:
+A
+DTC
+filter
+for
+a
+different
+ClientID
+can
+be
+set
+in
+parallel
+(see
+[SWS_Dem_01251]) without interfering each other. This way multiple clients can ac-
+cess the fault memory data in parallel.
+In figure 7.47 a situation is shown, where two clients (e.g. an Dcm for OBD and an
+Dcm for UDS) are reading the number of filtered DTCs in parallel.
+Client1
+Client2
+«Module»
+:Dem
+Dem_GetNumberOfFilteredDTC(Std_ReturnType, "Client1", uint16*)
+Dem_GetNumberOfFilteredDTC(Std_ReturnType, "Client2", uint16*)
+Dem_GetNumberOfFilteredDTC(Std_ReturnType, "Client2", uint16*)
+Dem_GetNumberOfFilteredDTC(Std_ReturnType, "Client1", uint16*)
+Dem_SetDTCFilter(Std_ReturnType, "Client2", uint8, Dem_DTCFormatType, Dem_DTCOriginType, boolean, Dem_DTCSeverityType, boolean)
+Dem_SetDTCFilter(Std_ReturnType, "Client1", uint8, Dem_DTCFormatType, Dem_DTCOriginType, boolean, Dem_DTCSeverityType, boolean)
+Figure 7.47: Multiple clients requesting event memory information in parallel
+[SWS_Dem_01374] Selecting OBD 3 Byte DTCs for readiness group filter
+Upstream requirements: RS_Diag_04253
+⌈If Dem_SetDTCFilterByReadinessGroup is called with DTCFormat equal to
+DEM_DTC_FORMAT_OBD_3BYTE and DemSupportedObdUdsDtcSeparation is set
+to True, the Dem shall use the DTCs configured via DemDtcValue3Byte as filter tar-
+get.⌋
+[SWS_Dem_01375] Selecting UDS DTCs for readiness group filter
+Upstream requirements: RS_Diag_04253
+⌈If Dem_SetDTCFilterByReadinessGroup is called with DTCFormat equal
+to DEM_DTC_FORMAT_UDS and DemSupportedObdUdsDtcSeparation is set to
+FALSE, the Dem shall use the 3-byte UDS DTC configured via DemDtcValue as fil-
+ter target.⌋
+[SWS_Dem_01376]Selecting not supported DTC format for readiness group filter
+Upstream requirements: RS_Diag_04253
+⌈If Dem_SetDTCFilterByReadinessGroup is called with DTCFormat equal
+to DEM_DTC_FORMAT_UDS and DemSupportedObdUdsDtcSeparation is set to
+TRUE, the Dem shall report the Det DEM_E_PARAM_DATA.⌋
+[SWS_Dem_01377] Selecting OBD 3 Byte DTCs with extended data records
+Upstream requirements: RS_Diag_04253
+⌈If Dem_SetDTCFilterByExtendedDataRecordNumber is called with DTCFormat
+equal to DEM_DTC_FORMAT_OBD_3BYTE and DemSupportedObdUdsDtcSepara-
+tion is set to True, the Dem shall use the DTCs configured via DemDtcValue3Byte
+as filter target.⌋
+[SWS_Dem_01378] Selecting UDS DTCs with extended data records
+Upstream requirements: RS_Diag_04253
+⌈If Dem_SetDTCFilterByExtendedDataRecordNumber is called with DTCFormat
+equal to DEM_DTC_FORMAT_UDS, the Dem shall use the 3-byte UDS DTC configured
+via DemDtcValue as filter target.⌋
+[SWS_Dem_01362]Functionality of Dem_SetDTCFilterByExtendedDataRecordNumber
+Upstream requirements: RS_Diag_04057, RS_Diag_04250
+⌈The function Dem_SetDTCFilterByExtendedDataRecordNumber shall set a
+DTC filter criteria for supported ExtendedDataRecords on DTCs based on the param-
+eter ExtendedDataRecordNumber for the client with the same client ID for subse-
+quent calls of:
+• Dem_GetNumberOfFilteredDTC
+• Dem_GetNextFilteredDTC.
+An extended data record for a DTC is considered as supported if the DTC refers to an
+extended data record that has DemExtendedDataRecordNumber set to the number
+of the extended data record.⌋
+The sequence diagram in chapter 9.12 depicts the interaction of Dem_SetDTCFil-
+terByExtendedDataRecordNumber and Dem_GetNextFilteredDTC for UDS
+service processing.
+[SWS_Dem_01364] Functionality of Dem_SetDTCFilterByReadinessGroup
+Upstream requirements: RS_Diag_04057, RS_Diag_04250
+⌈The function Dem_SetDTCFilterByReadinessGroup shall set a DTC filter criteria
+for DTCs that have DemDtcOBDRelevance set to true and are assigned to a given
+DTC readiness group for the client with the same client ID for subsequent calls of:
+• Dem_GetNumberOfFilteredDTC
+• Dem_GetNextFilteredDTC.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01342] im Text von SWS_DiagnosticEventManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -123,11 +223,11 @@ forming a bit-wise AND oper</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=216" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 216</td>
+              <td>Seite 218</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -135,7 +235,7 @@ forming a bit-wise AND oper</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01342" class="swsref internal-spec-ref"><code>SWS_Dem_01342</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -143,7 +243,7 @@ forming a bit-wise AND oper</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

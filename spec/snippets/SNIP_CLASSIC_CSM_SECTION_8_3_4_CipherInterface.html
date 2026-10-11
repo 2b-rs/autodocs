@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_8_3_4_CipherInterface</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoServiceManager.pdf</strong> (Seite 54)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></strong> (Seite 54)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -119,11 +120,82 @@ E_NOT_OK: Request failed
 CRYPTO_E_BUSY: Request failed, service is still busy
 CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
 "invalid"
-CRYPTO_E_KEY_SIZE</div></section>
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, a key
+element has the wrong size
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Encrypts the given data and store the ciphertext in the memory location pointed by the result
+pointer.
+Available via
+Csm.h
+⌋
+In the case of block ciphers, it shall be possible to pass a dataLength which is not a
+multiple of the corresponding block size. The underlying Crypto Driver is responsible
+for handling these input data.
+[SWS_Csm_00989] Definition of API function Csm_Decrypt
+Upstream requirements: SRS_CryptoStack_00020, SRS_CryptoStack_00021
+⌈
+Service Name
+Csm_Decrypt
+Syntax
+Std_ReturnType Csm_Decrypt (
+uint32 jobId,
+Crypto_OperationModeType mode,
+const uint8* dataPtr,
+uint32 dataLength,
+uint8* resultPtr,
+uint32* resultLengthPtr
+)
+Service ID [hex]
+0x5f
+Sync/Async
+Depends on configuration
+Reentrancy
+Reentrant
+jobId
+Holds the identifier of the job using the CSM service.
+mode
+Indicates which operation mode(s) to perfom.
+dataPtr
+Contains the pointer to the data to be decrypted.
+Parameters (in)
+dataLength
+Contains the number of bytes to decrypt.
+▽
+△
+Parameters (inout)
+resultLengthPtr
+Holds a pointer to the memory location in which the output length
+information is stored in bytes. On calling this function, this
+parameter shall contain the size of the buffer provided by result
+Ptr. When the request has finished, the actual length of the
+returned value shall be stored.
+Parameters (out)
+resultPtr
+Contains the pointer to the memory location where the decrypted
+data shall be stored.
+Return value
+Std_ReturnType
+E_OK: Request successful
+E_NOT_OK: Request failed
+CRYPTO_E_BUSY: Request failed, service is still busy
+CRYPTO_E_KEY_NOT_VALID: Request failed, the key’s state is
+"invalid"
+CRYPTO_E_KEY_SIZE_MISMATCH: Request failed, a key
+element has the wrong size
+CRYPTO_E_KEY_EMPTY: Request failed because of uninitialized
+source key element
+Description
+Decrypts the given encrypted data and store the decrypted plaintext in the memory location
+pointed by the result pointer.
+Available via
+Csm.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -132,7 +204,7 @@ CRYPTO_E_KEY_SIZE</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoServiceManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

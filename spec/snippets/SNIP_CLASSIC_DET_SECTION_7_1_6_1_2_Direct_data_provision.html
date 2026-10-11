@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_1_6_1_2_Direct_data_provision</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetDriver.pdf</strong> (Seite 29)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=29" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></strong> (Seite 29)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00313" class="swsref internal-spec-ref"><code>SWS_Eth_00313</code></a></span>
+          <span>Ziel-Element: SWS_Eth_CONSTR_00020</span>
         </div>
       </div>
 
@@ -89,11 +90,156 @@ lowing precondition checks in the following order:
 1. If the Ethernet frame, which is requested to be transmitted, matches the config-
 ured EthCtrlConfigEgressQueueSortingType of an EthCtrlConfigE-
 gressQueue at the given CtrlIdx, then proceed. Otherwise report runtime
-error</div></section>
+error ETH_E_NO_MATCHING_EGRESS_QUEUE_IDENTIFIED and proceed.
+2. If the Ethernet frame could be enqueued in a EthCtrlConfigEgressQueue
+at the given CtrlIdx where no EthCtrlConfigEgressQueueSortingType
+is configured (i.e. try to enqueue the Ethernet frame in a default EthCtrlCon-
+figEgressQueue (see [SWS_Eth_CONSTR_00020])), then proceed. Other-
+wise return with E_NOT_OK.
+3. If an element of the identified EthCtrlConfigEgressQueue is available, then
+proceed.
+Otherwise report an runtime error error code ETH_E_EGRESS_-
+QUEUE_OCCUPIED and return with E_NOT_OK.
+If all precondition checks passed successfully, then proceed with evaluation of the Eth-
+ernet frame.⌋
+[SWS_Eth_00314]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00173, SRS_BSW_00350, SRS_BSW_00386
+⌈If Eth_ImmediateTransmit has been called, an element in the EthCtrlCon-
+figEgressQueue is reserved and the Ethernet driver is requested to evaluate the
+given Ethernet frame parts (according to [SWS_Eth_00313]), then the Ethernet driver
+shall evaluate the given single linked list given with HeaderListPtr and the payload
+PayloadPtr and payload length PayloadLength by considering the following steps:
+1. Traverse the single linked list given with HeaderListPtr by starting with the first
+element HeaderListPtr and continue with next element of the single linked list
+given with NextListElemPtr until an element of the single linked list is reached
+where NextListElemPtr is set to NUL_PTR. Perform the following action at
+each element of the single linked list:
+• Store the the given data location (DataPtr) and the given data length (
+DataLength)
+• accumulate the DataLength)
+2. calculate the overall length by considering accumulated DataLength of all single
+linked list elements and the length of payload given with PayloadLength
+If the calculated Ethernet frame length is larger then the available egress queue ele-
+ment, then abort the evaluation and return with E_NOT_OK, or if EthDevErrorDetect
+is set to TRUE, Eth driver shall call Det_ReportError with the error code ETH_E_
+EXCEED_EGRESS_QUEUE_ELEMENT. Otherwise proceed with construction of the Eth-
+ernet frame.⌋
+[SWS_Eth_00315]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00173, SRS_BSW_00350, SRS_BSW_00386
+⌈If Eth_ImmediateTransmit has been called, an element in the EthCtrlCon-
+figEgressQueue is reserved, the Ethernet driver is requested to construct the Ether-
+net frame (according to [SWS_Eth_00314]) and EthCtrlEnableEgressHardware-
+SupportedDataTransfer is set to FALSE, then the Ethernet driver shall consider
+the following construction steps:
+• iterate over the stored list of header pointers (see [SWS_Eth_00314]) and per-
+form for each header the following step:
+– Copy data from the given data location (DataPtr) with respect to the given
+data length (DataLength) to the next available position in EthCtrlCon-
+figEgressQueue element in consecutive order without gaps and continue
+• copy payload data from the given location PayloadPtr with respect to the given
+length (PayloadLength) to the next available position in EthCtrlConfigE-
+gressQueue element in consecutive order without gaps
+• trigger a transmission for content of this EthCtrlConfigEgressQueue ele-
+ment
+• store the given TxHandleId with the used EthCtrlConfigEgressQueue ele-
+ment and the given CtrlIdx
+⌋
+[SWS_Eth_00316]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00173, SRS_BSW_00350, SRS_BSW_00386
+⌈If Eth_ImmediateTransmit has been called, an element in the EthCtrlCon-
+figEgressQueue is reserved, the Ethernet driver is requested to construct the Ether-
+net frame (according to [SWS_Eth_00314]) and EthCtrlEnableEgressHardware-
+SupportedDataTransfer is set to TRUE, then the Ethernet driver shall consider the
+following construction steps:
+• iterate over the stored list of header pointers (see [SWS_Eth_00314])and perform
+for each header to the following steps:
+– if
+the
+given
+header
+length
+(DataLength)
+of
+a
+list
+element
+ex-
+ceeds the configured EthCtrEgressHardwareSupportedDataTrans-
+ferThreshold, then the Ethernet driver shall prepare a hardware sup-
+ported transfer with respect to the given header length (DataLength) and
+header location (DataPtr), trigger the data transfer and reserve space ac-
+cording the given DataLength in the EthCtrlConfigEgressQueue ele-
+ment, store the data transfer session handle (by considering given TxHan-
+dleId, CtrlIdx and EthCtrlConfigEgressQueue element) and con-
+tinue at next available position + DataLength + 1 of the EthCtrlCon-
+figEgressQueue element
+– if the given length (DataLength) is equal or smaller than the configured
+EthCtrEgressHardwareSupportedDataTransferThreshold,
+then
+the Ethernet driver shall copy data from the given header location (Dat-
+aPtr) with respect to the given header length (DataLength) to the next
+available position in EthCtrlConfigEgressQueue element in consecu-
+tive order and continue
+• check the payload length given with (PayloadLength)
+– if the given payload length (PayloadLength) of a list element ex-
+ceeds the configured EthCtrEgressHardwareSupportedDataTrans-
+ferThreshold, then the Ethernet driver shall prepare a hardware sup-
+ported transfer with respect to the given payload length (PayloadLength)
+and payload location (PayloadPtr), trigger the data transfer and reserve
+space according the given PayloadLengthin the EthCtrlConfigE-
+gressQueue element, store the data transfer session handle (by consid-
+ering given TxHandleId, CtrlIdx and EthCtrlConfigEgressQueue
+element)
+– if the given payload length (PayloadLength) is equal or smaller
+than the configured EthCtrEgressHardwareSupportedDataTrans-
+ferThreshold, then the Ethernet driver shall copy the payload from the
+given payload location (PayloadPtr) with respect to the given payload
+length (PayloadLength) to the next available position in EthCtrlCon-
+figEgressQueue element in consecutive order
+• store the given TxHandleId with the used EthCtrlConfigEgressQueue ele-
+ment and the given CtrlIdx
+⌋
+Note: The mapping of TxHandleId with the used EthCtrlConfigEgressQueue
+element and the given CtrlIdx are used to identify the provided TxHandleId,
+which is needed if confirmation of the transmission has to be indicated via
+Eth_TxTransmission.
+All sessions for hardware supported data transfer which relate to the same EthC-
+trlConfigEgressQueue element need to be confirmed by hardware. Therefore the
+Ethernet driver needs to supervise the state of triggered hardware supported data
+transfer in relation to the affected TxHandleId, CtrlIdx and EthCtrlConfigE-
+gressQueue element. After all data transfers which relate to the same EthCtrlCon-
+figEgressQueue element have been finalized, the transmission for this EthCtrl-
+ConfigEgressQueue element can be triggered.
+[SWS_Eth_00317]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00172,
+SRS_Eth_00173,
+SRS_BSW_00350,
+SRS_BSW_-
+00386
+⌈If Eth_ImmediateTransmit has been called, EthCtrlEnableEgressHard-
+wareSupportedDataTransfer is set to TRUE and all data transfer sessions have
+confirmed successful transfer for a specific EthCtrlConfigEgressQueue element,
+then the Ethernet driver shall perform the following actions:
+• remove all data transfer session handles which are associated with this EthC-
+trlConfigEgressQueue element
+• trigger a transmission of the content of this EthCtrlConfigEgressQueue ele-
+ment
+⌋
+Please note: Mapping of EthCtrlConfigEgressQueue element and the given Ctr-
+lIdx to TxHandleId is needed for asynchronous check in the EthIf_MainFunc-
+tionTx or within an interrupt.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Eth_00313] im Text von SWS_EthernetDriver.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Eth_CONSTR_00020] im Text von SWS_EthernetDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +248,7 @@ error</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=29" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +260,7 @@ error</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Eth_00313" class="swsref internal-spec-ref"><code>SWS_Eth_00313</code></a></td>
+              <td>SWS_Eth_CONSTR_00020</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

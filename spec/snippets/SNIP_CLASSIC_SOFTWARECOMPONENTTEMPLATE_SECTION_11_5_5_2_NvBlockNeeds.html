@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SOFTWARECOMPONENTTEMPLATE_SECTION_11_5_5_2_NvBlockNeeds</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SoftwareComponentTemplate.pdf</strong> (Seite 703)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=702" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></strong> (Seite 703)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01675" class="swsref"><code>TPS_SWCT_01675</code></a></span>
         </div>
@@ -133,7 +134,219 @@ RamBlockStatusControlEnum
 api
 nvRamManager
 Figure 11.16: NvBlockNeeds
-[constr_1308] Existence of NvBlockNeeds.cyclicWritingPeriod ⌈The attribute</div></section>
+[constr_1308] Existence of NvBlockNeeds.cyclicWritingPeriod ⌈The attribute
+NvBlockNeeds.cyclicWritingPeriod shall exist if and only if the attribute
+NvBlockNeeds.storeCyclic exists and its value is set to true.⌋()
+Class
+NvBlockNeeds
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Specifies the abstract needs on the configuration of a single NVRAM Block.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable, ServiceNeeds
+Attribute
+Type
+Mult.
+Kind
+Note
+calcRamBlock
+Crc
+Boolean
+0..1
+attr
+Defines if CRC (re)calculation for the permanent RAM
+Block is required.
+▽
+Software Component Template
+△
+Class
+NvBlockNeeds
+checkStatic
+BlockId
+Boolean
+0..1
+attr
+Defines if the Static Block Id check shall be enabled.
+cyclicWriting
+Period
+TimeValue
+0..1
+attr
+This represents the period for cyclic writing of NvData to
+store the associated RAM Block.
+nDataSets
+PositiveInteger
+0..1
+attr
+Number of data sets to be provided by the NVRAM
+manager for this block. This is the total number of ROM
+Blocks and RAM Blocks.
+nRomBlocks
+PositiveInteger
+0..1
+attr
+Number of ROM Blocks to be provided by the NVRAM
+manager for this block. Please note that these multiple
+ROM Blocks are given in a contiguous area.
+ramBlockStatus
+Control
+RamBlockStatusControl
+Enum
+0..1
+attr
+This attribute defines how the management of the RAM
+Block status is controlled.
+readonly
+Boolean
+0..1
+attr
+True: data of this NVRAM Block are write protected for
+normal operation (but protection can be disabled)
+false: no restriction
+reliability
+NvBlockNeeds
+ReliabilityEnum
+0..1
+attr
+Reliability against data loss on the non-volatile medium.
+resistantTo
+ChangedSw
+Boolean
+0..1
+attr
+Defines whether an NVRAM Block shall be treated
+resistant to configuration changes (true) or not (false). For
+details how to handle initialization in the latter case,
+please refer to the NVRAM specification.
+restoreAtStart
+Boolean
+0..1
+attr
+Defines whether the associated RAM Block shall be
+implicitly restored during startup by the basic software.
+selectBlockFor
+FirstInitAll
+Boolean
+0..1
+attr
+If this attribute is set to true the NvM shall process this
+block in the NvM_FirstInitAll() function.
+storeAt
+Shutdown
+Boolean
+0..1
+attr
+Defines whether or not the associated RAM Block shall be
+implicitly stored during shutdown by the basic software.
+storeCyclic
+Boolean
+0..1
+attr
+Defines whether or not the associated RAM Block shall
+be implicitly stored periodically by the basic software.
+store
+Emergency
+Boolean
+0..1
+attr
+Defines whether or not the associated RAM Block shall
+be implicitly stored in case of ECU failure (e.g. loss of
+power) by the basic software. If the attribute store
+Emergency is set to true the associated RAM Block shall
+be configured to have immediate priority.
+storeImmediate
+Boolean
+0..1
+attr
+Defines whether or not the associated RAM Block shall
+be implicitly stored immediately during or after execution
+of the according SW-C RunnableEntity by the basic
+software.
+useAuto
+ValidationAt
+ShutDown
+Boolean
+0..1
+attr
+If set to true the RAM Block shall be auto validated during
+shutdown phase.
+useCRCComp
+Mechanism
+Boolean
+0..1
+attr
+If set to true the CRC of the RAM Block shall be
+compared during a write job with the CRC which was
+calculated during the last successful read or write job in
+order to skip unnecessary NVRAM writings.
+writeOnlyOnce
+Boolean
+0..1
+attr
+Defines write protection after first write:
+true: This block is prevented from being changed/erased
+or being replaced with the default ROM data after first
+initialization by the software-component.
+false: No such restriction.
+writeVerification
+Boolean
+0..1
+attr
+Defines if Write Verification shall be enabled for this
+NVRAM Block.
+writing
+Frequency
+PositiveInteger
+0..1
+attr
+Provides the amount of updates to this block from the
+application point of view. It has to be provided in "number
+of write access per year".
+▽
+Software Component Template
+△
+Class
+NvBlockNeeds
+writingPriority
+NvBlockNeedsWriting
+PriorityEnum
+0..1
+attr
+Requires the priority of writing this block in case of
+concurrent requests to write other blocks.
+Table 11.10: NvBlockNeeds
+Enumeration
+NvBlockNeedsReliabilityEnum
+Package
+M2::AUTOSARTemplates::CommonStructure::ServiceNeeds
+Note
+Reliability against data loss on the non-volatile medium. These requirements give only a relative
+indication, for example on the required degree of redundancy for storage.
+They do, however, not specify by which means (e.g. software or hardware) the reliability is actually
+achieved.
+Literal
+Description
+errorCorrection
+Errors shall be corrected
+Tags:atp.EnumerationLiteralIndex=0
+errorDetection
+Errors shall be detected
+Tags:atp.EnumerationLiteralIndex=1
+noProtection
+Data need not to be handled with protection
+Tags:atp.EnumerationLiteralIndex=2
+Table 11.11: NvBlockNeedsReliabilityEnum
+[constr_1310] Existence of attributes of meta-class NvBlockNeeds ⌈If in the con-
+text of an ApplicationSwComponentType the attribute SwcServiceDependency.
+serviceNeeds is implemented by an NvBlockNeeds then the following attributes
+• NvBlockNeeds.storeCyclic
+• NvBlockNeeds.cyclicWritingPeriod
+• NvBlockNeeds.storeEmergency
+• NvBlockNeeds.storeImmediate
+shall only exist if in the context of the same SwcServiceDependency a SwcSer-
+viceDependency.assignedPort exists that has the attribute role set to the value
+NvDataPort.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -146,7 +359,7 @@ Figure 11.16: NvBlockNeeds
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=702" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

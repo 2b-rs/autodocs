@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_Functional_specification_COMMANAGER</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_00868" class="swsref internal-spec-ref"><code>SWS_ComM_00868</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_91002" class="swsref internal-spec-ref"><code>SWS_ComM_91002</code></a></span>
         </div>
       </div>
 
@@ -98,11 +99,79 @@ since release 2.0.
 Comment:
 • The ComM module allows querying the Communication Mode requested by a
 particular user (see ComM_GetRequestedComMode(), [SWS_ComM_00079]).
-• The ComM modul</div></section>
+• The ComM module allows querying the actual Communication Mode of a
+channel if the user is assigned to channel(see ComM_GetCurrentComMode(),
+[SWS_ComM_00083])
+• The ComM module allows querying for the current PNC mode if the
+user
+is
+assigned
+to
+a
+PNC
+(see
+ComM_GetCurrentPNCComMode(),
+[SWS_ComM_91002])
+[SWS_ComM_00845] ⌈In COMM_FULL_COMMUNICATION mode, the ComM module
+shall allow transmission and reception on the affected physical channel.⌋(SRS_-
+ModeMgm_09083)
+[SWS_ComM_00846] ⌈In COMM_NO_COMMUNICATION mode, the ComM module
+shall prevent transmission and reception on the affected physical channel.⌋(SRS_-
+ModeMgm_09083)
+[SWS_ComM_00686] ⌈If at least one of multiple independent user requests demands
+a higher Communication Mode (see [SWS_ComM_00867] and [SWS_ComM_00868]),
+the ComM module shall set this higher Communication Mode as the target Communi-
+cation Mode.⌋(SRS_ModeMgm_09078)
+Rationale for [SWS_ComM_00686]: ComM coordinates multiple independent user re-
+quests according to the "highest wins" strategy: COMM_FULL_COMMUNICATION Com-
+munication Mode overrules COMM_NO_COMMUNICATION.
+[SWS_ComM_00500] ⌈The ComM module shall not queue user requests. The latest
+user request of the same user shall overwrite an old user request even if the request is
+not finished.⌋(SRS_ModeMgm_09246)
+[SWS_ComM_00866] ⌈If configuration parameter ComMNmVariant=FULL|LIGHT|
+NONE ([ECUC_ComM_00568]), an DCM_ActiveDiagnostic indication shall be treated
+as a COMM_FULL_COMMUNICATION request for the specified communication chan-
+nel (see ComM_DCM_ActiveDiagnostic(channel),
+[SWS_ComM_00873]).⌋(SRS_-
+ModeMgm_09083)
+Rationale for [SWS_ComM_00866]: If more channels needed for diagnostic purpose,
+DCM needs to indicate DCM_ActiveDiagnostic for each channel.
+[SWS_ComM_00092] ⌈There shall be one Communication Mode target state (eval-
+uated according to [SWS_ComM_00686]) per communication channel.
+This target
+mode can differ temporarily from the actual mode controlled by the corresponding Bus
+State Manager module.⌋()
+Comment: Mode switching by the corresponding Bus State Manager module takes
+time and a mode inhibition can be active.
+[SWS_ComM_00084]
+⌈The
+ComM
+module
+shall
+propagate
+a
+call
+of
+ComM_GetCurrentComMode() (see [SWS_ComM_00083]) to the Bus State Manager
+module(s) for the channel(s) the user are configured to (see also [SWS_ComM_00176]
+and [SWS_ComM_00798])⌋()
+Rationale for [SWS_ComM_00084]: State requests have to be propagated to the cor-
+responding Bus State Manager module since the ComM module does not control the
+actual bus state.
+Comment: This feature is not used by a "normal SW-C" because they don’t have knowl-
+edge about channels. This feature is necessary for privileged SW-Cs, which (have to)
+know about the system topology, e.g. system diagnostic functions.
+[SWS_ComM_00884] ⌈The ComM module shall store status if communication for a
+channel is allowed or not allowed in separate CommunicationAllowed boolean flags for
+all supported channels. The default value after ComM initialization shall be communi-
+cation is not allowed, i.e. CommunicationAllowed is set to FALSE.⌋()
+[SWS_ComM_00885] ⌈Status changes for communication allowed or not allowed in
+[SWS_ComM_00884] shall be provided to ComM in ComM_CommunicationAllowed
+(&lt;channel&gt;, TRUE|FALSE) ([SWS_ComM_00871]) indications.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_ComM_00868] im Text von SWS_COMManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_ComM_91002] im Text von SWS_COMManager.</p>
       </section>
 
       <section class="snip-card">
@@ -111,7 +180,7 @@ particular user (see ComM_GetRequestedComMode(), [SWS_ComM_00079]).
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -123,7 +192,7 @@ particular user (see ComM_GetRequestedComMode(), [SWS_ComM_00079]).
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_ComM_00868" class="swsref internal-spec-ref"><code>SWS_ComM_00868</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_ComM_91002" class="swsref internal-spec-ref"><code>SWS_ComM_91002</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

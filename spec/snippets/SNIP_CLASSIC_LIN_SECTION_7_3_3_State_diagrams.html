@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/lin.html">Modul: lin</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINDriver.pdf</strong> (Seite 24)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINDriver.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINDriver.pdf</a></strong> (Seite 23)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Lin_00256" class="swsref internal-spec-ref"><code>SWS_Lin_00256</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Lin_00265" class="swsref internal-spec-ref"><code>SWS_Lin_00265</code></a></span>
         </div>
       </div>
 
@@ -110,11 +111,38 @@ LIN_UNINIT to LIN_INIT when the function Lin_Init is called.⌋
 The LIN module’s environment shall call the function Lin_Init only once during run-
 time.
 [SWS_Lin_00171] ⌈On entering the state LIN_INIT, the Lin module shall set each
-channel into state LIN_CH_SLEEP, enable bus monitoring for a wake-up req</div></section>
+channel into state LIN_CH_SLEEP, enable bus monitoring for a wake-up request on
+that channel if external wake-up detection is supported by configuration parameter
+LinChannelWakeupSupport, and optionally set the LIN hardware unit to reduced
+power operation mode (if supported by HW).⌋
+[SWS_Lin_00263] ⌈LIN_CH_OPERATIONAL -&gt; LIN_CH_SLEEP_PENDING through
+Lin_GoToSleep: If a go to sleep is requested by the LIN interface, the Lin module shall
+ensure that the rest of the LIN cluster goes to sleep also. This is achieved by issuing
+a go-to-sleep-command on the bus before entering the LIN_CH_SLEEP_PENDING
+state. This requirement is only applicable for LIN master nodes.⌋
+[SWS_Lin_00264] ⌈LIN_CH_SLEEP_PENDING -&gt; LIN_CH_SLEEP: When Lin_-
+GetStatus is called, the LIN driver shall directly enter the LIN_CH_SLEEP state, even
+if the go-to-sleep-command has not yet been sent. This requirement is only applicable
+for LIN master nodes.⌋
+[SWS_Lin_00265] ⌈LIN_CH_OPERATIONAL -&gt; LIN_CH_SLEEP through Lin_Go-
+ToSleepInternal: If an internal go to sleep is requested by the LIN interface, the
+LIN driver shall directly enter the LIN_CH_SLEEP state.⌋
+[SWS_Lin_00174] ⌈LIN_CH_SLEEP -&gt; LIN_CH_OPERATIONAL through Lin_-
+Wakeup: If a LIN channel is in the state LIN_CH_SLEEP, the function Lin_Wakeup
+shall put the LIN channel into the state LIN_CH_OPERATIONAL.⌋
+[SWS_Lin_00261] ⌈LIN_CH_SLEEP -&gt; LIN_CH_OPERATIONAL through Lin_-
+WakeupInternal: If a LIN channel is in the state LIN_CH_SLEEP, the function Lin_
+WakeupInternal shall put the LIN channel into the state LIN_CH_OPERATIONAL.⌋
+[SWS_Lin_00209] ⌈Lin_Wakeup: During the state transition from LIN_CH_SLEEP
+to LIN_CH_OPERATIONAL the LIN Driver shall ensure that the rest of the cluster is
+awake. This is achieved by issuing a wake-up request, forcing the bus to the dominant
+state for 250 µs to 5 ms.⌋
+[SWS_Lin_00184] ⌈A mode switch request to the current mode is allowed and shall
+not lead to an error, even if DET is enabled.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Lin_WakeupInternal state transition</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Lin_00265] im Text von SWS_LINDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -123,11 +151,11 @@ channel into state LIN_CH_SLEEP, enable bus monitoring for a wake-up req</div></
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_LINDriver.pdf#page=23" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 24</td>
+              <td>Seite 23</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -135,15 +163,15 @@ channel into state LIN_CH_SLEEP, enable bus monitoring for a wake-up req</div></
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Lin_00256" class="swsref internal-spec-ref"><code>SWS_Lin_00256</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Lin_00265" class="swsref internal-spec-ref"><code>SWS_Lin_00265</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

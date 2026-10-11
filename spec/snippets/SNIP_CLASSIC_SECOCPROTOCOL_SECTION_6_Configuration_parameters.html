@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SECOCPROTOCOL_SECTION_6_Configuration_parameters</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SecOcProtocol.pdf</strong> (Seite 29)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_SecOcProtocol.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SecOcProtocol.pdf</a></strong> (Seite 29)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00259" class="swsref internal-spec-ref"><code>SWS_SecOC_00259</code></a></span>
         </div>
@@ -109,7 +110,191 @@ yes
 Protocol
 △
 SecOCUseAuthDataFreshness
-A Boolean value that indi</div></section>
+A Boolean value that indicates if a
+part of the Authentic I-PDU
+shall be passed on to the SWC
+that verifies and generates the
+Freshness. If it is set to TRUE, the
+values SecOCAuthDataFresh-
+nessStartPosition and
+SecOCAuthDataFreshnessLen
+must be set to specify the bit
+position and length within the
+Authentic I-PDU.
+no
+SecOCAuthDataFreshnessStart-
+Position
+This value determines the start
+position in bits (uint16) of the
+Authentic PDU that shall be
+passed on to the Freshness SWC.
+no
+SecOCAuthDataFreshnessLen
+This attribute defines the length in
+bits of the authentic PDU data that
+is passed to the SWC that verifies
+and generates the Freshness.
+no
+SecOCProvideTxTruncatedFresh-
+nessValue
+This parameter specifies if the Tx
+query freshness function provides
+the truncated freshness info
+instead of generating this by
+SecOC in this case, SecOC shall
+add this data to the Authentic
+PDU instead of truncating the
+freshness value.
+no
+SecOCAuthenticationBuildAt-
+tempts
+Parameter specifies the number of
+authentication build attempts.
+Implementation
+specific
+SecOCDefaultAuthenticationInfor-
+mationPattern
+The parameter describes the
+behavior of SecOC when
+authentication build counter has
+reached the configuration value
+SecOCAuthenticationBuil-
+dAttempts, or the query of the
+freshness function returns
+non-recoverable error (example: a
+systematic failure due to
+freshness value configuration) or
+the calculation of the
+Authenticator has returned a
+non-recoverable error (example: a
+systematic failure due wrong
+crypto configuration or missing
+▽
+Implementation
+specific
+▽
+Protocol
+△
+△
+key). If the configuration
+parameter is not present, SecOC
+module shall remove the
+Authentic I-PDU from its
+internal buffer and cancel the
+transmission request If the
+configuration parameter is
+present, SecOC will use this value
+for each byte of Freshness Value
+and Authenticator when
+building the Authentication
+Information, and will not cancel
+the transmission request.
+SecOCAuthenticationVerifyAt-
+tempts
+This parameter specifies the
+number of authentication verify
+attempts that are to be carried out
+when the verification of the
+authentication information failed
+for a given Secured I-PDU. If
+zero is set, then only one
+authentication verification attempt
+is done.
+Implementation
+specific
+SecOCDataId
+This parameter defines a unique
+numerical identifier for the
+Secured I-PDU.
+yes
+SecOCFreshnessValueID
+This parameter defines the Id of
+the Freshness Value
+yes
+SecOCTxAuthServiceConfigRef
+This reference is used to define
+which crypto service function is
+called for authentication
+Implementation
+specific
+SecOCAuthInfoTruncLength
+This parameter defines the length
+in bits of the authentication code
+to be included in the payload of
+the Secured I-PDU.
+yes
+SecOC_VerifyStatusOverride
+When this configuration option is
+set to TRUE then the functionality
+inside the function SecOC_-
+VerifyStatusOverride to
+send I-PDUs to upper layer
+independent of the verification
+result is enabled.
+Implementation
+specific
+▽
+Protocol
+△
+SecOCTxSecuredPduCollection
+Two separate Pdus are
+transmitted to the lower layer:
+Authentic I-PDU and
+Cryptographic I-PDU.
+no
+SecOCFreshnessValueLength
+This parameter defines the
+complete length in bits of the
+Freshness Value. As long as the
+key doesn’t change the counter
+shall not overflow. The length of
+the counter shall be determined
+based on the expected lifetime of
+the corresponding key and
+frequency of usage of the counter.
+yes
+SecOCTxPduUnusedAreasDe-
+fault
+The AUTOSAR SecOC module
+fills not used areas of a
+transmitted Secured Pdu with this
+byte pattern. This attribute is
+mandatory to avoid undefined
+behavior.
+Implementation
+specific
+SecOCUseMessageLink
+SecOC links an Authentic
+I-PDU and Cryptographic I-PDU
+together by repeating a specific
+part (Message Linker) of the
+Authentic I-PDU in the
+Cryptographic I-PDU.
+no
+SecOCMessageLinkPos
+The position of the Message
+Linker inside the Authentic
+I-PDU in bits. The bit counting is
+done according to 01068 and the
+bit ordering is done according to
+TPS_SYST_01069.
+no
+SecOCMessageLinkLen
+Length of the Message Linker
+inside the Authentic I-PDU in
+bits.
+no
+SecOCSecuredRxPduVerification
+This parameter defines whether
+the signature authentication or
+MAC verification shall be
+performed on this Secured
+I-PDU. If set to false, the SecOC
+module extracts the Authentic
+I-PDU from the Secured I-PDU
+without verification.
+yes
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -122,7 +307,7 @@ A Boolean value that indi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SecOcProtocol.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_SecOcProtocol.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SecOcProtocol.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

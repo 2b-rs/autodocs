@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/lin.html">Modul: lin</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LIN_SECTION_7_4_2_2_LIN_Slave_specific</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINDriver.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINDriver.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINDriver.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Lin_00282" class="swsref internal-spec-ref"><code>SWS_Lin_00282</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Lin_00286" class="swsref internal-spec-ref"><code>SWS_Lin_00286</code></a></span>
         </div>
       </div>
 
@@ -104,11 +105,58 @@ ter LIN_ERR_HEADER when it detects bus events that do not comply to a valid LIN
 header (e.g incomplete LIN header).⌋
 [SWS_Lin_00273]
 Upstream requirements: SRS_Lin_01578
-⌈The LIN driver shall be able to</div></section>
+⌈The LIN driver shall be able to send, receive or ignore a LIN response.⌋
+[SWS_Lin_00282] ⌈After the call of LinIf_HeaderIndication when the return
+value is E_OK, the LIN driver shall evaluate the PduPtr-&gt;Drc to determine the type
+of LIN response.⌋
+[SWS_Lin_00284]
+⌈If
+the
+LIN
+response
+is
+going
+to
+be
+received
+(LIN_FRAMERESPONSE_RX), the LIN driver shall evaluate the Cs and Dl members
+in parameter PduPtr (after the call of LinIf_HeaderIndication with return value
+E_OK) to configure the LIN response reception.⌋
+[SWS_Lin_00274]
+Upstream requirements: SRS_Lin_01555, SRS_Lin_01503
+⌈After successful reception of a LIN response, the LIN driver shall directly make the
+received data available to the LIN interface module by calling the Rx indication callback
+function LinIf_RxIndication with the Lin_SduPtr parameter set to the reception
+data.⌋
+[SWS_Lin_00283]
+Upstream requirements: SRS_Lin_01503, SRS_Lin_01522
+⌈If the LIN response is going to be transmitted (LIN_FRAMERESPONSE_TX), the LIN
+driver shall evaluate the Cs, Dl and SduPtr members in parameter PduPtr (after the
+call of LinIf_HeaderIndication with return value E_OK) to setup and transmit the
+LIN response.⌋
+[SWS_Lin_00286] ⌈If the return value of LinIf_HeaderIndication is E_NOT_OK
+or the returned PduPtr-&gt;Drc is LIN_FRAMERESPONSE_IGNORE, the LIN driver shall
+ignore the response.⌋
+[SWS_Lin_00275]
+Upstream requirements: SRS_Lin_01555
+⌈After successful transmission of a LIN response, the transmission shall be directly
+confirmed to the LIN Interface module by calling the Tx confirmation callback function
+LinIf_TxConfirmation.⌋
+[SWS_Lin_00276] ⌈The LIN driver shall not report any events to the LIN interface
+module if the LIN response is ignored until the reception of a new LIN header.⌋
+[SWS_Lin_00277] ⌈The LIN driver shall detect communication errors during response
+transmission and response reception. Once an error is detected, the current frame
+handling shall be aborted and the error indication callback function LinIf_Lin-
+ErrorIndication shall be called.⌋
+[SWS_Lin_00285] ⌈The handling of each relevant (i.e.
+not ignored) LIN response
+must be completed by a call to either LinIf_RxIndication, LinIf_TxConfirma-
+tion or LinIf_LinErrorIndication, latest before a new LIN header reception is
+indicated by a call of LinIf_HeaderIndication.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">LinIf_HeaderIndication return evaluation</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Lin_00286] im Text von SWS_LINDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -117,7 +165,7 @@ Upstream requirements: SRS_Lin_01578
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINDriver.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -129,15 +177,15 @@ Upstream requirements: SRS_Lin_01578
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Lin_00282" class="swsref internal-spec-ref"><code>SWS_Lin_00282</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Lin_00286" class="swsref internal-spec-ref"><code>SWS_Lin_00286</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

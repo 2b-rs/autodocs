@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_5_4_4_Differential_component_with_time_delay_DT1</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MFLLibrary.pdf</strong> (Seite 41)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></strong> (Seite 41)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00049" class="swsref internal-spec-ref"><code>SWS_Mfl_00049</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00305" class="swsref internal-spec-ref"><code>SWS_Mfl_00305</code></a></span>
         </div>
       </div>
 
@@ -125,11 +126,111 @@ Calculated Output_value shall be stored to State_cpst-&gt;Y1.
 State_cpst-&gt;Y1 = Output_value
 ⌋
 [SWS_Mfl_00049] ⌈
-Old input value State_cpst-&gt;X1 shall be stored to</div></section>
+Old input value State_cpst-&gt;X1 shall be stored to State_cpst-&gt;X2.
+State_cpst-&gt;X2 = State_cpst-&gt;X1
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+1. ’DT1’ Controller - Type2
+⌋
+[SWS_Mfl_00300] Definition of API function Mfl_DT1Typ2Calc ⌈
+Service Name
+Mfl_DT1Typ2Calc
+Syntax
+void Mfl_DT1Typ2Calc (
+float32 X_f32,
+Mfl_StateDT1Typ2_Type* State_cpst,
+float32 K_f32,
+float32 TeQ_f32,
+float32 dT_f32
+)
+Service ID [hex]
+0xC0
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X_f32
+Input value for the DT1 controller
+K_f32
+Amplification factor
+TeQ_f32
+Time equivalent
+Parameters (in)
+dT_f32
+Sample Time
+Parameters (inout)
+State_cpst
+Pointer to state structure
+Parameters (out)
+None
+Return value
+None
+Description
+This routine computes DT1 controller output value using differential equation
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00301] ⌈
+Yn= exp(-dT/T1) * Yn-1+ K * (1- exp(-dT/T1)) * ((Xn - Xn-1) / dT)
+This derives implementation:
+Output_value = (TeQ_f32 * State_cpst-&gt;Y1) + K_f32 * (1 - TeQ_f32) * ((X_f32 - State_
+cpst-&gt;X1) / dT_f32)
+where TeQ_f32 = exp(-dT_f32/T1)
+⌋
+[SWS_Mfl_00303] ⌈
+If (TeQ_f32 = 0) then DT1 controller follows Input value,
+Output_value = K_f32 * (X_f32 - State_cpst-&gt;X1) / dT_f32
+⌋
+[SWS_Mfl_00304] ⌈
+Calculated Output_value shall be stored to State_cpst-&gt;Y1.
+State_cpst-&gt;Y1 = Output_value
+⌋
+[SWS_Mfl_00305] ⌈
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+1. Set ’DT1’ State Value - Type1
+This routine can be realised using inline function.⌋
+[SWS_Mfl_00050] Definition of API function Mfl_DT1Typ1SetState ⌈
+Service Name
+Mfl_DT1Typ1SetState
+Syntax
+void Mfl_DT1Typ1SetState (
+Mfl_StateDT1Typ1_Type* State_cpst,
+float32 X1_f32,
+float32 X2_f32,
+float32 Y1_f32
+)
+Service ID [hex]
+0x22
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X1_f32
+Initial value for the input state X1
+X2_f32
+Initial value for the input state X2
+Parameters (in)
+Y1_f32
+Initial value for the output state
+Parameters (inout)
+None
+Parameters (out)
+State_cpst
+Pointer to internal state structure
+Return value
+None
+Description
+The routine initialises internal state variables of a DT1 element.
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00051] ⌈
+Initialisation of output state variable Y1.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00049] im Text von SWS_MFLLibrary.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00305] im Text von SWS_MFLLibrary.</p>
       </section>
 
       <section class="snip-card">
@@ -138,7 +239,7 @@ Old input value State_cpst-&gt;X1 shall be stored to</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MFLLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -150,7 +251,7 @@ Old input value State_cpst-&gt;X1 shall be stored to</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00049" class="swsref internal-spec-ref"><code>SWS_Mfl_00049</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00305" class="swsref internal-spec-ref"><code>SWS_Mfl_00305</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

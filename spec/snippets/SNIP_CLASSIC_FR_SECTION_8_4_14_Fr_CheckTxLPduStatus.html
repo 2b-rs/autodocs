@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FR_SECTION_8_4_14_Fr_CheckTxLPduStatus</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayDriver.pdf</strong> (Seite 60)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=59" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></strong> (Seite 60)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -114,11 +115,132 @@ CC precondition for the function Fr_CheckTxLPduStatus(): None.
 ing tasks on FlexRay CC Fr_CtrIdx:
 1. Figure out the physical resource (e.g., a buffer) mapped to the transmission of
 the FlexRay frame identified by Fr_LpduIdx.
-2. Check whether the transmission resource as figured in bu</div></section>
+2. Check whether the transmission resource as figured in bullet 1 is pending for
+transmission3 and if a TX conflict (vss!TxConflict) occurred for this resource.
+3. If FrExtendedLPduReporting is enabled and Fr_SlotAssignment is
+not a NULL pointer,
+copy cycle and slot ID of the checked frame to
+Fr_SlotAssignment.
+4. If
+a
+transmission
+request
+is
+pending,
+then
+store
+the
+status
+FR_NOT_TRANSMITTED to Fr_TxLPduStatusPtr.
+5. If no transmission request is pending and no TX conflict occurred, then store the
+status FR_TRANSMITTED to Fr_TxLPduStatusPtr.
+6. If no transmission request is pending and a TX conflict occurred, then store the
+status FR_TRANSMITTED_CONFLICT to Fr_TxLPduStatusPtr.
+7. Return E_OK.
+⌋
+[SWS_Fr_00243]
+⌈If
+the
+function
+Fr_CheckTxLPduStatus()
+is
+able
+to
+and
+detects
+a
+hardware
+error
+while
+performing
+the
+requested
+functional-
+ity,
+then
+it
+shall
+call
+Dem_SetEventStatus()
+(FR_E_CTRL_TESTRESULT,
+DEM_EVENT_STATUS_FAILED) and return E_NOT_OK.⌋
+[SWS_Fr_00606]
+⌈If
+the
+optional
+configuration
+parameter
+FrIfDemFT-
+SlotStatusRef
+exists
+and
+a
+single
+slot
+status
+error
+bit
+(vSS!SyntaxError,
+vSS!ContentError, vSS!Bviolation) is set, then the slot status information shall
+be
+reported
+to
+DEM
+as
+Dem_SetEventStatus()
+(FR_E_LPDU_SLOTSTATUS,
+DEM_EVENT_STATUS_FAILED).⌋
+[SWS_Fr_00629]
+⌈If
+the
+optional
+configuration
+parameter
+FrIfDemFTSlot-
+StatusRef
+exists
+and
+no
+single
+slot
+status
+error
+bit
+(vSS!SyntaxError,
+vSS!ContentError, vSS!Bviolation) is set, then the slot status information shall
+be
+reported
+to
+DEM
+as
+Dem_SetEventStatus()
+(FR_E_LPDU_SLOTSTATUS,
+DEM_EVENT_STATUS_PASSED).⌋
+[SWS_Fr_00630] ⌈Dem_SetEventStatus() shall be called only if the optional con-
+figuration parameter FrIfDemFTSlotStatusRef exists.⌋
+[SWS_Fr_00240] ⌈If development error detection for the Fr module is enabled, and if
+the function Fr_CheckTxLPduStatus() is called before the successful initialization
+of Fr, then the function Fr_CheckTxLPduStatus() shall raise the development error
+FR_E_INIT_FAILED.⌋
+[SWS_Fr_00241] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_CheckTxLPduStatus() shall check the validity of the parameter
+3The returned status does not check whether a transmission has been really performed, but returns
+whether a transmission resource is empty or not.
+Fr_CtrlIdx. If Fr_CtrlIdx is invalid, then the function Fr_CheckTxLPduSta-
+tus() shall raise the development error FR_E_INV_CTRL_IDX.⌋
+[SWS_Fr_00242] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_CheckTxLPduStatus() shall check the validity of the parameter
+Fr_LpduIdx. If Fr_LpduIdx is invalid, then the function Fr_CheckTxLPduSta-
+tus() shall raise the development error FR_E_INV_LPDU_IDX.⌋
+[SWS_Fr_00343] ⌈If development error detection for the Fr module is enabled,
+then the function Fr_CheckTxLPduStatus() shall check whether the parameter
+Fr_TxLPduStatusPtr is a NULL pointer (NULL_PTR). If Fr_TxLPduStatusPtr is
+a NULL pointer, then the function Fr_CheckTxLPduStatus() shall raise the develop-
+ment error FR_E_PARAM_POINTER.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +249,7 @@ the FlexRay frame identified by Fr_LpduIdx.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=59" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

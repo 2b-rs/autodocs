@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -88,7 +89,268 @@ all ISignals and updateIndicationBits that are mapped into an ISignalIPdu
 shall not exceed the deﬁned ISignalIPdu length. ⌋
 [constr_3011] Overlapping of updateIndicationBits for ISignals is prohib-
 ited ⌈The updateIndicationBitPosition for an ISignal in an ISignalIPdu
-MUST NOT overlap with other u</div></section>
+MUST NOT overlap with other updateIndicationBitPositions and ISignal lo-
+cations. ⌋
+An ISignal aggregates the swDataDefProps element. With this aggregation the
+actual representation of the ISignal on the network can be speciﬁed. This represen-
+tation follows a particular policy that is deﬁned with the dataTypePolicy attribute.
+For an alternative network representation it is important to deﬁne an alternative sw-
+DataDefProps especially CompuMethod deﬁning alternative numerical representa-
+tion and BaseType deﬁning alternative encoding (e.g. from ﬂoat in PortInterface to
+integer on bus). In case that the System Description doesn’t use a complete Software
+Component Description (VFB View) the swDataDefProps are used to conﬁgure the
+Data Semantics.
+The swDataDefProps element contains a reference to the SwBaseType. This refer-
+ence can be used for the derivation of the ComSignalType in the COM Conﬁguration.
+The ComSignalType shall be derived from the baseTypeSize (or maxBaseType-
+Size) and the baseTypeEncoding.
+System Template
+R4.0 Rev 3
+The following table shows how the mapping onto the ComSignalType enumeration is
+done:
+BaseTypeEncoding
+BaseTypeSize
+ComSignalType
+2C
+8 bits
+SINT8
+2C
+16 bits
+SINT16
+2C
+32 bits
+SINT32
+NONE
+8 bits
+UINT8
+NONE
+16 bits
+UINT16
+NONE
+32 bits
+UINT32
+IEE754
+32 bits
+FLOAT32
+IEE754
+64 bits
+FLOAT64
+ISO-8859-1
+baseTypeSize
+UINT8_N (from the deﬁnition
+of baseTypeSize the Com-
+SignalLength can be deter-
+mined)
+ISO-8859-2
+baseTypeSize
+UINT8_N (from the deﬁnition
+of baseTypeSize the Com-
+SignalLength can be deter-
+mined)
+WINDOWS-1252
+baseTypeSize
+UINT8_N (from the deﬁnition
+of baseTypeSize the Com-
+SignalLength can be deter-
+mined)
+UTF-8
+baseTypeSize
+UINT8_N (from the deﬁnition
+of baseTypeSize the Com-
+SignalLength can be deter-
+mined)
+UCS-2
+baseTypeSize
+UINT8_N (from the deﬁnition
+of baseTypeSize the Com-
+SignalLength can be deter-
+mined)
+-
+maxBaseTypeSize
+UINT8_DYN (from the def-
+inition of maxBaseTypeSize
+the
+ComSignalLength
+can
+be determined)
+BOOLEAN
+-
+BOOLEAN
+Table 5.5: SwBaseType to ComSignalType Mapping
+The invalidValue is aggregated by the swDataDefProps element.
+The sw-
+DataDefProps and the swBaseType classes are described in more detail in the
+Software Component Template [4].
+System Template
+R4.0 Rev 3
+Identifiable
+ISignalToIPduMapping
++
+packingByteOrder:  ByteOrderEnum [0..1]
++
+startPosition:  Integer [0..1]
++
+transferProperty:  TransferPropertyEnum [0..1]
++
+updateIndicationBitPosition:  Integer [0..1]
+ARElement
+SystemSignal
++
+dynamicLength:  Boolean
+ARElement
+SystemSignalGroup
+Pdu
+IPdu
+Identifiable
+CoreTopology::PhysicalChannel
+Identifiable
+ISignalTriggering
+FibexElement
+ISignal
++
+dataTypePolicy:  DataTypePolicyEnum
++
+length:  Integer
+ISignalIPdu
++
+unusedBitPattern:  Integer
+Constants::ValueSpecification
++
+shortLabel:  Identifier [0..1]
+«enumeration»
+DataMapping::DataTypePolicyEnum
+networkRepresentationFromComSpec
+portInterfaceDefinition
+legacy
+override
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+FibexElement
+ISignalGroup
+«atpVariation»
+DataDefProperties::
+SwDataDefProps
+«enumeration»
+TransferPropertyEnum
+triggered
+pending
+triggeredOnChange
+triggeredWithoutRepetition
+triggeredOnChangeWithoutRepetition
+ISignalProps
++
+handleOutOfRange:  HandleOutOfRangeEnum
+«enumeration»
+Communication::
+HandleOutOfRangeEnum
+none
+ignore
+saturate
+default
+invalid
+externalReplacement
++iSignalToPduMapping 0..*
+«atpVariation»
++iSignalGroup
+0..1
++iSignalGroup
+0..1
++iSignalTriggering
+0..*
+«atpVariation,atpSplitable»
+1..*
++systemSignalGroup
+1
++systemSignal
+*
+1..*
++systemSignal
+1
+0..*
++iSignal
+0..1
++iSignal
+0..*
+1..*
++iSignal
+0..1
++iSignalProps
+0..1
+«atpSplitable»
++networkRepresentationProps 1
++invalidValue
+0..1
++initValue
+0..1
+Figure 5.4: ISignals and the mapping into IPdus (FibexCore: SignalOverview)
+The conﬁguration of the COM Module for atomic signals can largely be derived from the
+System Template. A COM signal must be deﬁned in the COM module conﬁguration for
+each ISignalToPduMapping that is transmitted or received by the regarded ECU.
+To support the AUTOSAR concept of complex data types the AUTOSAR COM layer
+provides signal groups. Every record or array element of a complex data type requires
+a SystemSignal for the transmission. But the RTE has to guarantee the consistent
+transmission of data. A signal group shall be transmitted and received consistently;
+therefore it provides data consistency for complex data types. A SystemSignal-
+Group refers to a set of SystemSignals that must always be kept together in a com-
+mon IPdu. An ISignalGroup represents a Signal Group of the Interaction Layer. In
+the case of "signal fan-out", several ISignalGroups refer to the same SystemSig-
+nalGroup.
+System Template
+R4.0 Rev 3
+Record A
+Int X
+Record B
+Int Y
+Bool Z
+SystemSignalGroupA
+SystemSignal X
+SystemSignal Y
+SystemSignal Z
+RTE Fanout
+ISignalGroupA_1
+ISignal X_1
+ISignal Y_1
+ISignal Z_1
+ISignalGroupA_2
+ISignal X_2
+ISignal Y_2
+ISignal Z_3
+Figure 5.5: ISignal example
+The example in Figure 5.5 shows the usage of ISignalGroups and ISignals.
+In this example a record is mapped to a SystemSignalGroup.
+All Application-
+RecordElements with primitive Datatypes are mapped to individual SystemSignals.
+If the same SystemSignalGroup is sent to different receivers (RTE Fanout) then two
+different ISignalGroups are created. For each SystemSignal within the System-
+SignalGroup an ISignal is created. The different ISignals of the same System-
+Signal can have different network representations.
+Class
+ISignal
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication
+Note
+Signal of the Interaction Layer. The RTE supports a "signal fan-out" where the same
+System Signal is sent in different SignalIPdus to multiple receivers.
+The System Signal is unique per System. To support the RTE "signal fan-out" each
+SignalIPdu contains ISignals. If the same System Signal is to be mapped into several
+SignalIPdus there is one ISignal needed for each ISignalToIPduMapping.
+ISignals describe the Interface between the Precompile conﬁgured RTE and the
+potentially Postbuild conﬁgured Com Stack (see ECUC Parameter Mapping).
+In case of the SystemSignalGroup an ISignal must be created for each SystemSignal
+contained in the SystemSignalGroup.
+Tags: atp.recommendedPackage=ISignals
+Base
+ARObject,CollectableElement,FibexElement,Identiﬁable,Multilanguage
+Referrable,PackageableElement,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

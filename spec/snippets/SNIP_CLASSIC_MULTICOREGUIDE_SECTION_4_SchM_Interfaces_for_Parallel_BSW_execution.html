@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: multicoreguide</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_MULTICOREGUIDE_SECTION_4_SchM_Interfaces_for_Parallel_BSW_execution</h1>
         <div class="snip-meta-line">
           <span>Quelle: <strong>MultiCoreGuide.pdf</strong> (Seite 16)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08751" class="swsref internal-spec-ref"><code>SWS_Rte_08751</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -86,11 +87,33 @@ communication. Other RTE internal mechanism might not be available during startu
 The Inter-OS-Application Communicator (IOC) shall be configured to provide
 IocSend_&lt;Id&gt; functions with a uniquely determined &lt;Id&gt; for all client-server and
 sender-receiver connections that cross partition boundaries.
-Analogously, the SchM shall use IocReceive to receive data from inter-pa</div></section>
+Analogously, the SchM shall use IocReceive to receive data from inter-partition
+communication, and the IOC shall provide the corresponding IocReceive_&lt;Id&gt;
+functions.
+The following frame contains some pseudo code snippets that show how to use the
+IOC for inter-partition communication.
+void some_BSW_function(){
+char *str = "some text";
+SchM_Send_Data_Src_DstN(str);
+}
+Std_ReturnType SchM_Send_Data_Src_DstN(char *str){
+IocSend_1(str, 5);
+ActivateTask(TASK1);
+}
+Std_ReturnType SchM_Receive_Data_Src_DstN(char *str){
+IocReceive_1(str);
+}
+TASK(TASK1){
+char data[20];
+SchM_Receive_Data_Master_Sat1(data);
+/* do something with data */
+}
+Guide to Multi-Core Systems
+R4.1 Rev 3</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">SchM_Send in inter-partition communication</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -111,15 +134,15 @@ Analogously, the SchM shall use IocReceive to receive data from inter-pa</div></
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_08751" class="swsref internal-spec-ref"><code>SWS_Rte_08751</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: det</span>
-          <span class="badge-role">Rolle: heuristic</span>
+          <span class="badge-role">Rolle: constitutive</span>
           <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_2_2_Security_requirements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DataDistributionService.pdf</strong> (Seite 52)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DataDistributionService.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DataDistributionService.pdf</a></strong> (Seite 52)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: SWS_CP_CRYPTO_00004</span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_01001" class="swsref internal-spec-ref"><code>SWS_Det_01001</code></a></span>
         </div>
       </div>
 
@@ -92,11 +93,38 @@ Job.⌋
 [CP_SWS_Dds_CONSTR_00754] CSM job configuration ⌈The CSM DdsDomain
 ParticipantCsmAuthenticateJob shall be configured to call Csm_MacGenerate
 and the DdsDomainParticipantCsmVerifyJob to call Csm_MacVerify.
-The Dds configuration validation shall fail</div></section>
+The Dds configuration validation shall fail in case the DdsDomainPartici-
+pantCsmAuthenticateJob/DdsDomainParticipantCsmVerifyJob related to
+the same DdsDomainParticipant link CSM jobs that are not configured with
+Csm_MacGenerate and Csm_MacVerify respectively.
+For configuration details, refer to DdsDomainParticipantCryptoInfo.⌋
+[CP_SWS_Dds_CONSTR_00743]
+CSM key configuration ⌈Each CSM authenti-
+cate/verify pair, related to a single DomainParticipant, shall use the same keys (only
+simmetric-key algorithms are supported). For each DomainParticipant, the CSM used
+jobs shall be configured with the same keys.
+The Dds configuration validation shall fail in case the DdsDomainParticipantCsm
+AuthenticateJob/DdsDomainParticipantCsmVerifyJob related to the same
+DdsDomainParticipant link CSM jobs that are not configured with the same key.
+For configuration details, refer to DdsDomainParticipantCryptoInfo.⌋
+[CP_SWS_Dds_00756] MAC calculation failure
+Upstream requirements: FO_RS_Dds_00009
+⌈If the MAC calculation fails (e.g., the Csm_MacGenerate or Csm_MacVerify re-
+turn any error), the Dds module shall call the API Det_ReportRuntimeError with
+the DDS_E_CSM_LIBRARY_ERROR runtime error code and discard the message to be
+sent.
+In this case, during transmission the Dds shall call the PduR_DdsTxConfirmation
+function with result = E_NOT_OK.⌋
+Classic Platform
+[CP_SWS_Dds_00758] MAC check failure
+Upstream requirements: FO_RS_Dds_00009
+⌈At receiving side, if the MAC check fails, the Dds module shall call the API
+Det_ReportRuntimeError with the DDS_E_CSM_CHECK_FAILED rutime error code
+and discard the message.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Csm_MacGenerate called for authenticate job</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Det_ReportRuntimeError().</p>
       </section>
 
       <section class="snip-card">
@@ -105,7 +133,7 @@ The Dds configuration validation shall fail</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DataDistributionService.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DataDistributionService.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DataDistributionService.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -117,11 +145,11 @@ The Dds configuration validation shall fail</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>SWS_CP_CRYPTO_00004</td>
+              <td><a href="../../de/spec/record.html?id=SWS_Det_01001" class="swsref internal-spec-ref"><code>SWS_Det_01001</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>

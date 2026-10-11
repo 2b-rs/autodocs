@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_9_5_5_Service_06_Support_of_central_DTR_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 186)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=183" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 186)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_01129" class="swsref"><code>TPS_DEXT_01129</code></a></span>
         </div>
@@ -85,7 +86,137 @@ Identifier“). For the external representation of the data, a socalled UnitandS
 (UaSID) is passed along with the response onto the tester. From OBD regulation point
 of view it is required to have consistent data in Service$06 and Service$07. And in this
 scenario, a test has failed if the test result is either less than the lower limit or higher
-than the upper limi</div></section>
+than the upper limit. Along with this violation of the thresholds, a corresponding Event
+has to be reported and vice versa. Note that this consistency is valid strictly only upon
+first detection of the malfunction, since a healing from Service$07 takes one entire
+cycle without a failure detected while the Service$06 contents simply represent the
+latest test result.
+In order to support this consistency requirement, the Dem provides a specific interface
+to report the results per DTR whereas an Event is associated to a DTR on configuration
+level to refer to.
+Note that the Event serves as master and within its status additional effects such as
+enable / storage conditions are encountered. Given a specific DTR update type (by
+configuration), the UDS status (Tested, Failed, debounce status etc.) decides whether
+a DTR result being reported is further processed or suppressed/ignored.
+The Dem offers a service of conversion for the SWC to support a report of test re-
+sults and thresholds within the ECU-internal resolution. The conversion onto the tar-
+get format (standardized by [17, 19]: uint16, formula according to UaSID) including
+a correction in case of rounding effects is done within the Dem. For that reason the
+configuration includes a conversion formula similar to the one used by the RTE to de-
+scribe physical data (but simpler) where only a linear mapping is supported. Note that
+the conversion does not respect the UaSId. The service Need for the DTR provides a
+reference to a physical unit (see SWC Template chapter “Physical Units“) and a linear
+conversion (see SWC Template chapter “Computation Methods“) of CompuRational-
+Coeffs with a maximum of two numerator coefficients and one denominator coefficient,
+as well as the desired UaSId During the configuration process, this information is pro-
+cessed into a single linear conversion, which is then stored inside the ECUC of the
+Dem.
+By this central data handling, the aspect of data consistency for Service$07 / $06 is
+supported as well as reset in case of fault clear.
+[SWS_Dem_00751] ⌈The Dem shall provide data structures and functionality to re-
+ceive, store and report Service$06 test results persistently.⌋
+[SWS_Dem_00752]
+Upstream requirements: RS_Diag_04129
+⌈The DemDtrId is assigned by the Dem during the BSW configuration step.⌋
+Note: The Dem refers to a BSW configuration DemDtr which associates
+• a DemDtrId to an EventId
+• an indication whether the Monitor will provide data for the minimum limit, maxi-
+mum limit, or both
+• OBDMID
+• TID
+• UaSID
+• DemDtrUpdateKind
+• Coefficients for linear conversion analogous to the SW-C Description (chapter
+5.5.)
+[SWS_Dem_00753] ⌈For ensuring data consistency, an EventId can only be refer-
+enced by at maximum one DTR.⌋
+[SWS_Dem_00754] ⌈The Dem shall use the DemDtrUpdateKind for the evaluation
+and processing of reported DTR-values:
+• DEM_DTR_UPDATE_ALWAYS: State of the event is not considered (default, and
+used if DemDtrEventRef is not configured).
+• DEM_DTR_UPDATE_STEADY: Only when the events pre-debouncing within Dem
+is “stuck“ at the FAIL or PASS limit, and the latest result matches the debouncing
+direction.
+⌋
+[SWS_Dem_00755] ⌈The Dem shall only support a linear mapping, i.e. only support
+values for the coefficients b, c, and f.⌋
+Note: ASAM formula coefficients: (ax2 + bx + c) / (dx22 + ex + f) supporting on b, c and
+f.
+[SWS_Dem_00756]
+Upstream requirements: RS_Diag_04179
+⌈The Dem shall provide an API Dem_SetDTR within an interface DTRCentralReport
+to provide a report mechanism to the SWC for their test results. Arguments shall be
+the DemDtrId, the test value, the minimum and maximum limit, and a state indicating
+whether the monitor provides a valid minimum limit, maximum limit, or both, or whether
+the reported values shall be reset to zero.⌋
+[SWS_Dem_00757] ⌈If DemDtrEventRef references a DemEventParameter, the
+Dem shall process the reported DTR values only if all the enable/storage conditions of
+the referenced event are fulfilled, independent of DemDtrUpdateKind. If any of the
+enable/storage conditions of the referenced event are not fulfilled, then the Dem shall
+ignore the reported DTR values.⌋
+Note the example with DEM_DTR_UPDATE_STEADY: If an event has reached that status
+TESTED starting from an initialized state but has not detected a FAILED, the received
+DTR values within the limits are processed (=converted and stored). If the test result
+violates its associated limit (cf. control value) while the eventis indeed TESTED and
+FAILED, the DTR report is processed as well. But if the test result violates its associated
+limit (cf. control value) while the event is TESTED and PASSED, the DTR report is
+ignored assuming that the EventId is also not updated for good reasons (cf. enable /
+storage conditions).
+Applying this validation check within the DTR report, the data consistency in Service$06
+and $07 is ensured.
+[SWS_Dem_00758] ⌈The Dem shall support a conversion of the ECUinternal resolu-
+tion into the standardized external uint16 size and resolution according to the config-
+ured and standardized UaSID. For that reason, the conversion formula is configured
+per DTR. It is assumed that the conveyed parameter of the API call contain the values
+in the internal size and resolution. The Dem does offer sint32 as parameter for that
+reason to cover uint16 as well as sint16 (or even sint32) internal data types.⌋
+[SWS_Dem_00759]
+Upstream requirements: RS_Diag_04179
+⌈The Dem shall ensure the validity of the test results vs. threshold(s). If the param-
+eter TestResult passed in Dem_SetDTR is inside/outside the thresholds given by
+UpperLimit and LowerLimit, Testvalue of Dem_DcmGetDTRData shall also be
+inside/outside Upplimvalue and Lowlimvalue. If rounding effects lead to an un-
+intended change of the meaning, the thresholds shall be shifted by one increment
+accordingly to restore the result.⌋
+[SWS_Dem_00760] Computing available OBD MID values ⌈If Dem_DcmGetAvail-
+ableOBDMIDs is called with an "availablity Obdmid" value of 0x00, 0x20, 0x40, 0x60,
+0x80, 0xA0, 0xC0 or 0xE0 and the Dem has configured DemDtrMid, the Dem shall
+compute and provide the “Supported-OBDMID” information in the OUT parameter Ob-
+dmidvalue and return E_OK. The computed Obdmids parameter is according to ISO
+15031-5[12] and sets a bit for each supported Obdmid in the request range (starting
+with Obdmid+1) and having the last bit of the Obdmidvalue set, if any subsequent
+range has configured Obdmids.⌋
+[SWS_Dem_01301] Behavior on invalid Obdmid value ⌈If Dem_DcmGetAvail-
+ableOBDMIDs is called with an invalid Obdmid value which is different to 0x00, 0x20,
+0x40, 0x60, 0x80, 0xA0, 0xC0 or 0xE0, the Dem shall report the Det development error
+DEM_E_INVALID_OBDMID.⌋
+[SWS_Dem_00761] ⌈Upon request by the Dcm, the Dem shall repond with the number
+of TIDs per requested OBDMID using the API Dem_DcmGetNumTIDsOfOBDMID. This
+value can be used by the Dcm to iteratively request for the DTR data per OBDMID /
+TID-index whereas the TID-index loops from 0 to number-of-TIDs minus one.⌋
+[SWS_Dem_00762] ⌈Upon request by the Dcm, the Dem shall respond with the data
+available for a particular OBDMID / TIDindex per requested OBDMID using the API
+Dem_DcmGetDTRData. This value can be used by the Dcm to iteratively request for
+the DTR data per OBDMID / TIDindex starting from 0 to numberofTIDs minus one.⌋
+[SWS_Dem_00763] ⌈The Dem shall reset the DTR data using the reference to the
+Event per DTR, whenever the Event is affected by a fault clear command.⌋
+[SWS_Dem_00764] ⌈If no Event is assigned per DTR, the Dem shall reset the DTR
+data upon a Service$04 clear command by the Dcm, i.e. a Dem_ClearDTC with:
+DTC = DEM_DTC_GROUP_ALL_DTCS
+DTCFormat = DEM_DTC_FORMAT_OBD
+DTCOrigin = DEM_DTC_ORIGIN_PRIMARY_MEMORY
+⌋
+[SWS_Dem_CONSTR_06149] Dependency on container DemDtr ⌈The container
+DemDtr shall only be available if DemOBDSupport is set to DEM_OBD_MASTER_ECU
+or DEM_OBD_PRIMARY_ECU.⌋
+A DTR can refer to an event via DemDtrEventRef. The referenced event can be
+unavailable according to chapter chapter 7.4.8. In this case the Dem treats the DTR as
+not supported and will neither compute the DTR or report a result of it.
+[SWS_Dem_01335] Setting DTR results for unavailable events
+Upstream requirements: RS_Diag_04126
+⌈If Dem_SetDTR is called for an DTR that references via DemDtrEventRef an event
+that itself is configured with DemEventAvailable to FALSE, the Dem shall return
+E_NOT_OK and not compute the DTR.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -98,7 +229,7 @@ than the upper limi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=183" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

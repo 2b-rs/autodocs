@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_6_5_1_Assignment_of_data_consistency_mechanisms</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 203)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=202" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 203)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_80024" class="swsref internal-spec-ref"><code>SWS_Rte_80024</code></a></span>
         </div>
@@ -100,7 +101,67 @@ RTE generator shall not apply any mechanisms for data consistency. Data con-
 sistency will be ensured by methods outside of RTE implementation control.
 • RTE_PLUGIN
 This value requests to apply the RTE Implementation Plug-In mechanism.
-The stra</div></section>
+The strategies / mechanisms are described in general in section 4.2.6.4.
+[SWS_Rte_03504]
+Upstream requirements: SRS_Rte_00032
+⌈If the configuration parameter RteExclusiveAreaImplMechanism of an Exclu-
+siveArea is set to value ALL_INTERRUPT_BLOCKING the RTE generator shall use
+the mechanism of Interrupt blocking (blocking all interrupts) to guarantee data consis-
+tency if data inconsistency could occur.⌋
+[SWS_Rte_08921]
+Upstream requirements: SRS_Rte_00018
+⌈When the RTE is being generated for an Application Software Cluster, it
+shall raise an error if the configuration parameter RteExclusiveAreaImplMecha-
+nism is set to the value ALL_INTERRUPT_BLOCKING.⌋
+[SWS_Rte_05164]
+Upstream requirements: SRS_Rte_00032
+⌈If the configuration parameter RteExclusiveAreaImplMechanism of an Exclu-
+siveArea is set to value OS_INTERRUPT_BLOCKING the RTE generator shall use
+the mechanism of Interrupt blocking (blocking Os interrupts only) to guarantee data
+consistency if data inconsistency could occur.⌋
+[SWS_Rte_03595]
+Upstream requirements: SRS_Rte_00032
+⌈If the configuration parameter RteExclusiveAreaImplMechanism of an Exclu-
+siveArea is set to value OS_RESOURCE the RTE generator shall use OS resources to
+guarantee data consistency if data inconsistency could occur.⌋
+The requirements above have the limitation "if data inconsistency could occur"
+because it makes no sense to apply a data consistency mechanism if no potential
+data inconsistency can occur. This can be relevant if e.g. the "Sequential scheduling
+strategy" (described in section 4.2.6.4) still has solved the item by the ECU integrator
+defining an appropriate runnable-to-task mapping.
+[SWS_Rte_08419]
+Upstream requirements: SRS_Rte_00032
+⌈If the configuration parameter RteExclusiveAreaImplMechanism of an Exclu-
+siveAreais set to value OS_SPINLOCK the RTE generator shall use OS spinlocks to
+guarantee data consistency if data inconsistency could occur.⌋
+[SWS_Rte_03999]
+Upstream requirements: SRS_Rte_00032
+⌈If the configuration parameter RteExclusiveAreaImplMechanism of an Exclu-
+siveArea is set to value NONE then the RTE generator shall create functionally empty
+implementations for all required APIs.⌋
+Note: The implementation of ExclusiveAreas via RTE Implementation Plug-
+In mechanism (RteExclusiveAreaImplMechanism set to RTE_PLUGIN) is de-
+scribed in section 7.3.5. Note:
+The configuration parameter RteExclusiveAreaImplMechanism can be specified
+for each SWC instance and therefore the implementation for each API may differ.
+The description "functionally empty" implies no code to lock/unlock the exclusive
+area however other code, such as VFB trace, may be present. If all SWC instances
+result in identical implementations, e.g. empty, then an RTE generator can provide a
+function-like macro within the RTE API mappings to further optimize the generated
+API. Such optimization is not possible when implementations differ since the API
+mappings are generated per-type.
+In a SWC code, it is not allowed to use WaitPoints inside an ExclusiveArea:
+The RTE generator might use OSEK services to implement ExclusiveAreas and
+waiting for an OS event is not allowed when an OSEK resource has been taken for
+example. For RunnableEntityEntersExclusiveArea, the RTE generator cannot check if
+WaitPoints are inside an ExclusiveArea. Therefore, it is the responsibility of the
+SWC Code writer to ensure that no WaitPoints are used inside an exclusive area.
+But for RunnableEntitys running inside an ExclusiveArea, the RTE generator is
+able to do the following check.
+[SWS_Rte_07005]
+Upstream requirements: SRS_Rte_00032, SRS_Rte_00018
+⌈The RTE generator shall reject a configuration with a WaitPoint applied to a
+RunnableEntity which is using the ExclusiveArea in the role runsInside⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -113,7 +174,7 @@ The stra</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=202" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

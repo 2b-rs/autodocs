@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_8_API_specification</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 247)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=245" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 247)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00453" class="swsref internal-spec-ref"><code>SWS_NvM_00453</code></a></span>
         </div>
@@ -152,7 +153,197 @@ Dem
 «interface»
 BSW/SWC_Dem_Use
 «function»
-::Dem</div></section>
+::Dem_GetDTCOfEvent
++
+Dem_GetDTCOfEvent(Std_ReturnType, Dem_EventIdType, Dem_DTCFormatType, uint32**)
+::Dem_SetEventDisabled
++
+Dem_SetEventDisabled(Std_ReturnType, Dem_EventIdType)
+::Dem_GetEventExtendedDataRecordEx
++
+Dem_GetEventExtendedDataRecordEx(Std_ReturnType, Dem_EventIdType, uint8, uint8**, uint16**): void
+::Dem_GetEventFreezeFrameDataEx
++
+Dem_GetEventFreezeFrameDataEx(Std_ReturnType, Dem_EventIdType, uint8, uint16, uint8**, uint16**): void
+::Dem_GetEventMemoryOverflow
++
+Dem_GetEventMemoryOverflow(Std_ReturnType, uint8, Dem_DTCOriginType, boolean**): void
+::Dem_SetDTCSuppression
++
+Dem_SetDTCSuppression(Std_ReturnType, uint8, boolean): void
+::Dem_GetIndicatorStatus
++
+Dem_GetIndicatorStatus(Std_ReturnType, uint8, Dem_IndicatorStatusType**)
+::Dem_SetEnableCondition
++
+Dem_SetEnableCondition(Std_ReturnType, uint8, boolean)
+::Dem_SetStorageCondition
++
+Dem_SetStorageCondition(Std_ReturnType, uint8, boolean): void
+::Dem_RepIUMPRDenRelease
++
+Dem_RepIUMPRDenRelease(Std_ReturnType, Dem_RatioIdType)
+::Dem_ResetEventDebounceStatus
++
+Dem_ResetEventDebounceStatus(Std_ReturnType, Dem_EventIdType, Dem_DebounceResetStatusType)
+::Dem_GetEventUdsStatus
++
+Dem_GetEventUdsStatus(Std_ReturnType, Dem_EventIdType, Dem_UdsStatusByteType**)
+::Dem_SetPtoStatus
++
+Dem_SetPtoStatus(Std_ReturnType, boolean)
+::Dem_RepIUMPRFaultDetect
++
+Dem_RepIUMPRFaultDetect(Std_ReturnType, Dem_RatioIdType)
+«interface»
+BSW_Dem_Use
+«function»
+::Dem_ClearDTC
++
+Dem_ClearDTC(Std_ReturnType, uint8)
+::Dem_GetVersionInfo
++
+Dem_GetVersionInfo(Std_VersionInfoType**)
+«interface»
+SWC_Dem_Use
+«function»
+::Dem_ResetEventStatus
++
+Dem_ResetEventStatus(Std_ReturnType, Dem_EventIdType)
+::Dem_PrestoreFreezeFrame
++
+Dem_PrestoreFreezeFrame(Std_ReturnType, Dem_EventIdType)
+::Dem_RestartOperationCycle
++
+Dem_RestartOperationCycle(Std_ReturnType, uint8)
+::Dem_SetEventStatus
++
+Dem_SetEventStatus(Std_ReturnType, Dem_EventIdType, Dem_EventStatusType)
+::Dem_ClearPrestoredFreezeFrame
++
+Dem_ClearPrestoredFreezeFrame(Std_ReturnType, Dem_EventIdType)
+::Dem_GetFaultDetectionCounter
++
+Dem_GetFaultDetectionCounter(Std_ReturnType, Dem_EventIdType, sint8**)
+::Dem_ResetMonitorStatus
++
+Dem_ResetMonitorStatus(Std_ReturnType, Dem_EventIdType)
+«realize»
+«realize»
+«use»
+«use»
+«use»
+«use»
+«realize»
+Figure 8.2: Overview of interfaces between the Dem and other BSW modules (in general)
+«interface»
+Dcm_Dem_Optional
+«function»
+::Dem_SetFreezeFrameRecordFilter
++
+Dem_SetFreezeFrameRecordFilter(return, ClientId, DTCFormat)
+::Dem_GetNextFilteredDTC
++
+Dem_GetNextFilteredDTC(return, ClientId, DTC, DTCStatus)
+::Dem_GetSeverityOfDTC
++
+Dem_GetSeverityOfDTC(return, DTCSeverity, ClientId)
+::Dem_GetNumberOfFilteredDTC
++
+Dem_GetNumberOfFilteredDTC(return, ClientId, NumberOfFilteredDTC)
+::Dem_SetDTCFilter
++
+Dem_SetDTCFilter(return, ClientId, DTCStatusMask, DTCFormat, DTCOrigin, FilterWithSeverity, DTCSeverityMask, FilterForFaultDetectionCounter)
+::Dem_GetTranslationType
++
+Dem_GetTranslationType(return, ClientId)
+::Dem_GetDTCStatusAvailabilityMask
++
+Dem_GetDTCStatusAvailabilityMask(return, ClientId, DTCStatusMask, DTCOrigin)
+::Dem_GetNextFilteredDTCAndFDC
++
+Dem_GetNextFilteredDTCAndFDC(return, ClientId, DTC, DTCFaultDetectionCounter)
+::Dem_GetStatusOfDTC
++
+Dem_GetStatusOfDTC(return, ClientId, DTCStatus)
+::Dem_GetSizeOfFreezeFrameSelection
++
+Dem_GetSizeOfFreezeFrameSelection(return, ClientId, SizeOfFreezeFrame)
+::Dem_DcmReadDataOfOBDFreezeFrame
++
+Dem_DcmReadDataOfOBDFreezeFrame(return, PID, DataElementIndexOfPID, DestBuffer, BufSize)
+::Dem_GetNextExtendedDataRecord
++
+Dem_GetNextExtendedDataRecord(return, ClientId, DestBuffer, BufSize)
+::Dem_GetDTCByOccurrenceTime
++
+Dem_GetDTCByOccurrenceTime(return, ClientId, DTCRequest, DTC)
+::Dem_ClearDTC
++
+Dem_ClearDTC(return, ClientId)
+::Dem_GetNextFilteredRecord
++
+Dem_GetNextFilteredRecord(return, ClientId, DTC, RecordNumber)
+::Dem_DisableDTCSetting
++
+Dem_DisableDTCSetting(return, ClientId)
+::Dem_EnableDTCRecordUpdate
++
+Dem_EnableDTCRecordUpdate(return, ClientId)
+::Dem_GetNextFreezeFrameData
++
+Dem_GetNextFreezeFrameData(return, ClientId, DestBuffer, BufSize)
+::Dem_GetNextFilteredDTCAndSeverity
++
+Dem_GetNextFilteredDTCAndSeverity(return, ClientId, DTC, DTCStatus, DTCSeverity, DTCFunctionalUnit)
+::Dem_GetSizeOfExtendedDataRecordSelection
++
+Dem_GetSizeOfExtendedDataRecordSelection(return, ClientId, SizeOfExtendedDataRecord)
+::Dem_DisableDTCRecordUpdate
++
+Dem_DisableDTCRecordUpdate(return, ClientId)
+«module»
+Dem
+«module»
+Dcm
+«interface»
+Dcm_Dem_Configurable
+«function»
+::Dem_DcmReadDataOfPID01
++
+Dem_DcmReadDataOfPID01(return, PID01value)
+::Dem_DcmReadDataOfPID30
++
+Dem_DcmReadDataOfPID30(return, PID30value)
+::Dem_DcmReadDataOfPID21
++
+Dem_DcmReadDataOfPID21(return, PID21value)
+::Dem_DcmGetInfoTypeValue08
++
+Dem_DcmGetInfoTypeValue08(return, OpStatus, Iumprdata08, Iumprdata08BufferSize)
+::Dem_DcmGetInfoTypeValue0B
++
+Dem_DcmGetInfoTypeValue0B(return, OpStatus, Iumprdata0B, Iumprdata0BBufferSize)
+::Dem_DcmReadDataOfPID4D
++
+Dem_DcmReadDataOfPID4D(return, PID4Dvalue)
+::Dem_DcmReadDataOfPID1C
++
+Dem_DcmReadDataOfPID1C(return, PID1Cvalue)
+::Dem_DcmReadDataOfPID41
++
+Dem_DcmReadDataOfPID41(return, PID41value)
+::Dem_DcmReadDataOfPID4E
++
+Dem_DcmReadDataOfPID4E(return, PID4Evalue)
+::Dem_DcmReadDataOfPID31
++
+Dem_DcmReadDataOfPID31(return, PID31value)
+«optional»
+«configurable»
+«realize»
+«realize»
+Figure 8.3: Overview of interfaces between the Dem and Dcm</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -165,7 +356,7 @@ BSW/SWC_Dem_Use
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=245" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

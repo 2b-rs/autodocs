@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_1_12_1_Reception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetInterface.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></strong> (Seite 48)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00244" class="swsref internal-spec-ref"><code>SWS_Eth_00244</code></a></span>
         </div>
@@ -86,7 +87,142 @@ is locked, and consequently also the used EthIfFrameRxPdu. For further reception
 that matches the same EthIfFrameType another EthIfFrameRxPdu of the corre-
 sponding EthIfFrameRxPool has to be used. A call of EthIf_ReleaseRxBuffer
 is only expected by the EthIf, if a global PDU is configured with KeepLocalPduBuffer
-set to TRUE. KeepLocalPduBuffer set to TRUE indicate, that the destin</div></section>
+set to TRUE. KeepLocalPduBuffer set to TRUE indicate, that the destination upper
+layer may trigger a hardware supported data transfer. Therefore the EthCtrlCon-
+figIngressQueue element need to be locked until the upper layer indicate to re-
+lease EthCtrlConfigIngressQueue element. If a global PDU is configured with
+KeepLocalPduBuffer set to FALSE, the EthIf module call directly &lt;EthDrv&gt;_Re-
+leaseRxBuffer after the RxIndication function call returns.
+[SWS_EthIf_00663] Reception handling with fixed EthIfFrameRxPools
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf_RxIndication is called and the following conditions are true:
+• the
+given
+FrameType
+match
+to
+EthIfFrameType
+of
+a
+configured
+EthIfFrameConfig
+• the matching EthIfFrameConfig has an EthIfFrameRxPool configured,
+where at least one EthIfFrameRxPdu is in state PDU_AVAILABLE
+• the VLAN-ID of the received Ethernet frame match to the EthIfVlanId of the
+EthIfController which is referenced via EthIfFrameRxControllerRef
+then the EthIf shall perform the following actions:
+• set the RxPduId to the PDU-ID of the PDU, which is referenced by the
+EthIfFrameRxPdu
+• transfer the given DataPtr and DataLen to the PduInfoPtr of the used
+EthIfFrameRxPdu
+• if MetaDataItem TIMETUPLE_TYPE_PTR is configured at the used PDU, which
+is referenced by the EthIfFrameRxPdu:
+– produce MetaDataItem TIMETUPLE_TYPE_PTR and transfer the given
+IngressTimeTuplePtr to the produced MetaDataItem TIMETUPLE_-
+TYPE_PTR
+– add a pointer of the produced MetaDataItem to the PduInfoPtr of the
+used EthIfFrameRxPdu
+• set the EthIfFrameRxPdu to state PDU_IN_USE
+• store a mapping of the given RxHandleId with the PDU-ID of the used
+EthIfFrameRxPdu
+• call LSduR_EthIfRxIndication with created PduInfoPtr and RxPduId of
+the used EthIfFrameRxPdu
+⌋
+[SWS_EthIf_00664] Reception handling with floating EthIfFrameRxPools
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf_RxIndication is called and the following conditions are true:
+• the
+given
+FrameType
+match
+to
+EthIfFrameType
+of
+a
+configured
+EthIfFrameConfig
+• the matching EthIfFrameConfig has an EthIfFrameRxPool configured,
+where at least one EthIfFrameRxPdu is in state PDU_AVAILABLE
+• the EthIfFrameRxPool is not assigned to an specific EthIfController, i.e.
+EthIfFrameRxControllerRef is not configured
+• the VLAN-ID of the received Ethernet frame match to the EthIfVlanId of an
+configured EthIfController
+then the EthIf shall perform the following actions:
+• set the RxPduId to the PDU-ID of the PDU, which is referenced by the
+EthIfFrameRxPdu
+• transfer the given DataPtr and DataLen to the PduInfoPtr of the used
+EthIfFrameRxPdu
+• if MetaDataItem TIMETUPLE_TYPE_PTR is configured at the used PDU, which
+is referenced by the EthIfFrameRxPdu:
+– produce MetaDataItem TIMETUPLE_TYPE_PTR and transfer the given
+IngressTimeTuplePtr to the produced MetaDataItem TIMETUPLE_-
+TYPE_PTR
+– add a pointer of the produced MetaDataItem to the PduInfoPtr of the
+used EthIfFrameRxPdu
+• set the EthIfFrameRxPdu to state PDU_IN_USE
+• store a mapping of the given RxHandleId with the PDU-ID of the used
+EthIfFrameRxPdu
+• call LSduR_EthIfRxIndication with created PduInfoPtr and RxPduId of
+the used EthIfFrameRxPdu
+⌋
+[SWS_EthIf_00665] Abort of reception indication process
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf_RxIndication is called, then the EthIf shall first try to find a matching
+EthIfFrameRxPdu from an fixed EthIfFrameRxPool and second from an floating
+EthIfFrameRxPool. If no matching EthIfFrameRxPdu is available, then the pro-
+cessing of the reception indication shall be aborted.⌋
+[SWS_EthIf_00638] Error handling for aborted reception indication process
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If a reception indication processing is aborted, then EthIf shall call &lt;EthDrv&gt;_Re-
+leaseRxBuffer with the given RxHandleId.⌋
+[SWS_EthIf_00639] Recpetion handling for PDUs with KeepLocalPduBuffer set
+to FALSE
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If LSduR_EthIfRxIndication returns and the used PDU-ID refer to a global PDU
+which has KeepLocalPduBuffer set to FALSE, then the EthIf shall perform the fol-
+lowing actions:
+• set the affected EthIfFrameRxPdu to state PDU_AVAILABLE
+• release the local buffer produced for this PDU
+• remove the mapping between the RxHandleId and the PDU-ID of the used
+EthIfFrameRxPdu
+• call &lt;EthDrv&gt;_ReleaseRxBuffer with RxHandleId mapped to the given Rx-
+PduId
+⌋
+[SWS_EthIf_00640] Recpetion handling for PDUs with KeepLocalPduBuffer set
+to TRUE
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If LSduR_EthIfRxIndication returns and the used PDU-ID refer to a global PDU
+which has KeepLocalPduBuffer set to TRUE, then the EthIf shall keep the local
+buffer and the state of the used PDU, until EthIf_ReleaseRxBuffer for the used
+PDU-ID is called.⌋
+[SWS_EthIf_00641] Handling if EthIf_ReleaseRxBuffer is called
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf_ReleaseRxBuffer is called and the following conditions are true:
+• the given PduId refer to a PDU-ID, where a mapping is stored to a corresponding
+RxHandleId
+• the EthIfFrameRxPdu is in state PDU_IN_USE
+then the EthIf shall perform the following actions. Otherwise the function shall return
+without doing any action:
+• set the affected EthIfFrameRxPdu to state PDU_AVAILABLE
+• release the local buffer produced for this PDU
+• remove the mapping between the RxHandleId and the PDU-ID of the used
+EthIfFrameRxPdu
+• call &lt;EthDrv&gt;_ReleaseRxBuffer with RxHandleId mapped to the given Rx-
+PduId</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -99,7 +235,7 @@ set to TRUE. KeepLocalPduBuffer set to TRUE indicate, that the destin</div></sec
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

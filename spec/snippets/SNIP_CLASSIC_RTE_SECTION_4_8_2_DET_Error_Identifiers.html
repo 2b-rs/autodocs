@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_RTE_SECTION_4_8_2_DET_Error_Identifiers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 423)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=423" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 423)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07684" class="swsref internal-spec-ref"><code>SWS_Rte_07684</code></a></span>
+          <span>Ziel-Element: SWS_Rte_CONSTR_09029</span>
         </div>
       </div>
 
@@ -90,11 +91,51 @@ is called with a NULL parameter.⌋(SRS_BSW_00337)
 [SWS_Rte_06635] ⌈An RTE_E_DET_ILLEGAL_INVOCATION (0x03) shall be re-
 ported by the RTE when it determines that an RTE API is called by a Runnable which
 should not call that RTE API. The RTE can identify the active Runnable when it dis-
-patches the RTE Event and if it subsequently receives a call from that Ru</div></section>
+patches the RTE Event and if it subsequently receives a call from that Runnable to
+an API that is not part of its contract then this particular error ID must me logged.⌋
+(SRS_BSW_00337)
+[SWS_Rte_06637] ⌈An RTE_E_DET_WAIT_IN_EXCLUSIVE_AREA (0x04) shall be
+reported by the RTE when an application has called an Rte_Enter API and subse-
+quently asks the RTE to enter a wait state. This is illegal because it would lock the
+ECU.⌋(SRS_BSW_00337)
+[SWS_Rte_07675]
+⌈An
+RTE_E_DET_ILLEGAL_NESTED_EXCLUSIVE_AREA
+(0x05)
+shall
+be
+reported
+by
+the
+RTE
+when
+an
+application
+violates
+[SWS_Rte_CONSTR_09029].⌋(SRS_BSW_00337)
+[SWS_Rte_07682] ⌈If RteDevErrorDetectUninit is enabled, an RTE_E_UNINIT
+(0x07) shall be reported by the RTE when one of the APIs :
+• RTE APIs provided to an AUTOSAR software-component
+• Rte_NvMNotifyInitBlock.
+is called before Rte_Start, after Rte_Stop or After the partition to which the API
+belongs is terminated.⌋(SRS_BSW_00337)
+The RTE APIs provided to an AUTOSAR software-component are specified in 5.6.
+Note:
+• In production mode, No checks are performed.
+• In development mode, if an error is detected the API behaviour is undefined and
+it is left to the Rte implementer.
+Rational:
+The introduction of this developpement check should not introduce big
+changes to production mode configuration.
+[SWS_Rte_07683] ⌈If RteDevErrorDetectUninit is enabled, an RTE_E_UNINIT
+(0x07) shall be reported by the Basic Software Scheduler / RTE when one of the
+APIs SchM_Switch, SchM_Mode, SchM_SwitchAck, SchM_Trigger, SchM_Send,
+SchM_Receive, SchM_Call, SchM_Result, SchM_ActMainFunction, SchM_-
+StartTiming, or Rte_Start is called before SchM_Init.⌋(SRS_BSW_00337)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07684] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_CONSTR_09029] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +144,7 @@ patches the RTE Event and if it subsequently receives a call from that Ru</div><
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=423" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,7 +156,7 @@ patches the RTE Event and if it subsequently receives a call from that Ru</div><
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_07684" class="swsref internal-spec-ref"><code>SWS_Rte_07684</code></a></td>
+              <td>SWS_Rte_CONSTR_09029</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

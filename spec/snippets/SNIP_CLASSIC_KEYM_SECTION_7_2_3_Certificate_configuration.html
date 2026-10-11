@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: keym</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 90%</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 31)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 30)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00057" class="swsref internal-spec-ref"><code>SWS_KeyM_00057</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00731" class="swsref internal-spec-ref"><code>SWS_KeyM_00731</code></a></span>
         </div>
       </div>
 
@@ -91,11 +92,82 @@ Note:
 Such a certificate is typically placed in RAM and is not intended to be used for per-
 manent storage. KeyM_SetCertificate() is just used for the verification of a presented
 certificate. It is not intended to be used for permanent storage like for example the
-Root certificate. For operation to store a certifi</div></section>
+Root certificate. For operation to store a certificate permanently, the function KeyM_
+ServiceCertificate{ByCertId}() shall be used.
+Certificates can be represented in different formats.
+[SWS_KeyM_00175]
+Upstream requirements: SRS_CryptoStack_00112
+⌈The configuration shall support three different formats, [8] the X.509, CVC and CRL.⌋
+Key elements that are assigned to certificates can be categorized into basic elements
+of the structure. This is configured with KeyMCertificateElement/KeyMCertificateEle-
+mentOfStructure.
+The following tables give correspondences of the enum values of KeyMCertificateEle-
+mentOfStructure to the naming convention of the respective specifications.
+X.509
+RFC 5280
+KeyM Configuration of KeyMCertificateElement/ Key
+MCertificateElementOfStructure
+Version
+CertificateVersionNumber
+Certificate Serial Number
+CertificateSerialNumber
+Signature Algorithm Identifier
+CertificateSignatureAlgorithmID
+Issuer Name
+CertificateIssuerName
+Validity Not Before Time
+CertificateValidityPeriodNotBefore
+Validity Not After Time
+CertificateValidityPeriodNotAfter
+Subject Name
+CertificateSubjectName
+Subject Public Key Algorithm
+CertificateSubjectPublicKeyInfo_PublicKeyAlgorithm
+Subject Public Key
+CertificateSubjectPublicKeyInfo_SubjectPublicKey
+Extensions
+CertificateExtension
+Table 7.1: Corresponding items of X.509 elements from RFC5280 with element item con-
+figuration of KeyMCertificateElement/KeyMCertificateElementOfStructure in [ECUC_-
+KeyM_00038].
+CVC
+BSI - Technical Guideline TR-03110
+KeyM Configuration of KeyMCertificateElement/ Key
+MCertificateElementOfStructure
+Certificate Profile Identifier
+CertificateVersionNumber
+Certificate Authority Reference
+CertificateIssuerName
+Signature Algorithm Identifier
+CertificateSignatureAlgorithmID
+Public Key Object Identifier
+CertificateSubjectPublicKeyInfo_PublicKeyAlgorithm
+Public Key Domain Parameters
+CertificateSubjectPublicKeyInfo_SubjectPublicKey
+Certificate Holder Reference
+CertificateSubjectName
+Certificate Holder Authorization Template
+CertificateSubjectAuthorization
+Certificate Effective Date
+CertificateValidityPeriodNotBefore
+Certificate Expiration Date
+CertificateValidityPeriodNotAfter
+Certificate Extensions
+CertificateExtension
+Table 7.2: Corresponding items of CVC elements as defined in BSI - Technical Guideline
+TR-03110 with element item configuration of KeyMCertificateElement/KeyMCertificateEl-
+ementOfStructure in [ECUC_KeyM_00038].
+The element RevokedCertificates in [ECUC_KeyM_00038] is used to indicate that this
+element is the list of revoked certificates in the certificate revocation list (CRL).
+[SWS_KeyM_00731]
+Upstream requirements: SRS_CryptoStack_00115
+⌈A KeyM that supports encoding types beyond the pre-defined ones available in
+[ECUC_KeyM_00088] shall define custom specific Encoding types through the param-
+eter KeyMCertEncodingTypeCustom.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von KeyM_SetCertificate().</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_KeyM_00731] im Text von SWS_KeyManager.</p>
       </section>
 
       <section class="snip-card">
@@ -104,11 +176,11 @@ Root certificate. For operation to store a certifi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 31</td>
+              <td>Seite 30</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -116,7 +188,7 @@ Root certificate. For operation to store a certifi</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00057" class="swsref internal-spec-ref"><code>SWS_KeyM_00057</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00731" class="swsref internal-spec-ref"><code>SWS_KeyM_00731</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -124,7 +196,7 @@ Root certificate. For operation to store a certifi</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.90</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

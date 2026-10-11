@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_9_7_Receive_indication_interrupt_mode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 160)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=160" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 160)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_CP_CAN_00012</span>
         </div>
@@ -175,7 +176,41 @@ The CPU (CanDrv) get exclusive access rights to the CAN mailbox
 or at least to the corresponding hardware object, where new data
 were received.
 Buffering, normalizing
-The</div></section>
+The L-PDU is normalized and is buffered in the temporary buffer
+located in CanDrv. Each CanDrv owns such a temporary buffer
+for every Physical Channel only if normalizing of the data is
+necessary.
+Indication to CanIf
+The reception is indicated to CanIf by calling of
+CanIf_RxIndication(). The HRH specifies the CAN RAM
+Hardware Object and the corresponding CAN Controller,
+which contains the received L-PDU. The temporary buffer is
+referenced to CanIf by PduInfoPtr-&gt;SduDataPtr.
+Software Filtering
+The Software Filtering checks, whether the received L-PDU will be
+processed on a local ECU. If not, the received L-PDU is not
+indicated to upper layers. Further processing is suppressed.
+Data Length Check
+If the L-PDU is found, the Data Length of the received L-PDU is
+compared with the expected, statically configured one for the
+received L-PDU.
+Receive Indication to the
+upper layer
+The corresponding receive indication service of the upper layer is
+called. This signals a successful reception to the target upper
+layer. The parameter RxPduId specifies the L-SDU, the second
+parameter is the reference on the temporary buffer within the
+L-SDU.
+During is execution of this service the CAN hardware buffers must
+be unlocked for CPU access/locked for CAN Controller access.
+Validation of CAN hardware
+object, allow access of CAN
+Controller to CAN
+mailbox
+The CAN Controller get back exclusive access rights to the
+CAN mailbox or at least to the corresponding hardware object,
+where new data were already being copied into the upper layer
+buffer.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -188,7 +223,7 @@ The</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=160" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

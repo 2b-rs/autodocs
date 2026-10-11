@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_9_2_1_Centralized_PID_21_31_4D_4E_handling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 170)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=170" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 170)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dem_CONSTR_06132</span>
         </div>
@@ -101,7 +102,50 @@ For details see chapter 7.11.7.
 [SWS_Dem_00304] ⌈A Dem delivery shall provide function call interfaces to the Dcm
 and the respective ServiceNeeds to declare to the Dcm that these PIDs are sup-
 ported.⌋
-[SWS_Dem_00347] ⌈I</div></section>
+[SWS_Dem_00347] ⌈If PID $1E (auxiliary input status) is supported the PTO (Power
+Take Off) related event status handling shall implemented inside the Dem module (refer
+to [20]).⌋
+[SWS_Dem_00377] ⌈The Dem module shall provide the interface Dem_SetPtoSta-
+tus allowing a SWC implementing the PTO functionality to notify the Dem module if
+PTO is active or inactive (refer to section 8).⌋
+[SWS_Dem_00378] ⌈The Dem module shall support the configuration parameter
+DemConsiderPtoStatus indicating that a certain event is affected by the Dem PTO
+handling.⌋
+The Dem module provides the configuration switch DemPTOSupport to enable or dis-
+able the usage of PID $1E.
+A special configuration is applied for the computation of PID $01 and $41:
+[SWS_Dem_00349] ⌈The Dem module shall support the configuration parameter De-
+mEventOBDReadinessGroup for OBD systems, to assign individual events to one
+specific readiness group.⌋
+According to SAEJ1979 [18], the group AirCondition Component shall not be supported
+anymore. However, it is still included in ISO 15031-5 [12]. The groups distinguish
+between spark ignition engines (spark) and compression ignition engines (compr.).
+However, it is necessary to configure per event, to which readiness group the monitor
+contributes (if at all).
+PID $21 handling
+PID $21 is either reported only by the OBD Master ECU, or a synchronized valued by
+all OBD ECUs (centralized PID handling).
+If the configuration switch DemOBDCentralizedPID21Handling is enabled:
+A Software component of the OBD Master ECU could retrieve the current PID $21
+value via the interface GetDataOfPID21 from Dem module with the goal to distribute
+the value to all other Primary ECUs in the vehicle.
+A Software component of the OBD Primary ECU receiving the information for PID $21
+could forward this information to the Dem module via the interface SetDataOfPID21
+to synchronize the value with the OBD Master ECU.
+[SWS_Dem_01095] ⌈On invocation of Dem_SetDataOfPID21 the internal PID $21
+value shall be updated.⌋
+Note: AUTOSAR defines that OBD Primary ECUs do not calculate the PID $21 value
+by its own.
+[SWS_Dem_01096] ⌈An OBD Master ECU shall calculate the PID $21 value by its
+own (considering [SWS_Dem_00346]).⌋
+[SWS_Dem_01097] ⌈On invocation of Dem_GetDataOfPID21 the internal calculated
+PID $21 value shall be returned.⌋
+Note: AUTOSAR defines that OBD Primary ECUs do not calculate the PID $21 value
+by its own.
+[SWS_Dem_01098] ⌈On invocation of Dem_DcmReadDataOfPID21 the Dem shall re-
+turn the current value of PID $21.⌋
+[SWS_Dem_01099] ⌈If Dem_DcmReadDataOfPID21 is called before Dem_Set-
+DataOfPID21, the Dem shall return 0xFFFF as PID $21 value.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -114,7 +158,7 @@ ported.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=170" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

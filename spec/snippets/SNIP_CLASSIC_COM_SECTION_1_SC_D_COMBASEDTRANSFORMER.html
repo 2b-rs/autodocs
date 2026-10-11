@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_1_SC_D_COMBASEDTRANSFORMER</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMBasedTransformer.pdf</strong> (Seite 17)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMBasedTransformer.pdf#page=17" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMBasedTransformer.pdf</a></strong> (Seite 17)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02058" class="swsref"><code>TPS_SYST_02058</code></a></span>
         </div>
@@ -163,7 +164,20 @@ APIs
 Com_SendSignalGroupArray
 and
 Com_ReceiveSignalGroupArray handle the signal group as array represen-
-tation based on length of the s</div></section>
+tation based on length of the signal group and the start position inside the ComIPdu.
+This array representation contains all signals that belong to the signal group,
+regardless whether the application software has a data mapping defined or not.
+As an example in figure 7.2 the ’Signal Group X’ consists of the signals ’M’, ’CRC’, ’SC’,
+’D1’, ’D2’, ’D3’, and ’D4’. Thus the RTE will interact with COM based on the whole array
+representation of this signal group with length of the signal group.
+When the RTE interacts with the COM Based Transformer also all the other poten-
+tial transformers need to be considered in order to determine which part of the array
+representation of the signal group actually is provided to each transformer since each
+transformer may add data during sending (or remove data during reception).
+E.g. the part of the array representation which holds the ’CRC’ and ’SC’ signals are
+handled by the E2E transformer but will not be considered by the COM Based Trans-
+former. The ’M’ signal will neither be handled by the E2E transformer nor the COM
+Based Transformer. For ’M’ a further transformer is responsible.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -176,7 +190,7 @@ tation based on length of the s</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMBasedTransformer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMBasedTransformer.pdf#page=17" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMBasedTransformer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

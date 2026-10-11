@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_10_Service_0x29_Authentication</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 144)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=143" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 144)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dcm_CONSTR_6091</span>
         </div>
@@ -92,7 +93,35 @@ change. Authentication with challenge-response (ACR) is out of scope of AUTOSAR.
 If it is required it needs a full custom implementation using existing Dcm callouts for
 custom service processing.
 [SWS_Dcm_01551] NRC Handling for UDS service authentication
-Upst</div></section>
+Upstream requirements: RS_Diag_04230
+⌈The Dcm shall follow the NRC handling as defined for ISO 14229-1:2018 for UDS
+service authentication. This includes the NRC codes as well as the order of individual
+NRC checks.⌋
+[SWS_Dcm_CONSTR_06091] Authentication configuration ⌈The presence of a
+DcmDsdService with DcmDsdSidTabServiceId set to 0x29, requires a configured con-
+tainer DcmDspAuthentication on DcmDsp.⌋
+[SWS_Dcm_CONSTR_06092] Authentication per connection ⌈The presence of
+a DcmDsdService with DcmDsdSidTabServiceId set to 0x29, requires a configured
+DcmDspAuthenticationConnection per configured connection DcmDslConnection.⌋
+[SWS_Dcm_CONSTR_06093] One authentication configuration per connection
+⌈Each DcmDspAuthenticationConnection shall refer a different DcmDslMainConnec-
+tion by the reference in DcmDspAuthenticationConnectionMainConnectionRef.⌋
+The Dcm is using the Csm and KeyM for certificate management. Parsing the certifi-
+cate is a potential time-consuming operation and needs to be executed asynchronous.
+There are opinions that security shall not reveal any cause of failed authentication and
+thus have no dedicated NRCs for different certificate failures. To respect this use case
+the Dcm provides a general security NRC handling.
+[SWS_Dcm_01560] Use of generic NRC for invalid certificate or content
+Upstream requirements: RS_Diag_04230
+⌈If the mode referenced by DcmDspAuthenticationGeneralNRCModeRuleRef evalu-
+ates to true, the Dcm shall send the NRC code given in DcmDspAuthenticationGener-
+alNRC instead of the specific NRC codes in all situation where a Certificate verification
+failed - NRC is returned.⌋
+[SWS_Dcm_CONSTR_06094] Generic NRC configuration requirements
+Upstream requirements: RS_Diag_04230
+⌈If DcmDspAuthenticationGeneralNRCModeRuleRef is configured the parameter
+DcmDspAuthenticationGeneralNRC shall also be configured.⌋
+Manager</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +134,7 @@ Upst</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=143" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

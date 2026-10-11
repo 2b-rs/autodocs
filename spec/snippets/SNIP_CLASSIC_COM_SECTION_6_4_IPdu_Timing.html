@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_6_4_IPdu_Timing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SystemTemplate.pdf</strong> (Seite 450)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=447" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></strong> (Seite 450)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02356" class="swsref"><code>TPS_SYST_02356</code></a></span>
         </div>
@@ -133,7 +134,167 @@ ModeDeclarationGroup
 +
 onTransitionValue: PositiveInteger [0..1]
 AtpStructureElement
-Identifiabl</div></section>
+Identifiable
+ModeDeclaration
++
+value: PositiveInteger [0..1]
+ModeDrivenTransmissionModeCondition
++cyclicTiming 0..1
++eventControlledTiming 0..1
++initialMode
+0..1
++modeDrivenTrueCondition
+0..* +modeDrivenFalseCondition
+0..*
++iSignalInIPdu
+0..1
++transmissionModeDeclaration
+0..1
++transmissionModeTrueTiming
+0..1
+«atpVariation,atpSplitable»
++modeDeclaration
+0..*
++iPduTimingSpecification
+0..1
+«atpVariation,atpSplitable»
++dataFilter 0..1
++iSignalToPduMapping
+0..*
+«atpVariation,atpSplitable»
++transmissionModeFalseTiming
+0..1
++transmissionModeCondition
+0..*
++modeDeclaration
+0..*
++iSignal
+0..1
+Figure 6.24: IPdu Timing
+[TPS_SYST_01075] Signal content evaluation via TransmissionModeCondi-
+tion ⌈The signal content can be evaluated as the transmission mode selector via
+the TransmissionModeConditions.⌋
+[TPS_SYST_01076] Mode evaluation via modeDrivenTrueCondition or mod-
+eDrivenFalseCondition ⌈Mode conditions can be evaluated as the transmission
+mode selector via the modeDrivenTrueConditions or modeDrivenFalseCondi-
+tions.⌋
+System Template
+[constr_3045] Signal content evaluation vs. Mode evaluation
+Imposition time: CP: IT_SysDesc
+⌈The mode evaluation and the signal content evaluation shall not be used in the same
+IPdu. A mix of these two types is not allowed.⌋
+To use the signal content evaluation a TransmissionModeCondition can be at-
+tached to each signal within an IPdu. Each TransmissionModeCondition con-
+tains a reference to a signal and to an assigned filter. The filter condition is used for
+the selection of the transmission mode. If at least one condition in the signal content
+evaluation is true, Transmission Mode "TRUE" shall be used for this IPdu. In all other
+cases, the Transmission Mode "FALSE" shall be used. More details can be found in
+the COM Specification [25].
+[constr_3046] Consistency of TransmissionModeCondition.iSignalInIPdu
+Imposition time: CP: IT_SysDesc
+⌈The ISignalToIPduMapping referenced by the TransmissionModeCondition
+in the role iSignalInIPdu shall belong to the same ISignalIPdu as the Trans-
+missionModeCondition.⌋
+It is a use-case to define an unconditional TransmissionModeTiming for an ISig-
+nalIPdu, meaning that this ISignalIPdu will always have the same transmission
+behavior. This can be defined by having a TransmissionModeDeclaration with-
+out any TransmissionModeDeclaration.transmissionModeCondition or all
+of the aggregated TransmissionModeConditions have the TransmissionMode-
+Condition.dataFilter set to DataFilter.dataFilterType = DataFilter-
+TypeEnum.always.
+Also no TransmissionModeDeclaration.modeDriven-
+TrueCondition or TransmissionModeDeclaration.modeDrivenFalseCon-
+dition are to be defined in this use-case. In this setup only one TransmissionMod-
+eTiming is applicable (as there are no conditions defined where a distinction might
+be required) and this one TransmissionModeTiming shall be aggregated at the
+TransmissionModeDeclaration.transmissionModeTrueTiming.
+[constr_9354] Definition of unconditional IPdu Timing
+Imposition time: CP: IT_SysDesc
+⌈If a TransmissionModeDeclaration has
+• no TransmissionModeDeclaration.transmissionModeCondition or all
+of the aggregated TransmissionModeConditions have the Transmis-
+sionModeCondition.dataFilter set to DataFilter.dataFilterType =
+DataFilterTypeEnum.always, and
+• no
+TransmissionModeDeclaration.modeDrivenTrueCondition
+de-
+fined, and
+• no
+TransmissionModeDeclaration.modeDrivenFalseCondition
+de-
+fined,
+System Template
+then only one TransmissionModeTiming in the role TransmissionModeDecla-
+ration.transmissionModeTrueTiming shall be defined.⌋
+In the mode driven evaluation ModeDeclarations are evaluated. The transmis-
+sionModeFalseTiming is activated if all defined modeDrivenFalseConditions
+evaluate to true and the transmissionModeTrueTiming is activated if all defined
+modeDrivenTrueConditions evaluate to true. Each condition that is defined by
+ModeDrivenTransmissionModeCondition evaluates to true if one of the refer-
+enced ModeDeclarations is active.
+The TransmissionModeDeclaration element aggregates the Transmission-
+ModeTiming in two different roles: transmissionModeTrueTiming and trans-
+missionModeFalseTiming. The available COM Transmission Mode Timings can
+be described by the CyclicTiming and EventControlledTiming elements (see
+[TPS_SYST_01077]) that are aggregated by the TransmissionModeTiming class.
+[TPS_SYST_01077] Mapping of Com Transmission Modes to System Template
+elements ⌈
+COM
+Transmission
+Modes
+Description
+realization in System Template
+Periodic
+Transmissions occur indefinitely with a
+fixed time period between them
+CyclicTiming
+Direct/n-times
+Event driven transmission with n-1
+repetitions
+EventControlledTiming
+Mixed
+Periodic transmission with direct/n-times
+transmissions in between
+EventControlledTiming and
+CyclicTiming
+None
+No transmission
+no timing assigned
+⌋
+Class
+TransmissionModeDeclaration
+Note
+AUTOSAR COM provides the possibility to define two different TRANSMISSION MODES (True and
+False) for each I-PDU.
+As TransmissionMode selector the signal content can be evaluated via transmissionModeCondition
+(implemented directly in the COM module) or mode conditions can be defined with the modeDrivenTrue
+Condition or modeDrivenFalseCondition (evaluated by BswM and invoking Com_SwitchIpduTxMode
+COM API). If modeDrivenTrueCondition and modeDrivenFalseCondition are defined they shall never
+evaluate to true both at the same time.
+The mixing of Transmission Mode Switch via API and signal value is not allowed.
+Base
+ARObject
+Aggregated by
+IPduTiming.transmissionModeDeclaration
+Attribute
+Type
+Mult.
+Kind
+Note
+modeDriven
+FalseCondition
+ModeDriven
+TransmissionMode
+Condition
+*
+aggr
+Defines the trigger for the Com_SwitchIpduTxMode
+Transmission Mode switch. Only if all defined modeDriven
+FalseConditions evaluate to true (AND associated) the
+transmissionModeFalseTiming shall be activated. mode
+DrivenTrueCondition and modeDrivenFalseCondition
+shall never evaluate to true both at the same time.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -146,7 +307,7 @@ Identifiabl</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=447" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

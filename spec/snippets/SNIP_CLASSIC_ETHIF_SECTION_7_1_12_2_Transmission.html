@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_1_12_2_Transmission</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetInterface.pdf</strong> (Seite 51)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></strong> (Seite 51)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_00670" class="swsref internal-spec-ref"><code>SWS_EthIf_00670</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_00677" class="swsref internal-spec-ref"><code>SWS_EthIf_00677</code></a></span>
         </div>
       </div>
 
@@ -106,11 +107,151 @@ DRAFT
 Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
 ⌈If EthIf_Transmit is called with PduInfoPtr.SduDataPtr set to a data pointer,
 then the EthIf shall proceed with an deferred forwarding, if the following conditions are
-true. Othe</div></section>
+true. Otherwise the EthIf shall proceed with an immediate forwarding:
+• the given TxPduId match to a EthIfFrameTxPduId aggregated by a
+EthIfFrameTxPdu of a configured EthIfFrameTxPool
+• the EthIfFrameTxPdus of this EthIfFrameTxPool have KeepLocalP-
+duBuffer set to FALSE
+• the affected EthIfController refer to an EthIfPhysController that ref-
+erences an EthCtrlConfig at the Eth driver that have EthCtrlEnableE-
+gressHardwareSupportedDataTransfer set to TRUE
+⌋
+[SWS_EthIf_00666] Transmission request with direct data provision and immedi-
+ate forwarding
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf qualified an immediate forwarding (see [SWS_EthIf_00670]) for a transmission
+request with direct data provision and the following conditions are true:
+• the given TxPduId match to a EthIfFrameTxPduId aggregated by a
+EthIfFrameTxPdu of a configured EthIfFrameTxPool
+• the referenced PDU of the matching EthIfFrameTxPduId is in state PDU_-
+AVAILABLE
+then the EthIf shall perform the following actions as preparation for a call of &lt;EthDrv&gt;
+_ImmediateTransmit. Otherwise the function shall return with E_NOT_OK:
+• set the CtrlIdx parameter to the corresponding EthIfPhysController
+which belongs to the referencing EthIfController
+• set the TxHandleId parameter to the matching EthIfFrameTxPduId of the
+used EthIfFrameTxPdu
+• set priority to configured value of EthIfFrameTxPriority of the corre-
+sponding EthIfFrameTxPool, if available, otherwise to the priority from the
+configured MetaDataItem PRIORITY_8. If neither EthIfFrameTxPriority
+nor MetaDataItem PRIORITY_8 is available, then set priority to 0.
+• create a list-element-struct of type ListElemStructType according to
+[SWS_EthIf_00667] and set the HeaderListPtr parameter to the address of
+the created list-element-struct
+• set the PayloadPtr to the SduDataPtr given with the received PduInfoPtr
+and the PayloadLength to the SduLength given with the received PduIn-
+foPtr
+• call &lt;EthDrv&gt;_ImmediateTransmit with CtrlIdx, TxHandleId, prior-
+ity, HeaderListPtr, PayloadPtr and PayloadLength set to values as de-
+scribed by the previous steps
+⌋
+[SWS_EthIf_00667] Creation of a list-element-struct of type ListElemStruct-
+Type
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf has to create a list-element-struct of type ListElemStructType due to
+a transmission request with direct data provision and the given TxPduId match
+to EthIfFrameTxPduId which reference a PDU that has MetaDataItemType
+ETHERNET_MAC_64 configured, then EthIf shall consider the following points to cre-
+ate a list-element-struct of type ListElemStructType:
+• consume destination MAC address from the MetaDataItem ETHERNET_MAC_
+64
+• derive the source MAC address from the EthCtrl which corresponds to the
+EthIfPhysController that is referenced by the EthIfController that be-
+longs to the respective EthIfFrameTxPool
+• use the EthIfFrameType of the EthIfFrameConfig which aggregates the
+EthIfFrameTxPool that refers to the used EthIfFrameTxPdu
+• derive the VLAN-ID of the EthIfController which is referenced by the
+EthIfFrameTxPool of the used EthIfFrameTxPdu
+• use the configured priority value of EthIfFrameTxPriority of EthIfFram-
+eTxPool which aggregates the used EthIfFrameTxPdu, if available, other-
+wise the priority of the configured MetaDataItem PRIORITY_8.
+If neither
+EthIfFrameTxPriority nor MetaDataItem PRIORITY_8 is available, then
+set priority to 0.
+• create an Ethernet header according the [19, IEEE 802.3 Std 2022] (Dst-
+MacAdr;SrcMacAdr;QTag;EtherType) and use the pointer to the constructed
+header for DataPtr and length of the Ethernet header for DataLength of the
+create a list-element-struct
+• If the referenced PDU has MetaDataItemType LISTELEM_PTR configured,
+then consume the list element pointer from MetaDataItem LISTELEM_PTR and
+set NextListElemPtr of the created list-element-struct to the address of the
+consumed list element pointer. Otherwise set NextListElemPtr of the created
+list-element-struct to NULL_PTR.
+• If the referenced PDU has MetaDataItemType VLAN_16 configured, then con-
+sume the VLAN ID from this MetaDataItem to identify the right EthIfCon-
+troller based on the configured EthIfPhysController.
+⌋
+[SWS_EthIf_00671] Transmission request with direct data provision and deferred
+forwarding
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If EthIf qualified a deferred forwarding (see [SWS_EthIf_00670]) for a transmission
+request with direct data provision and the following conditions are true:
+• the given TxPduId match to a EthIfFrameTxPduId aggregated by a
+EthIfFrameTxPdu of a configured EthIfFrameTxPool
+• the referenced PDU of the matching EthIfFrameTxPduId is in state PDU_-
+AVAILABLE
+then the EthIf shall perform the following actions. Otherwise the function shall return
+with E_NOT_OK:
+• mark the transmission request as direct data provision with deferred forwarding
+• proceed with preparation for a call of &lt;EthDrv&gt;_ProvideTxBuffer according
+to [SWS_EthIf_00672]
+⌋
+[SWS_EthIf_00677] Return of &lt;EthDrv&gt;_ProvideTxBuffer for transmission re-
+quest with direct data provision and deferred forwarding
+Status:
+DRAFT
+Upstream requirements: SRS_BSW_00350, SRS_BSW_00386
+⌈If &lt;EthDrv&gt;_ProvideTxBuffer returns with E_OK for transmission request with
+direct data provision and deferred forwarding, then EthIf shall perform the following
+actions, otherwise release all resources prepared for this call (see [SWS_EthIf_00672])
+and return the EthIf_Transmit call with E_NOT_OK:
+• if affected EthIfController has EthIfVlanId configured, then store the
+following frame attributes at the beginning of the provided BufPtr:
+prior-
+ity (VLAN-priority) determined within the preparation for call of &lt;EthDrv&gt;
+_ProvideTxBuffer (see [SWS_EthIf_00672]), CFI (always 0), VID (config-
+ured EthIfVlanId) and the configured EthIfFrameType associated with
+EthIfFrameTxPdu
+• copy
+data
+provided
+via
+PduInfoPtr.SduDataPtr
+with
+PduIn-
+foPtr.SduDataLength to next position after the previous added frame
+attributes
+• prepare a call of &lt;EthDrv&gt;_Transmit:
+– set the CtrlIdx parameter to the corresponding EthIfPhysController
+which belongs to the referencing EthIfController of the corresponding
+EthIfFrameTxPdu
+– set BufIdx which is assigned to this transmission request
+– set
+FrameType
+to
+configured
+EthIfFrameType
+associated
+with
+EthIfFrameTxPdu
+– set TxConfirmation to TRUE
+– set LenByte to total length of bytes written to the provided buffer addressed
+via BufPtr
+– set PhysAddrPtr to location where the MAC destination address associ-
+ated with EthIfFrameTxPdu (see [SWS_EthIf_00672]) is available
+– call &lt;EthDrv&gt;_Transmit with CtrlIdx, BufIdx, FrameType, TxCon-
+firmation, LenByte, PhysAddrPtr with values determined by previous
+steps</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_EthIf_00670] im Text von SWS_EthernetInterface.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_EthIf_00677] im Text von SWS_EthernetInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -119,7 +260,7 @@ true. Othe</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=51" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -131,7 +272,7 @@ true. Othe</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EthIf_00670" class="swsref internal-spec-ref"><code>SWS_EthIf_00670</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EthIf_00677" class="swsref internal-spec-ref"><code>SWS_EthIf_00677</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

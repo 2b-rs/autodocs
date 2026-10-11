@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: csm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_8_3_2_4_KeyM_Finalize</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 57)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=56" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 56)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00105" class="swsref internal-spec-ref"><code>SWS_KeyM_00105</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00106" class="swsref internal-spec-ref"><code>SWS_KeyM_00106</code></a></span>
         </div>
       </div>
 
@@ -120,11 +121,53 @@ match
 Description
 The function is used to finalize key update operations. It is typically used in conjunction with the
 KeyM_Start operation and returns the key operation into the idle mode. Further key prepare or
-update operations are not accepted until a new KeyM_Start operation has been initialized. This</div></section>
+update operations are not accepted until a new KeyM_Start operation has been initialized. This
+function is only available if KeyMCryptoKeyStartFinalizeFunctionEnabled is set to TRUE. In
+addition, updated key material will be persisted and set into valid state (calling Csm_KeySet
+Valid).
+Available via
+KeyM.h
+⌋
+[SWS_KeyM_00103]
+Upstream requirements: SRS_CryptoStack_00107
+⌈If KeyMCryptoKeyStartFinalizeFunctionEnabled is set to TRUE, this function will con-
+clude the key update operation. All keys that have flagged to be updated during the
+session shall be finalized by calling Csm_KeySetValid().
+The validation shall be done for all keys that have been updated, even if Csm_KeySet
+Valid() returns a failure for one of the keys. This is to finalize as much keys as possible
+even if one key fails. If at least one key fails, then the overall result is a fail information
+in the callback result.⌋
+[SWS_KeyM_00104]
+Upstream requirements: SRS_CryptoStack_00096, SRS_CryptoStack_00107
+⌈If KeyMCryptoKeyStartFinalizeFunctionEnabled and KeyMCryptoKeyHandlerStartFi-
+nalizeEnabled is set to TRUE this function will call KeyM_KH_Finalize() with the exact
+same parameter as provided with KeyM_Finalize(). The finalize key handler has to be
+called BEFORE the validation of the key (the call to Csm_KeySetValid()). If the key
+handler returns E_OK, then this function will continue its operation as specified. If the
+key handler finalization function returns E_NOT_OK, then no validation shall be done.⌋
+[SWS_KeyM_00105]
+Upstream requirements: SRS_CryptoStack_00106
+⌈The callback function KeyM_CryptoKeyFinalizeCallbackNotification() will be called if
+the operation has finished. The parameter ’ResultDataPtr’ of this callback shall provide
+the buffer pointer ’ResponseDataPtr’ provided with the call to KeyM_Finalize(). The
+result information provides the residual result of the validation of all keys.⌋
+Info:
+Since key validation can take considerable amount of time this function is used in
+asynchronous mode only. Since the key handler is called in synchronous mode it is
+recommended to call it not from within KeyM_Finalize() but delegate the call to the
+background task.
+The caller of KeyM_Finalize() shall provide a buffer that is large enough to store the
+response. This buffer shall not be touched by the caller if KeyM_Finalize() returns E_
+OK until the callback notification has indicated the end of the finalize operation.
+[SWS_KeyM_00106]
+Upstream requirements: SRS_CryptoStack_00120
+⌈At the end of a key finalize operation, all flags for key validation have to be cleared and
+the session state shall be set to the init mode. Thus, no further key update operations
+are allowed anymore.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">KeyM_Finalize callback notification specification</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_KeyM_00106] im Text von SWS_KeyManager.</p>
       </section>
 
       <section class="snip-card">
@@ -133,11 +176,11 @@ update operations are not accepted until a new KeyM_Start operation has been ini
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=56" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 57</td>
+              <td>Seite 56</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -145,15 +188,15 @@ update operations are not accepted until a new KeyM_Start operation has been ini
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00105" class="swsref internal-spec-ref"><code>SWS_KeyM_00105</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00106" class="swsref internal-spec-ref"><code>SWS_KeyM_00106</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

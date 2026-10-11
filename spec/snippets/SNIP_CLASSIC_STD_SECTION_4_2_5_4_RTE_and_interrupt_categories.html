@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_5_4_RTE_and_interrupt_categories</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 182)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=182" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 182)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Rte_CONSTR_09120</span>
         </div>
@@ -90,7 +91,216 @@ dEvent or BswExternalTriggerOccurredEvent is mapped to an ISR2 (via an
 RteEventToIsrMapping).⌋
 [SWS_Rte_CONSTR_09120] ⌈The RTE Generator shall reject configurations where
 an event that triggers a category 2 ExecutableEntity is mapped to an ISR2.⌋
-Note: ExecutableEn</div></section>
+Note: ExecutableEntity of category 2 requires a wait point but an ISR2 is not al-
+lowed to enter a wait state. For time based activation of ExecutableEntitys please
+refer to section 4.2.2.8.
+[ECUC_Rte_09020] Definition of EcucParamConfContainerDef RteEventToTask
+Mapping ⌈
+Container Name
+RteEventToTaskMapping
+Parent Container
+RteSwComponentInstance
+Description
+Maps an instance of a RunnableEntity onto one OsTask based on the activating
+RTEEvent. In the case of a RunnableEntity executed via a direct or trusted function call
+this RteEventToTaskMapping is still specified but no RteMappedToTask element is
+included. The RtePositionInTask parameter is necessary to provide an ordering of
+events invoked by the same RTE API.
+Multiplicity
+0..*
+Configuration Parameters
+Included Parameters
+Parameter Name
+Multiplicity
+ECUC ID
+RteActivationOffset
+0..1
+[ECUC_Rte_09018]
+RteEventIsMappedToTask
+0..1
+[ECUC_Rte_09221]
+RteModeSenderQueueLength
+0..1
+[ECUC_Rte_09228]
+RteOsSchedulePoint
+0..1
+[ECUC_Rte_09022]
+RtePositionInTask
+0..1
+[ECUC_Rte_09023]
+RteQueuedReceiverQueueLength
+0..1
+[ECUC_Rte_09227]
+RteServerNumberOfRequestProcessing
+0..1
+[ECUC_Rte_09214]
+RteServerQueueLength
+0..1
+[ECUC_Rte_09133]
+RteEventPredecessorSyncPointRef
+0..1
+[ECUC_Rte_09128]
+RteEventRef
+1..*
+[ECUC_Rte_09019]
+▽
+△
+Included Parameters
+Parameter Name
+Multiplicity
+ECUC ID
+RteEventSuccessorSyncPointRef
+0..1
+[ECUC_Rte_09129]
+RteMappedToTaskRef
+0..1
+[ECUC_Rte_09021]
+RteRipsFillRoutineRef
+0..*
+[ECUC_Rte_89005]
+RteRipsFlushRoutineRef
+0..*
+[ECUC_Rte_89006]
+RteRipsInvocationHandlerRef
+0..1
+[ECUC_Rte_89008]
+RteUsedOsAlarmRef
+0..1
+[ECUC_Rte_09024]
+RteUsedOsEventRef
+0..1
+[ECUC_Rte_09025]
+RteUsedOsSchTblExpiryPointRef
+0..1
+[ECUC_Rte_09026]
+RteVirtuallyMappedToTaskRef
+0..1
+[ECUC_Rte_09027]
+No Included Containers
+⌋
+[ECUC_Rte_09018] Definition of EcucFloatParamDef RteActivationOffset ⌈
+Parameter Name
+RteActivationOffset
+Parent Container
+RteEventToTaskMapping
+Description
+Activation offset in seconds.
+Multiplicity
+0..1
+Type
+EcucFloatParamDef
+Range
+[0 .. INF]
+Default value
+–
+Post-Build Variant Multiplicity
+false
+Post-Build Variant Value
+false
+Pre-compile time
+X
+All Variants
+Link time
+–
+Multiplicity Configuration Class
+Post-build time
+–
+Pre-compile time
+X
+All Variants
+Link time
+–
+Value Configuration Class
+Post-build time
+–
+Dependency
+⌋
+[ECUC_Rte_09221]
+Definition of EcucBooleanParamDef RteEventIsMappedTo
+Task ⌈
+Parameter Name
+RteEventIsMappedToTask
+Parent Container
+RteEventToTaskMapping
+Description
+Defines whether mapping of the RteEvent to an OsTask within this RteEventToTask
+Mapping container is intentionally not mapped.
+false: The RteMappedToTaskRef parameter within RteEventToTaskMapping is not
+applicable and shall not be provided.
+true: The RteMappedToTaskRef parameter within RteEventToTaskMapping is
+applicable and shall be provided.
+Multiplicity
+0..1
+▽
+△
+Type
+EcucBooleanParamDef
+Default value
+false
+Post-Build Variant Multiplicity
+false
+Post-Build Variant Value
+false
+Pre-compile time
+X
+All Variants
+Link time
+–
+Multiplicity Configuration Class
+Post-build time
+–
+Pre-compile time
+X
+All Variants
+Link time
+–
+Value Configuration Class
+Post-build time
+–
+Dependency
+⌋
+[ECUC_Rte_09228]
+Definition of EcucIntegerParamDef RteModeSenderQueue
+Length ⌈
+Parameter Name
+RteModeSenderQueueLength
+Parent Container
+RteEventToTaskMapping
+Description
+Specifies the length of mode queue on the mode manager side. This value overwrites
+the queueLength specified at the ModeSwitchSenderComSpec.
+Multiplicity
+0..1
+Type
+EcucIntegerParamDef
+Range
+1 .. 65535
+Default value
+–
+Post-Build Variant Multiplicity
+false
+Post-Build Variant Value
+false
+Pre-compile time
+X
+All Variants
+Link time
+–
+Multiplicity Configuration Class
+Post-build time
+–
+Pre-compile time
+X
+All Variants
+Link time
+–
+Value Configuration Class
+Post-build time
+–
+Dependency
+⌋
+For parameter table [ECUC_Rte_09022] RteOsSchedulePoint, see definition below
+container RteBswEventToTaskMapping.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +313,7 @@ Note: ExecutableEn</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=182" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

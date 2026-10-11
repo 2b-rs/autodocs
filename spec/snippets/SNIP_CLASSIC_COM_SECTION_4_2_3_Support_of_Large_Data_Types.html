@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_4_2_3_Support_of_Large_Data_Types</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SRS_COM.pdf</strong> (Seite 13)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SRS_COM.pdf#page=12" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SRS_COM.pdf</a></strong> (Seite 13)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Com_00753" class="swsref internal-spec-ref"><code>SWS_Com_00753</code></a></span>
         </div>
@@ -103,7 +104,54 @@ Supporting
 Material:
 [11]
 ⌋(RS_BRF_01648, RS_BRF_01544)
-[SRS_Com_02095] AUTOSAR COM and</div></section>
+[SRS_Com_02095] AUTOSAR COM and LargeDataCOM shall use the TP to frag-
+ment and reassemble large signals ⌈
+Description:
+All large signals must be transported using the TP. Note that large signals does
+not mean "normal signals" (e.g. UINT8[n] type).
+Therefore AUTOSAR COM and LargeDataCOM shall route all large signals via
+the PduR to the underlying TPs using the PduR’s TP-APIs.
+Note: Signals with static length and equal or less length than 8 bytes are
+transported in L-PDUs on CAN and LIN. In case of CAN FD this range is
+extended up to 64 bytes. On FlexRay this is valid for signals with length equal to
+or less than 254 bytes. Also dynamic length signals may be transported without
+TP as long as the maximum length does not exceed the bus specific limits.
+Rationale:
+There is no need to reinvent fragmentation since the existing TP modules
+already supports this.
+▽
+△
+Use Case:
+For CAN TP it is no problem to have multiple users (DCM and COM) of the TP.
+On LIN TP there will be a problem sharing the TP since all TP communication
+is done through two specific (specified by LIN) frames. A workaround may be to
+use a specific NAD to differ between diagnostic communication and normal
+signal communication (containing large signal or dynamic length signal).
+For FlexRay TP it is no problem to have multiple users (DCM and COM) of the
+TP.
+Dependencies:
+[SRS_Com_02096]
+Supporting
+Material:
+–
+⌋(RS_BRF_01648, RS_BRF_01544)
+[SRS_Com_02097] AUTOSAR COM and LargeDataCOM shall support dynamical
+signals with a static maximum length ⌈
+Description:
+The maximum length of this type of signal must be set in the configuration
+Rationale:
+If not given all dynamic length signals can only be considered to be maximum
+length supported by the used TP and therefore buffers cannot be handled
+efficient.
+Use Case:
+If LIN is used and if not maximum length is given, it must be assumed that the
+dynamical length signal is 4095 bytes.
+Dependencies:
+[SRS_Com_02098]
+Supporting
+Material:
+–
+⌋(RS_BRF_01648, RS_BRF_01544)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -116,7 +164,7 @@ Material:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SRS_COM.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SRS_COM.pdf#page=12" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SRS_COM.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ADC_SECTION_8_3_5_Adc_StopGroupConversion</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ADCDriver.pdf</strong> (Seite 58)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=58" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></strong> (Seite 58)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Adc_00507" class="swsref internal-spec-ref"><code>SWS_Adc_00507</code></a></span>
         </div>
@@ -112,11 +113,56 @@ software-trigger mode, the function Adc_StopGroupConversion shall remove a start
 restart request of the group from the queue, if queuing is enabled and a start/restart
 request is stored in the queue.⌋
 [SWS_Adc_00155]
-Upstream requirements: SRS_A</div></section>
+Upstream requirements: SRS_Adc_12317
+⌈The function Adc_StopGroupConversion shall automatically disable group notification
+for the requested group.⌋
+Note:
+Groups which are implicitly stopped shall not disable the group notification until Adc_
+StopGroupConversion is called.
+[SWS_Adc_00360] ⌈The function Adc_StopGroupConversion shall set the group sta-
+tus to state ADC_IDLE.⌋
+[SWS_Adc_00283]
+Upstream requirements: SRS_Adc_12817
+⌈The ADC module’s environment shall only call the function Adc_StopGroupConver-
+sion for groups configured with trigger source software.⌋
+[SWS_Adc_00260]
+Upstream requirements: SRS_BSW_00171
+⌈The function Adc_StopGroupConversion shall be pre compile time configurable On/
+Off by the configuration parameter AdcEnableStartStopGroupApi.⌋
+[SWS_Adc_00126]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00386, SRS_SPAL_12448
+⌈If development error detection for the ADC module is enabled:if the group ID is non-
+existing, the function Adc_StopGroupConversion shall raise development error ADC_
+E_PARAM_GROUP and return without any action.⌋
+[SWS_Adc_00164]
+Upstream requirements: SRS_BSW_00386, SRS_SPAL_12448
+⌈If development error detection for the ADC module is enabled:if the group has a trig-
+ger source configured as hardware, function Adc_StopGroupConversion shall raise
+development error ADC_E_WRONG_TRIGG_SRC and return without any action.⌋
+[SWS_Adc_00241]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00386, SRS_SPAL_12448
+⌈When called while the group is in state ADC_IDLE, the function Adc_StopGroupCon-
+version shall report a runtime error ADC_E_IDLE.⌋
+Note: For groups which are implicitly stopped (groups with conversion mode one-shot
+or groups with linear streaming buffer mode), state is ADC_STREAM_COMPLETED
+until results are accessed with Adc_ReadGroup or Adc_GetStreamLastPointer API
+functions or until group is explicitly stopped by Adc_StopGroupConversion API.
+[SWS_Adc_00295]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection for the ADC module is enabled: if called prior to ini-
+tializing the module, function Adc_StopGroupConversion shall raise development error
+ADC_E_UNINIT and return without any action.⌋
+Note:
+All groups which are started with Adc_StartGroupConversion should also be stopped
+with Adc_StopGroupConversion, before they are started again to reset the group status
+to ADC_IDLE. Exceptions to this rule are groups which are implicitly stopped because
+of the selected conversion mode (linear buffer with streaming access mode or one-
+shot conversion mode with single access).These groups can also be restarted while
+the group is in state ADC_STREAM_COMPLETED.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Adc_GroupType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +171,7 @@ Upstream requirements: SRS_A</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ADCDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=58" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

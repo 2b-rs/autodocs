@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_2_SomeIpXf__transformerId</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SOMEIPTransformer.pdf</strong> (Seite 78)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SOMEIPTransformer.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransformer.pdf</a></strong> (Seite 78)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SomeIpXf_00228" class="swsref internal-spec-ref"><code>SWS_SomeIpXf_00228</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00062" class="swsref internal-spec-ref"><code>SWS_Xfrm_00062</code></a></span>
         </div>
       </div>
 
@@ -117,11 +118,155 @@ SomeIpXf.h
 [SWS_SomeIpXf_00228]
 Upstream requirements: SRS_Xfrm_00102
 ⌈In function SomeIpXf_&lt;transformerId&gt; defined in [SWS_SomeIpXf_00138]
-• paramtype is derived from t</div></section>
+• paramtype is derived from type according to the parameter passing rules rules
+defined by the [6, SRS BSW General] (see [SRS_BSW_00484], [SRS_BSW_
+00485], and [SRS_BSW_00486]) and [14, SWS BSW General] (see [SWS_-
+BSW_00186]).
+• type shall be the data type of the data element after all data conversion activities
+of the RTE
+• transformerId shall be the name pattern for the transformer specified in
+[SWS_Xfrm_00062] ([3, ASWS Transformer General])
+⌋
+This function specified in [SWS_SomeIpXf_00138] exists for each transformed
+Sender/Receiver communication which uses the SOME/IP serialization.
+[SWS_SomeIpXf_00139]
+Upstream requirements: SRS_Xfrm_00102
+⌈The function SomeIpXf_&lt;transformerId&gt; specified in [SWS_SomeIpXf_00138]
+shall exist for the first reference in the list of ordered references transformer-
+Chain from a DataTransformation to a TransformationTechnology if the
+DataTransformation is referenced by an ISignal in the role dataTransfor-
+mation where the ISignal references a SystemSignal which is referenced by
+SenderReceiverToSignalMapping.⌋
+[SWS_SomeIpXf_00140]
+Upstream requirements: SRS_Xfrm_00101
+⌈The function SomeIpXf_&lt;transformerId&gt; specified in [SWS_SomeIpXf_00138]
+shall serialize primitive or complex data elements of Sender/Receiver communication
+into a linear byte array representation using the SOME/IP serialization.⌋
+[SWS_SomeIpXf_00214]
+Upstream requirements: SRS_Xfrm_00002
+⌈After serialization of the data, the function SomeIpXf_&lt;transformerId&gt; specified
+in [[SWS_SomeIpXf_00138] shall increment the Session Handling ID counter assigned
+to &lt;transformerId&gt; if transmission path includes SomeIpTp.⌋
+[SWS_SomeIpXf_00215]
+Upstream requirements: SRS_Xfrm_00101
+⌈When the Session Handling ID counter assigned to &lt;transformerId&gt; is 0xFFFF
+and gets incremented, it shall roll-over to 0x0001 (instead of 0x0000) if transmission
+path includes SomeIpTp.⌋
+[SWS_SomeIpXf_00141] Definition of API function SomeIpXf_&lt;transformerId&gt;
+Upstream requirements: SRS_Xfrm_00101
+⌈
+Service Name
+SomeIpXf_&lt;transformerId&gt;
+Syntax
+uint8 SomeIpXf_&lt;transformerId&gt; (
+const Rte_Cs_TransactionHandleType* TransactionHandle,
+uint8* buffer,
+uint32* bufferLength,
+[Std_ReturnType returnValue],
+&lt;paramtype&gt; data_1, ...
+&lt;paramtype&gt; data_n
+)
+Service ID [hex]
+0x03
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant
+▽
+△
+TransactionHandle
+Transaction handle according to [SWS_Rte_08732] (clientId and
+sequenceCounter) needed to differentiate between multiple
+requests.
+returnValue
+Return value from server side for transmission to the calling
+client. This argument is only available for serializers of the
+response of a Client/Server communication if
+• the ClientServerOperation has at least one PossibleError
+defined or
+• autonomous error reaction is activated
+data_1
+Client/Server operation argument which shall be transformed (in
+the same order as in the corresponding interface)
+...
+...
+Parameters (in)
+data_n
+Client/Server operation argument which shall be transformed (in
+the same order as in the corresponding interface)
+Parameters (inout)
+None
+buffer
+Buffer allocated by the RTE, where the transformed data has to
+be stored by the transformer
+Parameters (out)
+bufferLength
+Used length of the buffer
+Return value
+uint8
+0x00 (E_OK): Serialization successful
+0x81 (E_SER_GENERIC_ERROR): A generic error occurred
+Description
+This function transforms a Client/Server communication using the serialization of SOME/IP. It
+takes the operation arguments and optionally the return value as input and outputs a uint8 array
+containing the serialized data.
+The length of the serialized data shall be calculated by the transformer during runtime and
+returned in the OUT-parameter bufferLength. It may be smaller than the maximum buffer size
+used by the RTE for buffer allocation.
+Available via
+SomeIpXf.h
+⌋
+[SWS_SomeIpXf_00229]
+Upstream requirements: SRS_Xfrm_00101
+⌈In function SomeIpXf_&lt;transformerId&gt; defined in [SWS_SomeIpXf_00141]
+• paramtype is derived from type according to the parameter passing rules rules
+defined by the [6, SRS BSW General] (see [SRS_BSW_00484], [SRS_BSW_
+00485], and [SRS_BSW_00486]) and [14, SWS BSW General] (see [SWS_-
+BSW_00186]).
+• type shall be the data type of the data element after all data conversion activities
+of the RTE
+• transformerId shall be the name pattern for the transformer specified in
+[SWS_Xfrm_00062] ([3, ASWS Transformer General]).
+⌋
+This function specified in [SWS_SomeIpXf_00141] exists for the server and each client
+of each transformed Client/Server communication which uses the SOME/IP serializa-
+tion.
+It exists on both the Client and the Server but the arguments are different.
+On the client it serializes the request of the Client/Server call. There, the data_1, ...,
+data_n arguments of the API correspond to the IN and INOUT arguments of the
+ClientServerOperation. The argument returnValue doesn’t exist.
+On the server it serializes the response of the Client/Server call. There, the data_1,
+..., data_n arguments of the API correspond to the INOUT and OUT arguments of the
+ClientServerOperation. The argument returnValue exists here if at least one
+possibleError is defined for the ClientServerOperation because the return
+code of the operation has to be transmitted.
+[SWS_SomeIpXf_00142]
+Upstream requirements: SRS_Xfrm_00106
+⌈The function SomeIpXf_&lt;transformerId&gt; specified in [SWS_SomeIpXf_00141]
+shall exist for the first reference in the list of ordered references transformer-
+Chain from a DataTransformation to a TransformationTechnology if the
+DataTransformation is referenced by an ISignal in the role dataTransfor-
+mation where the ISignal references a SystemSignal which is referenced by
+ClientServerToSignalMapping in the callSignal or returnSignal.⌋
+Due to [SWS_SomeIpXf_00142], the API of [SWS_SomeIpXf_00141] exists both on
+client and server.
+[SWS_SomeIpXf_00143]
+Upstream requirements: SRS_Xfrm_00101
+⌈The function SomeIpXf_&lt;transformerId&gt;
+[_&lt;symbolSuffix&gt;] specified in [SWS_SomeIpXf_00141] shall serialize all primi-
+tive or complex operation arguments and the return value (if executed on server side) of
+Client/Server communication into a linear byte array representation using the SOME/IP
+serialization.⌋
+[SWS_SomeIpXf_00203]
+Upstream requirements: SRS_Xfrm_00105
+⌈The function SomeIpXf_&lt;transformerId&gt;
+[_&lt;symbolSuffix&gt;] specified in [SWS_SomeIpXf_00141] shall ignore all argu-
+ments data_1, ..., data_n if the return code is greater or equal to 0x80 because
+they are not filled with meaningful values.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SomeIpXf_00228] im Text von SWS_SOMEIPTransformer.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Xfrm_00062] im Text von SWS_SOMEIPTransformer.</p>
       </section>
 
       <section class="snip-card">
@@ -130,7 +275,7 @@ Upstream requirements: SRS_Xfrm_00102
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SOMEIPTransformer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SOMEIPTransformer.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransformer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -142,7 +287,7 @@ Upstream requirements: SRS_Xfrm_00102
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SomeIpXf_00228" class="swsref internal-spec-ref"><code>SWS_SomeIpXf_00228</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Xfrm_00062" class="swsref internal-spec-ref"><code>SWS_Xfrm_00062</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

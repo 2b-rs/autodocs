@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: eth</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETH_SECTION_7_1_7_1_1_Ingress_queue_handler</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetDriver.pdf</strong> (Seite 41)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></strong> (Seite 40)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00244" class="swsref internal-spec-ref"><code>SWS_Eth_00244</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Eth_00337" class="swsref internal-spec-ref"><code>SWS_Eth_00337</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,57 @@ rupt to FALSE and for specific EthCtrlConfigIngressQueues, EthC-
 trlEnableIngressQueueInterrupt to TRUE: enqueuing of an Ethernet
 frame at specific EthCtrlConfigIngressQueues signal an receive inter-
 rupt.
-An ingress queue handler is executed in the co</div></section>
+An ingress queue handler is executed in the context of the ISR. The
+remaining EthCtrlConfigIngressQueues are polled in the context of the
+EthIf_RxMainFunction. An ingress queue handler is executed in the con-
+text of the EthIf_RxMainFunction
+• Polling specific and polling driven approach by setting EthCtrlEnableRxIn-
+terrupt to FALSE and for specific EthCtrlConfigIngressQueues config-
+ure a EthCtrlConfigIngressQueueHandlerFunction: Ethernet frame at
+specific EthCtrlConfigIngressQueues are polled in the configured EthC-
+trlConfigIngressQueueHandlerFunction. An ingress queue handler is
+executed in each configured EthCtrlConfigIngressQueueHandlerFunc-
+tion.
+The EthCtrlConfigIngressQueueHandlerFunction may sched-
+uled by a CDD according to an external hardware unit (e.g. media clock). The
+remaining EthCtrlConfigIngressQueues are polled in the context of the
+EthIf_RxMainFunction. An ingress queue handler is executed in the con-
+text of the EthIf_RxMainFunction
+• Polling specific and polling driven approach by setting EthCtrlEnableRx-
+Interrupt to FALSE and for specific EthCtrlConfigIngressQueues con-
+figure at an EthIfPhysController multiple EthIfPhysCtrlRxMainFunc-
+tionIngressProcessing which could reference multiple EthCtrlConfig-
+IngressQueues.
+An ingress queue handler is executed in each configured
+EthIf_MainFunctionRx_&lt;IngressQueueProcessing ShortName&gt;. The
+remaining EthCtrlConfigIngressQueues are polled in the context of the
+EthIf_RxMainFunction. An ingress queue handler is executed in the con-
+text of the EthIf_RxMainFunction
+[SWS_Eth_00333]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An EthCtrlConfigIngressQueue with EthCtrlConfigIngressQueueHan-
+dlerFunction configured, shall be processed in the context of the generated ingress
+queue handler function.⌋
+[SWS_Eth_00336]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An EthCtrlConfigIngressQueue with EthCtrlEnableIngressQueueInter-
+rupt set to TRUE, shall be processed in the context of the signaled interrupt service
+routine.⌋
+Ingress queues, which are polled by the upper layer (e.g. EthIf), call Eth_Receive to
+enqueue Ethernet frames.
+[SWS_Eth_00337]
+Status: DRAFT
+⌈A call of Eth_Receive shall read the next frame from the receive buffers. The func-
+tion passes the received frame to the Ethernet interface using the callback function Eth
+If_RxIndication and indicates if there are more frames in the receive buffers.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EthIf_RxIndication called from ISR or polling.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Eth_00337] im Text von SWS_EthernetDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -101,11 +148,11 @@ An ingress queue handler is executed in the co</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=40" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 41</td>
+              <td>Seite 40</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -113,15 +160,15 @@ An ingress queue handler is executed in the co</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Eth_00244" class="swsref internal-spec-ref"><code>SWS_Eth_00244</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Eth_00337" class="swsref internal-spec-ref"><code>SWS_Eth_00337</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

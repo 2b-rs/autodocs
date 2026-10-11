@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_7_2_2_Requirements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 74)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 72)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00538" class="swsref internal-spec-ref"><code>SWS_Os_00538</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00872" class="swsref internal-spec-ref"><code>SWS_Os_00872</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,95 @@ Upstream requirements: SRS_Os_11008
 OsTaskTimeFrame.⌋
 [SWS_Os_00469]
 Upstream requirements: SRS_Os_11008
-⌈The Operating System module shall start an OsTaskTimeFrame when a</div></section>
+⌈The Operating System module shall start an OsTaskTimeFrame when a Task is
+activated successfully.⌋
+[SWS_Os_00472]
+Upstream requirements: SRS_Os_11008
+⌈The Operating System module shall start an OsTaskTimeFrame when a Task is
+released successfully.⌋
+[SWS_Os_00466]
+Upstream requirements: SRS_Os_11008
+⌈If an attempt is made to activate a Task before the end of an OsTaskTimeFrame
+then the Operating System module shall not perform the activation AND shall call the
+ProtectionHook with E_OS_PROTECTION_ARRIVAL.⌋
+[SWS_Os_00467]
+Upstream requirements: SRS_Os_11008
+⌈If an attempt is made to release a Task before the end of an OsTaskTimeFrame
+then the Operating System module shall not perform the release AND shall call the
+ProtectionHook with E_OS_PROTECTION_ARRIVAL.⌋
+Timing Protection: Tasks with Deferrable Server option
+[SWS_Os_00869] Additional Task state
+Upstream requirements: SRS_Os_13000
+⌈The AUTOSAR OS shall support an additional task state BUDGET_EXHAUSTED for
+Tasks configured with OsTaskTimingProtectionDeferrableServer=TRUE. This
+state can be entered only if the timing protection is active and only by the Tasks con-
+figured with OsTaskTimingProtectionDeferrableServer. In this state a Task is
+not running and cannot be scheduled.⌋
+[SWS_Os_00870] Behavior of Tasks in state BUDGET_EXHAUSTED
+Upstream requirements: SRS_Os_13000
+⌈Any functionallity (API or alarm action or expiry point) which tries to activate the Task
+(or set an Event of a Task) in state BUDGET_EXHAUSTED shall behave as if the Task
+would be in state READY except that BUDGET_EXHAUSTED can be left only as specified
+by [SWS_Os_00872].⌋
+Example:
+If a user calls SetEvent for a Task which is currently in BUD-
+GET_EXHAUSTED, the function shall set the events and return E_OK.
+[SWS_Os_00872] Leaving state BUDGET_EXHAUSTED
+Upstream requirements: SRS_Os_13000
+⌈The BUDGET_EXHAUSTED state can only be left by calling BudgetReplenish or us-
+ing an Alarm with action OsAlarmBudgetReplenish or a related action at an expiry
+point of a ScheduleTable. If the replenish succeeded (the current execution budget of
+the Task is &gt;0) then the Task will change to state READY. Afterwards a rescheduling
+may happen.⌋
+[SWS_Os_00871] Entering BUDGET_EXHAUSTED
+Upstream requirements: SRS_Os_11008, SRS_Os_11013
+⌈If a Task is in state RUNNING and OsTaskExecutionBudget has been exhausted
+and OsTaskTimingProtectionDeferrableServer=TRUE is configured for that
+Task: As soon as the Task is neither suspending/disabling any interrupts nor hold-
+ing any OS resource or spinlock, the Operating System module shall deschedule it,
+put it in the new state BUDGET_EXHAUSTED and schedule another Task.⌋
+[SWS_Os_00871] effectively mean that the Tasks current budget can be lower than
+zero. This can e.g. happen when the budget is exhasuted but a switch to the BUD-
+GET_EXHAUSTED state is delayed because the Task still holds a OS resource (or simi-
+lar object).
+Timing Protection: ISRs
+[SWS_Os_00210]
+Upstream requirements: SRS_Os_11013
+⌈If a Category 2 ISR’s OsIsrExecutionBudget is reached then the Operating Sys-
+tem module shall call the ProtectionHook with E_OS_PROTECTION_TIME.⌋
+[SWS_Os_00474]
+Upstream requirements: SRS_Os_11008
+⌈The Operating System module shall reset an ISR’s OsIsrExecutionBudget when
+the ISR returns control to the OS or terminates.⌋
+[SWS_Os_00470]
+Upstream requirements: SRS_Os_11008
+⌈The Operating System module shall limit the inter-arrival time of Category 2 ISRs to
+one per OsIsrTimeFrame.⌋
+[SWS_Os_00471]
+Upstream requirements: SRS_Os_11008
+⌈The Operating System module shall measure the start of an OsIsrTimeFrame from
+the point at which it recognizes the interrupt (i.e. in the Operating System interrupt
+wrapper).⌋
+[SWS_Os_00048]
+Upstream requirements: SRS_Os_11008
+⌈If Category 2 interrupt occurs before the end of the OsIsrTimeFrame then the Op-
+erating System module shall not execute the user provided ISR AND shall call the
+ProtectionHook with E_OS_PROTECTION_ARRIVAL.⌋
+Timing Protection: Resource Locking and Interrupt Disabling
+[SWS_Os_00033]
+Upstream requirements: SRS_Os_11008, SRS_Os_11013, SRS_Os_11014
+⌈If a Task/Category 2 ISR holds an OSEK Resource and exceeds the OsTaskRe-
+sourceLockBudget (or OsIsrResourceLockBudget) , the Operating System
+module shall call the ProtectionHook with E_OS_PROTECTION_LOCKED.⌋
+[SWS_Os_00037]
+Upstream requirements: SRS_Os_11008, SRS_Os_11013, SRS_Os_11014
+⌈If
+a
+Task/Category</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Os_00872] im Text von SWS_OS.</p>
       </section>
 
       <section class="snip-card">
@@ -110,11 +195,11 @@ Upstream requirements: SRS_Os_11008
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=72" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 74</td>
+              <td>Seite 72</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -122,7 +207,7 @@ Upstream requirements: SRS_Os_11008
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Os_00538" class="swsref internal-spec-ref"><code>SWS_Os_00538</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00872" class="swsref internal-spec-ref"><code>SWS_Os_00872</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -91,7 +92,174 @@ listing 4.3).
 [constr_2590] One BlueprintPolicy is allowed ⌈For each attribute of a blueprint, at
 most one BlueprintPolicy is allowed. ⌋()
 Standardization Template
-[constr_2</div></section>
+[constr_2591] BlueprintPolicyNotModifiable ⌈If BlueprintPolicyNotModifi-
+able is assigned to an attribute, then during blueprinting it is not allowed to modify the
+value of the attribute and all it contained content. ⌋()
+[constr_2592] No BlueprintPolicy ⌈If no BlueprintPolicy is assigned to an at-
+tribute, then arbitrary modifications are allowed while deriving from the blueprint. ⌋
+()
+[constr_2593] Expression for identifying the attribute a BlueprintPolicy relates to
+⌈The expression language for identifying the related attribute of a BlueprintPolicy
+is a subset version of xpath, see [8]. For navigation over the model we use the names
+as they are used in XML. ⌋()
+[TPS_STDT_00039] Xpath Expressions for BlueprintPolicy ⌈The Blueprint-
+Policy uses a subset of xpath expressions described in Table 4.1. Other xpath ex-
+pressions shall not be use to avoid complexity. The root node is the blueprint owning
+the BlueprintPolicy. ⌋(RS_STDT_00040)
+Path Expressions
+Description
+nodename
+Selects all nodes with the name "nodename"
+/
+Selects from the root node
+@
+Selects attributes
+@&lt;attribute&gt;=’&lt;value&gt;’
+Selects an element node, which has the &lt;attribute&gt; set to
+&lt;value&gt;
+text()=’&lt;value&gt;’
+Selects an element node, which contains the text &lt;value&gt;
+*
+Matches any element node
+[n]
+Selects the n-th element node
+Table 4.1: Allowed xpath expressions in BlueprintPolicy
+The xpath expression [n] in Table 4.1 starts with [1] due to the XML Path Lan-
+guage Specification [8]. The use of [n] is only allowed for ordered elements. One
+BlueprintPolicy can refine more than one attribute.
+In listing 4.1 the root node is selected by the nodename (COMPU-INTERNAL-TO-
+PHYS). In listing 4.2 the root node is selected by nodename/nodename/* (COMPU-
+INTERNAL-TO-PHYS/COMPU-SCALES/*).
+Listing 4.1: Example for BlueprintPolicyNotModifiable
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;Dem_DebounceResetStatusType&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;TEXTTABLE&lt;/CATEGORY&gt;
+&lt;BLUEPRINT-POLICYS&gt;
+&lt;BLUEPRINT-POLICY-NOT-MODIFIABLE&gt;
+&lt;ATTRIBUTE-NAME&gt;COMPU-INTERNAL-TO-PHYS&lt;/ATTRIBUTE-NAME&gt;
+&lt;/BLUEPRINT-POLICY-NOT-MODIFIABLE&gt;
+&lt;/BLUEPRINT-POLICYS&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0x00&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0x00&lt;/UPPER-LIMIT&gt;
+Standardization Template
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;DEM_DEBOUNCE_STATUS_FREEZE&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0x01&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0x01&lt;/UPPER-LIMIT&gt;
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;DEM_DEBOUNCE_STATUS_RESET&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;
+Listing 4.2: Example for BlueprintPolicyList
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;Dcm_SecLevelType&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;TEXTTABLE&lt;/CATEGORY&gt;
+&lt;BLUEPRINT-POLICYS&gt;
+&lt;BLUEPRINT-POLICY-LIST&gt;
+&lt;ATTRIBUTE-NAME&gt;COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/*&lt;/ATTRIBUTE-
+NAME&gt;
+&lt;BLUEPRINT-DERIVATION-GUIDE&gt;
+&lt;P&gt;
+&lt;L-1 L="EN"&gt;0x00 is locked&lt;/L-1&gt;
+&lt;/P&gt;
+&lt;P&gt;
+&lt;L-1 L="EN"&gt;0x01...0x3F is configuration dependent&lt;/L-1&gt;
+&lt;/P&gt;
+&lt;P&gt;
+&lt;L-1 L="EN"&gt;0x40...0xFF is Reserved by Document&lt;/L-1&gt;
+&lt;/P&gt;
+&lt;/BLUEPRINT-DERIVATION-GUIDE&gt;
+&lt;MAX-NUMBER-OF-ELEMENTS&gt;3&lt;/MAX-NUMBER-OF-ELEMENTS&gt;
+&lt;/BLUEPRINT-POLICY-LIST&gt;
+&lt;/BLUEPRINT-POLICYS&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0x00&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0x00&lt;/UPPER-LIMIT&gt;
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;DCM_SEC_LEV_LOCKED&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;
+The listing 4.3 illustrates the use of BlueprintPolicySingle.
+Listing 4.3: Example for BlueprintPolicySingle
+&lt;PORT-PROTOTYPE-BLUEPRINT&gt;
+&lt;SHORT-NAME NAME-PATTERN="{anyName}"&gt;AFbForCmft&lt;/SHORT-NAME&gt;
+Standardization Template
+&lt;LONG-NAME&gt;
+&lt;L-4 L="EN"&gt;Acceleration Feedback for Comfort&lt;/L-4&gt;
+&lt;/LONG-NAME&gt;
+&lt;DESC&gt;
+&lt;L-2 L="EN"&gt;Cluster of information regarding acceleration and
+acceleration saturation feedbacks from Vehicle Longitudinal
+Control (VLC) to Adaptive Cruise Control (ACC). This information
+is used for comfort reasons.&lt;/L-2&gt;
+&lt;/DESC&gt;
+&lt;BLUEPRINT-POLICYS&gt;
+&lt;BLUEPRINT-POLICY-SINGLE&gt;
+&lt;ATTRIBUTE-NAME&gt;INTERFACE-REF&lt;/ATTRIBUTE-NAME&gt;
+&lt;BLUEPRINT-DERIVATION-GUIDE&gt;
+&lt;P&gt;
+&lt;L-1 L="EN"&gt;Shall only refer to an interface of vendor xyz
+with the same shortname.&lt;/L-1&gt;
+&lt;/P&gt;
+&lt;/BLUEPRINT-DERIVATION-GUIDE&gt;
+&lt;/BLUEPRINT-POLICY-SINGLE&gt;
+&lt;/BLUEPRINT-POLICYS&gt;
+&lt;INTERFACE-REF DEST="SENDER-RECEIVER-INTERFACE"&gt;/AUTOSAR/
+AISpecification/PortInterfaces_Blueprint/AFbForCmft1&lt;/INTERFACE-REF
+&gt;
+&lt;/PORT-PROTOTYPE-BLUEPRINT&gt;
+In
+listing
+4.4
+the
+BlueprintPolicySingle
+selects
+an
+element
+node
+with
+attribute which equals a defined string (PORTS/P-PORT-PROTOTYPE/SHORT-
+NAME[@NAME-PATTERN=’{Name}_AsymDecrypt’]).
+Listing 4.4: Example for BlueprintPolicySingle with attribute name pattern
+&lt;BLUEPRINT-POLICY-SINGLE&gt;
+&lt;ATTRIBUTE-NAME&gt;PORTS/P-PORT-PROTOTYPE/SHORT-NAME[@NAME-
+PATTERN=’{Name}_AsymDecrypt’]&lt;/ATTRIBUTE-NAME&gt;
+&lt;BLUEPRINT-DERIVATION-GUIDE&gt;
+&lt;P&gt;
+&lt;L-1 L="EN"&gt;Name = {ecuc(Csm/CsmAsymDecrypt/
+CsmAsymDecryptConfig.SHORT-NAME)}&lt;/L-1&gt;
+&lt;/P&gt;
+&lt;/BLUEPRINT-DERIVATION-GUIDE&gt;
+&lt;/BLUEPRINT-POLICY-SINGLE&gt;
+This results in the selection of the element node illustrated in listing 4.5.
+Listing 4.5: Selected element node &lt;SHORT-NAME&gt;
+&lt;P-PORT-PROTOTYPE&gt;
+&lt;SHORT-NAME NAME-PATTERN="{Name}_AsymDecrypt"&gt;AsymDecrypt&lt;/
+SHORT-NAME&gt;
+&lt;PROVIDED-INTERFACE-TREF DEST="CLIENT-SERVER-INTERFACE"&gt;/
+AUTOSAR/Csm/ClientServerInterfaces_Blueprint/
+CsmAsymDecrypt&lt;/PROVIDED-INTERFACE-TREF&gt;
+&lt;/P-PORT-PROTOTYPE&gt;
+In listing 4.6 the BlueprintPolicySingle selects an element node which contains
+a
+defined
+text
+pattern
+(OPERATIONS/CLIENT-SERVER-OPERATION[SHORT-</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_2_3_8_Interface_and_API</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_SRS_BSWGeneral.pdf</strong> (Seite 70)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_SRS_BSWGeneral.pdf#page=70" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_BSWGeneral.pdf</a></strong> (Seite 70)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,196 @@ reference to the constant array base type
 Type:
 Valid
 Description:
-All input parameters of array type shall be passed as a reference to</div></section>
+All input parameters of array type shall be passed as a reference to the
+constant array base type
+Rationale:
+This effectively matches the behavior specified in the ISO-C:90 namely that
+a "declaration of a parameter as 'array of type' shall be adjusted to 'qualified
+pointer to
+type'".
+Use Case:
+For example a function named &lt;Mip&gt;_SomeFunction with a return type of
+Std_ReturnType and a single parameter named SomeParameter of type
+array of uint8 is defined with the following signature:
+Std_ReturnType &lt;Mip&gt;_SomeFunction(P2CONST(uint8, AUTOMATIC,
+&lt;MIP&gt;_APPL_DATA) SomeParameter);
+Dependencies:
+Supporting Material:
+--
+⌋(RS_BRF_01056)
+[SRS_BSW_00371] The passing of function pointers as API parameter
+is forbidden for all AUTOSAR Basic Software Modules
+⌈
+Type:
+Valid
+Description:
+The passing of function pointers as API parameter is forbidden for all
+AUTOSAR Basic Software Modules.
+Rationale:
+
+MISRA C
+
+Protected Operating System compatibility
+
+Callbacks shall be defined statically at compile time, not during
+runtime
+Use Case:
+No, forbidden!!
+Dependencies:
+[SRS_BSW_00007]
+Supporting Material:
+--
+⌋(RS_BRF_01056)
+[SRS_BSW_00358] The return type of init() functions implemented
+by AUTOSAR Basic Software Modules shall be void
+⌈
+Type:
+Valid
+Description:
+The return type of init() functions implemented by AUTOSAR Basic
+Software Modules shall be void.
+Rationale:
+Errors in initialization data shall be detected during configuration time (e.g.
+by configuration tool).
+Use Case:
+--
+Dependencies:
+--
+Supporting Material:
+--
+⌋(RS_BRF_01056)
+[SRS_BSW_00414] Init functions shall have a pointer to a
+configuration structure as single parameter
+⌈
+Type:
+Valid
+Description:
+For post-build time configuration, or when multiple configuration sets are
+available, the pointer to the base configuration structure (see
+[SRS_BSW_00438]) shall be passed to the init function of the BSW module.
+For pre-compile and link time configuration, when only one configuration set
+is available, a NULL_PTR shall be passed for this parameter.
+&lt;Mip&gt;_ConfigType
+It shall be used for init function argument
+Rationale:
+--
+Use Case:
+Example:
+void Eep_Init (const Eep_ConfigType *ConfigPtr)
+Dependencies:
+[SRS_BSW_00101], [SRS_BSW_00358], [SRS_BSW_00400]
+Supporting Material:
+--
+⌋(RS_BRF_01056)
+[SRS_BSW_00359] All AUTOSAR Basic Software Modules callback
+functions shall avoid return types other than void if possible
+⌈
+Type:
+Valid
+Description:
+All AUTOSAR Basic Software Modules callback functions shall avoid return
+types other than void if possible.
+Callback functions routed to Software Components (SWCs) via the RTE
+shall be typed by Std_ReturnType, not void. The caller of the callback
+function shall consider the case that the environment (RTE) can return
+infrastructure errors (refer SWS_Rte_02593) e.g. in case the servers'
+partition is currently not available.
+In case the callback is used as notification only, the caller can assume that
+always E_OK is returned.
+Rationale:
+Callbacks could be used for notifications.
+Use Case:
+--
+Dependencies:
+--
+Supporting Material:
+--
+⌋(RS_BRF_01056,RS_BRF_01064)
+[SRS_BSW_00360] AUTOSAR Basic Software Modules callback
+functions are allowed to have parameters
+⌈
+Type:
+Valid
+Description:
+AUTOSAR Basic Software Modules callback functions are allowed to have
+parameters.
+Rationale:
+Enhance flexibility and scope of callback functionality.
+Use Case:
+If callback functions do serve as simple triggers, no parameter is necessary
+to be passed.
+If additional data is to be passed to the caller within the callback scope, it
+shall be possible to forward the contents of that data using a parameter.
+Dependencies:
+--
+Supporting Material:
+--
+⌋(RS_BRF_01056,RS_BRF_01064)
+[SRS_BSW_00440] The callback function invocation by the BSW
+module shall follow the signature provided by RTE to invoke servers
+via Rte_Call API
+⌈
+Type:
+Valid
+Description:
+The callback function invocation by the BSW module, which is routed via
+RTE shall follow the signature provided by RTE to invoke servers via
+Rte_Call API.
+Rationale:
+The callback function has to be to be compatible to Rte_Call
+API of the RTE to enable a type safe configuration and implementation of
+AUTOSAR Services and IO Hardware Abstraction. Instance pointers are in
+Basic Software not allowed.
+Use Case:
+--
+Dependencies:
+[SRS_BSW_00359]
+Supporting Material:
+--
+⌋( RS_BRF_01056,RS_BRF_01064)
+[SRS_BSW_00330] It shall be allowed to use macros instead of
+functions where source code is used and runtime is critical
+⌈
+Type:
+Valid
+Description:
+It shall be allowed to use macros instead of functions where source code is
+used and runtime is critical.
+It shall be allowed to use inline functions for the same purpose. Inline
+functions have the advantage (compared to macros) that the compiler can
+do type checking of function parameters and return values.
+Rationale:
+Improve runtime behavior.
+Use Case:
+--
+Dependencies:
+Macros as well as inline functions are only possible when source code is
+delivered.
+Supporting Material:
+Attention has to be paid within reentrant systems.
+MISRA-C
+⌋()
+[SRS_BSW_00331] All Basic Software Modules shall strictly
+separate error and status information
+⌈
+Type:
+Valid
+Description:
+All Basic Software Modules shall strictly separate error and status
+information.
+Rationale:
+Common API specification of AUTOSAR Basic Software Modules.
+Use Case:
+Dependencies:
+--
+Supporting Material:
+[SRS_BSW_00327] Error values naming convention
+[SRS_BSW_00335] Status values naming convention
+⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +311,7 @@ All input parameters of array type shall be passed as a reference to</div></sect
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_SRS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R20-11/CP/AUTOSAR_SRS_BSWGeneral.pdf#page=70" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_SRS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_3_3_5_4_LIN_Slave</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SystemTemplate.pdf</strong> (Seite 99)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=98" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></strong> (Seite 99)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_05019" class="swsref"><code>TPS_SYST_05019</code></a></span>
         </div>
@@ -103,7 +104,122 @@ slave
 Ecu
 calls
 Com_SendSignal() to set the value of the response error bit if applicable2 and thus
-the sy</div></section>
+the system model needs to foresee the existence of an ISignalTriggering for this
+purpose.
+Aside: on the Lin master, typically a piece of application software picks up the received
+error bit and uses it to e.g. increment a counter for debouncing purposes. If the counter
+exceeds a certain value in e.g. a given time interval the Lin master has to assume
+that a serious problem exists in the communication with this specific slave and react
+accordingly.
+In terms of modeling, this means that if formally modeled application software on the
+Lin master exists that processes the error response bit (the receiving side of the error
+response bit) then a DataMapping to a SystemSignal that carries the response
+error bit needs to be defined.
+It is important to understand that application software on a Lin slave positively has no
+business of setting the value of the response error bit. In other words: on the sending
+side (i.e. the Lin slave), the application software is not affected and therefore there shall
+not be a DataMapping on the sending side. This relation motivates the existence of
+[constr_1656].
+2In principle, the LinIf on the Lin slave Ecu could directly patch the value of the response error bit
+into a Tx Pdu before sending but in this case the LinIf would have to pick the correct Pdu and patch it
+accordingly. In other words, the LinIf would replicate a certain amount of Com functionality. the usage
+of an ISignalTriggering significantly simplifies the implementation of the LinIf.
+System Template
+[constr_1656] No application-level write access to LinErrorResponse.respon-
+seError on Lin slave
+Imposition time: IT_SysDesc
+⌈The SystemSignal referenced in the role systemSignal by the ISignal refer-
+enced by the ISignalTriggering that in turn is referenced in the role LinError-
+Response.responseError shall not be referenced by a DataMapping that allows
+for writing to the SystemSignal.⌋
+Class
+«atpVariation» LinSlave
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::Fibex4Lin::LinTopology
+Note
+Describing the properties of the referring ecu as a LIN slave.
+Base
+ARObject, CommunicationController, Identifiable, LinCommunicationController, Multilanguage
+Referrable, Referrable
+Aggregated by
+EcuInstance.commController, MachineDesign.communicationController
+Attribute
+Type
+Mult.
+Kind
+Note
+assignNad
+Boolean
+0..1
+attr
+This attribute has the ability to control whether the node
+configuration command ’Assign NAD’ is supported.
+configuredNad
+Integer
+0..1
+attr
+To distinguish LIN slaves that are used twice or more
+within the same cluster.
+functionId
+PositiveInteger
+0..1
+attr
+LIN function ID
+initialNad
+Integer
+0..1
+attr
+This attribute represents the initial NAD.
+linError
+Response
+LinErrorResponse
+0..1
+aggr
+Each slave node shall publish one response error in one
+of its transmitted unconditional frames.
+nasTimeout
+TimeValue
+0..1
+attr
+Value of the N_AS timeout. Unit: seconds.
+supplierId
+PositiveInteger
+0..1
+attr
+LIN Supplier ID
+variantId
+PositiveInteger
+0..1
+attr
+Specifies the Variant ID
+Table 3.41: LinSlave
+Class
+LinErrorResponse
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::Fibex4Lin::LinCommunication
+Note
+Each slave node shall publish a one bit signal, named response_error, to the master node in one of its
+transmitted unconditional frames. The response_error signal shall be set whenever a frame (except for
+event triggered frame responses) that is transmitted or received by the slave node contains an error in
+the frame response. The response_error signal shall be cleared when the unconditional frame containing
+the response_error signal is successfully transmitted.
+Base
+ARObject
+Aggregated by
+LinSlave.linErrorResponse, LinSlaveConfig.linErrorResponse
+Attribute
+Type
+Mult.
+Kind
+Note
+responseError
+ISignalTriggering
+0..1
+ref
+This ISignal shall be taken to transport the responseError
+bit.
+Table 3.42: LinErrorResponse
+System Template</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -116,7 +232,7 @@ the sy</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=98" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

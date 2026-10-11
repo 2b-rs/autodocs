@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMM_SECTION_7_1_3_ComM_PNC_state_machine</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 34)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 34)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_00978" class="swsref internal-spec-ref"><code>SWS_ComM_00978</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_ComM_00987" class="swsref internal-spec-ref"><code>SWS_ComM_00987</code></a></span>
         </div>
       </div>
 
@@ -102,11 +103,99 @@ transitions
 of
 the
 PNC
-s</div></section>
+state
+machines
+in
+ComM,
+triggered
+by
+a
+call
+to
+ComM_RequestComMode()
+shall
+be
+executed
+in
+the
+ComM_MainFunction_&lt;Channel.ShortName&gt; only.⌋
+Comment: Every PNC activation triggers sending of the PNC bit vector n-times, thus it
+would increase the busload without debouncing.
+[SWS_ComM_00972]
+Upstream requirements: SRS_ModeMgm_09246
+⌈The trigger "ComMUser" represents a notification about a communication request of
+a ComMUser by calling the API ComM_RequestComMode().⌋
+[SWS_ComM_00987]
+Upstream requirements: SRS_ModeMgm_09243
+⌈Within the ComM_MainFunction_&lt;Channel.ShortName&gt; of a channel that is mapped
+to one or more PNCs, the requested state shall be handled in the following order:
+1. ComM user requests of ComM users mapped to one or more PNCs of that chan-
+nel
+2. ComM user requests of ComM users mapped to that channel
+3. ERA (if the configuration switch ComMPncGatewayEnabled is set to TRUE)
+4. EIRA
+⌋
+Comment: Requests are handled in main functions of those channels they affect.
+[SWS_ComM_00827]
+Upstream requirements: SRS_ModeMgm_09243, SRS_ModeMgm_09246
+⌈ComM channel requests originating from a PNC state machine shall be treated like
+user requests for the according channels. This includes impact on ComM channel
+state machine which comes along with "Communication allowed" (see Communica-
+tionAllowed boolean flag) and "Communication inhibition")⌋
+Note: Please refer to (see Chapter 7.4.1 for details regarding communication inhibition
+COMM_PNC_FULL_COMMUNICATION
+COMM_PNC_NO_COMMUNICATION
+PowerOff
+COMM_PNC_REQUESTED
+COMM_PNC_READY_SLEEP
+COMM_PNC_PREPARE_SLEEP
+ComM_RequestComMode() OR ComM_Nm_UpdateERA() [ComMUser =
+FullCom OR (PNC bit within ERAn=1 AND ComMPNCGatewayEnabled =
+TRUE AND ComMPncGatewayType is set) ]
+/BswM_ComM_CurrentPNCMode()  Nm_UpdateIRA()  Channel Full
+Communication Request()  Stop ComMPncPrepareSleepTimer
+ComM_EcuM_PNCWakeUpIndication()
+/BswM_ComM_CurrentPNCMode()
+Start ComMPncPrepareSleepTimer
+ComM_Nm_Update_EIRA() [PNC bit within EIRA = 1]
+/BswM_ComM_CurrentPNCMode()
+ComM_EcuM_WakeUpIndication()
+[ComMSynchronousWakeUp = TRUE]
+/BswM_ComM_CurrentPNCMode()
+Start ComMPncPrepareSleepTimer
+ComM_RequestComMode() OR ComM_Nm_UpdateERA()
+[ComMUser = NoCom AND (NOT (PNC bit within ERAn=1
+AND ComMPNCGatewayEnabled = TRUE AND
+ComMPncGatewayType is set))]
+/BswM_ComM_CurrentPNCMode()  Nm_UpdateIRA()
+Release Channel Full Communication Request
+ComM_RequestComMode() OR ComM_Nm_UpdateERA()
+[ComMUser = FullCom OR (PNC bit within ERAn=1 AND
+ComMPNCGatewayEnabled = TRUE AND
+ComMPncGatewayType is set) ]
+/BswM_ComM_CurrentPNCMode()  Nm_UpdateIRA()
+Channel Full Communication Request()
+ComM_RequestComMode() OR ComM_Nm_UpdateERA()
+[ComMUser = FullCom OR (PNC bit within ERAn=1 AND
+ComMPNCGatewayEnabled = TRUE AND
+ComMPncGatewayType is set) ]
+/BswM_ComM_CurrentPNCMode()  Nm_UpdateIRA()
+Channel Full Communication Request()
+ComM_Nm_UpdateEIRA() [PNC bit
+within EIRA = 0]
+/BswM_ComM_CurrentPNCMode()
+Start ComMPNCPrepareSleepTimer
+ComM_Nm_Update_EIRA() [PNC bit
+within EIRA = 1]
+/BswM_ComM_CurrentPNCMode()
+Stop ComMPncPrepareSleepTimer
+ComMPncPrepareSleepTimer [expired]
+/BswM_ComM_CurrentPNCMode()
+Figure 7.1: PNC State Machine</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_ComM_00978] im Text von SWS_COMManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_ComM_00987] im Text von SWS_COMManager.</p>
       </section>
 
       <section class="snip-card">
@@ -115,7 +204,7 @@ s</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=34" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -127,7 +216,7 @@ s</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_ComM_00978" class="swsref internal-spec-ref"><code>SWS_ComM_00978</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_ComM_00987" class="swsref internal-spec-ref"><code>SWS_ComM_00987</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

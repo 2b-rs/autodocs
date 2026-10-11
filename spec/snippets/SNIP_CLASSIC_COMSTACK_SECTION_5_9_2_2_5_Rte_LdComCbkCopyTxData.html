@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_5_9_2_2_5_Rte_LdComCbkCopyTxData</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 839)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=839" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 839)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_91133" class="swsref internal-spec-ref"><code>SWS_Rte_91133</code></a></span>
         </div>
@@ -111,7 +112,62 @@ TP modules that support dynamic payload lengths (e.g. FrIsoTp)
 to determine the size of the following CFs.
 Return value
 BufReq_ReturnType
-BUFREQ_OK: Data has been copied to the trans</div></section>
+BUFREQ_OK: Data has been copied to the transmit buffer
+completely as requested.
+BUFREQ_E_BUSY: Request could not be fulfilled, because the
+required amount of Tx data is not available. The lower layer
+module may retry this call later on. No data has been copied.
+BUFREQ_E_NOT_OK: Data has not been copied. Request
+failed.
+Description
+This function is called to acquire the transmit data of an I-PDU segment (N-PDU). Each call to
+this function provides the next part of the I-PDU data unless retry-&gt;TpDataState is TP_
+DATARETRY. In this case the function restarts to copy the data beginning at the offset from the
+current position indicated by retry-&gt;TxTpDataCnt. The size of the remaining data is written to
+the position indicated by availableDataPtr
+Tags: atp.Status=draft
+Available via
+Rte_LdCom.h
+⌋
+[SWS_Rte_04626]
+Status:
+DRAFT
+Upstream requirements: SRS_Rte_00246
+⌈
+BufReq_ReturnType Rte_[&lt;Partition&gt;_]LdComCbkCopyTxData (
+IN CbkHandleIdType LdComUserCbkHandleId,
+IN const PduInfoType* info,
+IN const RetryInfoType* retry,
+OUT PduLengthType* availableDataPtr
+)
+where &lt;Partition&gt; is the shortName of the EcucPartition referenced from
+the RteLdComUserEcucPartitionRef parameter (see [ECUC_Rte_09210]) of the
+RteLdComUser for which the Callback is being generated.⌋
+It is configured in LdComUserModuleCnf :
+via the LdComUserCallbackName (See [ECUC_LdCom_00023]) parameter where
+the
+LdComUserCallbackType
+(See
+[ECUC_LdCom_00025])
+is
+set
+to
+LD-
+COM_TP_COPY_TX_DATA
+[SWS_Rte_01405]
+Upstream requirements: SRS_Rte_00246
+⌈The Rte_LdComCbkCopyTxData notification callback shall return BUFREQ_OK when
+data has been copied to the receive buffer completely as requested.⌋
+[SWS_Rte_01406]
+Upstream requirements: SRS_Rte_00246
+⌈The
+Rte_LdComCbkCopyTxData
+notification
+callback
+shall
+return
+BUFREQ_E_NOT_OK when data has not been copied to the receive buffer com-
+pletely as requested.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -124,7 +180,7 @@ BUFREQ_OK: Data has been copied to the trans</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=839" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

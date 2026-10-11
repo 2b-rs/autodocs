@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_8_4_3_Dds_TriggerTransmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DataDistributionService.pdf</strong> (Seite 62)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DataDistributionService.pdf#page=62" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DataDistributionService.pdf</a></strong> (Seite 62)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_PduR_00369" class="swsref internal-spec-ref"><code>SWS_PduR_00369</code></a></span>
         </div>
@@ -111,7 +112,30 @@ Dds.h
 ⌋
 [CP_SWS_Dds_00881] Dds_TriggerTransmit - Error conditions
 Upstream requirements: FO_RS_Dds_00015, SRS_BSW_00369
-⌈The function Dds_TriggerT</div></section>
+⌈The function Dds_TriggerTransmit shall call the Det_ReportError, if develop-
+ment error detection is enabled and if function call has failed because of the following
+reasons:
+• Dds module is not initialized (DDS_E_UNINIT)
+• PduInfoPtr equals NULL_PTR (DDS_E_PARAM_POINTER).
+Classic Platform
+• Invalid lower layer TxPduId (DDS_E_L_PDUID_INVALID).
+⌋
+[CP_SWS_Dds_00882] Dds_TriggerTransmit behaviour
+Upstream requirements: FO_RS_Dds_00015
+⌈Within the function Dds_TriggerTransmit, the Dds shall copy the contents of its
+PDU transmit buffer to the PDU buffer given by PduInfoPtr-&gt;SduDataPtr and up-
+date PduInfoPtr-&gt;SduLength with length of the copied data accordingly.⌋
+[CP_SWS_Dds_00883] Dds_TriggerTransmit - Error conditions
+Upstream requirements: FO_RS_Dds_00015
+⌈If another Dds_TriggerTransmit request on the same PduId is not yet completed,
+the function Dds_TriggerTransmit shall call the Det_ReportRuntimeError with
+the code DDS_E_L_PDUID_IGNORED.⌋
+[CP_SWS_Dds_CONSTR_00884]
+Dds_TriggerTransmit limitation ⌈The Dds_-
+TriggerTransmit function can be called only by lower-layer module. During valida-
+tion of configuration, the Com configuration shall be checked. If any I-PDU belonging to
+Dds has a non NULL value for Com_TxTriggerTransmit, the validation shall return
+an error and the configuration shall be rejected as invalid.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -124,7 +148,7 @@ Upstream requirements: FO_RS_Dds_00015, SRS_BSW_00369
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DataDistributionService.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DataDistributionService.pdf#page=62" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DataDistributionService.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/com.html">Modul: com</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
+          <span class="badge-role">Rolle: constitutive</span>
           <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_8_5_Scheduled_functions</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWGeneral.pdf</strong> (Seite 79)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></strong> (Seite 79)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_BSW_00154" class="swsref internal-spec-ref"><code>SWS_BSW_00154</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Com_00399" class="swsref internal-spec-ref"><code>SWS_Com_00399</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,35 @@ Upstream requirements: SRS_BSW_00373, SRS_BSW_00347
 ⌈Scheduled functions of a BSW Module shall be named according to the following:
 &lt;Mip&gt;_MainFunction[&lt;Sd&gt;]
 Where &lt;Mip&gt; is the Module implementation prefix [SWS_BSW_00102]. The content
-betwee</div></section>
+between brackets shall be used only if the module defines more than one Scheduled
+function, where &lt;Sd&gt; is a module specific name extension given to every function.⌋
+Examples (for illustration only):
+• Possible main processing function of EEPROM driver:
+void Eep_21_LDExt_MainFunction(void)
+• Possible main processing functions of Communication module:
+void Com_MainFunctionRx(void)
+void Com_MainFunctionTx(void)
+void Com_MainFunctionRouteSignals(void)
+[SWS_BSW_00154] Scheduled functions have no parameters
+Upstream requirements: SRS_BSW_00373
+⌈Scheduled functions shall have no parameters and no return value. Their return type
+is always void.⌋
+Note:
+Scheduled functions are typically not reentrant.
+Scheduled functions must be able to be allocated to a basic task. Because of this, they
+are not allowed to enter any wait state.
+[SWS_BSW_00156] Scheduled functions do not enter a wait state
+Upstream requirements: SRS_BSW_00424
+⌈Scheduled functions shall not enter any wait state.⌋
+Typically, basic tasks are more efficient then extended tasks. Extended and basic task
+are classified in the Specification of Operating System [12].
+The scheduling strategy that is built inside the BSW Modules must be properly docu-
+mented, see also [SWS_BSW_00054].
+General Specification of Basic Software Modules</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Scheduled functions parameterless and void return</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Com_MainFunctionTx().</p>
       </section>
 
       <section class="snip-card">
@@ -108,7 +133,7 @@ betwee</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=78" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -120,11 +145,11 @@ betwee</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_BSW_00154" class="swsref internal-spec-ref"><code>SWS_BSW_00154</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Com_00399" class="swsref internal-spec-ref"><code>SWS_Com_00399</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>

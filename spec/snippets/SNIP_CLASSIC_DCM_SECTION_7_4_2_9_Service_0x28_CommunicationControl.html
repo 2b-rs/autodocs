@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_2_9_Service_0x28_CommunicationControl</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 140)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=140" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 140)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_00785" class="swsref internal-spec-ref"><code>SWS_Dcm_00785</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dcm_01082" class="swsref internal-spec-ref"><code>SWS_Dcm_01082</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,110 @@ the Dcm shall do for the NetworkHandle (see DcmDslProtocolComMChannelRef) of
 the current received DcmDslProtocolRxPduRef:
 1. trigger the mode switch Dcm_CommunicationControl_&lt;Network&gt; ModeDeclara-
 tionGroupPrototype to the mode corresponding to the communicationType and
-controlType parameter from the</div></section>
+controlType parameter from the CommunicationControl request.
+2. call the Api BswM_Dcm_CommunicationMode_CurrentState with the parameters
+NetworkHandleType and Dcm_CommunicationModeType corresponding to the
+communicationType and controlType parameter from the CommunicationControl
+request (see Dcm_CommunicationModeType definition)
+⌋
+Manager
+[SWS_Dcm_00786] ⌈On invocation of the sent confirmation function of the UDS Ser-
+vice CommunicationControl (0x28) from DSD with the subnet parameter of the request
+between 0x01 and 0x0E, the Dcm shall check if the received subnet parameter (see
+DcmDspSubnetNumber) is supported. In case it is not supported a NegativeResponse
+code 0x31 shall be sent. In case it is supported the Dcm shall do for the correspond-
+ing NetworkHandle (see DcmDspSpecificComMChannelRef) of the received subnet
+parameter (see DcmDspSubnetNumber):
+1. trigger the mode switch Dcm_CommunicationControl_&lt;Network&gt; ModeDeclara-
+tionGroupPrototype to the mode corresponding the communicationType and con-
+trolType parameter from the CommunicationControl request.
+2. call the Api BswM_Dcm_CommunicationMode_CurrentState the parameters Net-
+workHandleType and with Dcm_CommunicationModeType corresponding the
+communicationType and controlType parameter from the CommunicationControl
+request (see Dcm_CommunicationModeType definition)
+⌋
+For some use-cases the Dcm may re-enable the CommunicationControl due to external
+changed mode conditions:
+[SWS_Dcm_00753] ⌈In case that the referenced ModeRule (see ECUC_Dcm_00943)
+is not fulfilled anymore for a NetworkHandle which is currently in a state other than
+DCM_ENABLE_RX_TX_NORM_NM, the Dcm shall:
+1. switch the mode group Dcm_CommunicationControl_&lt;Network&gt; ModeDeclara-
+tionGroupPrototype toDCM_ENABLE_RX_TX_NORM_NM
+2. call BswM_Dcm_CommunicationMode_CurrentState with the parameters Net-
+workHandleType set to the corresponding NetworkHandle of the network and
+RequestedCommunicationMode set to DCM_ENABLE_RX_TX_NORM_NM
+⌋
+[SWS_Dcm_00860] ⌈For a NetworkHandle which is currently in a state other than
+DCM_ENABLE_RX_TX_NORM_NM if the Dcm is transitioning to default session or
+upon any diagnostic session change where the new session does not support UDS
+Service CommunicationControl anymore, the Dcm shall:
+1. switch the mode group Dcm_CommunicationControl_&lt;Network&gt; ModeDeclara-
+tionGroupPrototype to DCM_ENABLE_RX_TX_NORM_NM
+2. call BswM_Dcm_CommunicationMode_CurrentState with the parameters Net-
+workHandleType set to the corresponding NetworkHandle of the network and
+RequestedCommunicationMode set to DCM_ENABLE_RX_TX_NORM_NM
+⌋
+Manager
+Note: the NetworkHandles to be considered are all ComM channels which are refer-
+enced from either DcmDspSpecificComMChannelRef, DcmDspAllComMChannel-
+Ref or DcmDspComControlSubNodeComMChannelRef.
+[SWS_Dcm_01077] ⌈If a CommunicationControl Request with the sub-function "en-
+ableRxAndDisableTxWithEnhancedAddressInformation" is received, the Dcm shall
+check the "nodeIdentification-Number" listed as DcmDspComControlSubNodeId and
+for the referenced network (see DcmDspComControlSubNodeComMChannelRef ), it
+shall do the followings:
+1. trigger the mode switch Dcm_CommunicationControl_&lt;Network&gt; ModeDeclara-
+tionGroupPrototype to the mode corresponding the communicationType and con-
+trolType parameter from the CommunicationControl request.
+2. call the Api BswM_Dcm_CommunicationMode_CurrentState with the parameters
+NetworkHandleType and Dcm_CommunicationModeType corresponding to the
+communicationType and controlType parameter from the CommunicationControl
+request (see Dcm_CommunicationModeType definition).
+The analogue controlType enableRxAndDisableTx shall be used with the the following
+existing Dcm_CommunicationModeType values:
+• DCM_ENABLE_RX_DISABLE_TX_NORM
+• DCM_ENABLE_RX_DISABLE_TX_NM
+• DCM_ENABLE_RX_DISABLE_TX_NORM_NM.
+⌋
+[SWS_Dcm_01078] ⌈The Dcm shall trigger a negative response with NRC 0x31
+(RequestOutOfRange), if a CommunicationControl Request with the sub-function
+"enableRxAndDisableTxWithEnhancedAddressInformation" and a "nodeIdentification-
+Number" which is not listed as DcmDspComControlSubNodeId is received.⌋
+[SWS_Dcm_01079] ⌈If a CommunicationControl Request with the sub-function "en-
+ableRxAndTxWithEnhancedAddressInformation" is received, the Dcm shall check the
+"nodeIdentification-Number" listed as DcmDspComControlSubNodeId and for the
+referenced network (see DcmDspComControlSubNodeComMChannelRef ) it shall
+do the followings:
+1. trigger the mode switch Dcm_CommunicationControl_&lt;Network&gt; ModeDeclara-
+tionGroupPrototype to the mode corresponding the communicationType and con-
+trolType parameter from the CommunicationControl request.
+2. call the Api BswM_Dcm_CommunicationMode_CurrentState with the parameters
+NetworkHandleType and Dcm_CommunicationModeType corresponding to the
+communicationType and controlType parameter from the CommunicationControl
+request (see Dcm_CommunicationModeType definition).
+Manager
+The analogue controlType enableRxAndTx shall be used with this the following existing
+Dcm_CommunicationType values :
+• DCM_ENABLE_RX_TX_NORM
+• DCM_ENABLE_RX_TX_NM
+• DCM_ENABLE_RX_TX_NORM_NM.
+⌋
+[SWS_Dcm_01080] ⌈The Dcm shall trigger a negative response with NRC 0x31 (Re-
+questOutOfRange), if a CommunicationControl Request with the sub-function "en-
+ableRxAndTxWithEnhancedAddressInformation" and a "nodeIdentification-Number"
+which is not listed as DcmDspComControlSubNodeId is received.⌋
+[SWS_Dcm_01081] ⌈If DcmDspComControlSubNodeUsed is set to FALSE the sub-
+system (DcmDspComControlSubNode) is not available in this configuration.⌋
+[SWS_Dcm_01082] ⌈If DcmDspComControlSubNodeUsed is set to TRUE the sub-
+system (DcmDspComControlSubNode) is available in this configuration.⌋
+Note : Condition checks (i.e. NRC 22 checks) on CommunicationType and NetworkType
+as well as check of CommunicationType support (i.e. NRC 0x31 check for Communi-
+cationType) are not directly supported by the Dcm. Supplier/manufacturer notifications
+can be used.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_00785] im Text von SWS_DiagnosticCommunicationManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dcm_01082] im Text von SWS_DiagnosticCommunicationManager.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +201,7 @@ controlType parameter from the</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=140" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +213,7 @@ controlType parameter from the</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dcm_00785" class="swsref internal-spec-ref"><code>SWS_Dcm_00785</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dcm_01082" class="swsref internal-spec-ref"><code>SWS_Dcm_01082</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

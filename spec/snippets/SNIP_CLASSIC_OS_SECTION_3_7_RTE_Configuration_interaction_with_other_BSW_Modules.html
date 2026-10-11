@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/os.html">Modul: os</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 60%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_3_7_RTE_Configuration_interaction_with_other_BSW_Modules</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 106)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=105" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 105)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_ECUC_00049" class="swsref"><code>RS_ECUC_00049</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_05150" class="swsref internal-spec-ref"><code>SWS_Rte_05150</code></a></span>
         </div>
       </div>
 
@@ -85,11 +86,69 @@ the Rte and other BSW Modules is needed to allow an efficient configuration of t
 It is however not specified how and in which tools this support shall be implemented.
 The RTE Generator in Generation Phase needs information about other BSW Module’s
 configurations based on the configuration input of the Rte itself (there are references in
-the configuration of</div></section>
+the configuration of the Rte which point to configuration values of other BSW Modules).
+If during RTE Generation Phase the provided input information is inconsistent wrt. the
+Rte input the Rte Generator will have to consider the input as invalid configuration.
+[SWS_Rte_05149] ⌈The RTE Generator in Generation Phase shall consider errors in
+the Rte configuration input information as invalid configuration.⌋(SRS_Rte_00018)
+Due to implementation freedom of the RTE Generator it is possible to correct / update
+provided input configurations of other BSW Modules based on the RTE configuration
+requirements. But to allow a stable build process it is also possible to disallow such an
+update behavior.
+[SWS_Rte_05150]
+⌈If
+the
+external
+configuration
+switch
+strictConfigura-
+tionCheck is set to true the Rte Generator shall not create or modify any configuration
+input.⌋(SRS_Rte_00065)
+If
+the
+external
+configuration
+switch
+strictConfigurationCheck
+(see [SWS_Rte_05148]) is set to false the Rte Generator may update the input
+configuration information of the Rte and other BSW Modules.
+Example 1: If the Rte configuration is referencing an OsTask which is not configured
+in the provided Os configuration, the RTE Generator would behave like:
+• In case [SWS_Rte_05150] applies (i.e. strictConfigurationCheck is set to
+true): Only show an error message.
+• Otherwise: Possible behavior: Show a warning message and modify the Os con-
+figuration to contain the OsTask which is referred to by the Rte configuration (Of
+course the Os configuration of this new OsTask needs to be refined afterwards).
+Example 2: If an RTE configuration references a ComUserSignal for which a notifi-
+cation callback shall be generated but where no ComUserCbkHandleId is configured
+in the provided Com configuration, the intended behavior of an RTE generator is as
+follows:
+• In case [SWS_Rte_05150] applies (i.e. strictConfigurationCheck is set to
+true): Raise an error message.
+• In case [SWS_Rte_05148] applies (i.e. strictConfigurationCheck is set
+to false): Raise a warning message. This should indicate to the user that they
+must modify the Com (See [SWS_Rte_04630]) configuration to contain the Co-
+mUserCbkHandleId which has been used in the RTE generated code for the
+respective ComUserSignal which is referred by the RTE configuration. Note
+that this will require the integrator to regenerate the Com module with the up-
+dated configuration.
+Example 3: If an RTE configuration references a LdComUserIPdu for which a manda-
+tory notification callback shall be generated but where no LdComUserCallback with
+LdComUserCallbackName is configured in the provided LdCom configuration, the
+intended behavior of an RTE generator is as follows:
+• In case [SWS_Rte_05150] applies (i.e. strictConfigurationCheck is set to
+true): Raise an error message.
+• In case [SWS_Rte_05148] applies (i.e. strictConfigurationCheck is set
+to false): Raise a warning message. This should indicate to the user that they
+must modify the LdCom (See [SWS_Rte_04636]) configuration to contain the
+LdComUserCallback with LdComUserCallbackName which has been used
+in the RTE generated code for the respective LdComUserIPdu which is referred
+by the RTE configuration. Note that this will require the integrator to regenerate
+the LdCom module with the updated configuration.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">ECU Configuration tool processing across BSW</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_05150] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -98,11 +157,11 @@ the configuration of</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=105" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 106</td>
+              <td>Seite 105</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -110,15 +169,15 @@ the configuration of</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=RS_ECUC_00049" class="swsref"><code>RS_ECUC_00049</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_05150" class="swsref internal-spec-ref"><code>SWS_Rte_05150</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.60</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

@@ -14,6 +14,26 @@
 //     werden hervorgehoben und klappen History/Diff auf.
 (function () {
   "use strict";
+  var isNode = typeof window === "undefined" && typeof document === "undefined";
+  if (isNode) {
+    if (typeof globalThis !== "undefined") {
+      if (!globalThis.window) globalThis.window = globalThis;
+      if (!globalThis.document) {
+        globalThis.document = {
+          readyState: "loading",
+          addEventListener: function () {},
+          removeEventListener: function () {},
+          getElementById: function () { return null; },
+          querySelector: function () { return null; },
+          querySelectorAll: function () { return []; },
+          documentElement: { getAttribute: function () { return null; }, setAttribute: function () {}, classList: { contains: function () { return false; }, add: function () {}, remove: function () {} } }
+        };
+      }
+      if (!globalThis.window.addEventListener) globalThis.window.addEventListener = function () {};
+      if (!globalThis.window.removeEventListener) globalThis.window.removeEventListener = function () {};
+      if (!globalThis.window.location) globalThis.window.location = { hash: "", search: "", pathname: "/" };
+    }
+  }
   // Lokaler Dienst: relativ auf localhost, sonst über die geprüfte localhost-Adresse (ai-access.js).
   function localApi(path) { var a = typeof window !== "undefined" && window.AiAccess; return a && a.localUrl ? a.localUrl(path) : path; }
 
@@ -1453,7 +1473,7 @@
 
       if (selBar) selBar.hidden = (count === 0);
       if (selCount) selCount.textContent = count;
-      if (selLabel) selLabel.textContent = (count === 1 ? "Element ausgewählt" : "Elemente ausgewählt");
+      if (selLabel) selLabel.textContent = (count === 1 ? T("Element ausgewählt") : T("Elemente ausgewählt"));
       if (bConfCount) bConfCount.textContent = count;
       if (bDismCount) bDismCount.textContent = count;
       if (bDiscCount) bDiscCount.textContent = count;
@@ -1478,7 +1498,7 @@
       if (!ta || !badge) return;
       var text = ta.value || "";
       var approxTokens = Math.max(1, Math.round(text.length / 4));
-      badge.textContent = "~" + approxTokens.toLocaleString() + " Tokens";
+      badge.textContent = T("~{n} Tokens", { n: approxTokens.toLocaleString() });
     }
 
     function switchDossierViewMode(targetMode, modal) {
@@ -1646,7 +1666,7 @@
     }
 
     function updateSnippetBadges() {
-      var localVotes = loadVotes();
+      var localVotes = loadVotes(), esc = escapeHtmlDiff;
       dScope().querySelectorAll(".snippet-card[data-snippet-id]").forEach(function (card) {
         var sId = card.getAttribute("data-snippet-id");
         var record = localVotes[voteKey(sId)];
@@ -1668,37 +1688,37 @@
 
         if (isInDiscussion) {
           badge.className = "curation-status-pill status-in-discussion";
-          badge.textContent = "💬 In Diskussion";
+          badge.textContent = T("💬 In Diskussion");
           if (btnConfirm) btnConfirm.classList.remove("is-active");
           if (btnDismiss) btnDismiss.classList.remove("is-active");
         } else if (record && record.queued) {
           badge.className = "curation-status-pill status-queued";
-          badge.innerHTML = '<span>⏳ Im Review-Paket</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="Aus Curation-Queue entfernen" aria-label="Aus Curation-Queue entfernen">✕</button>';
+          badge.innerHTML = '<span>' + esc(T("⏳ Im Review-Paket")) + '</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="' + esc(T("Aus Curation-Queue entfernen")) + '" aria-label="' + esc(T("Aus Curation-Queue entfernen")) + '">✕</button>';
           if (btnDismiss) btnDismiss.classList.add("is-active");
           if (btnConfirm) btnConfirm.classList.remove("is-active");
         } else if (record && record.vote === "justified_dismiss") {
           badge.className = "curation-status-pill status-justified-dismiss";
-          badge.innerHTML = '<span>👎 Begründet beanstandet ✓</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="Beanstandung aufheben" aria-label="Beanstandung aufheben">✕</button>';
+          badge.innerHTML = '<span>' + esc(T("👎 Begründet beanstandet ✓")) + '</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="' + esc(T("Beanstandung aufheben")) + '" aria-label="' + esc(T("Beanstandung aufheben")) + '">✕</button>';
           if (btnDismiss) btnDismiss.classList.add("is-active");
           if (btnConfirm) btnConfirm.classList.remove("is-active");
         } else if (record && record.vote === "justified_confirm") {
           badge.className = "curation-status-pill status-justified-confirm";
-          badge.innerHTML = '<span>👍 Begründet bestätigt ✓</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="Bestätigung aufheben" aria-label="Bestätigung aufheben">✕</button>';
+          badge.innerHTML = '<span>' + esc(T("👍 Begründet bestätigt ✓")) + '</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="' + esc(T("Bestätigung aufheben")) + '" aria-label="' + esc(T("Bestätigung aufheben")) + '">✕</button>';
           if (btnConfirm) btnConfirm.classList.add("is-active");
           if (btnDismiss) btnDismiss.classList.remove("is-active");
         } else if (record && record.vote === "confirm") {
           badge.className = "curation-status-pill status-confirmed";
-          badge.innerHTML = '<span>👍 Bestätigt ✓</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="Bestätigung aufheben" aria-label="Bestätigung aufheben">✕</button>';
+          badge.innerHTML = '<span>' + esc(T("👍 Bestätigt ✓")) + '</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="' + esc(T("Bestätigung aufheben")) + '" aria-label="' + esc(T("Bestätigung aufheben")) + '">✕</button>';
           if (btnConfirm) btnConfirm.classList.add("is-active");
           if (btnDismiss) btnDismiss.classList.remove("is-active");
         } else if (record && record.vote === "dismiss") {
           badge.className = "curation-status-pill status-dismissed";
-          badge.innerHTML = '<span>👎 Beanstandet ✕</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="Beanstandung aufheben" aria-label="Beanstandung aufheben">✕</button>';
+          badge.innerHTML = '<span>' + esc(T("👎 Beanstandet ✕")) + '</span> <button type="button" class="btn-clear-badge" data-clear-badge-for="' + sId + '" title="' + esc(T("Beanstandung aufheben")) + '" aria-label="' + esc(T("Beanstandung aufheben")) + '">✕</button>';
           if (btnDismiss) btnDismiss.classList.add("is-active");
           if (btnConfirm) btnConfirm.classList.remove("is-active");
         } else {
           badge.className = "curation-status-pill status-neutral";
-          badge.textContent = "Unbewertet";
+          badge.textContent = T("Unbewertet");
           if (btnConfirm) btnConfirm.classList.remove("is-active");
           if (btnDismiss) btnDismiss.classList.remove("is-active");
         }
@@ -1721,27 +1741,56 @@
         (c.constituting ? "" : '" data-page="' + esc(String(c.page == null ? "" : c.page))) +
         '" data-name="' + esc(c.name || c.id) + '" data-kind="' + esc(c.kind || "inbound") + '"' +
         (c.constituting ? ' data-is-constituting="true"' : ' data-is-inbound="true"') + (c.isNew ? ' data-current-new="true"' : "");
-      var what = c.constituting ? "Element" : "Snippet";
+      var confirmTitle = c.constituting ? T("Element bestätigen (Daumen hoch)") : T("Snippet bestätigen (Daumen hoch)");
+      var dismissTitle = c.constituting ? T("Element beanstanden (Daumen runter)") : T("Snippet beanstanden (Daumen runter)");
       return '<div class="' + cls + '"' + attrs + '>' +
-        '<div class="snippet-card-header" data-card-toggle="' + id + '" tabindex="0" role="button" aria-expanded="false" title="Klicken zum Auf-/Zuklappen der Details">' +
+        '<div class="snippet-card-header" data-card-toggle="' + id + '" tabindex="0" role="button" aria-expanded="false" title="' + esc(T("Klicken zum Auf-/Zuklappen der Details")) + '">' +
         '<div class="snippet-card-summary"><span class="card-chevron" aria-hidden="true">▸</span>' +
-        '<input type="checkbox" class="card-select-checkbox" data-select-card="' + id + '" title="Element auswählen" aria-label="Element ' + esc(c.sws || c.id) + ' auswählen">' +
-        '<strong class="snippet-title">' + esc(c.title || c.id) + '</strong>' +
+        '<input type="checkbox" class="card-select-checkbox" data-select-card="' + id + '" title="' + esc(T("Element auswählen")) + '" aria-label="' + esc(T("Element {id} auswählen", { id: c.sws || c.id })) + '">' +
+        '<strong class="snippet-title" title="' + esc(String(c.fullTitle || c.title || c.id).slice(0, 600)) + '">' + esc(c.title || c.id) + '</strong>' +
         (c.constituting ? '<code class="snippet-sws">[' + esc(c.sws || c.id) + ']</code>' : "") +
-        '<span class="chip-kind kind-' + esc(c.kind || "inbound") + '">' + esc(c.chip || c.kind || "inbound") + '</span>' +
-        (c.isNew ? '<span class="chip-new" title="Seit der letzten Generierung zugeordnet">neu</span>' : "") +
+        '<span class="chip-kind kind-' + esc(c.kind || "inbound") + '">' + esc((c.chip ? T(c.chip) : null) || c.kind || "inbound") + '</span>' +
+        (c.isNew ? '<span class="chip-new" title="' + esc(T("Seit der letzten Generierung zugeordnet")) + '">' + esc(T("neu")) + '</span>' : "") +
         '<span class="chip-doc">' + esc(c.docChip || c.doc || "") + '</span></div>' +
-        '<div class="snippet-card-header-actions"><div class="curation-status-box"><span class="curation-status-pill status-neutral" data-badge-for="' + id + '">Unbewertet</span></div>' +
+        '<div class="snippet-card-header-actions"><div class="curation-status-box"><span class="curation-status-pill status-neutral" data-badge-for="' + id + '">' + esc(T("Unbewertet")) + '</span></div>' +
         '<div class="curation-btn-group" data-snippet-id="' + id + '">' +
-        '<button type="button" class="curation-btn btn-confirm" data-action="confirm" data-snippet="' + id + '" title="' + what + ' bestätigen (Daumen hoch)"><span class="vote-icon">👍</span> <span class="vote-label">Bestätigen</span></button>' +
-        '<button type="button" class="curation-btn btn-dismiss" data-action="dismiss" data-snippet="' + id + '" title="' + what + ' beanstanden (Daumen runter)"><span class="vote-icon">👎</span> <span class="vote-label">Beanstanden</span></button>' +
-        '<button type="button" class="curation-btn btn-discuss" data-action="discuss" data-snippet="' + id + '" title="Mit KI diskutieren"><span class="vote-icon">💬</span> <span class="vote-label">Mit KI diskutieren</span></button>' +
+        '<button type="button" class="curation-btn btn-confirm" data-action="confirm" data-snippet="' + id + '" title="' + esc(confirmTitle) + '"><span class="vote-icon">👍</span> <span class="vote-label">' + esc(T("Bestätigen")) + '</span></button>' +
+        '<button type="button" class="curation-btn btn-dismiss" data-action="dismiss" data-snippet="' + id + '" title="' + esc(dismissTitle) + '"><span class="vote-icon">👎</span> <span class="vote-label">' + esc(T("Beanstanden")) + '</span></button>' +
+        '<button type="button" class="curation-btn btn-discuss" data-action="discuss" data-snippet="' + id + '" title="' + esc(T("Mit KI diskutieren")) + '"><span class="vote-icon">💬</span> <span class="vote-label">' + esc(T("Mit KI diskutieren")) + '</span></button>' +
         '</div></div></div>' +
         '<div class="snippet-card-body">' + (c.bodyHtml || "") + '</div></div>';
     }
 
     var QUOTE_STYLE = "margin: 0 0 8px; padding: 8px 12px; background: #faf9f5; border-left: 3px solid #005f73; font-family: Georgia, serif; font-size: 0.95em; line-height: 1.45;";
     var FOOT_STYLE = "font-size: 0.78em; color: #888; display: flex; justify-content: space-between; margin-top: 6px;";
+
+    // Karte nur im Arbeitsbereich der Liste zeigen. element.scrollIntoView() scrollt auch die umgebenden
+    // Rahmen (Dialog, Dialogkörper: overflow hidden ist programmatisch scrollbar) und schob so den Kopf mit
+    // Reitern und ✕ aus dem Bild (UX-Aufnahme 09.10.2026 21:45).
+    function scrollCardIntoPane(card, block) {
+      var pane = card && card.closest(".dossier-viewer-pane");
+      if (!pane) return;
+      var tb = pane.querySelector(".dossier-toolbar");
+      var stuck = tb && window.getComputedStyle(tb).position === "sticky" ? tb.offsetHeight + 8 : 0;
+      var pr = pane.getBoundingClientRect(), cr = card.getBoundingClientRect();
+      var rel = pane.scrollTop + (cr.top - pr.top);
+      if (block === "center") {
+        pane.scrollTop = Math.max(0, rel - stuck - (pane.clientHeight - stuck - cr.height) / 2);
+      } else if (typeof pane.scrollTo === "function") {
+        pane.scrollTo({ top: Math.max(0, rel - stuck - 8), behavior: "smooth" });
+      } else {
+        pane.scrollTop = Math.max(0, rel - stuck - 8);
+      }
+    }
+    // Rahmen des Dossiers scrollen nie: Verschiebungen durch Dritte (Anker, Fokus, Skripte) sofort zurücknehmen.
+    document.addEventListener("scroll", function (e) {
+      var el = e.target;
+      if (el && el.nodeType === 1 && (el.scrollTop || el.scrollLeft) &&
+          el.matches("dialog.dossier-modal, .dossier-modal-body, .dossier-view-mode, .dossier-workbench-layout")) {
+        el.scrollTop = 0;
+        el.scrollLeft = 0;
+      }
+    }, true);
 
     // Modul- und Cluster-Leitfäden: Die Karten stehen vollständig im Prompt-Payload (API-Elemente,
     // Requirements, Dokumentstellen). Ableitung wie lib_curation_modal.cards_from_payload; der
@@ -1802,9 +1851,9 @@
             id: o.i, title: o.n || o.i, sws: sws, name: o.n || o.i, kind: kind, doc: doc, constituting: true,
             bodyHtml: '<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">' +
               '<div><strong>' + esc(doc) + '</strong> <span style="font-size: 0.85em; color: #666;">(<code>[' + esc(sws) + ']</code>)</span></div>' +
-              '<div><span style="background: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; font-weight: bold;">Konstituierend · ' + esc(kind) + '</span></div></div>' +
+              '<div><span style="background: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; font-weight: bold;">' + esc(T("Konstituierend · {kind}", { kind: kind })) + '</span></div></div>' +
               '<blockquote style="' + QUOTE_STYLE + '"><div class="desc"><p>' + esc(o.t || "") + '</p></div></blockquote>' +
-              '<div style="' + FOOT_STYLE + '"><span>Eigenschaft: <em>Konstituierende Modul-Spezifikation</em></span><span>Record-ID: <code>' + esc(o.i) + '</code></span></div>'
+              '<div style="' + FOOT_STYLE + '"><span>' + esc(T("Eigenschaft:")) + ' <em>' + esc(T("Konstituierende Modul-Spezifikation")) + '</em></span><span>' + esc(T("Record-ID:")) + ' <code>' + esc(o.i) + '</code></span></div>'
           });
         }).join(""));
       }
@@ -1814,73 +1863,434 @@
           var page = o.p == null ? "" : String(o.p), doc = o.d || "";
           var name = o.n || (doc + ", S. " + page);
           return dossierCardHtml({
-            id: o.i, title: name, sws: name, name: name, kind: "inbound", chip: "inbound", doc: doc, page: page,
+            id: o.i, title: cardTitle(o.t, name), fullTitle: o.t, sws: name, name: name, kind: "inbound", chip: "inbound", doc: doc, page: page,
             docChip: doc + " (S. " + page + ")",
-            bodyHtml: '<blockquote style="' + QUOTE_STYLE + '"><div class="desc"><p>' + esc(o.t || "") + '</p></div></blockquote>' +
-              '<div style="' + FOOT_STYLE + '"><span>Eigenschaft: <em>Inbound-Spezifikationsbeleg</em></span><span>ID: <code>' + esc(o.i) + '</code></span></div>'
+            bodyHtml: '<blockquote class="snippet-fulltext" style="' + QUOTE_STYLE + '"><div class="desc"><p>' + esc(o.t || "") + '</p></div></blockquote>' +
+              '<div style="' + FOOT_STYLE + '"><span>' + esc(T("Eigenschaft:")) + ' <em>' + esc(T("Inbound-Spezifikationsbeleg")) + '</em></span><span>ID: <code>' + esc(o.i) + '</code></span></div>'
           });
         }).join(""));
       }
+      enrichDossierCards(modal);
       setTimeout(updateSnippetBadges, 0);
       watchUi(modal);
     }
 
-    // Seit der Generierung zugeordnete Belege (lib_current_context.py) liegen als JSON im Dossier
-    // und werden beim ersten Öffnen als Karten angehängt – so bleibt die Seite klein.
-    function hydrateCurrentContext(modal) {
-      if (!modal) return;
-      hydratePromptContext(modal);
-      if (modal.getAttribute("data-current-hydrated") === "1") return;
-      var data = modal.querySelector("script.dossier-current-context");
+    // Nachladedaten des Dialogs (lib_curation_modal.augment_dossiers): seit der Generierung zugeordnete Belege
+    // mit Volltext und die Begründungen der Zuordnung liegen nicht in der Seite, sondern je Dialog in
+    // dossier-data/<name>.json (sprachunabhängig, neben spec/ und static/). Die Seite trägt nur den Verweis
+    // <script class="dossier-data-ref" data-root data-src="dossier-data/<name>.json?v=<hash>">; geholt wird
+    // beim ersten Öffnen, je Adresse einmal. Ältere Seiten mit den Daten inline (dossier-current-context,
+    // dossier-used-context) gehen weiter.
+    var DOSSIER_DATA_CACHE = {};
+    function dossierDataRef(modal) {
+      return modal && modal.querySelector ? modal.querySelector("script.dossier-data-ref") : null;
+    }
+    function loadDossierData(modal) {
+      var ref = dossierDataRef(modal);
+      if (!ref) {
+        var cur = modal.querySelector("script.dossier-current-context"), used = modal.querySelector("script.dossier-used-context");
+        var parse = function (el) {
+          if (!el) return [];
+          try { var a = JSON.parse(el.textContent || "[]"); return Array.isArray(a) ? a : []; } catch (err) { return []; }
+        };
+        if (!cur && !used) return Promise.resolve(null);
+        return Promise.resolve({ root: (cur || used).getAttribute("data-root") || "", items: parse(cur), used: parse(used) });
+      }
+      var root = ref.getAttribute("data-root") || "";
+      var url = root + (ref.getAttribute("data-src") || "");
+      if (!DOSSIER_DATA_CACHE[url]) {
+        DOSSIER_DATA_CACHE[url] = fetch(url, { credentials: "same-origin" }).then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        }).then(function (d) {
+          if (!d || typeof d !== "object" || (!Array.isArray(d["new"]) && !Array.isArray(d.used))) throw new Error("keine Daten");
+          return { root: root, items: Array.isArray(d["new"]) ? d["new"] : [], used: Array.isArray(d.used) ? d.used : [] };
+        });
+        DOSSIER_DATA_CACHE[url].catch(function () { delete DOSSIER_DATA_CACHE[url]; });
+      }
+      return DOSSIER_DATA_CACHE[url];
+    }
+
+    // Lade- bzw. Fehlerhinweis über den Belegkarten (kein <p>: die Platzhalter-Absätze des Containers
+    // werden beim Rendern entfernt)
+    function dossierDataStatus(modal, state) {
       var box = modal.querySelector(".snippets-container");
-      if (!data || !box) return;
+      var el = modal.querySelector(".dossier-data-status");
+      if (!state) { if (el) el.remove(); return; }
+      if (!box) return;
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "dossier-data-status";
+        el.setAttribute("role", "status");
+        box.insertAdjacentElement("beforebegin", el);
+      }
+      el.setAttribute("data-state", state);
+      el.textContent = "";
+      if (state === "loading") {
+        el.textContent = T("Zuordnungsdaten werden geladen…");
+        return;
+      }
+      el.appendChild(document.createTextNode(T("Zuordnungsdaten konnten nicht geladen werden (Begründungen, Volltexte, seit der Generierung zugeordnete Belege).") + " "));
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "curation-btn"; b.setAttribute("data-dossier-data-retry", "");
+      b.textContent = T("Erneut versuchen");
+      el.appendChild(b);
+    }
+
+    // Öffnen des Dossiers: Karten des Prompts sofort, Nachladedaten asynchron. Liefert ein Promise, das nach
+    // dem Rendern erfüllt ist (auch bei Fehlschlag: dann steht der Hinweis im Dialog, _assignMap.failed).
+    function hydrateCurrentContext(modal) {
+      if (!modal || !modal.getAttribute) return Promise.resolve();
+      hydratePromptContext(modal);
+      if (modal._dossierData) return modal._dossierData;
+      var hasRef = !!dossierDataRef(modal);
+      if (hasRef) dossierDataStatus(modal, "loading");
+      var p = loadDossierData(modal).then(function (data) {
+        dossierDataStatus(modal, null);
+        var retry = modal._assignMap && modal._assignMap.failed;
+        modal._assignMap = { items: {}, root: data ? data.root : null };
+        if (data) {
+          data.used.concat(data.items).forEach(function (it) {
+            if (it && it.id) modal._assignMap.items[it.id] = Object.assign(modal._assignMap.items[it.id] || {}, it);
+          });
+          appendCurrentCards(modal, data.items, data.root);
+        }
+        if (retry) resetFailedCards(modal);
+        enrichDossierCards(modal);
+      }, function () {
+        modal._dossierData = null;      // erneuter Versuch möglich (Knopf im Hinweis, erneutes Öffnen)
+        var ref = dossierDataRef(modal);
+        modal._assignMap = { items: {}, root: ref ? ref.getAttribute("data-root") || "" : null, failed: true };
+        dossierDataStatus(modal, "error");
+        enrichDossierCards(modal);
+      });
+      modal._dossierData = p;
+      return p;
+    }
+
+    function appendCurrentCards(modal, items, root) {
+      if (modal.getAttribute("data-current-hydrated") === "1") return;
+      var box = modal.querySelector(".snippets-container");
+      if (!box || !items || !items.length) return;
       modal.setAttribute("data-current-hydrated", "1");
-      var items = [];
-      try { items = JSON.parse(data.textContent || "[]"); } catch (err) { items = []; }
-      if (!items.length) return;
-      var root = data.getAttribute("data-root") || "";
       Array.prototype.forEach.call(box.querySelectorAll(":scope > p"), function (p) { p.remove(); });
       var esc = escapeHtmlDiff;
       var html = items.map(function (it) {
         var page = String(it.page || "");
-        var kind = it.is_figure ? "Schaubild" : "Snippet";
+        var kind = it.is_figure ? T("Schaubild") : "Snippet";
         // Belegseite spec/{figures,snippets}/<Stamm>.html; "file" nur bei Schreibvarianten (case_safe_names.py)
-        var href = root + "spec/" + (it.is_figure ? "figures/" : "snippets/") + encodeURIComponent(it.file || it.id) + ".html";
+        var href = evidencePageHref(root, it);
         var conf = typeof it.confidence === "number" ? " · " + T("Konfidenz {c}", { c: it.confidence.toFixed(2) }) : "";
         var targets = (it.targets || []).map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ");
+        // Volltext aus den Nachladedaten ("text"); ältere Seiten trugen nur den Auszug ("excerpt")
+        var text = it.no_text ? "" : String(it.text || it.excerpt || "");
         return dossierCardHtml({
-          id: it.id, title: it.excerpt ? it.excerpt.slice(0, 70) : it.id, sws: it.id, name: it.id, kind: "inbound", chip: kind,
+          id: it.id, title: cardTitle(text, it.id), fullTitle: text, sws: it.id, name: it.id, kind: "inbound", chip: kind,
           doc: it.doc || "", page: page, docChip: (it.doc || "") + (page ? " (S. " + page + ")" : ""),
           isNew: true, extraClass: "is-current-new",
-          bodyHtml: '<blockquote class="current-excerpt"><div class="desc"><p>' + esc(it.excerpt || "") + '</p></div></blockquote>' +
+          bodyHtml: (text
+              ? '<blockquote class="current-excerpt snippet-fulltext"><div class="desc"><p>' + esc(text) + '</p></div></blockquote>'
+              : '<p class="snippet-no-text">' + esc(it.is_figure ? T("Keine Bildunterschrift gespeichert.") : T("Kein Belegtext gespeichert.")) + '</p>') +
             '<div class="current-meta"><span>' + esc(it.relation || "") + conf + (targets ? " · " + esc(T("für")) + " " + targets : "") + '</span>' +
-            '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(T(it.is_figure ? "🔍 Schaubild öffnen" : "🔍 Snippet öffnen")) + '</a></div>'
+            '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(it.is_figure ? T("🔍 Schaubild öffnen") : T("🔍 Snippet öffnen")) + '</a></div>'
         });
       }).join("");
       box.insertAdjacentHTML("beforeend", html);
       setTimeout(updateSnippetBadges, 0);
     }
+
+    // ---- Zuordnung eines Belegs: Begründung des Kontext-Verteilers und Volltext (lib_current_context.py) ----
+    var ELLIPSIS_RE = /(?:…|\.\.\.)\s*$/;
+
+    // Beleg- bzw. Schaubildseite eines Eintrags (spec/{snippets,figures}/<Stamm>.html, Stamm nur bei
+    // Schreibvarianten abweichend, case_safe_names.py)
+    function evidencePageHref(root, it) {
+      var fig = it.is_figure || /^FIG-/.test(it.id || "");
+      return (root || "") + "spec/" + (fig ? "figures/" : "snippets/") + encodeURIComponent(it.file || it.id) + ".html";
+    }
+
+    // Kartentitel: Anfang des Belegtexts, an Wortgrenze, ohne die Anzeige mitten im Wort abzuschneiden;
+    // der vollständige Text steht im aufgeklappten Beleg.
+    function cardTitle(text, fallback) {
+      var s = String(text || "").replace(/\s+/g, " ").trim().replace(ELLIPSIS_RE, "").trim();
+      if (!s) return fallback;
+      if (s.length <= 110) return s;
+      var cut = s.slice(0, 110), sp = cut.lastIndexOf(" ");
+      return (sp > 60 ? cut.slice(0, sp) : cut) + "…";
+    }
+
+    function reasonLine(e) {
+      var parts = [];
+      if (typeof e.c === "number") parts.push(T("Konfidenz {c}", { c: e.c.toFixed(2) }));
+      if (e.rel) parts.push(T("Beziehung {v}", { v: e.rel }));
+      if (e.role) parts.push(T("Rolle {v}", { v: e.role }));
+      if (e.m) parts.push(T("Methode {v}", { v: e.m }));
+      if (e.mod) parts.push(T("Modell {v}", { v: e.mod }));
+      if (e.rls && e.rls.length) parts.push(T("Release {v}", { v: e.rls.join(", ") }));
+      return parts.join(" · ");
+    }
+
+    // Begründung(en) der Zuordnung: Kopfzeile (erste Begründung vollständig) und Abschnitt im Karteninhalt.
+    // why: Zuordnungen zu den Records des Dossiers; also: Zuordnungen desselben Belegs zu anderen Elementen
+    // (nur, wenn es zu den Records keine Begründung gibt); sr: Begründung des Snippet-Speichers.
+    function assignmentParts(info) {
+      var esc = escapeHtmlDiff;
+      info = info || {};
+      var why = info.why || [], also = info.also || [];
+      var direct = why.filter(function (e) { return e.r; });
+      var others = also.filter(function (e) { return e.r; });
+      var none = T("keine Begründung gespeichert");
+      function codes(list) { return (list || []).map(function (x) { return "<code>" + esc(x) + "</code>"; }).join(" "); }
+      function headLine(label, e, withTargets, extra) {
+        var meta = reasonLine(e);
+        if (withTargets && e.t && e.t.length) meta = T("für") + " " + e.t.join(", ") + (meta ? " · " + meta : "");
+        var h = '<span class="why-label">' + esc(label) + '</span> <span class="why-text desc">' + esc(e.r) + '</span>';
+        if (meta) h += ' <span class="why-meta">(' + esc(meta) + ')</span>';
+        return h + (extra || "");
+      }
+      var head;
+      if (direct.length) {
+        head = headLine(T("Begründung:"), direct[0], false,
+          direct.length > 1 ? ' <span class="why-more">' + esc(T("+{n} weitere Begründungen", { n: direct.length - 1 })) + '</span>' : "");
+      } else if (others.length) {
+        head = headLine(T("Begründung zu anderen Elementen:"), others[0], true,
+          others.length > 1 ? ' <span class="why-more">' + esc(T("+{n} weitere Begründungen", { n: others.length - 1 })) + '</span>' : "");
+      } else if (info.sr) {
+        head = '<span class="why-label">' + esc(T("Begründung:")) + '</span> <span class="why-text desc">' + esc(info.sr) + '</span> ' +
+          '<span class="why-meta">(' + esc(T("aus dem Snippet-Speicher")) + ')</span>';
+      } else {
+        head = '<span class="why-label">' + esc(T("Begründung:")) + '</span> <span class="why-none">' + esc(none) + '</span>';
+      }
+      function li(e) {
+        var targets = codes(e.t), meta2 = reasonLine(e);
+        return '<li>' +
+          (e.r ? '<span class="assign-reason desc">' + esc(e.r) + '</span>' : '<span class="why-none">' + esc(none) + '</span>') +
+          '<span class="assign-meta">' + (targets ? esc(T("für")) + " " + targets : "") +
+          (targets && meta2 ? " · " : "") + esc(meta2) + '</span></li>';
+      }
+      var body = "";
+      if (why.length) body += '<ul>' + why.map(li).join("") + '</ul>';
+      if (also.length) {
+        body += (why.length ? '<div class="assign-sub-title">' + esc(T("Weitere Zuordnungen dieses Belegs (andere Elemente)")) + '</div>' : "") +
+          '<ul>' + also.map(li).join("") + '</ul>';
+      }
+      if (!why.length && !also.length && info.sr) {
+        body += '<ul><li><span class="assign-reason desc">' + esc(info.sr) + '</span><span class="assign-meta">' +
+          esc(T("aus dem Snippet-Speicher; kein Zuordnungseintrag je Element")) + '</span></li></ul>';
+      }
+      if (!body) {
+        body = '<ul><li><span class="why-none">' + esc(none) + '</span><span class="assign-meta">' +
+          esc(T("Kein Zuordnungseintrag mit Begründung im Kontext-Verteiler.")) + '</span></li></ul>';
+      }
+      var section = '<section class="snippet-assign"><div class="assign-title">' + esc(T("Begründung der Zuordnung")) +
+        ' <span class="assign-sub">' + esc(T("(Kontext-Verteiler)")) + '</span></div>' + body + '</section>';
+      return { head: '<div class="snippet-card-why">' + head + '</div>', section: section };
+    }
+
+    // Zuordnungsdaten eines Dossiers je Kennung (Belege des Prompts und seit der Generierung zugeordnete),
+    // gesetzt von hydrateCurrentContext. null, solange die Nachladedaten noch nicht da sind; Seiten ohne
+    // Verweis (Daten inline oder keine) bekommen die Karte sofort.
+    function assignmentMap(modal) {
+      if (modal._assignMap) return modal._assignMap;
+      if (dossierDataRef(modal)) return null;
+      var map = {}, root = null;
+      ["script.dossier-used-context", "script.dossier-current-context"].forEach(function (sel) {
+        var s = modal.querySelector(sel);
+        if (!s) return;
+        if (root === null) root = s.getAttribute("data-root");
+        var arr = [];
+        try { arr = JSON.parse(s.textContent || "[]"); } catch (err) { arr = []; }
+        (Array.isArray(arr) ? arr : []).forEach(function (it) { if (it && it.id) map[it.id] = Object.assign(map[it.id] || {}, it); });
+      });
+      modal._assignMap = { items: map, root: root };
+      return modal._assignMap;
+    }
+
+    function setQuoteText(quote, txt) {
+      var p = quote.querySelector("p");
+      if (!p) { quote.textContent = ""; p = document.createElement("p"); var d = document.createElement("div"); d.className = "desc"; d.appendChild(p); quote.appendChild(d); }
+      p.textContent = txt;
+    }
+
+    function fullTextNoteText(n) {
+      // Der Miner schneidet Abschnitte bei 1500 Zeichen ab (inbound_snippet_miner.MAX_SECTION_CHARS)
+      return n >= 1499
+        ? T("Volltext aus dem Speicher ({n} Zeichen); der Miner begrenzt Abschnitte auf 1500 Zeichen, die Fundstelle kann länger sein.", { n: n })
+        : T("Volltext ({n} Zeichen)", { n: n });
+    }
+
+    // Karten, die ohne Nachladedaten ergänzt wurden, nach erfolgreichem erneutem Laden zurücksetzen
+    function resetFailedCards(modal) {
+      Array.prototype.forEach.call(modal.querySelectorAll('.snippet-card[data-assign-done="failed"]'), function (card) {
+        Array.prototype.forEach.call(card.querySelectorAll(".snippet-card-why, .snippet-assign"), function (el) { el.remove(); });
+        if (card.getAttribute("data-fulltext") !== "full") {
+          Array.prototype.forEach.call(card.querySelectorAll(".snippet-fulltext-note"), function (el) { el.remove(); });
+          card.removeAttribute("data-fulltext");
+        }
+        card.removeAttribute("data-assign-done");
+      });
+    }
+
+    // Karten der Belege ergänzen (einmal je Karte): Begründung in der Kopfzeile, Abschnitt "Begründung der
+    // Zuordnung" und Volltext (aus den Nachladedaten; nur ersatzweise von der Belegseite nachgeladen).
+    function enrichDossierCards(modal) {
+      if (!modal) return;
+      var am = assignmentMap(modal);
+      if (!am) return;              // Nachladedaten unterwegs: hydrateCurrentContext ergänzt danach
+      var esc = escapeHtmlDiff;
+      var cards = modal.querySelectorAll(".snippet-card[data-is-inbound]:not([data-assign-done])");
+      Array.prototype.forEach.call(cards, function (card) {
+        card.setAttribute("data-assign-done", am.failed ? "failed" : "1");
+        var id = card.getAttribute("data-snippet-id") || card.id;
+        var info = am.items[id] || {};
+        var isFig = info.is_figure || /^FIG-/.test(id);
+        var parts;
+        if (am.failed) {
+          // Ohne Nachladedaten nichts behaupten: weder „keine Begründung“ noch einen erfundenen Text
+          var href0 = evidencePageHref(am.root, { id: id, is_figure: isFig });
+          parts = {
+            head: '<div class="snippet-card-why"><span class="why-label">' + esc(T("Begründung:")) + '</span> <span class="why-none">' + esc(T("nicht geladen")) + '</span></div>',
+            section: '<section class="snippet-assign" data-state="failed"><div class="assign-title">' + esc(T("Begründung der Zuordnung")) +
+              ' <span class="assign-sub">' + esc(T("(Kontext-Verteiler)")) + '</span></div><ul><li><span class="why-none">' +
+              esc(T("Zuordnungsdaten nicht geladen; die Belegseite zeigt den Beleg.")) + '</span> <a href="' + esc(href0) +
+              '" target="_blank" rel="noopener">' + esc(T("Belegseite öffnen")) + '</a></li></ul></section>'
+          };
+        } else {
+          parts = assignmentParts(info);
+        }
+        var summary = card.querySelector(".snippet-card-summary");
+        if (summary) summary.insertAdjacentHTML("beforeend", parts.head);
+        var body = card.querySelector(".snippet-card-body");
+        if (body) body.insertAdjacentHTML("afterbegin", parts.section);
+        var quote = body && body.querySelector("blockquote");
+        if (quote) quote.classList.add("snippet-fulltext");
+        if (!quote || card.getAttribute("data-fulltext") === "full") return;
+        var text = quote.textContent;
+        var shown = text.replace(ELLIPSIS_RE, "").replace(/\s+/g, " ").trim();
+        var full = typeof info.text === "string" ? info.text : "";
+        var note;
+        if (full && full.length >= shown.length) {
+          // Volltext aus den Nachladedaten
+          if (full.length > shown.length) setQuoteText(quote, full);
+          if (full.length > shown.length || full.length >= 1499) {
+            card.setAttribute("data-fulltext", "full");
+            note = document.createElement("div");
+            note.className = "snippet-fulltext-note";
+            note.textContent = fullTextNoteText(full.length);
+            quote.insertAdjacentElement("afterend", note);
+          }
+          return;
+        }
+        // Ersatzweg: Text gekürzt und nicht in den Daten (z. B. Daten nicht geladen) → Belegseite beim Aufklappen
+        var cutText = info.more || ELLIPSIS_RE.test(text);
+        if (cutText && am.root !== null) {
+          card.setAttribute("data-fulltext", "pending");
+          card.setAttribute("data-fulltext-href", evidencePageHref(am.root, { id: id, file: info.file, is_figure: isFig }));
+          note = document.createElement("div");
+          note.className = "snippet-fulltext-note";
+          note.textContent = info.more
+            ? T("Auszug: {n} von {total} Zeichen", { n: shown.length, total: info.more })
+            : T("Auszug – Volltext wird beim Aufklappen geladen");
+          quote.insertAdjacentElement("afterend", note);
+        }
+      });
+      watchFullText(modal);
+      loadExpandedFullTexts(modal);
+    }
+
+    // Volltext einer Belegseite (.snip-text bzw. .fig-h1), je Adresse einmal geladen
+    var FULLTEXT_CACHE = {};
+    function fetchEvidenceText(href) {
+      if (!FULLTEXT_CACHE[href]) {
+        FULLTEXT_CACHE[href] = fetch(href, { credentials: "same-origin" }).then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.text();
+        }).then(function (html) {
+          var doc = new DOMParser().parseFromString(html, "text/html");
+          var el = doc.querySelector(".snip-text") || doc.querySelector(".fig-h1");
+          var txt = el ? el.textContent.replace(/\s+/g, " ").trim() : "";
+          if (!txt) throw new Error("kein Text");
+          return txt;
+        });
+        FULLTEXT_CACHE[href].catch(function () { delete FULLTEXT_CACHE[href]; });
+      }
+      return FULLTEXT_CACHE[href];
+    }
+
+    function loadFullText(card) {
+      if (card.getAttribute("data-fulltext") !== "pending") return;
+      card.setAttribute("data-fulltext", "loading");
+      var href = card.getAttribute("data-fulltext-href");
+      var note = card.querySelector(".snippet-fulltext-note");
+      var quote = card.querySelector(".snippet-fulltext");
+      if (note) note.textContent = T("Volltext wird geladen…");
+      fetchEvidenceText(href).then(function (txt) {
+        if (quote) {
+          var shown = quote.textContent.replace(ELLIPSIS_RE, "").replace(/\s+/g, " ").trim();
+          // nur ersetzen, wenn die Belegseite länger ist als der angezeigte Text
+          if (txt.length >= shown.length) setQuoteText(quote, txt);
+        }
+        card.setAttribute("data-fulltext", "full");
+        if (note) note.textContent = fullTextNoteText(txt.length);
+      }).catch(function () {
+        card.setAttribute("data-fulltext", "error");
+        if (note) {
+          note.textContent = "";
+          note.appendChild(document.createTextNode(T("Volltext konnte nicht geladen werden.") + " "));
+          var a = document.createElement("a");
+          a.href = href; a.target = "_blank"; a.rel = "noopener";
+          a.textContent = T("Belegseite öffnen");
+          note.appendChild(a);
+        }
+      });
+    }
+
+    function loadExpandedFullTexts(modal) {
+      Array.prototype.forEach.call(modal.querySelectorAll('.snippet-card.is-expanded[data-fulltext="pending"]'), loadFullText);
+    }
+
+    // Aufgeklappte Karten laden ihren Volltext nach (egal über welchen Weg sie aufgeklappt wurden)
+    function watchFullText(modal) {
+      if (modal._fullTextWatch || typeof MutationObserver === "undefined") return;
+      modal._fullTextWatch = true;
+      new MutationObserver(function (records) {
+        records.forEach(function (r) {
+          var el = r.target;
+          if (el.classList && el.classList.contains("is-expanded") && el.getAttribute("data-fulltext") === "pending") loadFullText(el);
+        });
+      }).observe(modal, { subtree: true, attributes: true, attributeFilter: ["class"] });
+    }
     window.autodocsHydrateDossier = hydrateCurrentContext;
     document.addEventListener("click", function (e) {
       var trig = e.target.closest("[data-dossier-target]");
       if (trig) hydrateCurrentContext(document.getElementById(trig.getAttribute("data-dossier-target")));
+      var retry = e.target.closest("[data-dossier-data-retry]");
+      if (retry) {
+        e.preventDefault();
+        var rm = retry.closest("dialog");
+        if (rm && !rm._dossierData) hydrateCurrentContext(rm);
+        return;
+      }
       var show = e.target.closest("[data-dossier-show-new]");
       var regen = e.target.closest("[data-dossier-regen-new]");
       if (!show && !regen) return;
       e.preventDefault();
       var modal = (show || regen).closest("dialog");
-      hydrateCurrentContext(modal);
-      var editorTab = modal && modal.querySelector('.dossier-mode-tab[data-view-mode="editor"]');
+      if (!modal) return;
+      var editorTab = modal.querySelector('.dossier-mode-tab[data-view-mode="editor"]');
       if (editorTab) editorTab.click();
       if (regen) {
         var btn = modal.querySelector("#btn-regenerate-from-context");
-        if (btn) btn.click();
+        if (btn) btn.click();      // wartet selbst auf die Nachladedaten
         return;
       }
-      var pill = modal.querySelector('.dossier-filter-pill[data-filter-kind="inbound"]');
-      if (pill) pill.click();
-      var first = modal.querySelector(".snippet-card.is-current-new");
-      if (first) first.scrollIntoView({ block: "center" });
+      // Neue Belege erst nach dem Laden der Nachladedaten zeigen (bei Fehlschlag steht der Hinweis da)
+      hydrateCurrentContext(modal).then(function () {
+        var pill = modal.querySelector('.dossier-filter-pill[data-filter-kind="inbound"]');
+        if (pill) pill.click();
+        var first = modal.querySelector(".snippet-card.is-current-new") || modal.querySelector(".dossier-data-status");
+        if (first) scrollCardIntoPane(first, "center");
+      });
     }, true);
 
     function applyDossierFilters() {
@@ -1963,7 +2373,7 @@
 
       var visibleCountEl = dEl("dossier-visible-count");
       if (visibleCountEl) {
-        visibleCountEl.textContent = visibleCount + " von " + totalCount + " Elementen angezeigt";
+        visibleCountEl.textContent = T("{shown} von {total} Elementen angezeigt", { shown: visibleCount, total: totalCount });
       }
 
       var resetBtn = dEl("btn-reset-dossier-filters");
@@ -1976,6 +2386,16 @@
       renderAttachedChips();
     }
 
+    function formatHitsLabel(q, count) {
+      var query = (q || "").trim();
+      var n = typeof count === "number" ? count : 0;
+      if (n === 1) {
+        return query ? T("🔍 „{q}“: 1 Treffer", { q: query }) : T("🔍 Filter: 1 Treffer");
+      }
+      return query ? T("🔍 „{q}“: {n} Treffer", { q: query, n: n }) : T("🔍 Filter: {n} Treffer", { n: n });
+    }
+    window.autodocsFormatHitsLabel = formatHitsLabel;
+
     function renderAttachedChips() {
       var chipsContainer = dEl("chat-attached-chips");
       var countBadge = dEl("chat-attached-count");
@@ -1985,7 +2405,7 @@
       var count = attachedDiscussionItems.size + hits.length;
 
       if (countBadge) {
-        countBadge.textContent = count === 1 ? "1 Element im Fokus" : count + " Elemente im Fokus";
+        countBadge.textContent = count === 1 ? T("1 Element im Fokus") : T("{n} Elemente im Fokus", { n: count });
       }
       if (headerBadge) {
         headerBadge.textContent = count;
@@ -2001,7 +2421,7 @@
       if (count === 0) {
         var hint = document.createElement("span");
         hint.className = "chat-attached-empty-hint";
-        hint.textContent = "Kein Element im Fokus: bei einem Element „💬 Mit KI diskutieren“ wählen oder oben suchen bzw. filtern – alle Treffer gehen dann in die Diskussion ein.";
+        hint.textContent = T("Kein Element im Fokus: bei einem Element „💬 Mit KI diskutieren“ wählen oder oben suchen bzw. filtern – alle Treffer gehen dann in die Diskussion ein.");
         chipsContainer.appendChild(hint);
         return;
       }
@@ -2020,7 +2440,7 @@
         var el = document.createElement("span");
         el.className = "chat-attached-chip" + (hit ? " is-hit" : "");
         el.innerHTML = '<button type="button" class="chat-chip-goto" data-item-id="' + escAttr(id) + '" title="' + escAttr(sws || id) + '"><code>' + label + "</code></button>"
-          + '<button type="button" class="' + (hit ? "btn-detach-hit" : "btn-detach-item") + '" data-item-id="' + escAttr(id) + '" title="Aus Diskussion entfernen">✕</button>';
+          + '<button type="button" class="' + (hit ? "btn-detach-hit" : "btn-detach-item") + '" data-item-id="' + escAttr(id) + '" title="' + escAttr(T("Aus Diskussion entfernen")) + '">✕</button>';
         chipsContainer.appendChild(el);
       }
       attachedDiscussionItems.forEach(function (id) { chip(id, false); });
@@ -2028,7 +2448,7 @@
         var q = (dEl("dossier-search-input") || {}).value || "";
         var lab = document.createElement("span");
         lab.className = "chat-attached-hits-label";
-        lab.textContent = "🔍 " + (q.trim() ? "„" + q.trim() + "“: " : "Filter: ") + hits.length + (hits.length === 1 ? " Treffer" : " Treffer");
+        lab.textContent = formatHitsLabel(q, hits.length);
         chipsContainer.appendChild(lab);
         hits.forEach(function (id) { chip(id, true); });
       }
@@ -2934,10 +3354,20 @@
       // Nur agy kodiert den Effort in der Modell-ID; die Gemini-CLI („gemini“) nimmt die ID unverändert.
       return source === "local" && (provider === "agy" || (!provider && /^gemini-/.test(model || "")));
     }
+    function baseModelName(id) {
+      return String(id || "").replace(/\s+\(\d+\)$/, "");
+    }
     function previewOptionValue(m) { return m.source + "|" + m.provider + "|" + m.model; }
     function previewOptionLabel(m) {
       var label = String(m.label || m.model);
-      return previewEffortApplies(m.source, m.provider, m.model) ? label.replace(/\s*\((low|medium|high|xhigh|max)\)\s*$/i, "") : label;
+      if (previewEffortApplies(m.source, m.provider, m.model)) {
+        label = label.replace(/\s*\((low|medium|high|xhigh|max)\)\s*$/i, "");
+      }
+      if (m.sources && m.sources.length > 1) {
+        var via = m.source === "project" ? previewText("viaProject", "Projektkontingent") : previewText("viaKey", "eigener Schlüssel");
+        label += " (" + via + ")";
+      }
+      return label;
     }
     function previewUsableModels() {
       var a = window.AiAccess;
@@ -2965,9 +3395,36 @@
         byGroup[g].push(m);
       });
       return groups.map(function (g) {
+        var items = byGroup[g];
+        var byBase = {}, baseOrder = [];
+        items.forEach(function (m) {
+          var base = baseModelName(m.model);
+          if (!byBase[base]) { byBase[base] = []; baseOrder.push(base); }
+          byBase[base].push(m);
+        });
+        var collapsed = baseOrder.map(function (base) {
+          var variants = byBase[base];
+          var baseExact = variants.filter(function (v) { return v.model === base; })[0];
+          var winner = baseExact || variants[0];
+          var res = Object.assign({}, winner);
+          res.label = base;
+          return res;
+        });
         return '<optgroup label="' + escapeHtmlDiff(g) + '" data-source="' + escapeHtmlDiff(byGroup[g][0].source) + '">' +
-          byGroup[g].map(function (m) { return previewOptionHtml(m, previewOptionValue(m) === pick); }).join("") + "</optgroup>";
+          collapsed.map(function (m) { return previewOptionHtml(m, previewOptionValue(m) === pick); }).join("") + "</optgroup>";
       }).join("");
+    }
+    if (typeof window !== "undefined") {
+      window._previewOptionsHtml = previewOptionsHtml;
+      window._previewOptionLabel = previewOptionLabel;
+      window._previewOptionValue = previewOptionValue;
+      window._baseModelName = baseModelName;
+    }
+    if (typeof module !== "undefined" && module.exports) {
+      module.exports._previewOptionsHtml = previewOptionsHtml;
+      module.exports._previewOptionLabel = previewOptionLabel;
+      module.exports._previewOptionValue = previewOptionValue;
+      module.exports._baseModelName = baseModelName;
     }
     // Gewählte Option lesen; versteht auch ältere statische Optionen (value = Modell-ID, data-provider = agy|cursor).
     function previewChoice(sel, effortSel) {
@@ -3649,7 +4106,9 @@
         var confirmed = [];
         var dismissed = [];
         var added = [];
-        hydrateCurrentContext(modal);
+        // Die seit der Generierung zugeordneten Belege kommen aus den Nachladedaten (hydrateCurrentContext)
+        hydrateCurrentContext(modal).then(function () {
+        var dataFailed = !!(modal._assignMap && modal._assignMap.failed);
         var localVotes = (typeof loadVotes === "function") ? loadVotes() : {};
 
         modal.querySelectorAll(".snippet-card").forEach(function (card) {
@@ -3686,7 +4145,9 @@
             addendum += "- Seit der letzten Generierung neu zugeordnete Belege (Snippets und Schaubilder):\n  * " +
               added.slice(0, 80).join("\n  * ") + (added.length > 80 ? "\n  * … (" + (added.length - 80) + " weitere)" : "") + "\n";
           }
-          if (confirmed.length === 0 && dismissed.length === 0 && added.length === 0) {
+          if (dataFailed) {
+            addendum += "- Hinweis: Die Zuordnungsdaten des Dossiers (seit der Generierung zugeordnete Belege) konnten nicht geladen werden; diese Belege fehlen hier.\n";
+          } else if (confirmed.length === 0 && dismissed.length === 0 && added.length === 0) {
             addendum += "- Alle aktuellen Inbound- und Spezifikations-Referenzen wurden im Dossier geprüft und bestätigt.\n";
           }
           if (!val.includes("### Kurations-Feedback & angepasster Kontext")) {
@@ -3714,6 +4175,7 @@
         if (typeof startPreviewGeneration === "function") {
           startPreviewGeneration(nextSeq, true);
         }
+        });
         return;
       }
 
@@ -4184,7 +4646,7 @@
           gc.classList.add("is-expanded");
           var gh = gc.querySelector(".snippet-card-header");
           if (gh) gh.setAttribute("aria-expanded", "true");
-          gc.scrollIntoView({ block: "start", behavior: "smooth" });
+          scrollCardIntoPane(gc, "start");
           gc.classList.add("rec-jump-focus");
           setTimeout(function () { gc.classList.remove("rec-jump-focus"); }, 1600);
         }
@@ -4327,7 +4789,7 @@
         e.preventDefault();
         var propBox = dEl("chat-pane-proposal-box");
         if (propBox) propBox.hidden = true;
-        appendDiscussionSystemNote("Kurationsvorschlag verworfen.");
+        appendDiscussionSystemNote(T("Kurationsvorschlag verworfen."));
         return;
       }
 
@@ -4560,6 +5022,8 @@
       if (!propText || !propBtn) return;
       propText.textContent = data.suggestion + "\n\n" + T("Begründung:") + " " + (data.rationale || "");
       propBox.hidden = false;
+      var thr = dEl("chat-pane-thread");
+      if (thr) thr.scrollTop = thr.scrollHeight;
       propBtn.dataset.suggestion = data.suggestion;
       propBtn.dataset.rationale = data.rationale || "";
       propBtn.dataset.attachedIds = JSON.stringify(attachedIds);
@@ -4846,7 +5310,7 @@
         e.preventDefault();
         var targetId = trigger.getAttribute("data-dossier-target");
         var modal = targetId ? document.getElementById(targetId) : null;
-        if (!modal) {
+        if (!modal && !targetId) {
           modal = document.querySelector("dialog.dossier-modal");
         }
         if (modal && typeof modal.showModal === "function") {
@@ -4869,7 +5333,15 @@
           }
           return;
         }
-        var foldId = (trigger.getAttribute("href") || "").replace(/^#/, "");
+
+        // Kein passendes Modal im DOM: Niemals das falsche Enclosing-Modal öffnen.
+        // Wenn trigger einen direkten Link trägt (nicht nur Anker auf der aktuellen Seite):
+        var href = trigger.getAttribute("href") || "";
+        if (href && !href.startsWith("#")) {
+          window.location.href = href;
+          return;
+        }
+        var foldId = href.replace(/^#/, "");
         var fold = foldId ? document.getElementById(foldId) : null;
         if (fold) {
           fold.open = true;
@@ -4878,7 +5350,19 @@
           return;
         }
         var targetParam = targetId ? targetId.replace(/^dossier-modal-/, "") : "";
-        window.location.href = "../curation-report.html" + (targetParam ? "#curate-" + encodeURIComponent(targetParam) : "");
+        var funcId = trigger.getAttribute("data-func-id") || trigger.getAttribute("data-record-id") || targetParam;
+        var pfx = getRootBasePrefix();
+        if (funcId) {
+          var snipId = trigger.getAttribute("data-snippet-id");
+          var hash = snipId ? "#curate-" + encodeURIComponent(snipId) : "#curate-" + encodeURIComponent(funcId);
+          if (funcId.startsWith("cluster-") || funcId.startsWith("module-")) {
+            window.location.href = pfx + "curation-report.html" + hash;
+          } else {
+            window.location.href = pfx + "spec/record.html?id=" + encodeURIComponent(funcId) + hash;
+          }
+          return;
+        }
+        window.location.href = pfx + "curation-report.html";
       }
       if (e.target.closest(".dossier-close-btn")) {
         var dialog = e.target.closest("dialog");
@@ -4940,7 +5424,9 @@
     }
   }
 
-  if (document.readyState === "loading") {
+  if (isNode) {
+    bindSnippetCurationControls();
+  } else if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bindShellControls);
   } else {
     bindShellControls();

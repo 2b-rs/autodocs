@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: frif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_7_7_2_FlexRay_NM_MainFunction_execution</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayNetworkManagement.pdf</strong> (Seite 38)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayNetworkManagement.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayNetworkManagement.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrNm_00311" class="swsref internal-spec-ref"><code>SWS_FrNm_00311</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrNm_00467" class="swsref internal-spec-ref"><code>SWS_FrNm_00467</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,48 @@ ecute in a time window bounded by the cycle end and the transmission slot for th
 NM-Vote PDU ([SWS_FrNm_00168]).
 Note: The AUTOSAR OS [11] provides the method of Schedule Tables which can be
 synchronized with a Global Time. These could be used to fulfill the FlexRay NM exe-
-cution requirements. The AUTOS</div></section>
+cution requirements. The AUTOSAR FlexRay NM shall try to use the second absolute
+timer whenever possible as race conditions might occur between the FlexRay NM ac-
+cess to the first absolute timer and the FlexRay Interface Job List execution function
+access to the first absolute timer.
+[SWS_FrNm_00356] ⌈The state machine guards, transitions, conditions, and actions
+should be evaluated at most once in each execution of the FrNm_MainFunction_-
+&lt;FrNmChannel.ShortName&gt;.⌋
+2part of the RTE module
+[SWS_FrNm_00311] ⌈FlexRay NM module shall provide a configuration parameter
+named FrNmMainAcrossFrCycle to select adapt the behavior of the FlexRay NM
+MainFunction to the point in time the FlexRay NM MainFunction is executed.⌋
+Figure 7.4: Example NM PDU containing PNC bit vector
+Note: If the FlexRay NM Vector is only available at the end of a FlexRay cycle then eval-
+uation takes place in the following FlexRay cycle. - This depends on the configuration
+and implementation of the FlexRay communication controller hardware.
+[SWS_FrNm_00467] ⌈The evaluation of the condition RepetitionCycleCompleted and
+thus the generation of the RepetitionCycleCompleted event shall be subject to the fol-
+lowing rules:
+1. If FrNmMainAcrossFrCycle is set to FALSE, then a RepetitionCycleCompleted
+event shall be generated in the last FlexRay communication cycle of the repetition
+cycle after we receive all the votes.
+2. If FrNmMainAcrossFrCycle is set to TRUE, then a RepetitionCycleCompleted
+event shall be generated if a repetition cycle boundary has been crossed since
+the previous call of the FlexRay NM MainFunction execution before any vote is
+transmitted.
+⌋
+Example for case 1: If the votes are scheduled in cycles 1 and 2, and the repetition
+cycle period is 4 FlexRay communication cycles, then the RepetitionCycleCompleted
+event can be generated (once only) any time during cycle 3, 7, 11, 15, etc..
+Example for case 2: If the votes are scheduled in cycles 1 and 2, and the repetition
+cycle period is 4 FlexRay communication cycles, then the RepetitionCycleCompleted
+can be generated (once only) any time during cycle 0, 4, 8, 12, 16, etc.
+Note: CycleNumber stands for the FlexRay communication cycle number whose value
+is anywhere between 0 and 63 as integers. RepetitionCycleLength is the number of
+communication cycles within one NM Repetition Cycle.
+FlexRay "CycleEnd" Event
+is the event generated at the boundary of two consecutive FlexRay communication
+cycles.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Mentions FrNmMainAcrossFrCycle configuration parameter.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrNm_00467] im Text von SWS_FlexRayNetworkManagement.</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +139,7 @@ cution requirements. The AUTOS</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayNetworkManagement.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayNetworkManagement.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayNetworkManagement.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,15 +151,15 @@ cution requirements. The AUTOS</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrNm_00311" class="swsref internal-spec-ref"><code>SWS_FrNm_00311</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrNm_00467" class="swsref internal-spec-ref"><code>SWS_FrNm_00467</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

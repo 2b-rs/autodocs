@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_8_3_2_Initialization_function</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_BSWGeneral.pdf</strong> (Seite 73)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></strong> (Seite 73)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00001" class="swsref internal-spec-ref"><code>SWS_CANIF_00001</code></a></span>
         </div>
@@ -91,11 +92,44 @@ General Specification of Basic Software Modules
 [SWS_BSW_00050] Check parameters passed to Initialization functions
 Upstream requirements: SRS_BSW_00414, SRS_BSW_00400, SRS_BSW_00438
 ⌈If the parameter checking for the Initialization function is enabled [SWS_BSW_00049],
-the Configuration pointe</div></section>
+the Configuration pointer argument shall be checked. The Initialization function needs
+a valid pointer (different from NULL_PTR) if either:
+• The
+configuration
+can
+be
+loaded
+(EcucModuleConfigurationVal-
+ues.ImplementationConfigVariant is VariantPostBuild)
+or
+• Different configuration sets can be selected (EcucModuleConfiguration
+Values.postBuildVariantUsed is true).
+If these conditions are not satisfied and development error checking is enabled, a
+Development error with type "Invalid configuration set selection" shall be reported to
+Default Error Tracer (Det).⌋
+See chapter 7, Error classification, of the according BSW Module specification for ad-
+ditional information about this error - for instance, the Error ID.
+[SWS_BSW_00071] Module state after Initialization function
+Upstream requirements: SRS_BSW_00450
+⌈The state of a BSW Module shall be set accordingly at the end of Initialization func-
+tion.⌋
+Note:
+This is used for Development errors detection
+[SWS_BSW_00230] Call to Initialization functions
+Upstream requirements: SRS_BSW_00406
+⌈After a reset/reboot the module initialization function shall be called before any other
+module function. There are some module specific exceptions, e.g. pre-Init in Dem or
+&lt;Mip&gt;_GetVerisonInfo() is always possible.⌋
+[SWS_BSW_00231] Multiple calls to Initialization functions
+Upstream requirements: SRS_BSW_00406
+⌈The module initialization function shall not be called more than one time. The initial-
+ization function shall be called only after a reset/reboot or after a call of the modules
+De-Initialization function.⌋
+General Specification of Basic Software Modules</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von CanIf_Init().</p>
       </section>
 
       <section class="snip-card">
@@ -104,7 +138,7 @@ the Configuration pointe</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_BSWGeneral.pdf#page=73" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_14_Gpt_GetPredefTimerValue</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_GPTDriver.pdf</strong> (Seite 44)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_GPTDriver.pdf#page=44" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_GPTDriver.pdf</a></strong> (Seite 44)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Tm_00057" class="swsref internal-spec-ref"><code>SWS_Tm_00057</code></a></span>
         </div>
@@ -115,7 +116,34 @@ Upstream requirements: SRS_Gpt_13608
 for the same GPT Predef Timer.⌋
 [SWS_Gpt_00402]
 Upstream requirements: SRS_BSW_00406
-⌈If the GPT driver is not initialized, in</div></section>
+⌈If the GPT driver is not initialized, in "sleep mode" or the GPT Predef Timer is not
+enabled, the function Gpt_GetPredefTimerValue shall return E_NOT_OK.⌋
+Note: This is to inform user software if the hardware timer is not running, independent
+of development error detection is enabled for GPT module enabled/disabled for the
+GPT module. The function Gpt_GetPredefTimerValue is used by the Time Service
+module which is part of the Services Layer. The user of the Time Service module shall
+have a chance to cope with missed timer support.
+[SWS_Gpt_00398]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection is enabled for GPT module:
+If the driver is not initialized, the function Gpt_GetPredefTimerValue shall raise the
+error GPT_E_UNINIT.⌋
+[SWS_Gpt_00399]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection is enabled for GPT module:
+If the parameter PredefTimer is invalid, the function Gpt_GetPredefTimerValue
+shall raise the development error GPT_E_PARAM_PREDEF_TIMER.⌋
+[SWS_Gpt_00400] ⌈If development error detection is enabled for GPT module:
+If the GPT Predef Timer passed by the parameter PredefTimer is not enabled, the
+function Gpt_GetPredefTimerValue shall raise the development error GPT_E_-
+PARAM_PREDEF_TIMER.⌋
+[SWS_Gpt_00401] ⌈If the driver is in "sleep mode", the function Gpt_GetPredef-
+TimerValue shall raise the runtime error GPT_E_MODE.⌋
+[SWS_Gpt_00403]
+Upstream requirements: SRS_BSW_00369, SRS_BSW_00323
+⌈If development error detection is enabled for GPT module:
+If the parameter TimeValuePtr is a null pointer, the function Gpt_GetPredef-
+TimerValue shall raise the error GPT_E_PARAM_POINTER.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -128,7 +156,7 @@ Upstream requirements: SRS_BSW_00406
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_GPTDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_GPTDriver.pdf#page=44" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_GPTDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

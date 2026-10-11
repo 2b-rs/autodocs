@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_7_4_Main_Phase_for_Client_Services</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ServiceDiscovery.pdf</strong> (Seite 82)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=82" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></strong> (Seite 82)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Sd_00761" class="swsref internal-spec-ref"><code>SWS_Sd_00761</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Sd_00806" class="swsref internal-spec-ref"><code>SWS_Sd_00806</code></a></span>
         </div>
       </div>
 
@@ -103,11 +104,113 @@ OUT_OF_RES.
 cording to [SWS_Sd_00761].
 – Methods shall be enabled for this service by calling SoAd_Enable-
 SpecificRouting() with SdClientServiceActivationRef of Sd-
-ConsumedMe</div></section>
+ConsumedMethods and the socket connection.
+– BswM_Sd_ClientServiceCurrentState() shall be called with SD_
+CLIENT_SERVICE_AVAILABLE to indicate that the service is available.
+– Event groups shall be subscribed according to [SWS_Sd_00806].
+• If the client service current state is indicated as SD_CLIENT_SERVICE_AVAIL-
+ABLE:
+– Check that the socket connection is matching the Address and Port of the
+Endpoint Option referenced in the OfferService entry. If it does not match,
+apply [SWS_Sd_00798].
+– The socket connection shall be rechecked to be still ready for communication
+according to [SWS_Sd_00761].
+– Event groups shall be resubscribed according to [SWS_Sd_00806].
+⌋
+[SWS_Sd_00806] Eventgroup Requested
+Upstream requirements: SRS_Eth_00076
+⌈Under consideration of [SWS_Sd_00721]: For each Consumed Eventgroup which is
+either set to state SD_CONSUMED_EVENTGROUP_REQUESTED or automatically
+requested on startup if SdConsumedEventGroupAutoRequire is configured to true
+and the corresponding client service which is part of the received offer is in current
+state SD_CLIENT_SERVICE_AVAILABLE then the following shall be done in exactly
+this order:
+• StopSubscribeEventgroup entry shall be sent out, if the last SubscribeEventgroup
+entry was sent as reaction to an OfferService entry received via Multicast, it was
+never answered with a SubscribeEventgroupAck, and the current OfferService
+entry was received via Multicast.
+• SD shall send out a SubscribeEventgroup entry. If SdSubscribeEventgroupRetry
+Enable is set to TRUE and if SdSubscribeEventgroupRetryMax is greater 0, the
+Eventgroup subscription retry counter shall be reset to 1.
+⌋
+Note:
+Refer to [SWS_Sd_00702], [SWS_Sd_00703] and [SWS_Sd_00704] for the enabling
+of routing groups. The transmission of a response to an Offer received via multicast
+shall be delayed with the configured delay. When the request response delay elapses
+before the associated Socket Connections are in state SOAD_SOCON_ONLINE, the
+StopSubscribeEventgroup and SubscribeEventgroup shall be delayed until the Socket
+Connections are online and shall not be considered as reaction to an OfferService
+entry received via Multicast. When the request response delay elapses while the Client
+Service is in state RELEASED, there shall be no response to this Offer entry. The
+amount of separate Service Discovery messages shall be reduced, i.e.: Combine as
+much information as possible into one Service Discovery message before calling the
+Socket Adaptor’s transmit API.
+[SWS_Sd_00722]
+Upstream requirements: SRS_Eth_00161
+⌈When the Client Service is reported as SD_CLIENT_SERVICE_DOWN to the BswM
+by calling the API BswM_Sd_ClientServiceCurrentState()
+• the API SoAd_DisableSpecificRouting() shall be called with SdClientServiceAc-
+tivationRef (see SdConsumedMethods) and the relevant Socket Connections for
+this Client Service Instance.
+⌋
+[SWS_Sd_00695]
+Upstream requirements: SRS_Eth_00162
+⌈If a StopSubscribeEventgroup and SubscribeEventgroup for the same Eventgroup
+(i.e. same Service ID, Instance ID, Eventgroup ID, Counter, and Major Version) have to
+be sent out, these entries have to be directly after each other in the same SD message
+(no entry between them).⌋
+[SWS_Sd_00377]
+Upstream requirements: SRS_Eth_00162
+⌈If the Service Discovery Module receives a SubscribeEventgroupAck fitting a Con-
+sumed Eventgroup that is not yet available, the following steps shall be performed in
+the following order:
+• If the SubscribeEventgroupAck references a Multicast Endpointoption
+– The relevant Socket Connection Group shall be identified using SdCon-
+sumedEventGroupMulticastGroupRef with the local Address and Port of the
+Multicast Endpoint Option or set one up using SoAd_RequestIpAddrAssign-
+ment().
+– If SdSetRemAddrOfClientRxMulticastSoCon is set to TRUE, the relevant
+Socket Connection of this service shall be identified using the Address and
+Port of the Endpoint Option referenced in the Offer entry of this service or
+shall be set up (SoAd_SetUniqueRemoteAddr()), if not existed before.
+* If no Wildcard Socket Connection is left, SD_E_OUT_OF_RES shall be
+reported.
+– If SdSetRemAddrOfClientRxMulticastSoCon is set to FALSE, a Wildcard
+Socket Connection of this service shall be used without updating the ac-
+cording remote Address, i.e. Wildcard of this Socket Connection shall be
+kept.
+* If no Wildcard Socket Connection is left, SD_E_OUT_OF_RES shall be
+reported.
+– The relevant Routing Group shall be identified by following SdConsumed
+EventGroupMulticastActivationRef.
+– Call SoAd_EnableSpecificRouting() with the SocketID and the Routing
+GroupID .
+• Call
+BswM_Sd_ConsumedEventGroupCurrentState
+with
+SD_CONSUMED_
+EVENTGROUP_AVAILABLE if the datapath was set up successfully.
+• Setup the TTL timer with the TTL of the SubscribeEventgroupAck entry if the
+datapath was set up successfully.
+⌋
+[SWS_Sd_00465]
+Upstream requirements: SRS_Eth_00161, SRS_Eth_00162
+⌈If a Service Discovery Message contains only a SubscribeEventgroupNack entry but
+no SubscribeEventgroupAck entry for the same Eventgroup, Service Discovery shall
+do the following:
+• Report the DEM error SD_E_SUBSCR_NACK_RECV (see [ECUC_SD_00123])
+• If SdClientServiceTcpRef is configured for this service, or if SoAd_IsConnection-
+Ready() returned a different value than TCPIP_E_OK, determine the used SoCon
+and call the API SoAd_CloseSoCon() with the SoConID and parameter abort set
+to TRUE
+• If SdClientServiceTcpRef is configured for this service, or if SoAd_IsConnection-
+Ready() returned a different value than TCPIP_E_OK, determine the used So
+Con and call the API SoAd_OpenSoCon() with the SoConID.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Sd_00761] im Text von SWS_ServiceDiscovery.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Sd_00806] im Text von SWS_ServiceDiscovery.</p>
       </section>
 
       <section class="snip-card">
@@ -116,7 +219,7 @@ ConsumedMe</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ServiceDiscovery.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=82" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -128,7 +231,7 @@ ConsumedMe</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Sd_00761" class="swsref internal-spec-ref"><code>SWS_Sd_00761</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Sd_00806" class="swsref internal-spec-ref"><code>SWS_Sd_00806</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
+          <span class="badge-role">Rolle: constitutive</span>
           <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_4_8_Availability_of_events_visibility_and_computation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 66)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 66)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01344" class="swsref internal-spec-ref"><code>SWS_Dem_01344</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91037" class="swsref internal-spec-ref"><code>SWS_Dem_91037</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,109 @@ written to the control unit, or some network message is received, to change the
 behaviour of the software in accordance with the changes in hardware. As in 1,
 certain Events need to be suppressed.
 =&gt; ECUC parameter DemEventAvailableInVariant set to TRUE (enabled)
-=&gt; ECUC parameter DemEventAvail</div></section>
+=&gt; ECUC parameter DemEventAvailable defines the initial availability of an
+event
+=&gt; Interface Dem_SetEventAvailable is used to change the availability de-
+fined by DemEventAvailable during runtime
+[SWS_Dem_01343] Enable/disable Events by configuration ⌈The configuration
+parameter DemEventAvailableInVariant shall be used as master to consider
+an Event as enabled or disabled. If the configuration parameter DemEventAvail-
+ableInVariant is set to FALSE, the Dem shall treat the Event as if it is not config-
+ured as DemEventParameter. If DemEventAvailableInVariant is not set or set
+to TRUE, the Dem shall consider the Event as enabled depending on other sources.⌋
+Note:
+DemEventAvailableInVariant allows to disable an Event that is not
+needed, but included in the software release; even the related SW-C is prevented from
+making it available through Dem_SetEventAvailable.
+[SWS_Dem_01344] Dealing with availability of Events ⌈The Dem shall treat an
+event as unavailable if:
+• DemEventAvailableInVariant == FALSE or
+• DemEventAvailable == FALSE or
+• DemEventAvailable is overwritten by Dem_SetEventAvailable(FALSE) or
+• The component referenced by DemComponentClassRef is not available
+⌋
+[SWS_Dem_00687]
+Upstream requirements: RS_Diag_04126, RS_Diag_04274
+⌈The Dem shall provide functionality during runtime to treat events as if they were not
+configured as DemEventParameter. The configuration parameter DemAvailabil-
+itySupport is used to enable the functionality provided by Dem_SetEventAvail-
+able().⌋
+[SWS_Dem_01103]
+Upstream requirements: RS_Diag_04126
+⌈Unavailable events shall not be considered for computation of service $01 PID $41.⌋
+[SWS_Dem_01104]
+Upstream requirements: RS_Diag_04126
+⌈IUMPR ratios referring to an unavailable event shall neither be computed nor re-
+ported.⌋
+[SWS_Dem_01106]
+Upstream requirements: RS_Diag_04126
+⌈The Dem shall not provide the function Dem_SetEventAvailable in VARIANT-
+POST-BUILD. Rational: In VARIANT-POST-BUILD the initial values are not valid before
+Dem_Init (postbuild initialization time).⌋
+[SWS_Dem_01108]
+Upstream requirements: RS_Diag_04126
+⌈If an event is set to unavailable, the corresponding event shall be treated as if it is not
+configured in the system (e.g. Dem_SetEventStatus and Dem_GetEventUdsSta-
+tus shall return E_NOT_OK). The following APIs are affected:
+• Dem_SetEventStatus
+• Dem_GetEventUdsStatus
+• Dem_ResetEventDebounceStatus
+• Dem_ResetEventStatus
+• Dem_PrestoreFreezeFrame
+• Dem_ClearPrestoredFreezeFrame
+• Dem_GetDebouncingOfEvent
+• Dem_GetDTCOfEvent
+• Dem_GetFaultDetectionCounter
+• Dem_GetEventFreezeFrameDataEx
+• Dem_GetEventExtendedDataRecordEx
+• Dem_ClearDTC
+• Dem_DcmGetDTRData
+• Dem_RepIUMPRFaultDetect
+• Dem_RepIUMPRDenRelease
+• Dem_SetWIRStatus
+• Dem_SetEventStatusWithMonitorData
+• Dem_GetMonitorStatus
+• Dem_SetEventConfirmationThresholdCounter
+• Dem_SetEventDisabled
+• Dem_ResetMonitorStatus
+⌋
+Note: The availability of an event may also impact the suppression of a DTC (see
+[SWS_Dem_00915]).
+[SWS_Dem_01109]
+Upstream requirements: RS_Diag_04126
+⌈When the API Dem_SetEventAvailable is called with AvailableStatus =
+FALSE, the Dem shall return E_NOT_OK if:
+• for the event an event memory entry already exists, or
+• any of the event status flags ’testFailed’, ’pending’, ’confirmed’ or ’warningIndica-
+torRequested’ is set
+⌋
+[SWS_Dem_01302] Asynchronous behavior of Dem_SetEventAvailable
+Upstream requirements: RS_Diag_04126
+⌈The Dem shall process a call of the Dem_SetEventAvailable asynchronously. This
+means that the final result is available at a later point in time.⌋
+A later point in time is meant to be implementation specific, it could be the next main
+function and after Dem_SetEventAvailable has returned.
+[SWS_Dem_01110]
+Upstream requirements: RS_Diag_04126
+⌈If Dem_SetEventAvailable is called with AvailableStatus == ‘false’, the Dem
+shall set the UDS status shall be set to 0x00 for this event.⌋
+Note: If the UDS status changes, the corresponding callbacks are called to properly
+provide the information about a changed status to the users.
+[SWS_Dem_01111]
+Upstream requirements: RS_Diag_04126
+⌈If Dem_SetEventAvailable is called with AvailableStatus == ‘true’, the Dem
+shall set the UDS status shall be set to 0x50 for this event.⌋
+[SWS_Dem_01345] Reaction on calls related to disabled events ⌈If an Event is
+configured with DemEventAvailableInVariant set to FALSE and the API Dem_
+SetEventAvailable is called with AvailableStatus = TRUE for this EventId,
+the API Dem_SetEventAvailable shall return E_NOT_OK.⌋
+[SWS_Dem_01230] ⌈If the function Dem_SetEventAvailable is called to set an
+event to ‘available’, the Dem shall trigger the event initialization using DEM_INIT_-
+MONITOR_REENABLED as InitMonitorReason.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">dealing with availability of events</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SetEventStatusWithMonitorData().</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +199,7 @@ certain Events need to be suppressed.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -112,11 +211,11 @@ certain Events need to be suppressed.
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01344" class="swsref internal-spec-ref"><code>SWS_Dem_01344</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_91037" class="swsref internal-spec-ref"><code>SWS_Dem_91037</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -105,7 +106,64 @@ legacy SWCs have to be able to request modes.
 Analogue to
 the approach sketched above, the legacy components do not communicate di-
 rectly with the EcuM but with the compatibility SWC. The compatibility SWC
-offers the same interfaces as ﬁxed EcuM and relay</div></section>
+offers the same interfaces as ﬁxed EcuM and relays the request to ﬂexible
+EcuM. The interface is called EcuM_ModeRequest
+and its methods to emu-
+late are: EcuM_RequestRUN(), EcuM_ReleaseRUN(), EcuM_RequestPOST_RUN(),
+EcuM_ReleasePOST_RUN() and EcuM_KillAllRunRequests().
+For
+each
+ﬁxed
+EcuM
+User
+the
+compatibility
+component
+needs
+an
+own
+EcuM_ModeRequest-Port as this would also be provided by ﬁxed EcuM. The
+legacy SWC then gets connected to exactly that port which belongs to the requested
+user.
+The needed conﬁguration of BswM is shown in Listing 4.2. This includes the declaration
+of a mode group which represents the requested mode. This information is given to
+the BswM. The shown rule is responsible for activating the communication if running
+mode was requested.
+Listing 4.2: BswM conﬁguration for ﬁxed EcuM compatible running mode
+modeGroup EcuMCompatibilityMode {
+ECUMCOMPATIBILITY_Run,
+ECUMCOMPATIBILITY_PostRun,
+ECUMCOMPATIBILITY_Off
+}
+interface modeSwitch compatibilityModeSwitchInterface {
+mode EcuMCompatibilityMode compatibilityMode
+}
+Guide to Modemanagement
+R4.1 Rev 3
+The compatibility SWC has to take all requested modes of the legacy components and
+transform all requests into one mode which is given to the BswM. This consists of two
+steps:
+1. Depending on the called wrapping-method choose a mode of the above stated
+ﬂexible EcuM modes. The mapping is described in Table 4.2.
+2. Determine the “highest” mode of all compatibility users and request that from the
+BswM where ECUMCOMPATIBILITY_Run has the highest priority and ECUM-
+COMPATIBILITY_Off has the lowest.
+Table 4.2: Mapping of modes requests from ﬂexible EcuM to ﬁxed EcuM
+Called Method
+Mode
+EcuM_RequestRUN()
+ECUMCOMPATIBILITY_Run
+EcuM_ReleaseRUN()
+ECUMCOMPATIBILITY_Off
+EcuM_RequestPOST_RUN()
+ECUMCOMPATIBILITY_PostRun
+EcuM_ReleasePOST_RUN()
+ECUMCOMPATIBILITY_Run
+EcuM_KillAllRunRequests()
+ECUMCOMPATIBILITY_Off
+If the method EcuM_KillAllRunRequests() is called, the compatibility component re-
+quests ECUMCOMPATIBILITY_Off from the BswM independent of other legacy SWC’s
+requests.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

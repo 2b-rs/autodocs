@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_8_4_20_Fr_GetNumOfStartupFrames</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayDriver.pdf</strong> (Seite 65)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></strong> (Seite 65)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Fr_00550" class="swsref internal-spec-ref"><code>SWS_Fr_00550</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Fr_00555" class="swsref internal-spec-ref"><code>SWS_Fr_00555</code></a></span>
         </div>
       </div>
 
@@ -112,11 +113,66 @@ output parameter Fr_NumOfStartupFramesPtr.
 ⌋()
 [SWS_Fr_00550] ⌈If the hardware doesn’t support accumulating the number of star-
 tupframes, (FlexRay 2.1 Rev A compliant hardware), then the driver shall always as-
-sume 2 startup fr</div></section>
+sume 2 startup frames available.⌋()
+[SWS_Fr_00551] ⌈The function Fr_GetNumOfStartupFrames() shall ensure that
+the information is valid and up to date (synchronized CC) - otherwise the output pa-
+rameters shall not be written and E_NOT_OK returned.⌋()
+[SWS_Fr_00552]
+⌈If
+the
+function
+Fr_GetNumOfStartupFrames()
+is
+able
+to
+and
+detects
+a
+hardware
+error
+while
+performing
+the
+requested
+function-
+ality,
+then
+it
+shall
+call
+Dem_SetEventStatus()
+(FR_E_CTRL_TESTRESULT,
+DEM_EVENT_STATUS_FAILED) and return E_NOT_OK.⌋()
+7FlexRay 2.1 Rev A compliant controllers do not support vStartupPairs. See [SWS_Fr_00550]
+for FlexRay 2.1 Rev A controllers implementation constraints.
+[SWS_Fr_00553] ⌈If development error detection for the Fr module is enabled, and
+if the function Fr_GetNumOfStartupFrames() is called before the successful initial-
+ization of Fr, then the function Fr_GetNumOfStartupFrames() shall raise the devel-
+opment error FR_E_INIT_FAILED.⌋()
+[SWS_Fr_00554] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_GetNumOfStartupFrames() shall check the validity of the parame-
+ter Fr_CtrlIdx. If Fr_CtrlIdx is invalid, then the function Fr_GetNumOfStar-
+tupFrames() shall raise the development error FR_E_INV_CTRL_IDX.⌋()
+[SWS_Fr_00555]
+⌈If
+development
+error
+detection
+for
+the
+Fr
+module
+is
+en-
+abled,
+then the function Fr_GetNumOfStartupFrames() shall check whether
+the parameter Fr_NumOfStartupFramesPtr is a NULL pointer (NULL_PTR). If
+Fr_NumOfStartupFramesPtr is a NULL pointer, then the function Fr_GetNumOf-
+StartupFrames() shall raise the development error FR_E_PARAM_POINTER.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Fr_00550] im Text von SWS_FlexRayDriver.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Fr_00555] im Text von SWS_FlexRayDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +181,7 @@ sume 2 startup fr</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -137,7 +193,7 @@ sume 2 startup fr</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Fr_00550" class="swsref internal-spec-ref"><code>SWS_Fr_00550</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Fr_00555" class="swsref internal-spec-ref"><code>SWS_Fr_00555</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

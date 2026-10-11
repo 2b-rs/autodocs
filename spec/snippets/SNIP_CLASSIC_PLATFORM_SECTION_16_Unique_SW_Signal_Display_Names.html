@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_16_Unique_SW_Signal_Display_Names</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TR_AIMeasurementCalibrationDiagnostics.pdf</strong> (Seite 62)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TR_AIMeasurementCalibrationDiagnostics.pdf#page=57" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_AIMeasurementCalibrationDiagnostics.pdf</a></strong> (Seite 62)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_STDT_00024" class="swsref"><code>RS_STDT_00024</code></a></span>
         </div>
@@ -102,7 +103,86 @@ Additionally assumption
 display name schema
 swSignal :
 {componentHierarchy}_{data}
-is used for generati</div></section>
+is used for generating the display name of a sw signal
+Modeling and Naming Aspects for Documentation,
+Measurement, and Calibration
+The {nameSpace}, the sw component type names, the package names and port inter-
+face names are ignored.
+Fulfills requirements: RS_MCR_90002, RS_MCR_90003⌋
+In rule [TR_MCG_00716] assumption [: there is only one system.] is assumed to be
+fulfilled.
+Example: (see Figure 16.1 ExtrLi)
+Assumption: only one System
+SwComponentType: ExtrLiAdpr
+SwComponentPrototypes referencing Type ExtrLiAdpr: ExtrLiAdprFrntLe and ExtrLi-
+AdprFrntRi
+Given the instance cp-path
+OEM1/Systems/System/TopLvl/ExtrLiAdprFrntRi/ActvnOfIndcFrntRi/Cmd
+this would lead to the following display name applying [TR_MCG_00716]:
+ExtrLiAdprFrntRi_ActvnOfIndcFrntRi_Cmd
+And after applying [TR_MCG_00020], chapter 11, we would have
+ExtrLiAdprFrntRi_ActvnOfIndcFrntRi
+Since there has to be a FlatMap for the ECU-Extract specifying unique names for
+component prototypes the rules in chapter 16 can be applied to generate these
+unique component prototype names.
+Rule [TR_MCG_00760] can substitute rule
+[TR_MCG_00787].
+[TR_MCG_00760] ⌈The unique component prototype names specified in a FlatMap
+can be used for specifying part of the display name of a sw signal. General Rule:
+swSignal :
+{componentDescriptor}_{data}
+Fulfills requirements: RS_MCR_90002, RS_MCR_90003⌋
+Modeling and Naming Aspects for Documentation,
+Measurement, and Calibration
+Figure 16.1: Example ExtrLi with Multiple Instantiation
+Example (Figure 16.1 ExtrLi):
+Assume we have the following FlatMap defining names for sw component prototypes:
+&lt;FLAT-MAP&gt;
+&lt;SHORT-NAME&gt;ARMap&lt;/SHORT-NAME&gt;
+&lt;INSTANCES&gt;
+&lt;FLAT-INSTANCE-DESCRIPTOR&gt;
+&lt;SHORT-NAME&gt;I1&lt;/SHORT-NAME&gt;
+&lt;UPSTREAM-REFERENCE-IREF&gt;
+&lt;CONTEXT-ELEMENT-REF DEST="ROOT-SW-COMPOSITION-PROTOTYPE"&gt;/OEM1/
+Systems/System/TopLvl&lt;/CONTEXT-ELEMENT-REF&gt;
+&lt;TARGET-REF DEST="SW-COMPONENT-PROTOTYPE"&gt;/OEM1/SwComponentTypes/
+TopLvl/ExtrLiAdprFrntRi&lt;/TARGET-REF&gt;
+&lt;/UPSTREAM-REFERENCE-IREF&gt;
+&lt;/FLAT-INSTANCE-DESCRIPTOR&gt;
+&lt;/INSTANCES&gt;
+&lt;/FLAT-MAP&gt;
+Instead of
+TopLvl_ExtrLiAdprFrntRi_ActvnOfIndcFrntRi_Cmd
+with rule [TR_MCG_00760] and [TR_MCG_00020] and I1 being the unique short name
+defined in the FlatMap for TopLvl_ExtrLiAdprFrntRi we have:
+I1_ActvnOfIndcFrntRi
+[TR_MCA_80789] ⌈Assumption: There is exactly one virtual name space for port pro-
+totypes.
+Fulfills requirements: RS_MCR_90006⌋
+Similar to [TR_MCG_00045] we have the following rule:
+Modeling and Naming Aspects for Documentation,
+Measurement, and Calibration
+[TR_MCG_00752] ⌈If there is only one virtual name space for port prototypes and the
+sw component types are only instantiated once then the component prototype names
+(the {componentHierarchy}) and the {nameSpace} can be ignored in the display name
+of a sw signal. We simply have:
+swSignal :
+{data}
+Fulfills requirements: RS_MCR_90002, RS_MCR_90003, RS_MCR_90006, RS_MCR_
+90011⌋
+If the port prototypes are based on port prototype blueprints the following rule holds:
+[TR_MCG_00780] ⌈The display names specified in a FlatMap for the data elements
+within port prototype blueprints can be used for specifying the display name of a sw
+signal derived from this blueprint:
+swSignal :
+{portBlueprintDescriptor}
+It has to be ensured that the display names of signals not derived from blueprints or
+for signals no flatmap with display names is available are different from those already
+normalized in the flatmaps for the blueprints.
+Fulfills requirements: RS_MCR_90002, RS_MCR_90003⌋
+The {componentHierarchy} can be ignored because there is no multiple instantiation.
+The {nameSpace} can be ignored because it is already contained in the blueprint de-
+scriptor name.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -115,7 +195,7 @@ is used for generati</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TR_AIMeasurementCalibrationDiagnostics.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TR_AIMeasurementCalibrationDiagnostics.pdf#page=57" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TR_AIMeasurementCalibrationDiagnostics.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_6_2_Repetition_Phase_for_Server_Services</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ServiceDiscovery.pdf</strong> (Seite 65)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></strong> (Seite 65)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02175" class="swsref"><code>TPS_SYST_02175</code></a></span>
         </div>
@@ -101,7 +102,75 @@ Wait 60ms (=30ms * 21).
 Send entry.
 Wait 120ms (=30ms * 22).
 Send entry.
-[R</div></section>
+[Repetition Phase ends]
+Note: Currently this specification does not allow sending "FindService Entries" using
+unicast. For compatibility reasons receiving such entries shall be supported.
+[SWS_Sd_00333]
+Upstream requirements: SRS_Eth_00162
+⌈If the Service Discovery Module receives a "SubscribeEventgroup" entry, the following
+step(s) shall be performed in the following order:
+• Send a SubscribeEventgroupAck / Nack entry using Unicast considering the ap-
+propriate delay without changing the current counter value and without influencing
+the current running repetition timer.
+• Call the BswM with the API BswM_Sd_EventHandlerCurrentState() with state
+SD_EVENT_HANDLER_REQUESTED only if the state for this EventHandler
+changed (i.e. has not been SD_EVENT_HANDLER_REQUESTED)
+• Start the TTL timer according to the value received via the SubscribeEventgroup
+Entry.
+⌋
+Note to: [SWS_Sd_00333]:
+• For more details on sending a SubscribeEventgroupAck / Nack entry using Uni-
+cast considering the appropriate delay, see Chapter 7.5.3)
+[SWS_Sd_00334]
+Upstream requirements: SRS_Eth_00162
+⌈If the Service Discovery Module receives a StopSubscribeEventgroup Entry, the fol-
+lowing step(s) shall be performed in the following order:
+• Stop the TTL timer for this client
+• Update State
+• If this has been the last subscribed client, report "SD_EVENT_HANDLER_RE-
+LEASED" to the BswM by calling the API BswM_Sd_EventHandlerCurrentState().
+⌋
+[SWS_Sd_00458]
+Upstream requirements: SRS_Eth_00162
+⌈If the TTL of a received SubscribeEventgroup Entry expires, the following step shall
+be performed in the following order:
+• If this has been the last subscribed client, report "SD_EVENT_HANDLER_RE-
+LEASED" to the BswM by calling the API BswM_Sd_EventHandlerCurrentState()
+and update the state within the Service Discovery Module
+⌋
+[SWS_Sd_00338]
+Upstream requirements: SRS_Eth_00161
+⌈If a ServerService is set to a state other than SD_SERVER_SERVICE_AVAILABLE
+(i.e. SD_SERVER_SERVICE_DOWN ) (via Sd_ServerServiceSetState() or Sd_Ser-
+viceGroupStop() ) while being in Repetition Phase:
+• Leave this phase and enter the Down Phase.
+• Sent a StopOfferService.
+• All associated EventHandler which state is not SD_EVENT_HANDLER_RE-
+LEASED shall be changed to SD_EVENT_HANDLER_RELEASED and indicated
+to the BswM by calling the API BswM_Sd_EventHandlerCurrentState().
+⌋
+[SWS_Sd_00340]
+Upstream requirements: SRS_Eth_00022
+⌈If Sd_LocalIpAddrAssignmentChg()is called with a state other than "TCPIP_IPADDR_
+STATE_ASSIGNED" while being in Repetition Phase, this phase shall be left and the
+Down Phase shall be entered.⌋
+[SWS_Sd_00732]
+Upstream requirements: SRS_Eth_00161, SRS_Eth_00004
+⌈If the Service Discovery Module is in Repetition Phase and a TCP-based socket con-
+nection has been lost (i.e. Socket connection is other than SOAD_SOCON_ONLINE),
+the Service Discovery Module shall call:
+• SoAd_ReleaseRemoteAddr()
+• SoAd_DisableSpecificRouting()
+• SoAd_CloseSoCon()
+• delete all internally stored subscriptions belonging to that connection.
+• SoAd_OpenSoCon()
+The Service Discovery Module shall stay in the Repetition Phase.⌋
+[SWS_Sd_00341]
+Upstream requirements: SRS_Eth_00161
+⌈When the state SD_SERVER_SERVICE_DOWN is set by Sd_ServerServiceSet
+State() or Sd_ServiceGroupStop() in Repetition Phase, the routing of this Server Ser-
+vice Instance shall be disabled. See SdServerServiceActivationRef of this Server Ser-
+vice Instance.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -114,7 +183,7 @@ Send entry.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ServiceDiscovery.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ServiceDiscovery.pdf#page=65" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ServiceDiscovery.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

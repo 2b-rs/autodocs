@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -98,7 +99,113 @@ rupted by RunnableEntitys with dataReadAccess to (more than one) data
 belonging to the DataPrototypeGroup.
 • B) or the RteImplicitCommunication shall be conﬁgured to ensure a co-
 herent propagation (RteImplicitCommunication.RteCoherentAccess ==
-tru</div></section>
+true) for reading RunnableEntitys RunnableEntitys with have as well data
+WriteAccess to data belonging to the DataPrototypeGroup are excluded
+because inside the calculation chain the latest data values are visible.
+⌋()
+[constr_9002] The whole DataPrototypeGroup shall be read stable for the
+whole RunnableEntityGroup in the role regRequiresStability ⌈.
+All RunnableEntitys with dataReadAccess to data belonging to the same Data
+PrototypeGroup and which are belonging to the same RunnableEntityGroup in
+the role regRequiresStability shall
+• either be conﬁgured in a way that the chain of RunnableEntitys with data
+ReadAccess to the data of the DataPrototypeGroup can not be interrupted
+by any of the RunnableEntity(s) with dataWriteAccess to data of the Data
+PrototypeGroup
+• or the RteImplicitCommunication shall be conﬁgured to ensure stable
+data values (RteImplicitCommunication.RteCoherentAccess == true)
+for reading RunnableEntitys belonging to the RunnableEntityGroup.
+⌋()
+[constr_9005] The references RteInternalTriggerConfig.RteSwcTrigger
+SourceRef has to be consistent with the RteSwComponentInstance.Rte
+SoftwareComponentInstanceRef ⌈The references RteInternalTriggerCon-
+fig.RteSwcTriggerSourceRef has to be consistent with the RteSwComponent
+Autosar Model Constraints
+Instance.RteSoftwareComponentInstanceRef.
+This means the referenced
+Trigger / InternalTriggeringPoint has to belong to the AtomicSwComponent
+Type which is referenced by the related SwComponentPrototype.
+⌋()
+[constr_9006] The references RteBswInternalTriggerConfig.RteBswTrig-
+gerSourceRef has to be consistent with the RteBswModuleInstance.RteBsw
+ImplementationRef ⌈The references RteBswInternalTriggerConfig.Rte
+BswTriggerSourceRef
+has
+to
+be
+consistent
+with
+the
+RteBswModuleIn-
+stance.RteBswImplementationRef. This means the referenced Trigger / Bsw
+InternalTriggeringPoint has to belong to the BswModuleDescription which
+is referenced by the related BswImplementation.
+⌋()
+[constr_9007] issuedTrigger and BswTriggerDirectImplementation are mutually
+exclusive ⌈A releasedTriggerTrigger shall not be referenced by both a issuedTrigger
+and a BswTriggerDirectImplementation.
+⌋()
+[constr_9008] The same Trigger in a trigger sink must not be connected to mul-
+tiple trigger sources ⌈The same Trigger in a trigger sink must not be connected to
+multiple trigger sources.
+⌋()
+[constr_9009] Synchronized Trigger shall not be referenced by more than one
+type of access method ⌈A synchronized Trigger shall only be referenced by either
+ExternalTriggeringPoints, issuedTriggers or BswTriggerDirectImple-
+mentations.
+⌋()
+[constr_9010] Worst case execution time shall be less than the GCD ⌈The
+RunnableEntitys or BswSchedulableEntitys worst case execution time shall be
+less than the GCD of all BswSchedulableEntitys and RunnableEntitys period
+and offset in activation offset context for RunnableEntitys and BswSchedulable
+Entitys.
+⌋()
+[constr_9011] NvMBlockDescriptor related to a RAM Block of a NvBlock
+SwComponentType shall use NvMBlockDescriptor.NvmBlockUseSyncMecha-
+nism ⌈The NVRAM Block associated to the NvBlockDescriptors of a NvBlock
+SwComponentType shall be conﬁgured with the NvMBlockDescriptor.NvMBlock
+UseSyncMechanism feature enabled, and the NvMBlockDescriptor.NvMWrite
+RamBlockToNvCallback and NvMBlockDescriptor.NvMReadRamBlockFrom
+NvCallback parameters set to the Rte_GetMirror and Rte_SetMirror API of the Nv
+BlockDescriptor.
+Autosar Model Constraints
+⌋()
+[constr_9012] Category 1 interrupts shall not access the RTE. ⌈Category 1 inter-
+rupts shall not access the RTE.
+⌋()
+[constr_9013] Exactly one mode or one mode transition shall be active ⌈When-
+ever any RunnableEntity or BswSchedulableEntity is running, there shall al-
+ways be exactly one mode or one mode transition active of each ModeDeclaration
+GroupPrototype.
+⌋()
+[constr_9014] ModeSwitchPoint(s) and managedModeGroup(s) are mutually ex-
+clusive for synchronized ModeDeclarationGroupPrototypes ⌈Only one of two syn-
+chronized ModeDeclarationGroupPrototypes shall mutual exclusively be referenced by
+ModeSwitchPoint(s) or managedModeGroup association(s).
+⌋()
+[constr_9015] Rte_Write API may only be used by the runnable that describe
+its usage ⌈The Rte_Write API may only be used by the runnable that contains the
+corresponding VariableAccess in the dataSendPoint role
+⌋()
+[constr_9016] Rte_Send API may only be used by the runnable that describes
+its usage ⌈The Rte_Send API may only be used by the runnable that contains the
+corresponding VariableAccess in the dataSendPoint role
+⌋()
+[constr_9017] Rte_Switch API may only be used by the runnable that describes
+its usage ⌈The Rte_Switch API may only be used by the runnable that contains the
+corresponding ModeSwitchPoint
+⌋()
+[constr_9018] Rte_Invalidate API may only be used by the runnable that describe
+its usage ⌈The Rte_Invalidate API may only be used by the runnable that contains
+the corresponding VariableAccess in the dataSendPoint role
+⌋()
+[constr_9019] Rte_Feedback API may only be used by the runnable that describe
+its usage ⌈A blocking Rte_Feedback API may only be used by the runnable that
+contains the corresponding WaitPoint
+⌋()
+[constr_9020] The blocking Rte_SwitchAck API may only be used by the
+runnable that describes its usage. ⌈A blocking Rte_SwitchAck API must only be
+used by the runnable that contains the corresponding WaitPoint</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

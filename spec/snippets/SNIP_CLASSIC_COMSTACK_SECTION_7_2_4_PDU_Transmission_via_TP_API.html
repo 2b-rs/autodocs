@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: comstack</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_2_4_PDU_Transmission_via_TP_API</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 36)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00652" class="swsref internal-spec-ref"><code>SWS_SoAd_00652</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00670" class="swsref internal-spec-ref"><code>SWS_SoAd_00670</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,66 @@ foType.SduLength set to the value returned by availableDataPtr of the previ-
 ous call and
 2. call TcpIp_UdpTransmit() with SocketId and remote address specified in
 the SocketConnection and the PDU length specified in the SoAd_TpTransmit()
-call as TotalLength afte</div></section>
+call as TotalLength after all data have been successfully retrieved within one
+or multiple SoAd main function execution cycles.
+⌋
+Note: The required TP buffer size for a socket connection can be derived from the
+length of the related TP PDU(s).
+[SWS_SoAd_00652]
+⌈If
+&lt;Up&gt;_[SoAd][Tp]CopyTxData()
+return
+with
+BUFREQ_E_NOT_OK for a UDP socket connection, SoAd shall immediately ter-
+minate the TP transmit session and notify the upper layer with the configured transmit
+confirmation function &lt;Up&gt;_[SoAd][Tp]TxConfirmation() with E_NOT_OK as
+result. (Note: the related socket connection is not closed in this case.)⌋
+[SWS_SoAd_00554] ⌈In case of a TCP socket connection the SoAd shall call
+TcpIp_TcpTransmit() with SocketId specified in the SocketConnection, the PDU
+length set to the value returned by availableDataPtr of the previous call to &lt;Up&gt;_-
+[SoAd][Tp]CopyTxData() as AvailableLength and ForceRetrieve set to FALSE.⌋
+The TcpIp module will retrieve PDU data from SoAd within the context of the TcpIp
+transmit call by using SoAd_CopyTxData().
+[SWS_SoAd_00555] ⌈In case of a UDP socket connection the SoAd shall copy (the
+requested part of) the PDU from the SoAd TP transmit buffer to the memory specified
+by parameter BufPtr within SoAd_CopyTxData().⌋
+[SWS_SoAd_00556] ⌈In case of a TCP socket connection the SoAd shall forward the
+request to the related upper layer by calling &lt;Up&gt;_[SoAd][Tp]CopyTxData() to
+copy (the requested part of) the PDU to the memory specified by parameter BufPtr
+within SoAd_CopyTxData().⌋
+[SWS_SoAd_00651]
+⌈If
+&lt;Up&gt;_[SoAd][Tp]CopyTxData()
+return
+with
+BUFREQ_E_NOT_OK for a TCP socket connection, SoAd shall (a) disable further
+transmission or reception for this socket connection (i.e. new transmit requests shall
+be rejected with E_NOT_OK and received messages shall simply be discarded) and (b)
+close the socket connection in the next SoAd_MainFunction().⌋
+[SWS_SoAd_00557] ⌈In case of a UDP socket connection the SoAd shall call the
+upper layer with the configured transmit confirmation function &lt;Up&gt;_[SoAd][Tp]
+TxConfirmation() and E_OK as result within the SoAd_MainFunction() after
+TcpIp_UdpTransmit() returns with TCPIP_OK.⌋
+[SWS_SoAd_00667] ⌈In case of a TCP socket connection configured with SoAd-
+SocketTcpImmediateTpTxConfirmation set to TRUE the SoAd shall call the
+upper layer with the configured transmit confirmation function &lt;Up&gt;_[SoAd][Tp]
+TxConfirmation() and E_OK as result within the SoAd_MainFunction() after
+TcpIp_TcpTransmit() returns E_OK.⌋
+[SWS_SoAd_00670] ⌈In case of a TCP socket connection the SoAd shall call the
+upper layer with the configured transmit confirmation function &lt;Up&gt;_[SoAd][Tp]Tx-
+Confirmation() and E_NOT_OK as result within the SoAd_MainFunction() after
+TcpIp_TcpTransmit() returns with E_NOT_OK.⌋
+[SWS_SoAd_00558] ⌈In case of a TCP socket connection configured with SoAd-
+SocketTcpImmediateTpTxConfirmation set to FALSE the SoAd shall call the
+upper layer with the configured transmit confirmation function &lt;Up&gt;_[SoAd][Tp]Tx-
+Confirmation() and E_OK as result within the SoAd_TxConfirmation() callback
+function after all TP PDU data have been confirmed for transmission.⌋
+Note: SoAd_TpTransmit() for a new TP session with the same PDU can be called
+within &lt;Up&gt;_[SoAd][Tp]TxConfirmation().</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">TP transmission error handling on CopyTxData</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00670] im Text von SWS_SocketAdaptor.</p>
       </section>
 
       <section class="snip-card">
@@ -106,11 +162,11 @@ call as TotalLength afte</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 36</td>
+              <td>Seite 35</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -118,15 +174,15 @@ call as TotalLength afte</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00652" class="swsref internal-spec-ref"><code>SWS_SoAd_00652</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00670" class="swsref internal-spec-ref"><code>SWS_SoAd_00670</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

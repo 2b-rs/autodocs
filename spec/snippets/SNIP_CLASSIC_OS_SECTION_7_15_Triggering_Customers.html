@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/os.html">Modul: os</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_15_Triggering_Customers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SynchronizedTimeBaseManager.pdf</strong> (Seite 89)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SynchronizedTimeBaseManager.pdf#page=89" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SynchronizedTimeBaseManager.pdf</a></strong> (Seite 89)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_StbM_00302" class="swsref internal-spec-ref"><code>SWS_StbM_00302</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_StbM_00303" class="swsref internal-spec-ref"><code>SWS_StbM_00303</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,46 @@ This is to guarantee cyclic synchronization of OS schedule tables.⌋(RS_TS_0002
 [SWS_StbM_00093] ⌈The triggering period StbMTriggeredCustomerPeriod shall
 be configurable for each Triggered Customer.⌋(RS_TS_00037, RS_TS_00032)
 Based on the configuration, the Synchronized Time-Base Manager synchronizes the
-OS counter valu</div></section>
+OS counter value of the associated OS ScheduleTable.
+[SWS_StbM_00302] ⌈The StbM shall set the synchronization count of the OS Sched-
+uleTable via SyncScheduleTable.⌋(RS_TS_00032)
+The Synchronized Time-Base Manager is not responsible for starting and stopping the
+execution of OS ScheduleTables.
+[SWS_StbM_00303] ⌈The StbM shall derive the synchronization count of the OS
+ScheduleTable in microseconds by calculating the modulus of the current Time Base
+value (converted to microseconds) and OsScheduleTableDuration (refer to Os-
+ScheduleTable container referenced via StbMOSScheduleTableRef).⌋(RS_TS_-
+00037, RS_TS_00032)
+Note: This requires, that the ticks of an OS counter, which drives a schedule table,
+have a duration of 1 us.
+[SWS_StbM_00077] ⌈The Synchronized Time-Base Manager shall synchronize OS
+ScheduleTables only when the associated Synchronized Time Base is synchronized,
+i.e., if
+• GLOBAL_TIME_BASE = 1 and
+• TIMEOUT = 0 and
+• SYNC_TO_GATEWAY = 0 and
+• TIMELEAP_FUTURE = 0 and
+• TIMELEAP_PAST = 0
+⌋(RS_TS_00032)
+[SWS_StbM_00092] ⌈The Synchronized Time-Base Manager shall check the OS for
+the status of the OS ScheduleTable by calling GetScheduleTableStatus before
+performing the synchronization.
+The Synchronized Time-Base Manager shall synchronize only OS ScheduleTables that
+are in one of the states
+• SCHEDULETABLE_WAITING,
+• SCHEDULETABLE_RUNNING or
+• SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS.
+⌋(SRS_BSW_00429, RS_TS_00032)
+Note: The Synchronized Time-Base Manager should ignore possible errors caused by
+the sequential execution of
+1. getting OS ScheduleTable status and
+2. performing the synchronization
+(e.g., someone else might have called a service to stop the OS ScheduleTable in the
+meantime).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">SyncScheduleTable used to synchronize OS ScheduleTable</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_StbM_00303] im Text von SWS_SynchronizedTimeBaseManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +138,7 @@ OS counter valu</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SynchronizedTimeBaseManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SynchronizedTimeBaseManager.pdf#page=89" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SynchronizedTimeBaseManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,15 +150,15 @@ OS counter valu</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_StbM_00302" class="swsref internal-spec-ref"><code>SWS_StbM_00302</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_StbM_00303" class="swsref internal-spec-ref"><code>SWS_StbM_00303</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

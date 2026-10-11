@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_5_4_8_Proportional_Integral_Differential_controller</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MFLLibrary.pdf</strong> (Seite 61)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></strong> (Seite 61)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00095" class="swsref internal-spec-ref"><code>SWS_Mfl_00095</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00344" class="swsref internal-spec-ref"><code>SWS_Mfl_00344</code></a></span>
         </div>
       </div>
 
@@ -122,11 +123,141 @@ State_cpst-&gt;Y1 = Output_value
 ⌋
 [SWS_Mfl_00095] ⌈
 Old input value State_cpst-&gt;X1 shall be stored to State_cpst-&gt;X2
-State_cpst-&gt;X2 = State</div></section>
+State_cpst-&gt;X2 = State_cpst-&gt;X1
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+⌋
+8.5.4.8.2
+’PID’ Controller - Type1 with limitation (Implicit type)
+[SWS_Mfl_00340] Definition of API function Mfl_PIDTyp1LimCalc ⌈
+Service Name
+Mfl_PIDTyp1LimCalc
+Syntax
+void Mfl_PIDTyp1LimCalc (
+float32 X_f32,
+Mfl_StatePID_Type* State_cpst,
+const Mfl_ParamPID_Type* Param_cpst,
+const Mfl_Limits_Type* Limit_cpst,
+float32 dT_f32
+)
+Service ID [hex]
+0xC5
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X_f32
+Input value for the ’PID’ controller
+Param_cpst
+Pointer to parameter structure
+Limit_cpst
+Pointer to limit structure
+Parameters (in)
+dT_f32
+Sample Time
+Parameters (inout)
+State_cpst
+Pointer to the internal state structure
+Parameters (out)
+None
+Return value
+None
+Description
+This routine computes Proportional plus integral plus derivative controller (implicit type) output
+value using differential equation
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00341] ⌈
+Yn=Yn-1+ K * (1 + Tv/dT) * Xn- K *(1 - dT/Tn + 2Tv/dT) * Xn-1 + K * (Tv/dT) * Xn-2
+This derives implementation:
+calc1 = Param_cpst-&gt;K_C * (1 + t_val) * X_f32
+calc2 = Param_cpst-&gt;K_C * (1 - dT_f32 * Param_cpst-&gt;Tnrec_C + 2 * t_val) * State_
+cpst-&gt;X1
+calc3 = Param_cpst-&gt;K_C * t_val * State_cpst-&gt;X2
+Output_value = State_cpst-&gt;Y1 + calc1 - calc2 + calc3
+Where t_val = Param_cpst-&gt;Tv_C / dT_f32
+⌋
+[SWS_Mfl_00342] ⌈
+Limit output value with maximum and minimum controller limits.
+If (Output_value &lt; Limit_cpst-&gt;Min_C) Then,
+Output_value = Limit_cpst-&gt;Min_C
+If (Output_value &gt; Limit_cpst-&gt;Max_C) Then,
+Output_value = Limit_cpst-&gt;Max_C
+⌋
+[SWS_Mfl_00343] ⌈
+Calculated Output_value shall be stored to State_cpst-&gt;Y1.
+State_cpst-&gt;Y1 = Output_value
+⌋
+[SWS_Mfl_00344] ⌈
+Old input value State_cpst-&gt;X1 shall be stored to State_cpst-&gt;X2
+State_cpst-&gt;X2 = State_cpst-&gt;X1
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+⌋
+8.5.4.8.3
+’PID’ Controller - Type2 (Explicit type)
+[SWS_Mfl_00096] Definition of API function Mfl_PIDTyp2Calc ⌈
+Service Name
+Mfl_PIDTyp2Calc
+Syntax
+void Mfl_PIDTyp2Calc (
+float32 X_f32,
+Mfl_StatePID_Type* State_cpst,
+const Mfl_ParamPID_Type* Param_cpst,
+float32 dT_f32
+)
+▽
+△
+Service ID [hex]
+0x3B
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X_f32
+Input value for the ’PID’ controller
+Param_cpst
+Pointer to parameter structure
+Parameters (in)
+dT_f32
+Sample Time
+Parameters (inout)
+None
+Parameters (out)
+State_cpst
+Pointer to the internal state structure
+Return value
+None
+Description
+This routine computes Proportional plus integral plus derivative controller (explicit type) output
+value using differential equation
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00097] ⌈
+Yn = Yn-1 + K * (1 + dT/Tn+ Tv/dT) * Xn- K *(1 + 2Tv/dT) * Xn-1+ K * (Tv/dT) * Xn-2
+This derives implementation:
+calc1 = Param_cpst-&gt;K_C * (1 + dT_f32 * Param_cpst-&gt;Tnrec_C + t_val) * X_f32
+calc2 = Param_cpst-&gt;K_C * (1 + 2 * t_val) * State_cpst-&gt;X1
+calc3 = Param_cpst-&gt;K_C * t_val * State_cpst-&gt;X2
+Output_value = State_cpst-&gt;Y1 + calc1 - calc2 + calc3
+Where t_val = Param_cpst-&gt;Tv_C / dT_f32
+⌋
+[SWS_Mfl_00098] ⌈
+Calculated Output_value shall be stored to State_cpst-&gt;Y1.
+State_cpst-&gt;Y1 = Output_value
+⌋
+[SWS_Mfl_00099] ⌈
+Old input value State_cpst-&gt;X1 shall be stored to State_cpst-&gt;X2
+State_cpst-&gt;X2 = State_cpst-&gt;X1
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00095] im Text von SWS_MFLLibrary.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00344] im Text von SWS_MFLLibrary.</p>
       </section>
 
       <section class="snip-card">
@@ -135,7 +266,7 @@ State_cpst-&gt;X2 = State</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MFLLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -147,7 +278,7 @@ State_cpst-&gt;X2 = State</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00095" class="swsref internal-spec-ref"><code>SWS_Mfl_00095</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00344" class="swsref internal-spec-ref"><code>SWS_Mfl_00344</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

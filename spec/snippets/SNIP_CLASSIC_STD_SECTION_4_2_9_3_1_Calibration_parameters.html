@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_9_3_1_Calibration_parameters</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 230)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=227" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 227)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_03959" class="swsref internal-spec-ref"><code>SWS_Rte_03959</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07693" class="swsref internal-spec-ref"><code>SWS_Rte_07693</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,128 @@ be directly accessed by AUTOSAR SW-Cs but are used to serve as default values
 for the NVRAM Block applied via NvM_InitBlockCallbackFunction.
 4. Calibration parameters defined in Basic Software Modules can only be used in-
 side the defining Basic Software Module and are not visible to other Basic Soft-
-ware Modules. In contrast</div></section>
+ware Modules. In contrast to AUTOSAR SW-Cs, Basic Software Modules can
+only define instance specific calibration parameters.
+[SWS_Rte_03958]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00159
+⌈Several AUTOSAR SW-Cs (and also several instances of AUTOSAR SW-Cs) shall
+be able to share same calibration parameters defined in ParameterSwComponent-
+Types.⌋
+[SWS_Rte_07186]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00159
+⌈The generated RTE shall initialize the memory objects implementing Parameter-
+DataPrototypes in p-ports of ParameterSwComponentTypes according the Val-
+ueSpecification of the ParameterProvideComSpec referring the Parameter-
+DataPrototype in the p-port,
+• if such ParameterProvideComSpec exists and
+• if no CalibrationParameterValue refers to the FlatInstanceDescrip-
+tor associated to the ParameterDataPrototype
+This is also applicable if the swImplPolicy = fixed and if the related Parameter-
+DataPrototype is implemented as preprocessor define which does not immediately
+allocate a memory object.⌋
+[SWS_Rte_07029]
+Upstream requirements: SRS_Rte_00154
+⌈The generated RTE shall initialize the memory objects implementing Parameter-
+DataPrototypes in p-ports of ParameterSwComponentTypes according the Val-
+ueSpecification in the role implInitValue of the CalibrationParameter-
+Value referring the FlatInstanceDescriptor associated to the ParameterDat-
+aPrototype if such CalibrationParameterValue is defined.⌋
+Note: the initialization according [SWS_Rte_07029] and [SWS_Rte_07030] precedes
+the initialization values defined in the context of an component type and used in
+[SWS_Rte_07185] and [SWS_Rte_07186]. This enables to provide initial values for
+calibration parameter instances to:
+• predefine start values for the calibration process
+• utilizes the result of the calibration process
+• take calibration parameter values from previous projects
+[SWS_Rte_03959]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00158
+⌈If the SwcInternalBehavior aggregates an ParameterDataPrototype in the
+role perInstanceParameter the RTE shall support the access to instance specific
+calibration parameters of the AUTOSAR SW-C.⌋
+[SWS_Rte_05112]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00159
+⌈If the SwcInternalBehavior aggregates an ParameterDataPrototype in the
+role sharedParameter the RTE shall create a common access to the shared calibra-
+tion parameter.⌋
+[SWS_Rte_07096]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00158
+⌈If the BswInternalBehavior aggregates an ParameterDataPrototype in the
+role perInstanceParameter the Basic Software Scheduler shall support the access
+to instance specific calibration parameters of the Basic Software Module.⌋
+[SWS_Rte_07185]
+Upstream requirements: SRS_Rte_00154
+⌈The generated RTE and Basic Software Scheduler shall initialize the memory objects
+implementing ParameterDataPrototype in the role perInstanceParameter or
+sharedParameter
+• if it has a ValueSpecification in the role initValue according to this Val-
+ueSpecification and
+• if no CalibrationParameterValue refer to the FlatInstanceDescriptor
+associated to the ParameterDataPrototype
+This is also applicable if the swImplPolicy = fixed and if the related Parameter-
+DataPrototype is implemented as preprocessor define which does not immediately
+allocate a memory object.⌋
+[SWS_Rte_07030]
+Upstream requirements: SRS_Rte_00154
+⌈The generated RTE and Basic Software Scheduler shall initialize the memory ob-
+jects implementing ParameterDataPrototypes in the role perInstanceParam-
+eter or sharedParameter according the ValueSpecification in the role the
+implInitValue of the CalibrationParameterValue referring the FlatIn-
+stanceDescriptor associated to the ParameterDataPrototype if such Cali-
+brationParameterValue is defined.⌋
+It might be project specific or even project phase specific which calibration parameters
+have to be calibrated and which are assumed to be stable. So it shall be selectable
+on ParameterSwComponentTypes and AUTOSAR SW-C granularity level for which
+calibration parameters RTE shall support calibration. For this purpose the RTE EcuC
+configuration parameter RteCalibrationSupportEnabled exists.
+If an r-port contains a ParameterDataPrototype, the following requirements spec-
+ify its behavior if the port is unconnected.
+[SWS_Rte_02749]
+Upstream requirements: SRS_Rte_00139, SRS_Rte_00159
+⌈In case of an unconnected parameter r-port, the RTE shall set the values of the
+ParameterDataPrototypes of the r-port according to the initValue of the r-port’s
+ParameterRequireComSpec referring to the ParameterDataPrototype.⌋
+If the port is unconnected, RTE expects an init value, see [SWS_Rte_02750].
+ParameterDataPrototypes in role romBlock
+[SWS_Rte_07033]
+Upstream requirements: SRS_Rte_00154
+⌈If the swCalibrationAccess of a ParameterDataPrototype in the role
+romBlock is set to readWrite the RTE generator has to provide one reference to
+a location in memory where the actual content of the romBlock can be accessed.⌋
+[SWS_Rte_07034]
+Upstream requirements: SRS_Rte_00154
+⌈The generated RTE shall initialize any ParameterDataPrototype in the role
+romBlock
+• if it has a ValueSpecification in the role initValue according to this Val-
+ueSpecification and
+• if no CalibrationParameterValue refer to the FlatInstanceDescriptor
+associated to the ParameterDataPrototype
+⌋
+[SWS_Rte_07035]
+Upstream requirements: SRS_Rte_00154
+⌈The generated RTE shall initialize the memory objects implementing Parameter-
+DataPrototypes in the role romBlock according the ValueSpecification in
+the role the implInitValue of the CalibrationParameterValue referring the
+FlatInstanceDescriptor associated to the ParameterDataPrototype if such
+CalibrationParameterValue is defined.⌋
+ParameterDataPrototype
+used
+as
+romBlock
+are
+instantiated
+according
+to
+[SWS_Rte_07693].
+Configuration of calibration support
+[SWS_Rte_03905]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00156
+⌈It shall be configurable for each ParameterSwComponentType if RTE calibration
+support for the enclosed ParameterDataPrototypes is enabled or not. See RTE
+EcuC configuration parameter RteCalibrationSupportEnabled.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Instance specific calibration parameters in SW-C</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_07693] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -101,11 +219,11 @@ ware Modules. In contrast</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=227" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 230</td>
+              <td>Seite 227</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -113,15 +231,15 @@ ware Modules. In contrast</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_03959" class="swsref internal-spec-ref"><code>SWS_Rte_03959</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_07693" class="swsref internal-spec-ref"><code>SWS_Rte_07693</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

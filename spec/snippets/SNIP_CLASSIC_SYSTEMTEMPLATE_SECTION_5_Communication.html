@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -87,7 +88,139 @@ added to the PDU.
 • I-PDU - Interaction Layer Protocol Data Unit (assembled and disassembled in
 COM) In the case of external communication the Interaction Layer packs one or
 more signals into assigned I-Pdus and passes them to the underlying layer for
-transfer between nodes in a network. The I-</div></section>
+transfer between nodes in a network. The I-Pdu is described in the System
+Template by the IPdu element.
+• N-PDU - Network Layer Protocol Data Unit (assembled and disassembled in a
+Transport Protocol module). The TP module′s main purpose is the segmentation
+and reassembly of I-PDUs that do not ﬁt in one of the assigned N-PDUs. The
+N-Pdu is described in the System Template by the NPdu element.
+• L-PDU - Data Link Layer Protocol Data Unit (assembled and disassembled in
+AUTOSAR Hardware Abstraction layer). The element Frame in the System Tem-
+plate represents the Autosar Layered Architectures L-Sdu. Sdu is the abbrevia-
+tion of "Service Data Unit". The Data Link Layers L-Pdu contains the L-Sdu and
+PCI (Protocol Control Information). The L-PDU is not described in the System
+Template.
+System Template
+R4.0 Rev 3
+Data Link Layer
+Interaction &amp; Network Layer
+Application Layer
+ARElement
+SystemSignal
+ARElement
+SystemSignalGroup
+Identifiable
+ISignalToIPduMapping
+FibexElement
+ISignalIPduGroup
+FibexElement
+ISignal
+ISignalIPdu
+IPdu
+NPdu
+FibexElement
+Pdu
+NmPdu
+MultiplexedIPdu
+FibexElement
+Frame
+Identifiable
+«atpPrototype»
+PduToFrameMapping
+Identifiable
+FrameTriggering
+IPduTiming
+Identifiable
+ISignalTriggering
+Identifiable
+PduTriggering
+Identifiable
+PhysicalChannel
+FibexElement
+ISignalGroup
+DcmIPdu
+XcpPdu
+UserDefinedIPdu
+UserDefinedPdu
++iSignalTriggering
+0..*
+«atpVariation,atpSplitable»
++frameTriggering
+0..*
+«atpVariation,atpSplitable»
+1..*
++systemSignal
+1
++systemSignal
+*
+1..*
++systemSignalGroup
+1
+0..1
++containedISignalIPduGroup
+0..*
+0..*
++iSignal
+0..1
+1..*
++iSignal
+0..1
++iSignal
+0..*
+«atpVariation»
++iSignalIPdu
+0..*
++iSignalToPduMapping
+0..*
+«atpVariation»
++iPduTimingSpecification
+0..1
+«atpVariation»
++pduTriggering
+0..*
+«atpVariation,atpSplitable»
+«atpVariation»
++iSignalTriggering
+0..*
++pduToFrameMapping
+0..*
+«atpVariation»
+1..*
++frame
+1
++iSignalToIPduMapping
+0..*
+1..*
++iPdu
+1
++pdu
+1
++iSignalGroup
+0..1
++iSignalGroup
+0..1
+«atpVariation»
++pduTriggering
+0..*
+Figure 5.1: Communication Overview (FibexCore: Communication)
+In case no multiplexing is performed the I-PDUs of COM that ﬁt into one frame are
+passed directly via the PDU Router to the communication interfaces. For CAN and LIN
+the maximum L-PDU length is 8 bytes. For FlexRay the maximum L-PDU length is 254
+bytes. Large I-PDUs that are too long to ﬁt into one L-Pdu and I-PDUs which contain
+dynamic signals are routed via the Transport Layer to the communication interfaces.
+System Template
+R4.0 Rev 3
+The Transport Protocols are described in more detail in chapter 5.15. All I-PDUs from
+the DCM are transported via the Transport Protocol. 1
+If multiplexing is performed an IPdu is routed between the IPdu Multiplexer and the
+Interface Layer or Transport Layer. To distinguish this two different cases two special-
+izations SignalIPdu and MultiplexedIPdu are introduced. A SignalIPdu repre-
+sents an I-PDU handled by Com. A MultiplexedIPdu describes the combination of
+Signal IPdu’s performed by the multiplexer, to be sent or received between the multi-
+plexer and the interfaces. The Multiplexer is described in more detail in chapter 5.6.
+AUTOSAR COM provides the possibility to deﬁne Transmission Modes for each COM
+IPdu. For this reason the SignalIPdu aggregates the IPduTiming. The Transmis-
+sion Modes are described in more detail in chapter 5.14.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

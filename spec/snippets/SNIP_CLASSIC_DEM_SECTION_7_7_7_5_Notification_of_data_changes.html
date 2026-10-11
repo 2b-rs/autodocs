@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_7_5_Notification_of_data_changes</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 154)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=153" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 153)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01191" class="swsref internal-spec-ref"><code>SWS_Dem_01191</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01194" class="swsref internal-spec-ref"><code>SWS_Dem_01194</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,52 @@ tionRef).
 [SWS_Dem_00479]
 Upstream requirements: RS_Diag_04024
 ⌈The function Dem_GetEventFreezeFrameDataEx shall report the data of the DID
-(defined by parameter DataId) in the requeste</div></section>
+(defined by parameter DataId) in the requested freeze frame record (defined by param-
+eter RecordNumber, except RecordNumber equal 0xFF) of the requested diagnostic
+event (EventId).
+If the RecordNumber is equal to 0xFF and parameter DemType-
+OfFreezeFrameRecordNumeration is set to DEM_FF_RECNUM_CALCULATED
+(refer to DemPrimaryMemory or DemUserDefinedMemory) the most recent record
+shall be used, otherwise E_NOT_OK shall be returned.⌋
+[SWS_Dem_01194]
+Upstream requirements: RS_Diag_04024
+⌈The function Dem_GetEventFreezeFrameDataEx shall return the WWH-OBD
+freeze frame when called with RecordNumber 0x00. If WWH-OBD is not supported, the
+function shall return DEM_NO_SUCH_ELEMENT instead (refer to DemOBDSupport).⌋
+[SWS_Dem_00991]
+Upstream requirements: RS_Diag_04127
+⌈The format of the data in the destination buffer (DestBuffer) of the function Dem_
+GetEventFreezeFrameDataEx is raw hexadecimal values and contains no header-
+information like RecordNumber or DataId. The size of the buffer equals to the configu-
+ration settings of all respective data elements.⌋
+[SWS_Dem_00477]
+Upstream requirements: RS_Diag_04195
+⌈The function Dem_GetEventExtendedDataRecordEx shall report the data of the
+extended data record of the requested diagnostic event.⌋
+[SWS_Dem_00989] ⌈The format of the data in the destination buffer (DestBuffer)
+of the function Dem_GetEventExtendedDataRecordEx is raw hexadecimal values
+and contains no header-information like RecordNumber.⌋
+Note: The Dcm uses the function Dem_GetNextExtendedDataRecord instead of the
+function Dem_GetEventExtendedDataRecordEx.
+[SWS_Dem_00995]
+Upstream requirements: RS_Diag_04189
+⌈If the interfaces Dem_GetEventFreezeFrameDataEx and Dem_GetEventEx-
+tendedDataRecordEx are called in the context of GeneralCallbackEventDat-
+aChanged or CallbackEventDataChanged, the data of the triggering event shall
+be retrievable (return value E_NOT_OK is not allowed).⌋
+[SWS_Dem_00996] ⌈Dem_GetEventFreezeFrameDataEx shall return E_NOT_OK
+in case the requested FreezeFrame data is currently not accessible (e.g. in case of
+asynchronous preempted data retrieval from application).⌋
+[SWS_Dem_00997]
+⌈Dem_GetEventExtendedDataRecordEx
+shall
+return
+E_NOT_OK if the requested data is currently not accessible (e.g.in case of asyn-
+chronous preempted data retrieval from application).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01194] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -108,11 +150,11 @@ Upstream requirements: RS_Diag_04024
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=153" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 154</td>
+              <td>Seite 153</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -120,7 +162,7 @@ Upstream requirements: RS_Diag_04024
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01191" class="swsref internal-spec-ref"><code>SWS_Dem_01191</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_01194" class="swsref internal-spec-ref"><code>SWS_Dem_01194</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

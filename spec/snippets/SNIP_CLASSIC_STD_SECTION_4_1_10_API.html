@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -108,6 +109,197 @@ Use Case:
 Strong type checking with a static code analyzer.
 Supporting
 Material:
+–
+⌋(RS_BRF_01024)
+[SRS_Rte_00059] RTE API shall pass "in" primitive data types by value ⌈
+Type:
+valid
+Description:
+An API input parameter that is a primitive data type (with the exception of a
+string) shall be passed by value.
+Rationale:
+Pass by value is efﬁcient for small data types.
+Dependencies:
+–
+Use Case:
+–
+Supporting
+Material:
+In the context of this requirement, primitive data types include integers (both
+signed and unsigned), ﬂoating point and opaque types.
+⌋
+R4.1 Rev 2
+[SRS_Rte_00060] RTE API shall pass "in" composite data types by reference. ⌈
+Type:
+valid
+Description:
+The RTE API shall pass all input parameters that are composite data types (i.e.
+a record or an array) or strings by reference.
+Rationale:
+Pass by reference is efﬁcient for large data types.
+Dependencies:
+–
+Use Case:
+–
+Supporting
+Material:
+[SRS_Rte_00036] - Assignment to OS Applications.
+⌋
+[SRS_Rte_00061] "in/out" and "out" parameters ⌈
+Type:
+valid
+Description:
+The RTE API shall pass ‘in/out’ and "out" formal parameters by reference.
+Rationale:
+Required so that modiﬁcations to the actual parameters made by the called
+function are visible to the caller.
+Dependencies:
+–
+Use Case:
+–
+Supporting
+Material:
+–
+⌋
+[SRS_Rte_00115] API for data consistency mechanism ⌈
+Type:
+valid
+Description:
+The RTE shall provide an API to access the data consistency mechanism(s).
+Rationale:
+The data mechanism may rely on AUTOSAR OS mechanisms (e.g. resources)
+which cannot be accessed directly by Application Software Components.
+Dependencies:
+[SRS_Rte_00032] - data consistency mechanism.
+Use Case:
+–
+Supporting
+Material:
+VFB Requirements (VFB_C60, Sched70)
+⌋
+[SRS_Rte_00075] API for accessing per-instance memory ⌈
+Type:
+valid
+Description:
+The RTE generator shall generate an API in the application header ﬁle through
+which the Runnable Entities of a component instance can access their
+per-instance memory for reading and writing.
+Rationale:
+Required by the software component template
+Dependencies:
+[SRS_Rte_00013] - per-instance memory.
+Use Case:
+–
+R4.1 Rev 2
+Supporting
+Material:
+"per-instance memory" is synonymous to "Individual data of a component
+instance" described in Software Component Template [4]
+The RTE does not impose a data consistency mechanism on access to
+per-instance memory. If a component requires consistency then the RTEEnter
+and RTEExit API calls should be used.
+⌋
+[SRS_Rte_00107] Support for INFORMATION_TYPE attribute ⌈
+Type:
+valid
+Description:
+The RTE generator shall support the INFORMATION_TYPE attribute with
+values "data" and "event".
+The RTE generator shall support different information types for each data item
+in an AUTOSAR interface.
+The RTE generator shall raise a conﬁguration-time error if the speciﬁcation of
+INFORMATION_TYPE is inconsistent for sender and receiver.
+Rationale:
+Required by VFB Speciﬁcation.
+Dependencies:
+–
+Use Case:
+–
+Supporting
+Material:
+VFB Speciﬁcation v1.03, p. 40
+VFB Speciﬁcation v1.03, Section 4.1.7.4
+VFB Speciﬁcation v1.03, Table 4-15
+VFB Speciﬁcation v1.04, p. 61 line 14
+When "data" is speciﬁed, the RTE shall presume the following;
+Receive mode shall be (explicit read) "data_read_access".
+Buffering shall be "last_is_best".
+Speciﬁcation of an initial value is required.
+Speciﬁcation of "TIME_FOR_RESYNC" is required.
+Speciﬁcation of "LIVELIHOOD" is required.
+When "event" is speciﬁed, the RTE shall presume the following:
+The "TIME_FOR_RESYNC" is not speciﬁed.
+The "LIVELIHOOD" is not speciﬁed.
+An attempt to redeﬁne the presumptions shall cause a conﬁguration time error.
+Failure to fulﬁll the presumptions shall cause a conﬁguration time error.
+⌋
+[SRS_Rte_00108] Support for INIT_VALUE attribute ⌈
+Type:
+valid
+Description:
+The RTE generator shall support the INIT_VALUE attribute for both intra-ECU
+and inter-ECU communication (though the latter is expected to requires no
+direct support if AUTOSAR COM is used).
+If an initial value is speciﬁed for a receiver and not a sender (or vice versa) the
+RTE generator shall apply the same initial value to both sender and receiver.
+If an initial value is speciﬁed for both sender and receiver the RTE generator
+shall use the speciﬁcations for the receiver.
+Rationale:
+The input information can contain conﬂicting values for the INIT_VALUE
+attribute (sender and receiver).
+Dependencies:
+[SRS_Rte_00068] - Signal initial values.
+Use Case:
+The INIT_VALUE is different in the sender- and receiver com spec.
+R4.1 Rev 2
+Supporting
+Material:
+VFB Speciﬁcation v1.03, p. 42
+⌋
+[SRS_Rte_00109] Support for RECEIVE_MODE attribute ⌈
+Type:
+valid
+Description:
+The RTE generator shall support the RECEIVE_MODE attribute with the values
+"data_read_access", "wake_up_of_wait_point" and
+"activation_of_runnable_entity".
+The RTE generator shall support different receive modes for each data item in
+an AUTOSAR interface.
+Rationale:
+Derived from the VFB Speciﬁcation.
+Dependencies:
+–
+Use Case:
+–
+Supporting
+Material:
+VFB Speciﬁcation v1.03, p. 43
+When "data_read_access" is speciﬁed the RTE generator shall create a
+non-blocking read API for the data item. The name of the API could include the
+port name and data item name.
+When "wake_up_of_wait_point" is speciﬁed the RTE generator shall create a
+blocking read API for the data item. The name of the API shall include the port
+name and data item name. The API could support a timeout speciﬁed at
+conﬁguration time.
+When "activation_of_runnable_entity" is speciﬁed the RTE generator shall
+invoke a Runnable Entity when data is received passing the received data as
+parameters to the Runnable Entity. The name of the Runnable Entity could
+include the port name and data item name.
+⌋
+[SRS_Rte_00110] Support for BUFFERING attribute ⌈
+Type:
+valid
+Description:
+The RTE generator shall support the BUFFERING attribute with the values
+"last_is_best" (sender/receiver only), "queue" and "no" (client/server only).
+The RTE generator shall support different buffering speciﬁcations for each data
+item in an AUTOSAR interface.
+Note the queues may be implemented by either the RTE or by COM.
+Rationale:
+–
+Dependencies:
+[SRS_Rte_00033] - Serialization of Server Runnable Entities.
+Use Case:
 –</div></section>
 
       <section class="snip-card snip-rationale-card">

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ADC_SECTION_8_3_11_Adc_GetGroupStatus</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ADCDriver.pdf</strong> (Seite 70)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></strong> (Seite 70)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Adc_00513" class="swsref internal-spec-ref"><code>SWS_Adc_00513</code></a></span>
         </div>
@@ -112,11 +113,92 @@ state ADC_STREAM_COMPLETED while calling Adc_GetStreamLastPointer).
 • In continuous group conversion mode with linear streaming access mode: If Adc_
 GetGroupStatus is called after calling Adc_ReadGroup (group was in state ADC_
 STREAM_COMPLETED while calling Adc_ReadGroup).
-• In one-shot SW</div></section>
+• In one-shot SW conversion mode: If Adc_GetGroupStatus is called after calling
+Adc_GetStreamLastPointer.
+• In one-shot SW conversion mode: If Adc_GetGroupStatus is called after calling
+Adc_ReadGroup.
+• For groups with trigger source hardware: If Adc_GetGroupStatus is called after
+calling Adc_DisableHardwareTrigger
+• For groups with trigger source hardware and linear streaming access mode: If
+Adc_GetGroupStatus is called after calling Adc_GetStreamLastPointer (group
+was in state ADC_STREAM_COMPLETED while calling Adc_GetStreamLast
+Pointer).
+• For groups with trigger source hardware and linear streaming access mode: If
+Adc_GetGroupStatus is called after calling Adc_ReadGroup (group was in state
+ADC_STREAM_COMPLETED while calling Adc_ReadGroup).
+⌋
+[SWS_Adc_00222]
+Upstream requirements: SRS_BSW_00335, SRS_Adc_12291
+⌈The function Adc_GetGroupStatus shall return ADC_BUSY:
+• If it is called while the first conversion round of the requested group is still ongoing
+(continuous conversion mode).
+• Once trigger is enabled for group with HW trigger source.
+• Once Adc_StartGroupConversion is called for group with SW trigger source.
+• In continuous group conversion mode with single access mode: If Adc_GetGroup
+Status is called after calling Adc_GetStreamLastPointer
+• In continuous group conversion mode with single access mode: If Adc_GetGroup
+Status is called after calling Adc_ReadGroup.
+• In continuous group conversion mode with circular streaming access mode: If
+Adc_GetGroupStatus is called after calling Adc_GetStreamLastPointer
+• In continuous group conversion mode with circular streaming access mode If
+Adc_GetGroupStatus is called after calling Adc_ReadGroup.
+• In continuous group conversion mode with linear streaming access mode: If Adc_
+GetGroupStatus is called after calling Adc_GetStreamLastPointer (group was in
+state ADC_COMPLETED while calling Adc_GetStreamLastPointer).
+• In continuous group conversion mode with linear streaming access mode: If Adc_
+GetGroupStatus is called after calling Adc_ReadGroup (group was in state ADC_
+COMPLETED while calling Adc_ReadGroup).
+• In one-shot HW conversion mode and single access mode: If Adc_GetGroup
+Status is called after calling Adc_GetStreamLastPointer.
+• In one-shot HW conversion mode and single access mode: If Adc_GetGroup
+Status is called after calling Adc_ReadGroup.
+• In one-shot HW conversion mode and circular streaming access mode: If Adc_
+GetGroupStatus is called after calling Adc_GetStreamLastPointer.
+• In one-shot HW conversion mode and circular streaming access mode:
+If Adc_GetGroupStatus is called after calling Adc_ReadGroup.
+• In one-shot HW conversion mode and linear streaming access mode: If Adc_
+GetGroupStatus is called after calling Adc_GetStreamLastPointer (group was in
+state ADC_COMPLETED while calling Adc_GetStreamLastPointer).
+• In one-shot HW conversion mode and linear streaming access mode:
+If Adc_GetGroupStatus is called after calling Adc_ReadGroup
+(group was in state ADC_COMPLETED while calling Adc_ReadGroup).⌋
+[SWS_Adc_00224]
+Upstream requirements: SRS_BSW_00335, SRS_Adc_12291
+⌈The function Adc_GetGroupStatus shall return ADC_COMPLETED:
+• If it is called after a conversion round (not the final one) of the requested group
+has been finished.
+⌋
+[SWS_Adc_00325]
+Upstream requirements: SRS_Adc_12291
+⌈The function Adc_GetGroupStatus shall return ADC_STREAM_COMPLETED:
+• If it is called in single access mode after one conversion round is completed.
+• If it is called in streaming access mode after the number of conversion rounds of
+the requested group have been finished, to fill the streaming buffer completely.
+⌋
+[SWS_Adc_00226]
+Upstream requirements: SRS_Adc_12291
+⌈The function Adc_GetGroupStatus shall provide atomic access to the status data by
+the use of atomic instructions.⌋
+[SWS_Adc_00305] ⌈To guarantee consistent returned values, it is assumed that ADC
+group conversion is always started (or enabled in case of HW group) successfully by
+SW before status polling begins.⌋
+[SWS_Adc_00225]
+Upstream requirements: SRS_BSW_00323, SRS_BSW_00386, SRS_SPAL_12448
+⌈If development error detection for the ADC module is enabled: if the channel group ID
+is non-existing, the function Adc_GetGroupStatus shall raise development error ADC_
+E_PARAM_GROUP and return ADC_IDLE without any action.⌋
+.
+[SWS_Adc_00301]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection for the ADC module is enabled: if called prior to initial-
+izing the ADC module, Adc_GetGroupStatus shall raise development error ADC_E_
+UNINIT and return ADC_IDLE without any action.⌋
+[SWS_Adc_00436] ⌈In case of an aborted/suspended group, the state of the queued
+group remains the same as it was before the group was aborted/suspended.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Adc_StatusType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +207,7 @@ STREAM_COMPLETED while calling Adc_ReadGroup).
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ADCDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ADCDriver.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ADCDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

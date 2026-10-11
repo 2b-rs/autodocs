@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_7_1_1_Socket_Connection_Open</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 20)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=19" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 20)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TCPIP_00015" class="swsref internal-spec-ref"><code>SWS_TCPIP_00015</code></a></span>
         </div>
@@ -104,7 +105,141 @@ the TcpIp_DomainType implicitly specified by SoAdSocketLocalAddress-
 Ref, and the protocol type specified by SoAdSocketProtocol.
 2. Change the socket specific parameters according to [SWS_SoAd_00689].
 3. Bind the socket to the local address and port by calling TcpIp_Bind() with the
-local address identifier specified by SoAdSocketLocalAdd</div></section>
+local address identifier specified by SoAdSocketLocalAddressRef and local
+port specified by SoAdSocketLocalPort.
+4. In
+case
+of
+a
+TCP
+socket
+initiate
+the
+TCP
+connection
+by
+calling
+TcpIp_TcpConnect().
+⌋
+[SWS_SoAd_00765]
+Upstream requirements: SRS_Eth_00017
+⌈If SoAdSocketTcpAutoConnectTimeout has been configured for that socket con-
+nection to a value &gt; 0 SoAd shall repeat the invocation stated in [SWS_SoAd_00590]
+bullet (4) only for the time specified in SoAdSocketTcpAutoConnectTimeout.⌋
+[SWS_SoAd_00766]
+Upstream requirements: SRS_Eth_00017
+⌈If SoAdSocketTcpAutoConnectTimeout has elapsed for that socket connection
+and the socket connection has not yet reached SOAD_SOCON_ONLINE, then
+1. the runtime error SOAD_E_TCP_AUTOCONNECT_FAILED shall be raised.
+2. the socket connection shall close related TcpIp socket.
+3. the socket connection shall be put into SOAD_SOCON_OFFLINE.
+4. the socket connection shall stay in SOAD_SOCON_OFFLINE.
+⌋
+Note: Socket connections with elapsed SoAdSocketTcpAutoConnectTimeout will
+become inactive until module is reset.
+[SWS_SoAd_00638] ⌈SoAd shall perform the following actions within SoAd_Main-
+Function() to open a TCP socket connection with SoAdSocketTcpInitiate set to
+FALSE:
+1. In case no Listen-Socket is assigned to the socket connection:
+(a) Get an appropriate socket from TcpIp by calling TcpIp_SoAdGetSocket()
+with the TcpIp_DomainType implicitly specified by SoAdSocketLocal-
+AddressRef, and the protocol type specified by SoAdSocketProtocol.
+(b) Change the socket specific parameters according to [SWS_SoAd_00689].
+(c) Bind the socket to the local address and port by calling TcpIp_Bind() with
+the local address identifier specified by SoAdSocketLocalAddressRef
+and local port specified by SoAdSocketLocalPort.
+(d) Assign the Listen-Socket to the socket connection group
+(e) Activate the socket connection to accept connections from remote nodes
+(f) Listen for a remote connection requests on the Listen-Socket by calling
+TcpIp_TcpListen() with MaxChannels set to the number of socket con-
+nections that are part of the TCP socket connection group
+2. In case the Listen-Socket is already assigned to the socket connection:
+(a) Activate the socket connection to accept connections from remote nodes
+⌋
+Note: all socket connections of a TCP socket connection group (and SoAdSock-
+etTcpInitiate set to FALSE) share one TcpIp socket for incoming connection re-
+quests ("Listen-Socket"), but use a separate TcpIp socket created by the TcpIp module
+and provided via SoAd_TcpAccepted() after the connection has been establishment.
+[SWS_SoAd_00639] ⌈SoAd shall perform the following actions within SoAd_Main-
+Function() to open a UDP socket connection which is part of a socket connection
+group containing multiple socket connections (i.e. there is more than one socket con-
+nection in the socket connection group configuration container):
+1. In case no UDP socket is assigned to the socket connection group:
+(a) Get an appropriate socket from TcpIp by calling TcpIp_SoAdGetSocket()
+with the domain type implicitly specified by SoAdSocketLocalAddress-
+Ref, and the protocol type specified by SoAdSocketProtocol.
+(b) Change the socket specific parameters according to [SWS_SoAd_00689]
+(c) Bind the socket to the local address and port by calling TcpIp_Bind() with
+the local address identifier specified by SoAdSocketLocalAddressRef
+and local port specified by SoAdSocketLocalPort.
+(d) Assign the UDP socket to the socket connection group
+(e) Activate the socket connection for communication via the shared UDP socket
+of the socket connection group
+2. In case the UDP socket is already assigned to the socket connection group:
+(a) Activate the socket connection for communication via the shared UDP socket
+of the socket connection group
+⌋
+Note: all socket connections of a UDP socket connection group share the same TcpIp
+socket.
+[SWS_SoAd_00689] ⌈In case socket related parameters shall be changed as part of
+allocating a new socket, SoAd shall change the parameters according to the configura-
+tion of the associated socket connection by calling TcpIp_ChangeParameter() with
+ParameterId and ParameterValue for each related clause as specified below:
+1. In case of a TCP socket: TCPIP_PARAMID_TCP_RXWND_MAX and the value
+specified by SoAdSocketTpRxBufferMin if the optional parameter is enabled
+2. TCPIP_PARAMID_FRAMEPRIO and the value specified by SoAdSocket-
+FramePriority if the optional parameter is enabled
+3. In case of a TCP socket: TCPIP_PARAMID_TCP_NAGLE and the value 0x01 if the
+related optional parameter SoAdSocketTcpNoDelay is set to FALSE or 0x00 if
+the parameter is set to TRUE.
+4. In case of a TCP socket: TCPIP_PARAMID_TCP_KEEPALIVE and the value
+specified by SoAdSocketTcpKeepAlive
+5. In case of a TCP socket: TCPIP_PARAMID_TCP_KEEPALIVE_TIME and the
+value specified by SoAdSocketTcpKeepAliveTime if the optional parameter
+is enabled
+6. In case of a TCP socket: TCPIP_PARAMID_TCP_KEEPALIVE_PROBES_MAX
+and the value specified by SoAdSocketTcpKeepAliveProbesMax if the op-
+tional parameter is enabled
+7. In case of a TCP socket: TCPIP_PARAMID_TCP_KEEPALIVE_INTERVAL and
+the value specified by SoAdSocketTcpKeepAliveInterval if the optional pa-
+rameter is enabled.
+8. In case of a TCP socket:
+TCPIP_PARAMID_TCP_OPTIONFILTER and the
+value of TcpIpTcpConfigOptionFilterId specified in TcpIpTcpCon-
+figOptionFilter referenced by SoAdSocketTCPOptionFilterRef if the
+optional parameter is enabled.
+9. TCPIP_PARAMID_FLOWLABEL and the value specified by SoAdSocket-
+FlowLabel if the optional parameter is enabled.
+10. TCPIP_PARAMID_DSCP and the value specified by SoAdSocketDifferenti-
+atedServicesField if the optional parameter is enabled.
+11. In case of a UDP socket: TCPIP_PARAMID_UDP_CHECKSUM and the value of
+SoAdSocketUdpChecksumEnabled.
+12. In
+case
+of
+a
+TCP
+socket:
+If
+SoAdSocketTcpTlsConnection-
+Ref
+is
+defined
+the
+function
+shall
+be
+called
+with
+the
+parameter
+ID
+TCPIP_PARAMID_TLS_CONNECTION_ASSIGNMENT
+and
+the
+value
+from
+this reference as the parameter value to assign a TLS connection to this socket.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -117,7 +252,7 @@ local address identifier specified by SoAdSocketLocalAdd</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=19" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

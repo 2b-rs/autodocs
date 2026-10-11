@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_9_5_EthTSyn_Ingress_Timestamping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverEthernet.pdf</strong> (Seite 71)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=70" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></strong> (Seite 71)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthTSyn_00161" class="swsref internal-spec-ref"><code>SWS_EthTSyn_00161</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -414,11 +415,262 @@ const uint8*, const uint8*, uint16)
 T1vlt = T2vlt =
 ingressTimestamp; Tsrd = 0
 EthIf_RxIndication(uint8, Eth_FrameType, boolean, const
-uint8*</div></section>
+uint8*, const Eth_DataType*, uint16)
+Eth_GetIngressTimeStamp(Std_ReturnType, uint8,
+const Eth_DataType*, Eth_TimeStampQualType**,
+Eth_TimeStampType**)
+convert *timeStampPtr to T3vlt;
+convert ingressTimestamp to T1vlt;
+Tsrd = T3vlt-T1vlt
+StbM_GetCurrentVirtualLocalTime
+(Std_ReturnType,
+StbM_SynchronizedTimeBaseType,
+StbM_VirtualLocalTimeType**)
+StbM_GetCurrentVirtualLocalTime(Std_ReturnType,
+StbM_SynchronizedTimeBaseType, StbM_VirtualLocalTimeType**)
+convert ingressTimestamp to T1vlt;
+T2vlt = T1vlt; Tsrd = 0
+T2vlt = *localTimePtr - Tsrd
+EthIf_GetIngressTimeStamp(Std_ReturnType, uint8, const Eth_DataType*,
+Eth_TimeStampQualType**, Eth_TimeStampType**)
+EthIf_GetCurrentTime(Std_ReturnType, uint8,
+Eth_TimeStampQualType**, Eth_TimeStampType**)
+ingressTimestamp = *localTimePtr
+ingressTimestamp=*timeStampPtr
+Figure 9.5: EthTSyn Ingress Timestamping. Continued on the next page
+Ethernet
+«module»
+StbM
+«module»
+EthTSyn
+«module»
+EthIf
+«module»
+Eth
+alt Message Type
+[Type == Sync]
+[Type == Pdelay_Req]
+[Type == Pdelay_Resp]
+alt Message Type
+[Sync || Pdelay_Req || Pdelay_Resp]
+[Pdelay_Resp_Follow_Up]
+[Follow_Up]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+ 
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!
+
+
+
+
+
+
+
+
+t2 = Pdelay_Resp.RequestReceiptTimestamp = ingressTimestamp
+Pdelay = ((t4 - t1) - (t3 - t2))/2
+*timeTuplePtr-&gt;globalTime = preciseOriginTimestamp +
+correctionField + Pdelay; *timeTuplePtr-&gt;localTime = T2vlt,
+*measureDataPtr = Pdelay
+t4 = ingressTimestamp
+StbM_BusSetGlobalTime(Std_ReturnType, StbM_SynchronizedTimeBaseType, const StbM_TimeTupleType*, const
+StbM_UserDataType*, const StbM_MeasurementType*)
+Figure 9.6: EthTSyn Ingress Timestamping
+Ethernet</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Illustrates SW timestamping ingress Pdelay_Resp</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -427,7 +679,7 @@ uint8*</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverEthernet.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=70" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -439,15 +691,15 @@ uint8*</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EthTSyn_00161" class="swsref internal-spec-ref"><code>SWS_EthTSyn_00161</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

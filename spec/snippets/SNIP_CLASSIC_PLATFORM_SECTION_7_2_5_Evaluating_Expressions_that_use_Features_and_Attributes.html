@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_2_5_Evaluating_Expressions_that_use_Features_and_Attributes</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</strong> (Seite 73)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/FO/AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</a></strong> (Seite 73)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_FMDT_00059" class="swsref"><code>TPS_FMDT_00059</code></a></span>
         </div>
@@ -91,7 +92,127 @@ tionSet ⌈Let f be a FMFeature and S be a FMFeatureSelection where f is in
 the recursive feature set of S. Then the state of f in S is defined as follows:
 1. If f is in the feature set of S, let s be the FMFeatureSelection that refers to f
 in the role feature.
-Then the state of f in</div></section>
+Then the state of f in S is the value of the attribute state of s.
+2. If f is not in the feature set of S, let {S1, S2, . . . , Sn} be the FMFeatureSelec-
+tionSets that S refers to in the role include. Because f is in the recursive
+feature set of S, there shall be at least one Si that defines the state of f.
+Then the state of f in S is the state of f in Si.
+⌋(RS_FMDT_00003)
+AUTOSAR Feature Model Exchange Format
+Note that the second step in [TPS_FMDT_00058] retrieves a consistent result (i.e., no
+conflicting states such as selected and deselected) because of constraint [con-
+str_5003] and constraint [constr_5025].
+[TPS_FMDT_00057] Evaluating an Expression that uses Features and Attributes
+⌈Let S be a FMFeatureSelectionSet.
+To evaluate an expression that uses at-
+tributes, the following steps shall be performed.
+1. Replace all reference to SwSystemconsts by their values.
+2. For each reference to a FMFeature f, we distinguish between two cases.
+(a) f is in the recursive feature set of S.
+i. If the state of f in S is selected, then the reference to f is replaced by
+the value 1.
+ii. If the state of f in S is deselected, then the reference to f is replaced
+by the value 0.
+iii. If the state of f in S is undecided, then this is considered an error.
+(b) f is not in the recursive feature set of S. This is considered an error.
+3. For each reference to a FMAttributeDef,
+(a) If S aggregates a FMFeatureSelection s in the role selection that ag-
+gregates an FMAttributeValue v which refers to a in the role defini-
+tion, then the reference is replaced by the contents of the attribute value
+of v.
+(b) Otherwise, let {S1, S2, . . . , Sn} be the FMFeatureSelectionSets that S
+refers to in the role include. Repeat the previous step recursively for all Si
+elements.
+(c) Otherwise, if a has a defaultValue, then the reference is replaced by the
+contents of the attribute defaultValue of a.
+(d) It is considered an error if none of the above steps can find a value.
+⌋(RS_FMDT_00008, RS_FMDT_00010)
+Note that when we look for the value of an attribute in [TPS_FMDT_00057], then do not
+look at the state of a FMFeatureSelection. That is, FMAttributeValue could
+also be taken from a FMFeatureSelection whose state is deselected. It is up
+to the party that creates the feature model, feature selection and feature mapping to
+decide if this is appropriate and eventually adapt the condition appropriately.
+AUTOSAR Feature Model Exchange Format
+A
+Glossary
+Artifact This is a Work Product Definition that provides a description and definition for
+tangible work product types. Artifacts may be composed of other artifacts ([4]).
+At a high level, an artifact is represented as a single conceptual file.
+AUTOSAR Tool This is a software tool which supports one or more tasks defined as
+AUTOSAR tasks in the methodology.
+Depending on the supported tasks, an
+AUTOSAR tool can act as an authoring tool, a converter tool, a processor tool or
+as a combination of those (see separate definitions).
+AUTOSAR Authoring Tool An AUTOSAR Tool used to create and modify AUTOSAR
+XML Descriptions. Example: System Description Editor.
+AUTOSAR Converter Tool An AUTOSAR Tool used to create AUTOSAR XML files by
+converting information from other AUTOSAR XML files. Example: ECU Flattener
+AUTOSAR Definition This is the definition of parameters which can have values. One
+could say that the parameter values are Instances of the definitions. But in the
+meta model hierarchy of AUTOSAR, definitions are also instances of the meta
+model and therefore considered as a description. Examples for AUTOSAR def-
+initions are: EcucParameterDef, PostBuildVariantCriterion, SwSys-
+temconst.
+AUTOSAR XML Description In AUTOSAR this means "filled Template". In fact an
+AUTOSAR XML description is the XML representation of an AUTOSAR model.
+The AUTOSAR XML description can consist of several files. Each individual file
+represents an AUTOSAR partial model and shall validate successfully against the
+AUTOSAR XML schema.
+AUTOSAR Meta-Model This is an UML2.0 model that defines the language for de-
+scribing AUTOSAR systems. The AUTOSAR meta-model is an UML represen-
+tation of the AUTOSAR templates. UML2.0 class diagrams are used to describe
+the attributes and their interrelationships. Stereotypes, UML tags and OCL ex-
+pressions (object constraint language) are used for defining specific semantics
+and constraints.
+AUTOSAR Meta-Model Tool The AUTOSAR Meta-Model Tool is the tool that gener-
+ates different views (class tables, list of constraints, diagrams, XML Schema etc.)
+on the AUTOSAR meta-model.
+AUTOSAR Model This is a representation of an AUTOSAR product. The AUTOSAR
+model represents aspects suitable to the intended use according to the
+AUTOSAR methodology.
+Strictly speaking, this is an instance of the AUTOSAR meta-model. The infor-
+mation contained in the AUTOSAR model can be anything that is representable
+according to the AUTOSAR meta-model.
+AUTOSAR Feature Model Exchange Format
+AUTOSAR Partial Model In AUTOSAR, the possible partitioning of models is marked
+in the meta-model by ≪atpSplitable≫. One partial model is represented in
+an AUTOSAR XML description by one file. The partial model does not need to
+fulfill all semantic constraints applicable to an AUTOSAR model.
+AUTOSAR Processor Tool An AUTOSAR Tool used to create non-AUTOSAR files by
+processing information from AUTOSAR XML files. Example: RTE Generator
+AUTOSAR Specification Element An AUTOSAR Specification Element is a named
+element that is part of an AUTOSAR specification. Examples: requirement, con-
+straint, specification item, class or attribute in the meta model, methodology, de-
+liverable, methodology activity, model element, bsw module etc.
+AUTOSAR Template The term "Template" is used in AUTOSAR to describe the for-
+mat different kinds of descriptions. The term template comes from the idea, that
+AUTOSAR defines a kind of form which shall be filled out in order to describe a
+model. The filled form is then called the description.
+In fact the AUTOSAR templates are now defined as a meta-model.
+AUTOSAR Validation Tool A specialized AUTOSAR Tool which is able to check an
+AUTOSAR model against the rules defined by a profile.
+AUTOSAR XML Schema This is a W3C XML schema that defines the language for
+exchanging AUTOSAR models.
+This Schema is derived from the AUTOSAR
+meta-model. The AUTOSAR XML Schema defines the AUTOSAR data exchange
+format.
+Blueprint This is a model from which other models can be derived by copy and re-
+finement. Note that in contrast to meta model resp. types, this process is not an
+instantiation.
+Instance Generally this is a particular exemplar of a model or of a type.
+Life Cycle Life Cycle is the course of development/evolutionary stages of a model
+element during its life time.
+Meta-Model This defines the building blocks of a model. In that sense, a Meta-Model
+represents the language for building models.
+Meta-Data This includes pertinent information about data, including information about
+the authorship, versioning, access-rights, timestamps etc.
+Model A Model is an simplified representation of reality. The model represents the
+aspects suitable for an intended purpose.
+Partial Model This is a part of a model which is intended to be persisted in one par-
+ticular artifact.
+Pattern in GST This is an approach to simplify the definition of the meta model by ap-
+plying a model transformation. This transformation creates an enhanced model
+out of an annotated model.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +225,7 @@ Then the state of f in</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/FO/AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_FeatureModelExchangeFormat.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

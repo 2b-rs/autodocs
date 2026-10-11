@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_7_2_Connection_establishment</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticOverIP.pdf</strong> (Seite 21)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticOverIP.pdf#page=21" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticOverIP.pdf</a></strong> (Seite 21)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_DoIP_00306" class="swsref internal-spec-ref"><code>SWS_DoIP_00306</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_DoIP_00358" class="swsref internal-spec-ref"><code>SWS_DoIP_00358</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,149 @@ return E_NOT_OK, if it is BufReq_ReturnType it shall return BUFREQ_NOT_OK.
 Upstream requirements: RS_Diag_00081, RS_Diag_00028
 ⌈For activation line controlled DoIP Interfaces with DoIPInterfaceActLineCtrl = TRUE,
 DoIP shall establish the corresponding connections for these interfaces according to
-[SWS_DoIP_00306] if cor</div></section>
+[SWS_DoIP_00306] if corresponding Activation Line Status switches to "active".⌋
+[SWS_DoIP_00296]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈For non activation line controlled DoIP Interfaces with DoIPInterfaceActLineCtrl =
+FALSE, DoIP shall establish the corresponding connections for these interfaces ac-
+cording to [SWS_DoIP_00306] in context of first call to DoIP_MainFunction().⌋
+[SWS_DoIP_00234]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈If the Activation Line status of a DoIPInterface switches to "inactive", the DoIP module
+shall shall loop over all DoIPTcpConnection, DoIPUdpConnection, and DoIPUdpVehi-
+cleAnnouncementConnections. For each of these DoIPConnections the DoIP module
+shall retrieve the corresponding SoConId via call to the SoAd_GetSoConId and close
+all the connection by a call to SoAd_CloseSoCon with the retrieved SoConId.⌋
+[SWS_DoIP_00235]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈In addition to [SWS_DoIP_00234], the DoIP module shall release the correspond-
+ing IP Address assignment via the call to SoAd_ReleaseIpAddrAssignment for those
+connections, which belong to the DoIPInterface for which the Activation Line status
+switched to "inactive", that have DoIPRequestAddressAssignment set to true.⌋
+[SWS_DoIP_00306]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈To
+open
+the
+socket
+connections
+(triggered
+by
+[SWS_DoIP_00204]
+or
+[SWS_DoIP_00296]) of an DoIP interface the DoIP module shall loop over all its
+associated
+DoIPTcpConnection,
+DoIPUdpConnection
+and
+DoIPUdpVehi-
+cleAnnouncementConnection. For each DoIP connection belonging to respective
+DoIP Interfaces which has a DoIPRequestAddressAssignment set to true, the
+DoIP module shall retrieve the corresponding SoConId via call to the SoAd_Get-
+SoConId() and trigger the IP Address assignment via subsequent calls to SoAd_
+RequestIpAddrAssignment() with the retrieved SoConId, LocalIpAddrPtr
+and DefaultRouterPtr set to NULL_PTR, Netmask set to 0, and Type set to
+TCPIP_IPADDR_ASSIGNMENT_ALL. For each of these DoIP connections (irrespec-
+tive of the value of DoIPRequestAddressAssignment) the DoIP module shall open
+the respective connection by an according call to SoAd_OpenSoCon().⌋
+[SWS_DoIP_00001]
+Upstream requirements: RS_Diag_00081
+⌈The DoIP module shall maintain the following information of the configured DoIPUd-
+pConnection (for UDP communication):
+(a) State of the SocketConnection⌋
+[SWS_DoIP_00002]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈The DoIP module shall be able to maintain DoIPMaxTesterConnections configured
+connections with the following information:
+(a) DoIPSoAdTcpRxPduId, describes the connection to the SocketConnection
+(b) Source Address (SA) as soon as the information is available for the DoIP module
+(c) All Routing activation status of this socket connection
+(d) Status of the SocketConnection
+(f) Time since last TCP communication (Rx or Tx)
+(g) Information if the connection is active or not⌋
+[SWS_DoIP_00241]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈If the DoIP module is called with DoIP_SoConModeChg and the Mode set to
+SOAD_SOCON_ONLINE the state of the socket connection shall be considered as
+online and the DoIP module shall behave as described in [SWS_DoIP_00143].⌋
+[SWS_DoIP_00243]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028
+⌈If the DoIP module is called with DoIP_SoConModeChg and the Mode set to
+something else than SOAD_SOCON_ONLINE the state of the socket connection
+shall be considered as offline and the DoIP module shall behave as described in
+[SWS_DoIP_00115].⌋
+[SWS_DoIP_00205]
+Upstream requirements: RS_Diag_00026
+⌈If
+the
+function
+DoIP_SoConModeChg
+is
+called
+with
+Mode
+set
+to
+SOAD_SOCON_ONLINE for a UDP vehicle announcement connection, the DoIP
+module shall send the vehicle announcement message via the corresponding Tx PDU
+configured in the DoIPUdpVehicleAnnouncementConnection and belonging to the
+reported socket connection.⌋
+[SWS_DoIP_00058]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028, RS_Diag_00083
+⌈If a connection needs to be closed based on DoIP specific behavior, the DoIP mod-
+ule shall call the function SoAd_CloseSoCon with the parameter abort set to FALSE
+and the SoConId determined by a call to the function SoAd_GetSoConId for the corre-
+sponding DoIPSoAdTcpTxPdu. Additionally, the inactivity timer shall be stopped.⌋
+[SWS_DoIP_00358]
+Upstream requirements: RS_Diag_00081, RS_Diag_00028, RS_Diag_00083
+⌈If a connection needs to be reset based on DoIP specific behavior, the DoIP module
+shall call the function SoAd_CloseSoCon with the parameter abort set to TRUE and the
+SoConId determined by a call to the function SoAd_GetSoConId for the corresponding
+DoIPSoAdTcpTxPdu. Additionally, the inactivity timer shall be stopped.⌋
+[SWS_DoIP_00076]
+Upstream requirements: RS_Diag_00026
+⌈If the parameter DoIPVinGidMaster is set to true and the Container DoIP-
+TriggerGIDSynchronization
+is
+configured,
+the
+DoIP
+module
+shall
+call
+the
+&lt;User&gt;_DoIPTriggerGIDSynchronization function (after successful IP Address assign-
+ment, see [SWS_DoIP_00306]) and repeat this call within the DoIP_MainFunction
+until its return value equals to E_OK or until the complete connection is closed for any
+other reason.⌋
+[SWS_DoIP_00085]
+Upstream requirements: RS_Diag_00028, RS_Diag_00081
+⌈If
+a
+change
+in
+the
+IP
+address
+assignment
+indicated
+by
+DoIP_LocalIpAddrAssignmentChg
+with
+another
+TCP_IpAddrStateType
+then
+TCPIP_IPADDR_STATE_ASSIGNED,
+the
+function
+to
+start
+GID
+synchronisation</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_DoIP_00306] im Text von SWS_DiagnosticOverIP.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_DoIP_00358] im Text von SWS_DiagnosticOverIP.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +241,7 @@ DoIP shall establish the corresponding connections for these interfaces accordin
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticOverIP.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticOverIP.pdf#page=21" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticOverIP.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +253,7 @@ DoIP shall establish the corresponding connections for these interfaces accordin
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_DoIP_00306" class="swsref internal-spec-ref"><code>SWS_DoIP_00306</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_DoIP_00358" class="swsref internal-spec-ref"><code>SWS_DoIP_00358</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

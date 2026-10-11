@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_2_3_8_Existence_dependence_of_ECUC_Parameter_Definition_elements</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ECUConfiguration.pdf</strong> (Seite 107)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=106" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></strong> (Seite 107)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUC_02008" class="swsref"><code>TPS_ECUC_02008</code></a></span>
         </div>
@@ -128,7 +129,185 @@ atpReference}
 Figure 2.21: Existence dependence of parameter definitions and literal definitions
 [constr_3585]
 EcucConditionFormula.ecucQuery always required ⌈The at-
-tribute EcucConditionForm</div></section>
+tribute EcucConditionFormula.ecucQuery shall always be defined when the ECU
+Configuration Parameter definition is complete.⌋
+[constr_3586]
+EcucConditionFormula.ecucQueryString always required
+⌈The attribute EcucConditionFormula.ecucQueryString shall always be defined
+when the ECU Configuration Parameter definition is complete.⌋
+To allow the description of such existence dependencies the EcucDefinitionEle-
+ment and the EcucEnumerationLiteralDef aggregate the EcucCondition-
+Specification.
+The EcucConditionSpecification aggregates an Ecuc-
+ConditionFormula or a informal Calculation Formula (MlFormula). If the Ecuc-
+ConditionFormula evaluates to true the parameter definition/literal definition shall
+be processed as specified. Otherwise the parameter definition/literal definition shall be
+ignored. The informal Calculation Formula (MlFormula) can be used for the same
+purpose. But here, the rules how the condition is evaluated are not defined.
+An EcucQuery to the ECU Configuration Value Description serves as an argument
+for the EcucConditionFormula. Due the atpMixedString nature of the Ecuc-
+ConditionFormula several EcucQueries can be defined within an EcucCondi-
+tionFormula.
+An EcucQuery is Identifiable and aggregates one EcucQueryExpression.
+The EcucQueryExpression outputs the result as a numerical value. The Ecuc-
+QueryExpression syntax is described in chapter 2.3.7.1.
+Class
+EcucConditionSpecification
+Package
+M2::AUTOSARTemplates::ECUCParameterDefTemplate
+Note
+Allows to define existence dependencies based on the value of parameter values.
+Base
+ARObject
+Aggregated by
+EcucDefinitionElement.ecucCond, EcucEnumerationLiteralDef.ecucCond
+Attribute
+Type
+Mult.
+Kind
+Note
+condition
+Formula
+EcucConditionFormula
+0..1
+aggr
+Definition of the formula used to define existence
+dependencies.
+ecucQuery
+EcucQuery
+*
+aggr
+Query to the ECU Configuration Description.
+informalFormula
+MlFormula
+0..1
+aggr
+Informal description of the condition used to to define
+existence dependencies.
+Table 2.42: EcucConditionSpecification
+Class
+«atpMixedString» EcucConditionFormula
+Package
+M2::AUTOSARTemplates::ECUCParameterDefTemplate
+Note
+This formula shall yield a boolean expression depending on ecuc queries. Note that the EcucCondition
+Formula is a mixed string. Therefore, the properties have the upper multiplicity 1.
+Base
+ARObject, FormulaExpression
+Aggregated by
+EcucConditionSpecification.conditionFormula, EcucValidationCondition.validationFormula
+Attribute
+Type
+Mult.
+Kind
+Note
+ecucQuery
+EcucQuery
+0..1
+ref
+The EcucQuery serves as a argument for the formula.
+ecucQuery
+String
+EcucQuery
+0..1
+ref
+This indicates that the referenced query shall return a
+string.
+Table 2.43: EcucConditionFormula
+In the following example in figure 2.22 – taken from the Can Interface module – a
+possible usage of the condition formula is shown.
+CanIfPrivateCfg:
+EcucParamConfContainerDef
+CanIfSupportTTCAN:
+EcucBooleanParamDef
+defaultValue = FALSE
+CanIfTTGeneral:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
+CanIfPrivateDataLengthCheck:
+EcucBooleanParamDef
+defaultValue = True
+CanIf: EcucModuleDef
+upperMultiplicity = 1
+lowerMultiplicity = 0
++parameter
++parameter
++container
++subContainer
+Figure 2.22: Example for condition formula
+The container CanIfPrivateCfg contains 2 parameters and one sub container. The
+use case is to make the existance of the container CanIfTTGeneral dependent on
+the value configured in the parameter CanIfSupportTTCAN. If the value of CanIf-
+SupportTTCAN is set to true the container CanIfTTGeneral and its content shall
+be available for configuration. If the value of CanIfSupportTTCAN is set to false
+the container CanIfTTGeneral shall not be considered for configuration.
+Example 2.27
+&lt;ECUC-MODULE-DEF&gt;
+&lt;SHORT-NAME&gt;CanIf&lt;/SHORT-NAME&gt;
+&lt;LOWER-MULTIPLICITY&gt;0&lt;/LOWER-MULTIPLICITY&gt;
+&lt;UPPER-MULTIPLICITY&gt;1&lt;/UPPER-MULTIPLICITY&gt;
+&lt;CONTAINERS&gt;
+&lt;ECUC-PARAM-CONF-CONTAINER-DEF&gt;
+&lt;SHORT-NAME&gt;CanIfPrivateCfg&lt;/SHORT-NAME&gt;
+&lt;LOWER-MULTIPLICITY&gt;1&lt;/LOWER-MULTIPLICITY&gt;
+&lt;UPPER-MULTIPLICITY&gt;1&lt;/UPPER-MULTIPLICITY&gt;
+&lt;PARAMETERS&gt;
+&lt;ECUC-BOOLEAN-PARAM-DEF&gt;
+&lt;SHORT-NAME&gt;CanIfPrivateDlcCheck&lt;/SHORT-NAME&gt;
+&lt;LOWER-MULTIPLICITY&gt;1&lt;/LOWER-MULTIPLICITY&gt;
+&lt;UPPER-MULTIPLICITY&gt;1&lt;/UPPER-MULTIPLICITY&gt;
+&lt;!-- ... --&gt;
+&lt;/ECUC-BOOLEAN-PARAM-DEF&gt;
+&lt;ECUC-BOOLEAN-PARAM-DEF&gt;
+&lt;SHORT-NAME&gt;CanIfSupportTTCAN&lt;/SHORT-NAME&gt;
+&lt;LOWER-MULTIPLICITY&gt;1&lt;/LOWER-MULTIPLICITY&gt;
+&lt;UPPER-MULTIPLICITY&gt;1&lt;/UPPER-MULTIPLICITY&gt;
+&lt;DEFAULT-VALUE&gt;false&lt;/DEFAULT-VALUE&gt;
+&lt;/ECUC-BOOLEAN-PARAM-DEF&gt;
+&lt;/PARAMETERS&gt;
+&lt;SUB-CONTAINERS&gt;
+&lt;ECUC-PARAM-CONF-CONTAINER-DEF&gt;
+&lt;SHORT-NAME&gt;CanIfTTGeneral&lt;/SHORT-NAME&gt;
+&lt;ECUC-COND&gt;
+&lt;CONDITION-FORMULA&gt;
+&lt;ECUC-QUERY-REF DEST="ECUC-QUERY"&gt;/AUTOSAR/CanIf/
+CanIfPrivateCfg/CanIfTTGeneral/GetTTCanEnabled&lt;/ECUC-QUERY
+-REF&gt;
+&lt;/CONDITION-FORMULA&gt;
+&lt;ECUC-QUERYS&gt;
+&lt;ECUC-QUERY&gt;
+&lt;SHORT-NAME&gt;GetTTCanEnabled&lt;/SHORT-NAME&gt;
+&lt;ECUC-QUERY-EXPRESSION&gt;
+value(
+refvalue(&lt;CONFIG-ELEMENT-DEF-LOCAL-REF DEST="ECUC-BOOLEAN-PARAM-DEF"&gt;/
+AUTOSAR/EcucDefs/CanIf/CanIfPrivateCfg/CanIfSupportTTCAN&lt;/CONFIG-
+ELEMENT-DEF-LOCAL-REF&gt;)
+)
+&lt;/ECUC-QUERY-EXPRESSION&gt;
+&lt;/ECUC-QUERY&gt;
+&lt;/ECUC-QUERYS&gt;
+&lt;/ECUC-COND&gt;
+&lt;LOWER-MULTIPLICITY&gt;0&lt;/LOWER-MULTIPLICITY&gt;
+&lt;UPPER-MULTIPLICITY&gt;1&lt;/UPPER-MULTIPLICITY&gt;
+&lt;PARAMETERS&gt;
+&lt;!-- ... --&gt;
+&lt;/PARAMETERS&gt;
+&lt;/ECUC-PARAM-CONF-CONTAINER-DEF&gt;
+&lt;/SUB-CONTAINERS&gt;
+&lt;/ECUC-PARAM-CONF-CONTAINER-DEF&gt;
+&lt;/CONTAINERS&gt;
+&lt;/ECUC-MODULE-DEF&gt;
+The condition formula is part of the CanIfTTGeneral container definition (see exam-
+ple 2.27). The formula itself is pretty simple, it just returns the value of the EcucQuery
+with the name GetTTCanEnabled.
+The EcucQuery looks for an element in the ECU Configuration Value description
+which matches the definition
+(/AUTOSAR/EcucDefs/CanIf/CanIfPrivateCfg/CanIfSupportTTCAN)
+in the local context using the refvalue function.
+The EcucQuery then takes the value of the element and returns. Since the element is
+of boolean type the result of the EcucQuery is already a boolean value which can be
+processed by the condition formula.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -141,7 +320,7 @@ tribute EcucConditionForm</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ECUConfiguration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=106" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LOGANDTRACEPROTOCOL_SECTION_5_3_1_Set_Log_Level</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>LogAndTraceProtocol.pdf</strong> (Seite 62)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_LogAndTraceProtocol.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LogAndTraceProtocol.pdf</a></strong> (Seite 62)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dlt_00252" class="swsref internal-spec-ref"><code>SWS_Dlt_00252</code></a></span>
         </div>
@@ -150,7 +151,48 @@ Description
 1
 applicationId
 4*uint8 Representation of the Application ID.
-If this field is filled with NULL all log level for all C</div></section>
+If this field is filled with NULL all log level for all Context IDs
+on this ECU are set.
+2
+contextId
+4*uint8 Representation of the Context ID
+ If this field is filled with NULL all Context IDs belonging to
+the given Application ID are set.
+ is only interpreted if Application ID is not NULL
+Log and Trace Protocol Specification
+AUTOSAR FO  R22-11
+3
+newLogLevel
+sint8
+the new log level to set
+ can be in the range of DLT_LOG_FATAL to
+DLT_LOG_VERBOSE for setting the pass through range
+ if set to 0 all messages from this Context ID are blocked
+ if set to -1 the default log level for this ECU will be used
+4
+reserved
+4*uint8 Reserved – These 4 bytes shall be ignored (i.e.: “don’t care”)
+This field shall be filled with zeros.
+Response Parameter
+Number Name
+Type
+Description
+1
+status
+uint8
+0 == OK
+1 == NOT_SUPPORTED
+2 == ERROR
+Description:
+Set the pass through range for log messages for a given combination of
+Application ID/ Context ID.
+⌋ (RS_LT_00032)
+[PRS_Dlt_00195] ⌈Action to process:
+Update the LogLevel setting within the Dlt module and inform all registered
+Applications with the Application ID which has been provided by the Dlt_SetLogLevel
+service.⌋ (RS_LT_00032)
+Log and Trace Protocol Specification
+AUTOSAR FO  R22-11</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -163,7 +205,7 @@ If this field is filled with NULL all log level for all C</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>LogAndTraceProtocol.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_LogAndTraceProtocol.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">LogAndTraceProtocol.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

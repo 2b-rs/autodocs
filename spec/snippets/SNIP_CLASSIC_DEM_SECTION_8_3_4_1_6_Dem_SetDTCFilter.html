@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_8_3_4_1_6_Dem_SetDTCFilter</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 280)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=280" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 280)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -109,11 +110,57 @@ configuration.
 DTCOrigin
 If the Dem supports more than one event memory this parameter
 is used to select the source memory the DTCs shall be read from.
-If passed</div></section>
+If passed value does not fit to Configuration, the DET error DEM_
+E_WRONG_CONFIGURATION shall be reported.
+FilterWithSeverity
+This flag defines whether severity information (ref. to parameter
+below) shall be used for filtering. This is to allow for coexistence
+of DTCs with and without severity information.
+TRUE: severity information is used for filtering.
+FALSE: severity information is not used for filtering.
+Parameters (in)
+DTCSeverityMask
+Contains the DTCSeverityMask according to ISO14229-1.
+▽
+△
+FilterForFaultDetection
+Counter
+This flag defines whether the fault detection counter information
+shall be used for filtering. This is to allow for coexistence of DTCs
+with and without fault detection counter information. If fault
+detection counter information is filter criteria, only those DTCs
+with a fault detection counter value between 1 and 0x7E shall be
+reported. Remark: If the event does not use the debouncing
+inside Dem, then the Dem must request this information via Get
+FaultDetectionCounter.
+TRUE: fault detection counter is used for filtering.
+FALSE: fault detection counter is not used for filtering.
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: Filter was successfully set.
+E_NOT_OK: Indicates a wrong DTCOrigin or DTCFormat
+Description
+Sets the DTC Filter.
+The server shall perform a bit-wise logical AND-ing operation between the parameter
+DTCStatusMask and the current UDS status in the server. In addition to the DTCStatus
+AvailabilityMask, the server shall return all DTCs for which the result of the AND-ing operation
+is non-zero [i.e. (statusOfDTC &amp; DTCStatusMask) != 0]. The server shall process only the DTC
+Status bits that it is supporting. OBD Events Suppression shall be ignored for this computation.
+If no DTCs within the server match the masking criteria specified in the client’s request, no DTC
+or status information shall be provided following the DTCStatusAvailabilityMask byte in the
+positive response message
+(((statusOfDTC &amp; DTCStatusMask) != 0) &amp;&amp; ((severity &amp; DTCSeverityMask) != 0)) == TRUE
+Available via
+Dem.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -122,7 +169,7 @@ If passed</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=280" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

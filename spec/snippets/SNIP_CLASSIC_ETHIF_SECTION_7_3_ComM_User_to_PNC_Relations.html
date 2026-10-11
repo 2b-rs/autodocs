@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: ethif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_3_ComM_User_to_PNC_Relations</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMManager.pdf</strong> (Seite 81)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=79" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></strong> (Seite 81)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: SWS_ComM_CONSTR_00001</span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_91102" class="swsref internal-spec-ref"><code>SWS_EthIf_91102</code></a></span>
         </div>
       </div>
 
@@ -154,11 +155,116 @@ and the corresponding managing channel has to be
 the same
 Configuration
 10:
-Figure 7.8: User to Partial network and channel Mapping Use Case</div></section>
+Figure 7.8: User to Partial network and channel Mapping Use Cases
+[SWS_ComM_00994] ⌈No restrictions from the configuration of the &lt;Bus&gt;Nm Filter
+for partial networking shall apply to ComM user assignment to PNCs.⌋
+Comment: The &lt;Bus&gt;NM Filter configuration shall be independent from the ComM
+PNC configuration.
+Rational: This enables waking up a PNC without being a member of the PNC, e.g. if a
+node just triggers a wake up of a PNC but the node is not kept awake by the PNC and
+other nodes keep the PNC awake
+[SWS_ComM_00995]
+Upstream requirements: SRS_ModeMgm_09133, SRS_ModeMgm_09090
+⌈It shall be possible to map a configurable amount of ComMUsers to one or more ComM
+channels using the parameter ComMUserPerChannel.⌋
+Comment:
+1. The existing mapping of ComM users to system channels shall still be possible
+for backward compatibility. (i.e. the configuration containers will stay untouched)
+2. In a multi channel system each user can be assigned to one or more channels. If
+the user requests a mode, all channels assigned to this user, shall switch to the
+corresponding mode. All other channels shall not be affected.
+1
+[SWS_ComM_00912]
+Upstream requirements: SRS_ModeMgm_09246
+⌈It shall be possible to map a configurable amount of ComMUsers to one or more PNCs
+using the parameter ComMUserPerPnc (see [ECUC_ComM_00876]).⌋
+[SWS_ComM_01094]
+Upstream requirements: SRS_ModeMgm_09246
+⌈It
+shall
+be
+possible
+to
+map
+a
+configurable
+amount
+of
+PNC(s)
+to
+a
+con-
+figurable
+amount
+of
+ComM
+channels
+by
+using
+the
+parameter
+ComMChan-
+nelPerPnc (see [ECUC_ComM_00880]) or ComMChannelPerTxOnlyPnc (see
+[ECUC_ComM_00900]). The mapping shall be possible for all ComMChannels in com-
+bination with the following ComMNmVariants:
+• ComMVariant=FULL
+• ComMVariant=LIGHT, if the ComMChannel is in the role of a managed ComM-
+Channel and the corresponding managing ComMChannel is also mapped to this
+PNC
+⌋
+Note to [SWS_ComM_01094]: For more details regarding managed and managing
+ComM channels refer to Chapter 7.2.1
+[SWS_ComM_00996]
+Upstream requirements: SRS_ModeMgm_09246
+⌈It shall not be possible to map a ComMUsers to a PNC and in addition to a ComM
+channel which is already referenced by the PNC.⌋
+Rational for [SWS_ComM_00996]: Avoid redundant configuration since the channel is
+implicitly already referenced by the PNC.
+Note on [SWS_ComM_00996]: For more details refer to Figure 7.8 "use case 2"
+[SWS_ComM_CONSTR_00001] ⌈ComM channel’s that are referenced by a PNC are
+not allowed to be referenced by any ComMUsers, if the PNC references at least one
+EthIfSwitchPortGroup . A configuration tool shall reject such a configuration as invalid
+(error). This constraint is only valid for a host ecu that control an Ethernet switch. In all
+other UseCases ComMChannels can be referenced by a PNC’s and ComMUsers.⌋
+Rational on [SWS_ComM_CONSTR_00001]:
+If using PN in combination with
+EthIfSwitchPortGroups (derivation from a SystemDescriptionExtract if EcuIn-
+stance.ethSwitchPortGroupDerivation is set to TRUE), then the EthIfSwitchPort-
+Groups are switched by the EthIf_SwitchPortGroupRequestMode API and not by a
+channel request.
+Note for [SWS_ComM_CONSTR_00001]: For more details refer to Figure 7.8 "use
+Case 6".
+[SWS_ComM_CONSTR_00002] ⌈If a ComM user reference a managed channel, then
+this ComM user shall also reference the corresponding managing channel. Otherwise
+the configuration is invalid. A configuration tool shall reject a configuration as invalid
+(error), if a user references a managed channel without referencing the corresponding
+managing channel.⌋
+[SWS_ComM_CONSTR_00003]
+Status: DRAFT
+⌈ComM channels with ComMNmVariant = SLAVE_PASSIVE are not allowed to be ref-
+erenced by any ComMUser or PNC. A configuration tool shall reject such a configuration
+as invalid (error).⌋
+Rational: ComM channels with ComMNmVariant = SLAVE_PASSIVE shall always fol-
+low the communication request of their communication master and are not allowed to
+request the corresponding master to wake-up the communication channel.
+[SWS_ComM_CONSTR_00005] ⌈If a PNC references a ComM channel, then this
+PNC shall reference that ComM channel either using ComMChannelPerPnc or ComM-
+ChannelPerTxOnlyPnc, but not both. Otherwise the configuration is invalid. A con-
+figuration tool shall reject such a configuration as invalid (error).⌋
+[SWS_ComM_CONSTR_00006]
+⌈The
+kind
+of
+reference
+(either
+ComMChan-
+nelPerPnc or ComMChannelPerTxOnlyPnc) from a PNC to a managed channel
+and the corresponding managing channel shall be the same. Otherwise the configura-
+tion is invalid. A configuration tool shall reject such a configuration as invalid (error).⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Constraint for ComM channels referencing EthIfSwitchPortGroup</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EthIf_SwitchPortGroupRequestMode().</p>
       </section>
 
       <section class="snip-card">
@@ -167,7 +273,7 @@ Figure 7.8: User to Partial network and channel Mapping Use Case</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMManager.pdf#page=79" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -179,15 +285,15 @@ Figure 7.8: User to Partial network and channel Mapping Use Case</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>SWS_ComM_CONSTR_00001</td>
+              <td><a href="../../de/spec/record.html?id=SWS_EthIf_91102" class="swsref internal-spec-ref"><code>SWS_EthIf_91102</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

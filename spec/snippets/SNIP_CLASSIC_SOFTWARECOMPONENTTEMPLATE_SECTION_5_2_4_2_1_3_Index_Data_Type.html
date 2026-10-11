@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SOFTWARECOMPONENTTEMPLATE_SECTION_5_2_4_2_1_3_Index_Data_Type</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SoftwareComponentTemplate.pdf</strong> (Seite 265)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=269" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></strong> (Seite 265)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01699" class="swsref"><code>TPS_SWCT_01699</code></a></span>
         </div>
@@ -112,7 +113,113 @@ swImplPolicy: SwImplPolicyEnum [0..1]
 +
 swIntendedResolution: Numerical [0..1]
 +
-swInterp</div></section>
+swInterpolationMethod: Identifier [0..1]
++
+swIsVirtual: Boolean [0..1]
+«atpVariation»
++
+swValueBlockSize: Numerical [0..1]
++
+swValueBlockSizeMult: Numerical [0..*] {ordered}
+AtpBlueprint
+AtpBlueprintable
+ApplicationDataType
+ARElement
+AtpType
+AutosarDataType
+ARElement
+AtpBlueprint
+AtpBlueprintable
+CompuMethod
++
+displayFormat: DisplayFormatString [0..1]
+ApplicationCompositeDataType
+ApplicationArrayDataType
++
+dynamicArraySizeProfile: String [0..1]
++element
+1
++compuMethod
+0..1
++indexDataType
+0..1
++swDataDefProps
+0..1
+Figure 5.13: Modeling of the ApplicationArrayElement.indexDataType
+[constr_1438] ApplicationArrayElement.indexDataType needs to refer to a
+CompuMethod of category TEXTTABLE ⌈The reference ApplicationArrayEle-
+ment.indexDataType shall only point to an ApplicationPrimitiveDataType
+that in turn refers to a CompuMethod of category TEXTTABLE.⌋()
+[constr_1440] Size of the CompuMethod of category TEXTTABLE referenced by
+ApplicationArrayElement.indexDataType ⌈The interval defined by the Com-
+puScales contained in the CompuMethod referenced by ApplicationArrayEle-
+ment.indexDataType shall start at 0 and include all integer values until Applica-
+tionArrayElement.maxNumberOfElements - 1.⌋()
+[constr_1439] Requirements on ApplicationArrayElement if attribute index-
+DataType exists ⌈If ApplicationArrayElement.indexDataType exists then the
+attribute ApplicationArrayElement.arraySizeSemantics shall be set to the
+value fixedSize and attribute arraySizeHandling shall not exist.⌋()
+Software Component Template
+Listing 5.6 exemplifies the definition of an indexDataType.
+Listing 5.6: Example for array index data type
+&lt;APPLICATION-ARRAY-DATA-TYPE&gt;
+&lt;SHORT-NAME&gt;CylinderArray&lt;/SHORT-NAME&gt;
+&lt;ELEMENT&gt;
+&lt;SHORT-NAME&gt;CylinderArrayElement&lt;/SHORT-NAME&gt;
+&lt;ARRAY-SIZE-SEMANTICS&gt;FIXED-SIZE&lt;/ARRAY-SIZE-SEMANTICS&gt;
+&lt;INDEX-DATA-TYPE-REF DEST="APPLICATION-PRIMITIVE-DATA-TYPE"&gt;
+myIndexDataType&lt;/INDEX-DATA-TYPE-REF&gt;
+&lt;/ELEMENT&gt;
+&lt;/APPLICATION-ARRAY-DATA-TYPE&gt;
+&lt;APPLICATION-PRIMITIVE-DATA-TYPE&gt;
+&lt;SHORT-NAME&gt;myIndexDataType&lt;/SHORT-NAME&gt;
+&lt;SW-DATA-DEF-PROPS&gt;
+&lt;SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;COMPU-METHOD-REF DEST="COMPU-METHOD"&gt;cylinders&lt;/COMPU-METHOD-REF&gt;
+&lt;/SW-DATA-DEF-PROPS-CONDITIONAL&gt;
+&lt;/SW-DATA-DEF-PROPS-VARIANTS&gt;
+&lt;/SW-DATA-DEF-PROPS&gt;
+&lt;/APPLICATION-PRIMITIVE-DATA-TYPE&gt;
+Listing 5.7 contains an example of a CompuMethod eligible for an indexDataType.
+Listing 5.7: Example for a compu method used by an array index data type
+&lt;COMPU-METHOD&gt;
+&lt;SHORT-NAME&gt;cylinders&lt;/SHORT-NAME&gt;
+&lt;CATEGORY&gt;TEXTTABLE&lt;/CATEGORY&gt;
+&lt;COMPU-INTERNAL-TO-PHYS&gt;
+&lt;COMPU-SCALES&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;0&lt;/UPPER-LIMIT&gt;
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;Cylinder1&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;1&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;1&lt;/UPPER-LIMIT&gt;
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;Cylinder2&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;2&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;2&lt;/UPPER-LIMIT&gt;
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;Cylinder3&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;COMPU-SCALE&gt;
+&lt;LOWER-LIMIT INTERVAL-TYPE="CLOSED"&gt;3&lt;/LOWER-LIMIT&gt;
+&lt;UPPER-LIMIT INTERVAL-TYPE="CLOSED"&gt;3&lt;/UPPER-LIMIT&gt;
+Software Component Template
+&lt;COMPU-CONST&gt;
+&lt;VT&gt;Cylinder4&lt;/VT&gt;
+&lt;/COMPU-CONST&gt;
+&lt;/COMPU-SCALE&gt;
+&lt;/COMPU-SCALES&gt;
+&lt;/COMPU-INTERNAL-TO-PHYS&gt;
+&lt;/COMPU-METHOD&gt;</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -125,7 +232,7 @@ swInterp</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/CP/AUTOSAR_TPS_SoftwareComponentTemplate.pdf#page=269" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

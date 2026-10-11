@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_5_4_3_Proportional_controller_with_first_order_time_constant</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MFLLibrary.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_91007" class="swsref internal-spec-ref"><code>SWS_Mfl_91007</code></a></span>
         </div>
@@ -140,7 +141,68 @@ Return value
 None
 Description
 This routine computes PT1 controller output value using below difference equation
-Availab</div></section>
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00033] ⌈
+Yn= exp(-dT/T1) * Yn-1+ K(1- exp(-dT/T1)) * Xn-1
+This derives implementation:
+Output_value = (TeQ_f32 * State_cpst-&gt;Y1) + K_f32 * (1 - TeQ_f32) * State_cpst-&gt;X1
+where TeQ_f32 = exp (-dT/T1)
+⌋
+[SWS_Mfl_00035] ⌈
+If (TeQ_f32 = 0) then PT1 controller follows Input value,
+State_cpst-&gt;Y1 = K_f32 * X_f32
+⌋
+[SWS_Mfl_00036] ⌈
+calculated Output_value and current input value shall be stored to State_cpst-&gt;Y1 and
+State_cpst-&gt;X1 respectively.
+State_cpst-&gt;Y1 = Output_value
+State_cpst-&gt;X1 = X_f32
+⌋
+8.5.4.3.2
+’PT1’ Set State Value
+This routine can be realised using inline function.
+[SWS_Mfl_00037] Definition of API function Mfl_PT1SetState ⌈
+Service Name
+Mfl_PT1SetState
+Syntax
+void Mfl_PT1SetState (
+Mfl_StatePT1_Type* State_cpst,
+float32 X1_f32,
+float32 Y1_f32
+)
+Service ID [hex]
+0x1B
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X1_f32
+Initial value for input state
+Parameters (in)
+Y1_f32
+Initial value for output state
+Parameters (inout)
+None
+Parameters (out)
+State_cpst
+Pointer to internal state structure
+Return value
+None
+Description
+The routine initialises internal state variables of a PT1 element.
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00038] ⌈
+Initialisation of output state variable Y1.
+State_cpst-&gt;Y1 = Y1_f32
+⌋
+[SWS_Mfl_00039] ⌈
+Initialisation of input state variable X1.
+State_cpst-&gt;X1 = X1_f32.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -153,7 +215,7 @@ Availab</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MFLLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

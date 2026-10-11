@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_ADAPTIVE_PLATFORMDESIGN_SECTION_13_3_Packages</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>PlatformDesign.pdf</strong> (Seite 50)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/AP/AUTOSAR_EXP_PlatformDesign.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">PlatformDesign.pdf</a></strong> (Seite 50)</span>
           <span>&bull;</span>
           <span>Ziel-Element: –</span>
         </div>
@@ -89,7 +90,98 @@ must be contained in Software Package Manifest:
 General information
  Package name: fully qualified short-name.
  Version: Version from Software Cluster model that has to follow
-https://semver.org semanti</div></section>
+https://semver.org semantic versioning specification with the exception build
+number is mandatory for debugging/tracking purposes. Used primitive name is
+StrongRevisionLabelString
+ isDeltaPackage: boolean, activated if the content has to be processed for
+delta package.
+ Minimum and maximum supported UCM version: to make sure that the
+Software Package can be parsed properly by the UCM.
+ Dependencies: Manifest Specification document contains a model that has to
+be followed describing dependencies of Software Cluster after it is updated or
+installed. In the case of a delta update, this dependency model shall be used
+to describe the dependency of this Software Cluster version against its
+previous version. Below is a model example:
+class DOC_SoftwareActivationDependency
+SoftwareCluster
++
+version: StrongRevisionLabelString
++
+vendorId: PositiveInteger
+SoftwareActivationDependencyFormula
++
+operator: SoftwareActivationDependencyLogicalOperatorEnum [0..1]
+SoftwareActivationDependencyFormulaPart
+SoftwareActivationDependencyCompareCondition
++
+compareType: SoftwareActivationDependencyOperatorEnum
++
+version: StrongRevisionLabelString
++
+considerBuildNumber: Boolean
+«enumeration»
+SoftwareActivationDependencyOperatorEnum
+isGreaterThan
+isEqual
+isLessThan
+isGreaterThanOrEqual
+isLessThanOrEqual
+«enumeration»
+SoftwareActivationDependencyLogicalOperatorEnum
+logicalAnd
+logicalOr
+ARElement
+SoftwareActivationDependency
+AtpClassifier
+SoftwareClusterDesign
+VehiclePackage
++
+repository: UriString [0..1]
+«atpSplitable»
++conflictsTo
+0..1
++softwareActivationDependency
+0..1
++part
+0..* {ordered}
+«atpSplitable»
++dependsOn
+0..1
+«atpUriDef»
++design
+0..*
+Figure 13-2 Dependency model example
+Sizes to allow checking if there is enough memory available:
+ uncompressedSoftwareClusterSize: Size of Software Cluster in the targeted
+platform
+ compressedSoftwareClusterSize: Size of Software Package
+For information and tracking purpose
+ Vendor: vendor id
+ Vendor authentication tag
+ Packager: vendor id
+ Packager authentication tag: for package consistency check and security
+purposes (for UCM to check if the Software Package is trustable)
+ Type approval: optional, homologation information. Could, for instance, be
+RXSWIN from UN ECE WP.29
+ Release notes: description of this release changes
+ License: for instance MIT, GPL, BSD, proprietary.
+To distribute the package to the correct UCM within the vehicle:
+ Diagnostic address: coming from the Software Cluster model, used in case
+package is coming from the tester via UDS for instance
+ Action type: can be update, install, or remove
+Backend package
+In order for an OEM backend to understand packages contents from several package
+suppliers, a backend package format is specified as described in below picture:
+Figure 13-3 Overview Backend Package
+The software package format is vendor-specific. However, as the backend package
+is meant to be vendor-independent, Software Package Manifest (in red Figure 13-3)
+must use the ARXML file format.
+Vehicle Package
+A vehicle package is typically assembled by an OEM backend. It contains a
+collection of Software Package Manifests extracted from backend packages stored in
+the backend database. It also contains a Vehicle Package Manifest including a
+campaign orchestration and other fields needed for packages distribution by UCM
+Master within the vehicle (Figure 13-4).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -102,7 +194,7 @@ https://semver.org semanti</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>PlatformDesign.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R19-11/AP/AUTOSAR_EXP_PlatformDesign.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">PlatformDesign.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

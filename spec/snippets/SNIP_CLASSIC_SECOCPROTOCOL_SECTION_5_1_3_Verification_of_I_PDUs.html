@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SECOCPROTOCOL_SECTION_5_1_3_Verification_of_I_PDUs</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SecOcProtocol.pdf</strong> (Seite 19)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_SecOcProtocol.pdf#page=18" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SecOcProtocol.pdf</a></strong> (Seite 19)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00238" class="swsref internal-spec-ref"><code>SWS_SecOC_00238</code></a></span>
         </div>
@@ -92,7 +93,107 @@ mented.⌋(RS_Main_00510)
 Protocol
 [PRS_SecOc_00305] ⌈If the authentication build attempts have failed and the authen-
 tication build counter has not yet reached the configuration value , the freshness at-
-tempt and the Authenticator verification shall be re</div></section>
+tempt and the Authenticator verification shall be retried in the next call to the Rx
+main function.⌋(RS_Main_00510)
+[PRS_SecOc_00306] ⌈If the verification of the Authenticator could be success-
+fully executed but the verification failed (e.g. the MAC verification has failed or the key
+was invalid), the authentication verify attempt counter shall be incremented and the
+authentication build counter shall be set to 0.⌋(RS_Main_00510)
+Note: Resetting the authentication build counter shall prevent to drop the authentica-
+tion process too early even though authentication verify attempts are still possible.
+[PRS_SecOc_00307] ⌈If the authentication build counter has reached the con-
+figuration
+value
+SecOCAuthenticationBuildAttempts
+the
+SecOC
+module
+shall remove the Authentic I-PDU from its internal buffer and shall drop
+the
+received
+message.
+The
+VerificationResultType
+shall
+be
+set
+to
+SECOC_AUTHENTICATIONBUILDFAILURE.
+If SecOC_VerifyStatusOverride is used, the verification result and I-PDU are han-
+dled according to overrideStatus value.⌋(RS_Main_00510)
+[PRS_SecOc_00308] ⌈If the query of the freshness function returns a non-recoverable
+error (example:
+a systematic failure due to freshness value configuration ) the
+SecOC module shall remove the Authentic I-PDU from its internal buffer and
+shall drop the received message. The VerificationResultType shall be set to
+SECOC_FRESHNESSFAILURE.⌋()
+[PRS_SecOc_00309] ⌈If the authentication verify attempt counter has reached the
+configuration value SecOCAuthenticationVerifyAttempts or the verification of
+the Authenticator has returned a non-recoverable error (example: a systematic er-
+ror due to a not configured key) the SecOC module shall remove the Authentic I-PDU
+from its internal buffer and shall drop the received message. The Verification-
+ResultType shall be set to SECOC_VERIFICATIONFAILURE. If SecOC_VerifyS-
+tatusOverride is used, the verification result and I-PDU are handled according to
+overrideStatus value.⌋(RS_Main_00510)
+[PRS_SecOc_00310] ⌈If the verification of the Authenticator was successful, the
+VerificationResultType shall be set to SECOC_VERIFICATIONSUCCESS.⌋(RS_-
+Main_00510)
+[PRS_SecOc_00311] ⌈The Freshness Management shall use the verification status
+callout function to get the result of the verification of a Secured I-PDU. This notifica-
+tion can be used as example to synchronize additional freshness attempts or can be
+used for counter increments.⌋(RS_Main_00510)
+Note: SecOC allows to overwrite the status.
+Therefore, care must be taken if the
+Freshness Management relies on the status callout while status overwrite function is
+also used. This can lead to conflicts in the Freshness Management and may lead to
+incorrect freshness values.
+Protocol
+[PRS_SecOc_00312] ⌈If the Rx freshness request function returns a non-recoverable
+error (example: a systematic failure due to freshness value configuration) the veri-
+fication of an Authentic I-PDU is considered to be failed and the authentication
+retry counter for this PDU shall be incremented. If the number of authentication at-
+tempts has reached SecOCAuthenticationVerifyAttempts, the SecOC mod-
+ule shall remove the Authentic I-PDU from its internal buffer. The failure SEC-
+OCE_RE_FRESHNESS_FAILURE shall be reported.⌋(RS_Main_00510)
+[PRS_SecOc_00313] ⌈If SecOCRxSecuredPduCollection is used, then SecOC
+shall not perform any verification until it has received both the Authentic I-PDU and
+Cryptographic I-PDU which make up the Secured I-PDU. Only after both have been
+received SecOC shall attempt to verify the resulting Secured I-PDU. If SecOC_Ver-
+ifyStatusOverride is used, the verification result and I-PDU are handled according
+to overrideStatus value.⌋(RS_Main_00510)
+Note: This applies to all instances when a Secured I-PDU is received by SecOC from
+the lower layer, which happens in parts as described above when SecOCRxSecured-
+PduCollection is used. There is no further distinction made throughout this docu-
+ment to avoid duplication and clutter.
+[PRS_SecOc_00314] ⌈If SecOCRxSecuredPduCollection is used then SecOC
+shall not attempt to verify the Secured I-PDU until it has received and buffered an
+Authentic I-PDU and Cryptographic I-PDU with matching Message Linker values.
+If SecOC_VerifyStatusOverride is used, the verification result and I-PDU are han-
+dled according to overrideStatus value.⌋(RS_Main_00510)
+Note: If If SecOCUseMessageLink has 0 multiplicity, it means If SecOCMessageLin-
+kLen is 0 and that Message Linker Values are always matching.
+[PRS_SecOc_00315] ⌈Upon reception of a Secured I-PDU, SecOC shall parse the
+Authentic I-PDU, the Freshness Value and the Authenticator from it.⌋(RS_-
+Main_00510)
+[PRS_SecOc_00316] ⌈The SecOC module shall construct the data that is used to cal-
+culate the Authenticator (DataToAuthenticator) on the receiver side. This data
+is comprised of SecOCDataId | AuthenticIPDU | FreshnessVerifyValue.⌋(RS_-
+Main_00510)
+[PRS_SecOc_00317] ⌈The SecOC module shall verify the Authenticator by pass-
+ing DataToAuthenticator, length of DataToAuthenticator, the Authentica-
+tor parsed from Secured I-PDU, and SecOCAuthInfoTruncLength into the au-
+thentication algorithm corresponding to configured cryptographic service. If SecOC_-
+VerifyStatusOverride is used, the verification result and I-PDU are handled ac-
+cording to overrideStatus value.⌋(RS_Main_00510)
+Protocol
+Figure 5.3: Verification of MAC
+[PRS_SecOc_00318] ⌈The SecOC module shall report each individual verification sta-
+tus (the final one as well as all intermediate ones) according to its current configura-
+tion (see parameter SecOCVerificationStatusPropagationMode).⌋(RS_Main_-
+00510)
+Note: If the Freshness Manager requires the status of a Secured I-PDU if it was
+verified successfully or not, e.g. to synchronize time or counter, then this status shall
+be taken from the VerificationStatus service provided by SecOC.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +206,7 @@ tempt and the Authenticator verification shall be re</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SecOcProtocol.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_SecOcProtocol.pdf#page=18" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SecOcProtocol.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

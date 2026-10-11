@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_2_Receive_Modes</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 286)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=286" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 286)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_06004" class="swsref internal-spec-ref"><code>SWS_Rte_06004</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_06007" class="swsref internal-spec-ref"><code>SWS_Rte_06007</code></a></span>
         </div>
       </div>
 
@@ -92,11 +93,69 @@ contents of the data is protected from modification by any other party.
 Upstream requirements: SRS_Rte_00128
 ⌈The RTE shall read the data elements specified with implicit data read access
 before the associated runnable entity is invoked.⌋
-Composite data types shall be handled in the same way as primi</div></section>
+Composite data types shall be handled in the same way as primitive data types,
+i.e. RTE shall make a “copy” available for the RunnableEntity.
+[SWS_Rte_06003]
+Upstream requirements: SRS_Rte_00134
+⌈The “implicit data read access” receive mode shall be valid for all categories of
+runnable entity (i.e. 1A, 1B and 2).⌋
+• “Explicit data read access” – the RTE generator creates a non-blocking API
+call to enable a receiver to poll (and read) data. This receive mode is an “explicit”
+mode since an explicit API call is invoked by the receiver.
+The explicit “data read access” receive mode is only valid for category 1B or 2
+runnable entities [SRS_Rte_00134].
+• “wake up of wait point” – the RTE generator creates a blocking API call that the
+receiver invokes to read data.
+[SWS_Rte_06002]
+Upstream requirements: SRS_Rte_00109, SRS_Rte_00069
+⌈The “wake up of wait point” receive mode shall support a time-out to prevent
+infinite blocking if no data is available.⌋
+The “wake up of wait point” receive mode is inherently only valid for a category 2
+runnable entity.
+A category 2 runnable entity is required since the implementation may need to
+suspend execution of the caller if no data is available.
+• “activation of runnable entity” – the receiving runnable entity is invoked auto-
+matically by the RTE whenever new data is available. To access the new data,
+the runnable entity either has to use “implicit data read access” or “explicit data
+read access”, i.e. invoke an Rte_IRead, Rte_Read, Rte_DRead or Rte_Re-
+ceive call, depending on the input configuration. This receive mode differs from
+“implicit data read access” since the receiver is invoked by the RTE in response
+to a DataReceivedEvent.
+[SWS_Rte_06007]
+Upstream requirements: SRS_Rte_00134
+⌈The “activation of runnable entity” receive mode shall be valid for category 1A,
+1B and 2 runnable entities.⌋
+The validity of receive modes in conjunction with different categories of runnable entity
+is summarized in Table 4.8.
+Receive Mode
+Cat 1A
+Cat 1B
+Cat 2
+Implicit Data Read Access
+Yes
+Yes
+Yes
+Explicit Data Read Access
+No
+Yes
+Yes
+Wake up of wait point
+No
+No
+Yes
+Activation of runnable entity
+Yes
+Yes
+Yes
+Table 4.8: Receive mode validity
+The category of a runnable entity is not an inherent property but is instead determined
+by the features of the runnable. Thus the presence of explicit API calls makes the
+runnable at least category 1B and the presence of a WaitPoint forces the runnable
+to be category 2.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Rte_06004] im Text von SWS_RTE.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_06007] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -105,7 +164,7 @@ Composite data types shall be handled in the same way as primi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=286" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -117,7 +176,7 @@ Composite data types shall be handled in the same way as primi</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Rte_06004" class="swsref internal-spec-ref"><code>SWS_Rte_06004</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Rte_06007" class="swsref internal-spec-ref"><code>SWS_Rte_06007</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

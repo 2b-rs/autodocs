@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_4_10_1_Initialization_sequence</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 64)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 64)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Dcm_CONSTR_6076</span>
         </div>
@@ -109,7 +110,33 @@ is configured in DcmDspSecurityMaxAttemptCounterReadoutTime has been
 reached and all the Xxx_GetSecurityAttemptCounter have not been called
 yet (i.e.
 one operation has returned a DCM_E_PENDING status in the previous
-Dcm_MainFunction() cycle), the pending operation shall be</div></section>
+Dcm_MainFunction() cycle), the pending operation shall be cancelled by a call with
+the OpStatus set to DCM_CANCEL.⌋()
+[SWS_Dcm_01353] ⌈In the conditions of [SWS_Dcm_01352], the AttemptCounters of
+remaining security levels (which have not been obtained via the calls to their Xxx_Get-
+SecurityAttemptCounter) shall be initialized with the value configured in DcmD-
+spSecurityNumAttDelay of the according SecurityLevel.⌋()
+Manager
+[SWS_Dcm_01354] ⌈While not all Xxx_GetSecurityAttemptCounter operations
+have returned a final status and the operation chain has not been cancelled, the con-
+ditionsNotCorrect (0x22) NRC shall be returned to any SecurityAccess (0x27) request-
+Seed subfunction request.⌋()
+[SWS_Dcm_01355] ⌈Once all the AttemptCounter values have been successfully or
+unsuccessfully retrieved (all the Xxx_GetSecurityAttemptCounter() operations have
+been executed and have returned a final, non-PENDING error value or the opera-
+tion chain has been cancelled), if at least one of the restored AttemptCounter val-
+ues is greater than or equal to the DcmDspSecurityNumAttDelay configured for
+its corresponding DcmDspSecurityRow, the Dcm shall start the SecurityDelayTimer
+with the higher value of DcmDspSecurityDelayTimeOnBoot / DcmDspSecurity-
+DelayTime of the according DcmDspSecurityRow.⌋()
+[SWS_Dcm_01356] ⌈A timer (DcmDspSecurityDelayTime, DcmDspSecurity-
+MaxAttemptCounterReadoutTime) which is configured with 0 shall be considered
+to have timed out instantaneously when it is started, i.e. shall have no delay effect.⌋()
+[SWS_Dcm_CONSTR_06074]
+Dependency for DcmDspSecurityMaxAttempt-
+CounterReadoutTime
+⌈DcmDspSecurityMaxAttemptCounterReadoutTime
+shall be a multiple and at minimum equal to DcmTaskTime.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -122,7 +149,7 @@ Dcm_MainFunction() cycle), the pending operation shall be</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=64" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

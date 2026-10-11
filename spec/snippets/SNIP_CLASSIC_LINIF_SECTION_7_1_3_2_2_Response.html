@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LINIF_SECTION_7_1_3_2_2_Response</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINInterface.pdf</strong> (Seite 44)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=43" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></strong> (Seite 44)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Lin_00275" class="swsref internal-spec-ref"><code>SWS_Lin_00275</code></a></span>
         </div>
@@ -94,7 +95,35 @@ sider also [SWS_LinIf_00732].
 [SWS_LinIf_00847] ⌈If LinIf_HeaderIndication is called while the confirmation
 of a response transmission is expected, the LIN Interface shall consider the transmitted
 frame as lost. Therefore, the LIN Interface shall report the runtime error code LINIF_-
-E_RESPONSE to the Default Error Trace</div></section>
+E_RESPONSE to the Default Error Tracer. Afterwards, the received LIN Header shall be
+processed.⌋
+[SWS_LinIf_00839] ⌈If Bus Mirroring is enabled globally (configuration parameter
+LinIfBusMirroringSupported) and has been activated with a call to LinIf_-
+EnableBusMirroring() for a LIN channel, the LIN Interface shall call Mirror_-
+ReportLinFrame() each time LinIf_TxConfirmation is called on that channel,
+with status code LIN_TX_OK and a pointer to the transmitted data.⌋
+[SWS_LinIf_00742]
+Status:
+OBSOLETE
+Use instead: SWS_LinIf_00901
+⌈If the function LinIf_LinErrorIndication is called, the LIN Interface shall issue
+a &lt;User_TxConfirmation&gt; callback with result E_NOT_OK.⌋
+[SWS_LinIf_00901] Invocation of LSduR_LinIfTxConfirmation after LinIf_-
+LinErrorIndication in slave nodes
+Status:
+DRAFT
+Upstream requirements: SRS_Lin_01599
+⌈If the function LinIf_LinErrorIndication is called, the LIN Interface shall issue
+a LSduR_LinIfTxConfirmation callback with result E_NOT_OK.⌋
+[SWS_LinIf_00743] ⌈If the function LinIf_LinErrorIndication is called, the LIN
+Interface shall consider the transmitted frame as lost and report the runtime error code
+LINIF_E_RESPONSE to the Default Error Tracer unless the error code of LinIf_-
+LinErrorIndication is LIN_ERR_HEADER.⌋
+[SWS_LinIf_00744] ⌈If the error reported in LinIf_LinErrorIndication is of type
+LIN_ERR_RESP_STOPBIT, LIN_ERR_RESP_CHKSUM or LIN_ERR_RESP_DATABIT,
+the LIN Interface shall set the response_error signal (see [SWS_LinIf_00764]).⌋
+See [SWS_LinIf_00869] and [SWS_LinIf_00870] for the reporting to the Bus Mirroring
+module when LinIf_LinErrorIndication is called.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +136,7 @@ E_RESPONSE to the Default Error Trace</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=43" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

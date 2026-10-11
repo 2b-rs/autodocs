@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_1_SomeIpXf_ExtractProtocolHeaderFields</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SOMEIPTransformer.pdf</strong> (Seite 61)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SOMEIPTransformer.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransformer.pdf</a></strong> (Seite 61)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_91002" class="swsref internal-spec-ref"><code>SWS_Xfrm_91002</code></a></span>
         </div>
@@ -115,7 +116,81 @@ Available via
 SomeIpXf.h
 ⌋(SRS_Xfrm_00002)
 [SWS_SomeIpXf_00296] ⌈The function SomeIpXf_ExtractProtocolHeader-
-Fiel</div></section>
+Fields specified in [SWS_SomeIpXf_91001] shall extract the type of a message and
+the type of the message result from the SOME/IP protocol header and provide this in-
+formation in a canonical representation via its output arguments.⌋(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00297] ⌈The function SomeIpXf_ExtractProtocolHeader-
+Fields specified in [SWS_SomeIpXf_91001] shall check whether the provided
+bufferLength is larger or equal than the size of the protocol header processed by
+the SOME/IP transformer (i.e., 8 bytes). – If this is not the case, E_NOT_OK shall be
+returned. Neither messageType nor messageResult shall be modified in this case.⌋
+(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00298] ⌈The function SomeIpXf_ExtractProtocolHeader-
+Fields specified in [SWS_SomeIpXf_91001] shall check whether the value of the
+Protocol Version field (see [PRS_SOMEIP_00052]) is equal to the value defined by
+[PRS_SOMEIP_00051]. – If this is not the case, E_NOT_OK shall be returned. Nei-
+ther messageType nor messageResult shall be modified in this case.⌋(SRS_Xfrm_-
+00002)
+[SWS_SomeIpXf_00299] ⌈The function SomeIpXf_ExtractProtocolHeader-
+Fields specified in [SWS_SomeIpXf_91001] shall check whether the value of the
+Message Type field (see [PRS_SOMEIP_00055]) is equal REQUEST, RESPONSE, or
+ERROR. – If this is not the case, E_NOT_OK shall be returned. Neither messageType
+nor messageResult shall be modified in this case.⌋(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00301] ⌈The function SomeIpXf_ExtractProtocolHeader-
+Fields specified in [SWS_SomeIpXf_91001] shall return E_OK in all other cases.⌋
+(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00302]
+⌈The
+function
+SomeIpXf_ExtractProtocolHead-
+erFields
+specified
+in
+[SWS_SomeIpXf_91001]
+shall
+set
+messageType
+to
+STD_MESSAGETYPE_REQUEST in case the value of the Message Type field (see
+[PRS_SOMEIP_00055]) is equal REQUEST.⌋(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00303]
+⌈The
+function
+SomeIpXf_ExtractProtocolHead-
+erFields
+specified
+in
+[SWS_SomeIpXf_91001]
+shall
+set
+messageType
+to
+STD_MESSAGETYPE_RESPONSE in case the value of the Message Type field
+(see [PRS_SOMEIP_00055]) is equal RESULT or ERROR.⌋(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00304] ⌈The function SomeIpXf_ExtractProtocolHeader-
+Fields
+specified
+in
+[SWS_SomeIpXf_91001]
+shall
+set
+messageResult
+to
+STD_MESSAGERESULT_ERROR in case the value of the Message Type field (see
+[PRS_SOMEIP_00055]) is equal to ERROR or if the value of the Return Code field
+(see [PRS_SOMEIP_00058]) is different from 0.⌋(SRS_Xfrm_00002)
+[SWS_SomeIpXf_00305] ⌈The function SomeIpXf_ExtractProtocolHeader-
+Fields
+specified
+in
+[SWS_SomeIpXf_91001]
+shall
+set
+messageResult
+to
+STD_MESSAGERESULT_OK otherwise (i.e., in case the value of the Message Type field
+(see [PRS_SOMEIP_00055]) is different from ERROR and if the value of the Return
+Code field (see [PRS_SOMEIP_00058]) is 0.⌋(SRS_Xfrm_00002)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -128,7 +203,7 @@ Fiel</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SOMEIPTransformer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SOMEIPTransformer.pdf#page=61" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SOMEIPTransformer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

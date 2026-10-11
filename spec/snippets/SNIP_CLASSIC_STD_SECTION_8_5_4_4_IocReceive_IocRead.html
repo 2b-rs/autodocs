@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_5_4_4_IocReceive_IocRead</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 225)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=225" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 225)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -110,11 +111,116 @@ Performs an "explicit" sender-receiver reception of data elements with "event" s
 unidirectional communication between OS-Applications located on the same or on different
 cores..
 &lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 or N:1 communication.
-Available</div></section>
+Available via
+Ioc.h
+⌋
+[SWS_Os_91005] Definition of API function IocRead_&lt;IocId&gt;[_&lt;ReceiverId&gt;]
+Upstream requirements: SRS_Os_80020
+⌈
+Service Name
+IocRead_&lt;IocId&gt;[_&lt;ReceiverId&gt;]
+Syntax
+Std_ReturnType IocRead_&lt;IocId&gt;[_&lt;ReceiverId&gt;] (
+&lt;Data&gt; OUT,
+[uint16* numberOfBytesOUT]
+)
+Service ID [hex]
+0x23
+Sync/Async
+Synchronous
+Reentrancy
+Non Reentrant This function is generated individually for each receiver. The individual function
+is not reentrant (if called from different runnable entities that belong to the same receiver), but
+different functions can be called in parallel.
+Parameters (in)
+None
+Parameters (inout)
+None
+OUT
+Data reference to be filled with the received data element.
+Parameters (out)
+numberOfBytesOUT
+(optional) data reference to be filled with the length of the
+received data element in bytes.
+Return value
+Std_ReturnType
+IOC_E_OK: Data was received successfully
+Description
+Performs an "explicit" sender-receiver reception of data elements with "data" semantic for a
+unidirectional communication between OS-Applications located on the same or on different
+cores.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 or N:1 communication.
+&lt;ReceiverId&gt; is used only in N:M communication. Together with &lt;IocId&gt;, it uniquely identifies
+the receiver. It is separated from &lt;IocId&gt; with an underscore. If communication is different from
+N:M it shall be omitted.
+Available via
+Ioc.h
+⌋
+General:
+[SWS_Os_00739]
+Upstream requirements: SRS_Os_80020
+⌈A successful call to the IocReceive/IocRead function indicates that data has been
+received successfully in the OUT &lt;Data&gt; given in parameter.
+The IocReceive/IocRead function has to be generated in case of intra-core and
+inter-core communication.⌋
+[SWS_Os_00822]
+Upstream requirements: SRS_Os_80020
+⌈The IocReceive/IocRead resp.
+IocReceiveGroup/IocReadGroup function
+shall be wrapped with the memory allocation keywords mechanism
+1
+#define OS_START_SEC_&lt;sadm&gt;
+2
+#include "Os_MemMap.h"
+3
+4
+&lt;IocReceive, IocReceiveGroup , IocRead, IocReadGroup&gt;
+5
+6
+#define OS_STOP_SEC_&lt;sadm&gt;
+7
+#include "Os_MemMap.h"
+where &lt;sadm&gt; is the shortName of the SwAddrMethod referenced by the OsMemo-
+ryMappingCodeLocationRef of the reading OsApplication configured in OsIocRe-
+ceivingOsApplicationRef of the respective OsIocCommunication channel.c()
+⌋
+[SWS_Os_00740]
+Upstream requirements: SRS_Os_80020
+⌈If the OsIocReceiverPullCB attribute is defined with a callback function name, the
+IOC shall call this function on the receiving core for each data transmission.⌋
+Parameters:
+[SWS_Os_00741]
+Upstream requirements: SRS_Os_80020
+⌈In case of "data" semantic the IocRead function shall always be able to deliver the
+last available datum. In case of senders from different cores, the precision of the order
+might be limited by the hardware and implementation.⌋
+[SWS_Os_00742]
+Upstream requirements: SRS_Os_80020
+⌈The IocReceive/IocRead function shall guarantee upon returning from execution
+that the reference given in parameter is safe for use.⌋
+[SWS_Os_00803]
+Upstream requirements: SRS_Os_80020
+⌈The OUT &lt;Data&gt; parameter of the IocReceive/IocRead function shall be passed
+as an pointer to the array base type for arrays and by reference for all other types.⌋
+Returned values:
+[SWS_Os_00743]
+Upstream requirements: SRS_Os_80020
+⌈The IocReceive/IocRead function shall return IOC_E_OK if the data was received
+successfully in the OUT &lt;Data&gt; parameter.⌋
+[SWS_Os_00744]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic and if no data is available the function IocReceive shall
+return IOC_E_NO_DATA.⌋
+[SWS_Os_00745]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic an IOC_E_LOST_DATAOverlayed Error shall be returned
+by the IocReceive function if the IOC communication service refused an IocSend
+request from sender due to an internal buffer overflow. There is no error in the data
+returned in parameter.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +229,7 @@ Available</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=225" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

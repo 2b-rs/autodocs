@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -89,7 +90,25 @@ that if a PDU arrives from Com with ID=5 it has to be forwarded to the CanIf wit
 ID=19.
 It has to be guaranteed that each Pdu does have a unique handle ID within the scope
 of the corresponding API. For example: The PduR gets transmission requests from
-both, the Com and the Dcm modules. But there are also t</div></section>
+both, the Com and the Dcm modules. But there are also two distinct APIs deﬁned for
+those requests:
+• PduR_ComTransmit(...)
+• PduR_DcmTransmit(...)
+Therefore the PduR can distinguish two PDUs, even when they have the same handle
+ID but are requested via different APIs.
+Another use-case in the COM-Stack only provides one API for all the callers: the inter-
+face layer (CanIf, FrIf, LinIf).
+• CanIf_Transmit(...)
+4Modules are called adjacent if they share an interface, so PduR and Com are adjacent, while PduR
+and Can driver are not.
+Speciﬁcation of ECU Conﬁguration
+R4.0 Rev 3
+Here it has to be guaranteed that each transmit request for a distinct PDU does have
+a unique handle ID.
+The actual values of the handle IDs can only be assigned properly when the conﬁgu-
+ration of one module is completed, since only then the internal data structures can be
+deﬁned.
+In the next sections the patterns used to deﬁne and utilize Handle IDs are described.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

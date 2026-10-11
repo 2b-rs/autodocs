@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_0_Upstream_requirements_RS_SYST_00049</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SystemTemplate.pdf</strong> (Seite 376)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=373" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></strong> (Seite 376)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02022" class="swsref"><code>TPS_SYST_02022</code></a></span>
         </div>
@@ -91,7 +92,269 @@ fined and the LdCom module is present, this ISignal shall be handled by LdCom.�
 Upstream requirements: RS_SYST_00049
 ⌈The ISignal is mapped into an ISignalIPdu. Only if this ISignalIPdu has ex-
 actly the TransmissionModeDeclaration.transmissionModeTrueTiming de-
-fined (via I</div></section>
+fined (via ISignalIPdu.iPduTimingSpecification), the ISignalIPdu is sent
+by the EcuInstance and the LdCom module is present, this ISignal shall be han-
+dled by LdCom.⌋
+[TPS_SYST_02023] LdCom: DataFilter "always" if TransmissionModeCon-
+dition defined
+Upstream requirements: RS_SYST_00049
+⌈The ISignal is mapped into an ISignalIPdu. If this ISignalIPdu has either
+• no TransmissionModeDeclaration.transmissionModeCondition de-
+fined (via ISignalIPdu.iPduTimingSpecification) or
+• DataFilter.dataFilterType is set to "always" for the TransmissionMod-
+eCondition of this ISignalIPdu.
+and this ISignalIPdu is sent by the EcuInstance and the LdCom module is
+present, this ISignal shall be handled by LdCom.⌋
+[TPS_SYST_02024] LdCom: No ModeDrivenTransmissionModeCondition de-
+fined
+Upstream requirements: RS_SYST_00049
+⌈The ISignal is mapped into an ISignalIPdu.
+Only if this ISignalIPdu
+has no TransmissionModeDeclaration.modeDrivenTrueCondition and mod-
+eDrivenFalseCondition, the ISignalIPdu is sent by the EcuInstance and the
+LdCom module is present, this ISignal shall be handled by LdCom.⌋
+[TPS_SYST_02025] LdCom: Only EventControlledTiming defined
+Upstream requirements: RS_SYST_00049
+⌈The ISignal is mapped into an ISignalIPdu. Only if this ISignalIPdu has an
+EventControlledTiming (via TransmissionModeTiming.eventControlled-
+Timing) and the LdCom module is present, this ISignal shall be handled by Ld-
+Com.⌋
+System Template
+[TPS_SYST_02026] LdCom: Only EventControlledTiming with no repetition
+defined
+Upstream requirements: RS_SYST_00049
+⌈The ISignal is mapped into an ISignalIPdu. Only if this ISignalIPdu has an
+EventControlledTiming (via TransmissionModeTiming.eventControlled-
+Timing) with EventControlledTiming.numberOfRepetitions = 0 defined and
+the LdCom module is present, this ISignal shall be handled by LdCom.⌋
+Describable
+IPduTiming
++
+minimumDelay: TimeValue [0..1]
+TransmissionModeTiming
+Identifiable
+ISignalToIPduMapping
++
+packingByteOrder: ByteOrderEnum [0..1]
++
+startPosition: UnlimitedInteger [0..1]
++
+transferProperty: TransferPropertyEnum [0..1]
++
+updateIndicationBitPosition: UnlimitedInteger [0..1]
+Describable
+EventControlledTiming
++
+numberOfRepetitions: Integer [0..1]
+TransmissionModeDeclaration
+FibexElement
+UploadableDesignElement
+ISignal
++
+dataTypePolicy: DataTypePolicyEnum [0..1]
++
+iSignalType: ISignalTypeEnum [0..1]
++
+length: UnlimitedInteger [0..1]
+IPdu
+ISignalIPdu
++
+unusedBitPattern: Integer [0..1]
++iPduTimingSpecification
+0..1
+«atpVariation,atpSplitable»
++iSignal
+0..1
++iSignalToPduMapping
+0..*
+«atpVariation,atpSplitable»
++eventControlledTiming 0..1
++transmissionModeDeclaration
+0..1
++transmissionModeTrueTiming
+0..1
+Figure 6.9: Pdu Timing excerpt that may be used to configure LdCom
+[TPS_SYST_02027] LdCom: No ISignalPort.timeout reception timeout de-
+fined
+Upstream requirements: RS_SYST_00049
+⌈Only if the ISignalPort which the ISignalTriggering is referring to has no
+ISignalPort.timeout defined and the LdCom module is present, this ISignal
+shall be handled by LdCom.⌋
+[TPS_SYST_02164] LdCom: No ISignalPort.firstTimeout reception timeout
+defined
+Upstream requirements: RS_SYST_00049
+⌈Only if the ISignalPort which the ISignalTriggering is referring to has no
+ISignalPort.firstTimeout defined and the LdCom module is present, this ISig-
+nal shall be handled by LdCom.⌋
+[TPS_SYST_02028] LdCom: No ISignalPort.dataFilter defined
+Upstream requirements: RS_SYST_00049
+⌈Only if the ISignalPort which the ISignalTriggering is referring to has either
+System Template
+• no ISignalPort.dataFilter defined
+• or the DataFilter.dataFilterType = always
+and the LdCom module is present, this ISignal shall be handled by LdCom.⌋
+[TPS_SYST_03001] LdCom: ISignalIPdu not part of any ISignalIPduGroup
+Upstream requirements: RS_SYST_00049
+⌈Only if the ISignalIPdu is not referenced by any ISignalIPduGroup in the role
+iSignalIPdu and the LdCom module is present, this ISignalIPdu shall be handled
+by LdCom.⌋
+[TPS_SYST_02390] Relevance of LdCom spec items for the sender and for the
+receiver side.
+Upstream requirements: RS_SYST_00049
+⌈
+Spec Item Number
+Spec Item Headline
+Motivation
+Applies to
+Model element
+[TPS_SYST_02015]
+LdCom:
+only
+one
+ISignal
+mapped to the ISignalIPdu.
+LdCom only supports one ISig-
+nal per PDU.
+Rx + Tx
+ISignalToIPduMapping
+[TPS_SYST_02016]
+LdCom:
+only Transformer output
+and UINT8_N or UINT8_DYN sup-
+ported.
+LdCom only supports Byte Array
+Signals.
+Rx + Tx
+ISignal
+[TPS_SYST_02017]
+LdCom:
+Opaque ISignalToIP-
+duMapping.packingByteOrder.
+LdCom only supports Byte Array
+Signals.
+Rx + Tx
+ISignalToIPduMapping
+[TPS_SYST_02018]
+LdCom:
+ISignalToIPduMap-
+ping.startPosition
+shall
+be
+0.
+LdCom only supports Signals start-
+ing in the first byte of the PDU.
+Rx + Tx
+ISignalToIPduMapping
+[TPS_SYST_02019]
+LdCom:
+ISignalToIPduMap-
+ping.transferProperty
+shall
+be
+triggered
+or
+triggeredWith-
+outRepetition.
+LdCom only supports one ISignal
+per PDU. That signal has to trigger
+the transmission.
+Tx
+ISignalToIPduMapping
+[TPS_SYST_02020]
+LdCom:
+No IPduTiming.mini-
+mumDelay defined.
+LdCom does not support event trig-
+gered transmission with repetitions.
+Tx
+ISignalIPdu
+[TPS_SYST_02021]
+LdCom:
+ISignalToIPduMap-
+ping.updateIndicationBit-
+Position shall not be defined.
+LdCom does not support update
+bits.
+Rx + Tx
+ISignalToIPduMapping
+[TPS_SYST_02022]
+LdCom: Only the transmission-
+ModeTrueTiming defined.
+LdCom does not support transmis-
+sion modes.
+Tx
+ISignalIPdu
+[TPS_SYST_02023]
+LdCom: DataFilter "always" if
+TransmissionModeCondition
+defined.
+LdCom does not support transmis-
+sion modes.
+Tx
+ISignalIPdu
+[TPS_SYST_02024]
+LdCom: No ModeDrivenTrans-
+missionModeCondition
+de-
+fined.
+LdCom does not support transmis-
+sion modes.
+Tx
+ISignalIPdu
+[TPS_SYST_02025]
+LdCom:
+Only
+EventCon-
+trolledTiming defined.
+LdCom does not support cyclic
+transmission.
+Tx
+ISignalIPdu
+[TPS_SYST_02026]
+LdCom:
+Only
+EventCon-
+trolledTiming with no repetition
+defined.
+LdCom does not support cyclic
+transmission nor repeated trans-
+mission.
+Tx
+ISignalIPdu
+[TPS_SYST_02027]
+LdCom: No ISignalPort.time-
+out reception timeout defined.
+LdCom does not support timeout
+handling.
+Rx
+ISignalPort
+[TPS_SYST_02164]
+LdCom:
+No
+ISignalPort.
+firstTimeout reception timeout
+defined.
+LdCom does not support timeout
+handling.
+Rx
+ISignalPort
+[TPS_SYST_02028]
+LdCom:
+No
+ISignalPort.
+dataFilter defined.
+LdCom does not support timeout
+handling.
+Rx
+ISignalPort
+[TPS_SYST_03001]
+LdCom: ISignalIPdu not part of
+any ISignalIPduGroup.
+LdCom does not support ISig-
+nalIPduGroups.
+Rx + Tx
+ISignalIPdu
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -104,7 +367,7 @@ fined (via I</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_TPS_SystemTemplate.pdf#page=373" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

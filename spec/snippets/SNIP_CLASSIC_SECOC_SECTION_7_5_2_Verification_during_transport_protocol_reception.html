@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: secoc</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SECOC_SECTION_7_5_2_Verification_during_transport_protocol_reception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SecureOnboardCommunication.pdf</strong> (Seite 54)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SecureOnboardCommunication.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SecureOnboardCommunication.pdf</a></strong> (Seite 53)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00130" class="swsref internal-spec-ref"><code>SWS_SecOC_00130</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SecOC_00255" class="swsref internal-spec-ref"><code>SWS_SecOC_00255</code></a></span>
         </div>
       </div>
 
@@ -98,11 +99,89 @@ transport protocol interface and when SecOC_CopyRxData is called, the SecOC
 module shall copy the NPDUs addressed by SecOC_CopyRxData into its own
 buffers. Finally, it returns from SecOC_CopyRxData.
 ⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
-Finally, when the lower layer confirms the complete reception of the Se</div></section>
+Finally, when the lower layer confirms the complete reception of the Secured I-PDU
+via SecOC_TpRxIndication and thus the complete Secured I-PDU is available in
+the buffer of the SecOC module for further processing, the SecOC module starts the
+verification of the Authentication Information according to Section 7.1.3 during its
+next scheduled call of its main function.
+[SWS_SecOC_00084]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer
+transport protocol interface and when SecOC_TpRxIndication is called, the
+SecOC module shall returns SecOC_TpRxIndication without any further
+processing.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+[SWS_SecOC_00085]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer
+transport protocol interface and when SecOC_TpRxIndication has been called,
+the SecOC module shall verify the contents of the Secured I-PDU according to the
+process described in Section 7.1.3.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+[SWS_SecOC_00086]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer
+transport protocol interface and when the verification eventually succeeds, the
+SecOC module shall call PduR_SecOCIfRxIndication with references to the
+Authentic I-PDU contained in the Secured I-PDU in case SecOCPduType is
+configured to SECOC_IFPDU.
+In case SecOCPduType is configured to SECOC_TPPDU SecOC shall forward in
+advance all data to the upper layer by first calling PduR_SecOCTpCopyRxData and
+afterwards PduR_SecOCTpRxIndication with references to the Authentic I-PDU
+contained in the Secured I-PDU.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+[SWS_SecOC_00088]⌈
+During reception of a Secured I-PDU that is received by means of a lower layer
+transport protocol interface and when the verification fails and the
+SecOCIgnoreVerificationResult is configured to TRUE, the SecOC module
+shall call
+PduR_SecOCIfRxIndication with references to the Authentic I-PDU contained in
+the
+Secured I-PDU in case SecOCPduType is configured to SECOC_IFPDU.
+In case SecOCPduType is configured to SECOC_TPPDU SecOC shall forward in
+advance all data to the upper layer by first calling PduR_SecOCTpCopyRxData and
+afterwards PduR_SecOCTpRxIndication with references to the Authentic I-PDU
+contained in the Secured I-PDU.
+⌋(SRS_SecOC_00010, SRS_SecOC_00012, SRS_SecOC_00013)
+[SWS_SecOC_00213]⌈
+In
+case
+the
+SecOC
+frees
+buffers
+related
+to
+a
+Secured
+I-PDU
+(see
+SWS_SecOC_00087) and SecOCPduType is configured to SECOC_TPPDU the
+SecOC
+shall
+cancel
+the
+reception
+in
+the
+upper
+layer
+(negative
+PduR_SecOCTpRxIndication).
+⌋(SRS_BSW_00385)
+[SWS_SecOC_00087]⌈
+The SecOC module shall free all buffer related to a Secured I-PDU either if
+1. it has passed the respective authenticated I-PDU to the PduR via
+PduR_SecOCIfRxIndication or PduR_SecOCTpRxIndication,
+2. the verification of a Secured I-PDU eventually failed,
+3. the transmission of a Secured I-PDU has been canceled by the upper
+or lower layer.
+⌋(SRS_SecOC_00021, SRS_SecOC_00022)
+[SWS_SecOC_00255]⌈
+The SecOC module shall receive the complete Secured I-PDU in its internal memory
+before starting any copying of the corresponding Authentic I-PDU.
+⌋(SRS_SecOC_00032)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Providing buffer in SecOC_StartOfReception.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SecOC_00255] im Text von SWS_SecureOnboardCommunication.</p>
       </section>
 
       <section class="snip-card">
@@ -111,11 +190,11 @@ Finally, when the lower layer confirms the complete reception of the Se</div></s
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SecureOnboardCommunication.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SecureOnboardCommunication.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SecureOnboardCommunication.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 54</td>
+              <td>Seite 53</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -123,15 +202,15 @@ Finally, when the lower layer confirms the complete reception of the Se</div></s
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SecOC_00130" class="swsref internal-spec-ref"><code>SWS_SecOC_00130</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SecOC_00255" class="swsref internal-spec-ref"><code>SWS_SecOC_00255</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

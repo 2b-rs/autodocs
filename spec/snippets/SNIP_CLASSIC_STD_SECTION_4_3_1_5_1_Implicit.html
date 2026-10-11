@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_1_5_1_Implicit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 296)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=292" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 296)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Rte_CONSTR_09083</span>
         </div>
@@ -86,7 +87,139 @@ same buffer. This is only applicable when the scheduling structure can make sure
 contents of the data is protected from modification by any other party.
 Note that this concept implies that the runnable does in fact terminate. Therefore, while
 implicit read is allowed for category 1A and 1B runnable entities as well as category 2
-only the former are guarantee</div></section>
+only the former are guaranteed to have a finite execution time. A category 2 runnable
+that runs forever will not see any updated data.
+VariableAccess in the dataReadAccess role is only allowed for VariableDat-
+aPrototypes with their swImplPolicy different from ’queued’ ([constr_2020]).
+Implicit Write
+Implicit writing, VariableAccesses aggregated with a dataWriteAccess role
+[SRS_Rte_00129], is the opposite concept. VariableDataPrototypes referenced
+by a VariableAccess in the dataWriteAccess role are sent by the RTE after the
+runnable terminates. The runnable can write the data element by using the RTE APIs
+for implicit write (see the API description in Sect. 5.6.20 and 5.6.21). The sending is
+independent from the position in the execution flow in which the Rte_IWrite is per-
+formed inside the Runnable. When performing several write accesses during runnable
+execution to the same data element, only the last one will be recognized. Here we
+have a last-is-best semantics.
+If data transformation shall be executed for this data element, the data transformation
+takes place after termination of the runnable and before sending the data to the Com
+stack. (See [SWS_Rte_08571], [SWS_Rte_08109])
+[SWS_Rte_08418]
+Upstream requirements: SRS_Rte_00129
+⌈The content of a preemption area specific buffer which is used exclusively for an
+implicit write access to a VariableDataPrototype shall be initialized by
+the generated RTE with a copy of the global buffer between the beginning of the task
+and the execution of the first RunnableEntity with access to this VariableDat-
+aPrototype in the task/ISR2.⌋
+Note:
+[SWS_Rte_08418] ensures that no undefined values are written back to a preemp-
+tion area specific buffer at runnable termination if a VariableDataPrototype is
+referenced by a VariableAccess in the dataWriteAccess role and no RTE API
+for implicit write of this VariableDataPrototype is called during an execution of the
+Runnable. For the first entry to the preemption area the "global buffer" will contain
+the initValue of the VariableDataPrototype (if no initValue is configured
+then the value will depend on the initialization strategy of the startup code). For sec-
+ond and subsequent entries the "global buffer" will contain the previously written value
+(if any).
+[SWS_Rte_03570]
+Upstream requirements: SRS_Rte_00129
+⌈For VariableAccesses in the dataWriteAccess role the RTE shall make the sent
+data available to others (other runnables, other AUTOSAR SWCs, Basic SW, ..) with
+the semantics of a copy.⌋
+[SWS_Rte_03571]
+Upstream requirements: SRS_Rte_00129
+⌈For VariableAccesses in the dataWriteAccess role the RTE shall make the sent
+data available to others (other runnables, other AUTOSAR SWCs, Basic SW, ..) at the
+earliest when the runnable has terminated.⌋
+[SWS_Rte_03572]
+Upstream requirements: SRS_Rte_00129
+⌈For VariableAccesses in the dataWriteAccess role several accesses to the
+same VariableDataPrototype performed inside a runnable during one runnable
+execution shall lead to only one transmission of the VariableDataPrototype.⌋
+[SWS_Rte_03573]
+Upstream requirements: SRS_Rte_00129
+⌈If several VariableAccesses in the dataWriteAccess role referencing the same
+VariableDataPrototype are performed inside a runnable during the runnable ex-
+ecution, the RTE shall use the last value written. (last-is-best semantics)⌋
+A VariableAccess in the dataWriteAccess role is only sensible for runnable enti-
+ties that are guaranteed to terminate, i.e. category 1A and 1B. If it is used for a category
+2 runnable which does not terminate then no data write-back will occur.
+[SWS_Rte_03574]
+Upstream requirements: SRS_Rte_00129, SRS_Rte_00134
+⌈VariableAccess in the dataWriteAccess role shall be valid for all categories of
+runnable entity.⌋
+To get common behavior in RTEs from different suppliers further requirements
+defining the semantic of implicit communication exist:
+Please note that the behavior of Implicit Communication can be adjusted with ECU
+Configuration. For further information see section 8.7.
+Implicit Communication Behavior in case of incoherent implicit data access
+[SWS_Rte_03954]
+Upstream requirements: SRS_Rte_00128, SRS_Rte_00129, SRS_Rte_00134
+⌈The RTE generator shall use exactly one buffer to contain data copies of the same
+VariableDataPrototype per preemption area for the implementation of the
+copy semantic of incoherent implicit data access.⌋
+Requirement
+[SWS_Rte_03954]
+means
+that
+all
+runnable
+entities
+mapped
+to
+tasks/ISR2s of a preemption area with an incoherent implicit read ac-
+cess or incoherent implicit write access access the same buffers.
+[SWS_Rte_03598]
+Upstream requirements: SRS_Rte_00128, SRS_Rte_00129
+⌈For implicit communication, the RTE shall provide a single shared read/write buffer
+when no runnable entity mapped to tasks/ISR2s of the preemption area has Vari-
+ableAccess in both incoherent implicit read access and incoherent
+implicit write access referencing the same VariableDataPrototype.⌋
+If either the sender or the receiver uses a data element with status and the
+other uses a data element without status, a data element with status
+can be implemented and casted in the component data structure when a pointer to a
+data element without status is needed.
+[SWS_Rte_03955]
+Upstream requirements: SRS_Rte_00128, SRS_Rte_00129
+⌈For implicit communication, in case that dedicated RPortPrototype and PPort-
+Prototype are used, separate read and write buffers shall be used when at least one
+RunnableEntity mapped to tasks/ISR2s of the preemption area has implicit
+read access and implicit write access referencing the same Variable-
+DataPrototype.⌋
+In the case that a RunnableEntity defines dataWriteAccess and dataReadAc-
+cess to the same VariableDataPrototype in the context of a PRPortPrototype
+[SWS_Rte_03955] does not apply. In such configuration the writing RunnableEntity
+immediately sees its own updates of the data values even before the RunnableEn-
+tity has terminated.
+[SWS_Rte_08408]
+Upstream requirements: SRS_Rte_00128, SRS_Rte_00129
+⌈If a RunnableEntity has both dataWriteAccess and dataReadAccess to a
+VariableDataPrototype in the context of a PRPortPrototype the result of the
+write access shall be immediately visible to subsequent read accesses from within the
+same RunnableEntity.⌋
+Please note that the content of the write buffers are copied into the read buffer of the
+preemption area after the RunnableEntity with the write access terminates (see
+[SWS_Rte_07041]). Therefore the write buffer might be implemented as temporary
+buffer.
+[SWS_Rte_03599]
+Upstream requirements: SRS_Rte_00128
+⌈For implicit communication with incoherent implicit data access all readers
+within a preemption area shall access the same buffer.⌋
+[SWS_Rte_03953]
+Upstream requirements: SRS_Rte_00129
+⌈For implicit communication with incoherent implicit data access all writers
+within a preemption area shall access the same buffer.⌋
+The content of a shared buffer (see [SWS_Rte_03598]) is not guaranteed to stay con-
+stant during the whole task/ISR2 since a writer will change the shared copy and hence
+readers mapped in the task after the writer will access the updated copy. When buffers
+are shared, written data is visible to other RunnableEntitys within the same ex-
+ecution of the task/ISR2. However since no runnable within the task/ISR2 will both
+read and write the same buffer ([SWS_Rte_03598] and [SWS_Rte_03955]) consis-
+tency within a runnable is ensured.
+When separate buffers used for implicit communication (see [SWS_Rte_03955]) any
+data written by a runnable is not visible (to either other RunnableEntitys or to the
+writing runnable) until the data is written back after the runnable has terminated.
+Implicit Communication Behavior in case of coherent implicit data access</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -99,7 +232,7 @@ only the former are guarantee</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=292" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

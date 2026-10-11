@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_3_2_6_Inter_ECU_and_Inter_Partition_Response_to_Request_Mapping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 361)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=360" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 361)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_08732" class="swsref internal-spec-ref"><code>SWS_Rte_08732</code></a></span>
         </div>
@@ -94,7 +95,55 @@ Upstream requirements: SRS_Rte_00082, SRS_Rte_00091
 communication shall be of type uint16.⌋
 [SWS_Rte_07413]
 Upstream requirements: SRS_Rte_00082, SRS_Rte_00091
-⌈The Cl</div></section>
+⌈The Client Identifier of the transaction handle used for an inter-ECU client server
+communication may be defined at the ClientIdDefinition belonging to the Ecu
+Extract and referring the operation instance. If defined the RTE generator shall take
+the clientId from the ClientIdDefinition. If not defined the RTE generator
+shall set the clientId to 0.⌋
+[SWS_Rte_08712]
+Upstream requirements: SRS_Rte_00082, SRS_Rte_00091
+⌈The Client Sequence Counter part of the transaction handle used for an inter-ECU
+client server communication shall be of type uint16.⌋
+[SWS_Rte_02651]
+Upstream requirements: SRS_Rte_00027, SRS_Rte_00082
+⌈In case of inter-ECU client-server communication, the transaction handle shall be
+used for the identification of client server transactions communicated via COM.⌋
+[SWS_Rte_08606]
+Upstream requirements: SRS_Rte_00029, SRS_Rte_00082
+⌈The RTE shall ignore the received responseSignal if multiple clients are connected to
+this responseSignal, the Client Server Communication Graph is not handled by an RTE
+Implementation Plug-In and no valid transaction handle could be retrieved (e.g. due to
+a transformer hard error or the RTE not being able to allocate the buffer to transform
+the data).⌋
+[SWS_Rte_08607]
+Upstream requirements: SRS_Rte_00029, SRS_Rte_00082, SRS_Rte_00312
+⌈The RTE Implementation Plug-In shall ignore the received responseSignal if multiple
+clients are connected to this responseSignal, the Client Server Communication Graph
+is handled by the RTE Implementation Plug-In and no valid transaction handle could
+be retrieved (e.g. due to a transformer hard error or the RTE not being able to allocate
+the buffer to transform the data).⌋
+Rationale: In this case the RTE does not know to which of the clients the response
+was addressed and does also not know if the response has the correct sequence
+counter. Forwarding this error to any of the clients may be a wrong choice (e.g. wrong
+client chosen or right client chosen but response was outdated) and should be avoided.
+Ignoring the received signal in turn is not a wrong choice as the right client will safely be
+informed by a timeout then. Please also note that a client of an inter-ECU client-server
+communication should always define a timeout. Not defining a timeout may easily lead
+to a stalled system.
+[SWS_Rte_02653]
+Upstream requirements: SRS_Rte_00027, SRS_Rte_00082
+⌈The RTE on the server side shall return the transaction handle of the request without
+modification together with the response.⌋
+Since there is always at most one open request per client (see [SWS_Rte_02658]), the
+transaction handle and meta data can be kept within the RTE and does not have to be
+exposed to the AUTOSAR SW-C.
+[SWS_Rte_03629]
+Upstream requirements: SRS_Rte_00322
+⌈In case of inter-ECU client-server communication, where meta data is configured for
+the PDU, the RTE on the server side shall preserve the meta data of the request and
+pass the meta data along with the response without modification.⌋
+Since the meta data for C/S operation is neither required for the Application SW-C nor
+for transformer operations it can be kept within the RTE.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -107,7 +156,7 @@ Upstream requirements: SRS_Rte_00082, SRS_Rte_00091
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=360" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

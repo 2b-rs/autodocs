@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: nvm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_7_4_3_2_5_NvM_Low_Proxy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SoftwareClusterConnection.pdf</strong> (Seite 165)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=165" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></strong> (Seite 165)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_02133" class="swsref internal-spec-ref"><code>SWS_SwCluC_02133</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_02164" class="swsref internal-spec-ref"><code>SWS_SwCluC_02164</code></a></span>
         </div>
       </div>
 
@@ -96,11 +97,88 @@ Upstream requirements: SRS_SwCluC_00206
 ⌈The NvM Low Proxy shall provide an instance of a NvM_ReadRamBlockFromNvm
 per configured NV block (SwCluCNvMProxyNvBlock) in the NvM Low Proxy.⌋
 [SWS_SwCluC_02129]
-Upst</div></section>
+Upstream requirements: SRS_SwCluC_00206
+⌈The NvM Low Proxy shall provide an instance of a NvM_WriteRamBlockToNvm
+per configured NV block (SwCluCNvMProxyNvBlock) in the NvM Low Proxy.⌋
+Contrary to the call of BSW module’s APIs from an Application Software Clus-
+ter, the invoked callback notifications need to change the partition in the Host Soft-
+ware Cluster, before the calls are ending up in the Application Software
+Cluster, if the BSW module does not offer a satellite on this partition.
+[SWS_SwCluC_02133]
+Upstream requirements: SRS_SwCluC_00206
+⌈The callback instances according to [SWS_SwCluC_02111], [SWS_SwCluC_02127],
+[SWS_SwCluC_02128], and [SWS_SwCluC_02129], are provided
+• at the EcucPartition referenced by SwCluCNvMProxyNvBlock.SwCluC-
+NvMProxyNvBlockEcucPartitionRef, if a SwCluCNvMBaseSocket is di-
+rectly available at this EcucPartition
+OR
+• at the EcucPartition of the SwCluCNvMBaseSocket referenced by the
+SwCluCNvMBaseSocket - via SwCluCNvMProxyUsedSatelliteRef, which
+is on the EcucPartition given by SwCluCNvMProxyNvBlock.SwCluCNvM-
+ProxyNvBlockEcucPartitionRef. In this case, the EcucPartition shall
+be changed, before the callback in the High Proxy is called.
+⌋
+Handling of unconnected blocks
+In case a NV Block configured in the NvM Low Proxy being unconnected, the NvM
+can still invoke the callback functions without any effect. But the NvM Low Proxy will
+not invoke any of the NvM APIs with the according Block ID autonomously.
+[SWS_SwCluC_02161]
+Unconnected-behavior
+of
+NvM_SingleBlockCallbackFunction
+Upstream requirements: SRS_SwCluC_00206, SRS_SwCluC_00213
+⌈TheNvM_SingleBlockCallbackFunction
+of
+NvM Low Proxy
+shall
+return
+E_NOT_OK, if the corresponding NV Block is not connected to an instance in the
+NvM High Proxy.⌋
+module
+[SWS_SwCluC_02162]
+Unconnected-behavior
+of
+NvM_InitBlockCallbackFunction
+Upstream requirements: SRS_SwCluC_00206, SRS_SwCluC_00213
+⌈TheNvM_InitBlockCallbackFunction
+of
+NvM Low Proxy
+shall
+return
+E_NOT_OK, if the corresponding NV Block is not connected to an instance in
+the NvM High Proxy.⌋
+[SWS_SwCluC_02163] Unconnected-behavior of NvM_ReadRamBlockFromNvm
+Upstream requirements: SRS_SwCluC_00206, SRS_SwCluC_00213
+⌈TheNvM_ReadRamBlockFromNvm of NvM Low Proxy shall return E_NOT_OK, if the
+corresponding NV Block is not connected to an instance in the NvM High Proxy.⌋
+[SWS_SwCluC_02164] Unconnected-behavior of NvM_WriteRamBlockToNvm
+Upstream requirements: SRS_SwCluC_00206, SRS_SwCluC_00213
+⌈TheNvM_WriteRamBlockToNvm of NvM Low Proxy shall return E_NOT_OK, if the
+corresponding NV Block is not connected to an instance in the NvM High Proxy.⌋
+[SWS_SwCluC_02108]
+Upstream requirements: SRS_SwCluC_00206, SRS_SwCluC_00213
+⌈In case a NV block configured in the NvM Low Proxy is not connected to any NvM
+High Proxy, the NvM Low Proxy implementation shall not modify the content of
+that NV Block.⌋
+Note: An access by Dcm might still change the NV Block content in this case.
+[SWS_SwCluC_02142]
+Upstream requirements: SRS_SwCluC_00206
+⌈The NvM Low Proxy implementation shall describe the NV blocks provided to
+NvM High Proxies via NvBlockNeeds, derived from the CpSoftwareClusterSer-
+viceResource.resourceNeeds.⌋
+Note: [SWS_SwCluC_02142] ensures an automated configuration of the NVRAM
+Manager.
+[SWS_SwCluC_02143]
+Upstream requirements: SRS_SwCluC_00206, SRS_BSW_00101
+⌈The NvM Low Proxy shall provide, for each SwCluCNvMBaseSocket, a SwCluC_
+NvMProxy_Init API, to initialize the NvM High Proxy of an Application Soft-
+ware Cluster. This shall be one element of the service resource SwCluCNvMBas-
+eSocket.⌋
+module</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EcucPartition mapping for proxy callback instances</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_02164] im Text von SWS_SoftwareClusterConnection.</p>
       </section>
 
       <section class="snip-card">
@@ -109,7 +187,7 @@ Upst</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SoftwareClusterConnection.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=165" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -121,15 +199,15 @@ Upst</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_02133" class="swsref internal-spec-ref"><code>SWS_SwCluC_02133</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_02164" class="swsref internal-spec-ref"><code>SWS_SwCluC_02164</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

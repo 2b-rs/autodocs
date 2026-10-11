@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_8_3_11_FrIf_SetWakeupChannel</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayInterface.pdf</strong> (Seite 61)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></strong> (Seite 61)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -113,11 +114,23 @@ E_INV_CTRL_IDX to the Det_ReportError service of the DET module.⌋
 [SWS_FrIf_05177] ⌈If parameter FrIf_ChnlIdx of FrIf_SetWakeupChannel has an in-
 valid value and if development error detection is enabled (i.e.
 FrIfDevErrorDetect
-equals ON), the function FrIf_SetWakeupCha</div></section>
+equals ON), the function FrIf_SetWakeupChannel shall report development error code
+FRIF_E_INV_CHNL_IDX to the Det_ReportError service of the DET module.⌋
+[SWS_FrIf_05178] ⌈The function FrIf_SetWakeupChannel shall wrap the FlexRay
+Driver API function Fr_SetWakeupChannel() by:
+1. Translating (based on static FrIf module configuration) the FlexRay CC index Fr
+If_CtrlIdx into a tuple (FlexRay Driver | Driver-specific CC index Fr_CtrlIdx).
+2. Setting parameters Fr_ChnlIdx to FrIf_ChnlIdx
+3. Calling Fr_SetWakeupChannel() of the determined FlexRay Driver module with
+the parameters determined as described above.
+⌋
+[SWS_FrIf_05179] ⌈Caveats of FrIf_SetWakeupChannel: The FlexRay Interface mod-
+ule has to be initialized with a call of FrIf_Init() before this API service may be called,
+see [SWS_FrIf_05003].⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +139,7 @@ equals ON), the function FrIf_SetWakeupCha</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=60" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

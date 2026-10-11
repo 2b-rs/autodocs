@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DCM_SECTION_7_4_3_4_2_1_Diagnostic_Data_proxy</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SoftwareClusterConnection.pdf</strong> (Seite 208)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=208" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></strong> (Seite 208)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_02302" class="swsref internal-spec-ref"><code>SWS_SwCluC_02302</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SwCluC_02311" class="swsref internal-spec-ref"><code>SWS_SwCluC_02311</code></a></span>
         </div>
       </div>
 
@@ -120,11 +121,142 @@ asynchronous
 ClientServerInterface
 DataSer-
 vices_{Data} without parameter ErrorCode.⌋
-Note:</div></section>
+Note: In the corresponding Dcm configuration, DcmDspDataUsePort will usually be
+set to USE_DATA_ASYNCH_CLIENT_SERVER.
+module
+[SWS_SwCluC_02303]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208, SRS_SwCluC_00201
+⌈The Dcm High Proxy shall support the configuration of DataServices_{Data}
+RPortPrototypes
+for
+asynchronous
+ClientServerInterface
+DataSer-
+vices_{Data} with parameter ErrorCode.⌋
+Note: In the corresponding Dcm configuration, DcmDspDataUsePort will usually be
+set to USE_DATA_ASYNCH_CLIENT_SERVER_ERROR.
+[SWS_SwCluC_02304]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208
+⌈In case the SwCluCDcmProxyDiagnosticData channel related to a DataSer-
+vices_{Data} PortPrototypes is connected, the Dcm Proxy shall invoke the
+• ReadData operation, when the corresponding Xxx_ReadData API is called
+in the Dcm Low Proxy,
+OR
+• WriteData operation, when the corresponding Xxx_WriteData API is
+called in the Dcm Low Proxy,
+OR
+• ReadDataLength operation, when the corresponding Xxx_ReadDataL-
+ength API is called in the Dcm Low Proxy,
+OR
+• ConditionCheckRead operation, when the corresponding Xxx_Condi-
+tionCheckRead API is called in the Dcm Low Proxy,
+OR
+• GetScalingInformation operation,
+when the corresponding Xxx_-
+GetScalingInformation API is called in the Dcm Low Proxy,
+OR
+• ReturnControlToECU operation, when the corresponding Xxx_Return-
+ControlToECU API is called in the Dcm Low Proxy,
+OR
+• ResetToDefault operation, when the corresponding Xxx_ResetToDe-
+fault API is called in the Dcm Low Proxy,
+OR
+module
+• FreezeCurrentState operation, when the corresponding Xxx_Freeze-
+CurrentState API is called in the Dcm Low Proxy,
+OR
+• ShortTermAdjustment operation, when the corresponding Xxx_Short-
+TermAdjustment API is called in the Dcm Low Proxy.
+In that case, IN arguments (Data (if applicable), OpStatus (if applicable), control-
+Mask (if applicable) and ControlStateInfo (if applicable)) shall be passed to the
+client, and OUT arguments (Data (if applicable), ScalingInfo (if applicable), Er-
+rorCode (if applicable)) and application errors shall be transferred back to the
+caller of the Dcm Low Proxy.⌋
+[SWS_SwCluC_02305]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208
+⌈In case the operations in the DataServices_{Data} ClientServerInter-
+face do not have a controlMask argument configured, the value shall be discarded
+without checking the passed controlMaskLength.⌋
+[SWS_SwCluC_02306]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208
+⌈In case the operations in the DataServices_{Data} ClientServerIn-
+terface do not have an ErrorCode argument configured, the default value
+DCM_POS_RESP shall be transferred back to the caller of the Dcm Low Proxy in case
+the caller returned E_OK.⌋
+[SWS_SwCluC_02307]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208
+⌈In case the DataServices_{Data} RPortPrototype is unconnected, the ap-
+plication error E_NOT_OK and the ErrorCode DCM_E_REQUESTOUTOFRANGE
+shall be transferred back to the caller of the Dcm Low Proxy.⌋
+[SWS_SwCluC_02308]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208
+⌈In case the passed DataLength, ScalingInfoLength, or controlMaskLength
+(if applicable, see [SWS_SwCluC_02305]) of the caller of the Dcm Low Proxy do
+not match the configured data size in the Dcm configuration in the Application
+Software Cluster, the application error E_NOT_OK and the ErrorCode
+DCM_E_REQUESTOUTOFRANGE shall be transferred back to the caller of the Dcm Low
+Proxy. No data, scalingInfo or controlMask values shall be transferred in this
+case.⌋
+module
+Please note: In case the data has dynamic length configured in the Application
+Software Cluster for this diagnostic data element, the DataLength cannot be
+checked.
+DataServices_{Data} via sender-receiver / nv-data interfaces
+[SWS_SwCluC_02309]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208, SRS_SwCluC_00201
+⌈The Dcm High Proxy shall support the configuration of DataServices_{Data}
+RPortPrototypes
+for
+SenderReceiverInterface/NvDataInterface
+DataServices_{Data}.⌋
+Note: In the corresponding Dcm configuration, DcmDspDataUsePort will usually be
+set to USE_DATA_SENDER_RECEIVER or USE_DATA_SENDER_RECEIVER_AS_SER-
+VICE AND the related parameters DcmDspDidRead will not exist AND DcmDspDid-
+Write will not exist.
+[SWS_SwCluC_02310]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208, SRS_SwCluC_00201
+⌈The Dcm High Proxy shall support the configuration of DataServices_{Data}
+PPortPrototypes
+for
+SenderReceiverInterface/NvDataInterface
+DataServices_{Data}.⌋
+Note: In the corresponding Dcm configuration, DcmDspDataUsePort will usually be
+set to USE_DATA_SENDER_RECEIVER or USE_DATA_SENDER_RECEIVER_AS_SER-
+VICE AND the related parameters DcmDspDidRead will not exist AND DcmDspDid-
+Write will exist.
+[SWS_SwCluC_02311]
+Status:
+DRAFT
+Upstream requirements: SRS_SwCluC_00208, SRS_SwCluC_00201
+⌈The Dcm High Proxy shall support the configuration of DataServices_{Data}
+PRPortPrototypes
+for
+SenderReceiverInterface/NvDataInterface
+DataServices_{Data}.⌋
+Note: In the corresponding Dcm configuration, DcmDspDataUsePort will usually be
+set to USE_DATA_SENDER_RECEIVER or USE_DATA_SENDER_RECEIVER_AS_SER-
+VICE AND the related parameters DcmDspDidRead will exist AND DcmDspDidWrite
+will not exist.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_02302] im Text von SWS_SoftwareClusterConnection.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SwCluC_02311] im Text von SWS_SoftwareClusterConnection.</p>
       </section>
 
       <section class="snip-card">
@@ -133,7 +265,7 @@ Note:</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SoftwareClusterConnection.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SoftwareClusterConnection.pdf#page=208" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SoftwareClusterConnection.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -145,7 +277,7 @@ Note:</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_02302" class="swsref internal-spec-ref"><code>SWS_SwCluC_02302</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SwCluC_02311" class="swsref internal-spec-ref"><code>SWS_SwCluC_02311</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

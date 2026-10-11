@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -96,7 +97,111 @@ callPoint is aggregated as an instance of BswDirectCallPoint :
 be identical to BswModuleEntity . implementedEntry . executionCon-
 text
 • BswModuleEntity . callPoint . calledEntry . callType must have the
-value ’regula</div></section>
+value ’regular’ or ’callback’
+⌋()
+[constr_4016] BswCalledEntity constraints ⌈
+• BswCalledEntity . implementedEntry . callType must be ’regular’
+or ’callback’
+• BswCalledEntity . implementedEntry . executionContext is in general
+not restricted, but see constr_4076 for constraints on the server side of a Client-
+Server communication.
+⌋()
+[constr_4017] BswSchedulableEntity constraints ⌈
+• BswModuleEntity .
+implementedEntry .
+callType must be ’sched-
+uled’
+Autosar Model Constraints
+• BswModuleEntity .
+implementedEntry .
+executionContext must be
+’task’
+⌋()
+[constr_4018] BswInterruptEntity constraints ⌈
+• BswInterruptEntity . implementedEntry . callType must be ’inter-
+rupt’
+• BswInterruptEntity . implementedEntry . executionContext must be
+’interruptCat1’ if and only if BswInterruptEntity . interruptCate-
+gory is ’Cat1’
+• BswInterruptEntity . implementedEntry . executionContext must be
+’interruptCat2’ if and only if BswInterruptEntity . interruptCate-
+gory is ’Cat2’
+⌋()
+[constr_4019] BSW module identifier ⌈BswModuleDescription .
+moduleId
+shall refer to the identifier of the standardized AUTOSAR modules according to [2] ,
+if applicable Note that there may be more than one module in an ECU software with
+the same identifier, e.g. according to the standard Complex Drivers all have the same
+identifier. . Otherwise (e.g. for ICC2 clusters) the identifier must either be empty or
+chosen differently from the ones given in [2] .
+⌋()
+[constr_4020] Categories of BswModuleDescription ⌈Only categories listed in
+table table_3a_BSWMD_Categories are allowed. Other values or an empty value
+are not allowed.
+⌋()
+[constr_4021] Implementation policy of function pointer target ⌈
+A BswModuleEntry can only be used as target of a function pointer ( SwPointer-
+TargetProps . functionPointerSignature ), if its swServiceImplPolicy is
+’standard’ .
+⌋()
+[constr_4022] BswModuleEntity only uses the module’s interface ⌈
+• BswModuleEntity . implementedEntry must refer to an element declared
+as implementedEntry of the enclosing BswModuleDescription
+• BswModuleEntity .
+callPoint .
+calledEntry - where callPoint
+is instantiated from BswDirectCallPoint - must refer to an element de-
+clared as expectedEntry or implementedEntry of the enclosing BswMod-
+uleDescription .
+Autosar Model Constraints
+• BswModuleEntity
+.
+callPoint
+.
+calledEntry
+-
+where
+call-
+Point is instantiated from BswSynchronousServerCallPoint or BswAsyn-
+chronousServerCallPoint - must refer to an element declared as re-
+quiredClientServerEntry of the enclosing BswModuleDescription .
+• BswModuleEntity .
+callPoint - where callPoint is instantiated from
+BswAsynchronousServerCallResultPoint - must refer to an BswAsyn-
+chronousServerCallPoint declared in turn as callPoint of the same
+BswModuleEntity .
+• BswModuleEntity . issuedTrigger must refer to an element declared as
+releasedTrigger of the enclosing BswModuleDescription
+• BswModuleEntity . managedModeGroup must refer to an element declared
+as providedModeGroup of the enclosing BswModuleDescription
+• BswModuleEntity . accessedModeGroup must refer to an element declared
+as requiredModeGroup of the enclosing BswModuleDescription
+• BswModuleEntity . dataSendPoint . accessedVariable must refer to
+an element declared as providedData of the enclosing BswModuleDescrip-
+tion
+• BswModuleEntity .
+dataReceivePoint .
+accessedVariable must re-
+fer to an element declared as requiredData of the enclosing BswMod-
+uleDescription
+• an accessedModeGroup should be allowed to refer to an element declared as
+providedModeGroup
+⌋()
+[constr_4023] External trigger must belong to the interface ⌈A BswExternal-
+TriggerOccurredEvent must refer to a Trigger that is declared via BswMod-
+uleDescription . requiredTrigger for the same module.
+⌋()
+[constr_4024] Semantics of BSW mode switch event ⌈If BswModeSwitchEvent .
+activation has the value onTransition BswModeSwitchEvent shall refer to two
+different modes belonging to the same instance of ModeDeclarationGroup, their order
+defining the direction of the transition. In all other cases, BswModeSwitchEvent shall
+refer to exactly one mode.
+⌋()
+[constr_4025] Modes used by BSW mode switch event ⌈The ModeDeclaration
+used by BswModeSwitchEvent must belong to the ModeDeclarationGroupPro-
+totype referred as BswInternalBehavior . entity . accessedModeGroup of
+the enclosing BswInternalBehavior .
+⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

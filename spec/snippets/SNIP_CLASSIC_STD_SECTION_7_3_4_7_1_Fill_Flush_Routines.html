@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_3_4_7_1_Fill_Flush_Routines</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 1068)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1067" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 1068)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_89014" class="swsref internal-spec-ref"><code>SWS_Rte_89014</code></a></span>
         </div>
@@ -92,7 +93,58 @@ Upstream requirements: SRS_Rte_00301
 FlushRoutineRef with the identical activation conditions as the RTEEvent /
 BswEvent mapped by the owing RteEventToTaskMapping / RteBswEventTo-
 TaskMapping after the to-be-activated ExecutableEntity gets invoked. Thereby
-the Rte_Rips_FillFlushRoutine runs after a configur</div></section>
+the Rte_Rips_FillFlushRoutine runs after a configured RteOsSchedulePoint,
+but before a configured RteSyncPoint given via RteEventSuccessorSync-
+PointRef / RteBswEventSuccessorSyncPointRef is entered.⌋
+[SWS_Rte_80049]
+Upstream requirements: SRS_Rte_00301
+⌈When
+the
+RteRipsModeDisablingHandling
+is
+set
+to
+RTE_RIPS_-
+IGNORE_MODE_DISABLINGS, the RTE shall invoke the configured Rte_Rips_
+FillFlushRoutines regardless of currently active mode disabling dependencies.⌋
+[SWS_Rte_80050]
+Upstream requirements: SRS_Rte_00301
+⌈When
+the
+RteRipsModeDisablingHandling
+is
+set
+to
+RTE_RIPS_-
+CONSIDER_MODE_DISABLINGS, the RTE shall invoke the configured Rte_Rips_
+FillFlushRoutines, only if the RTEEvent / BswEvent mapped by the ow-
+ing RteEventToTaskMapping / RteBswEventToTaskMapping is currently not
+disabled by a mode disabling dependencies.⌋
+Please note: The configuration of Rte_Rips_FillFlushRoutines is applicable
+for any kind of RTEEvent or BswEvent, regardless whether the activated Exe-
+cutableEntity has any access to a Data Communication Graph handled by
+any RTE Implementation Plug-In, and regardless whether the RteEventTo-
+TaskMapping or RteBswEventToTaskMapping is mapped to an OsTask, to a
+RteInitializationRunnableBatch, or no OsTask at all.
+This enables the
+Local Software Cluster Communication Plug-In to apply its Rte_Rips_-
+FillFlushRoutines at any level in the call graph in any circumstance of activation.
+[SWS_Rte_80084]
+Upstream requirements: SRS_Rte_00301
+⌈The RTE Generator shall create an unconditional call to the Os API Schedule af-
+ter the execution of the Rte_Rips_FillFlushRoutine, if the RteRipsOsSched-
+ulePoint configuration parameter is set to UNCONDITIONAL. In the generated code
+the call to the Os API Schedule shall only be performed when the Rte_Rips_-
+FillFlushRoutine itself has been executed (called).⌋
+Please note: A schedule point according [SWS_Rte_80084] is useful to trigger the
+scheduler of the OS in a pre-emptive task after the implicit communication
+buffers are written back to the global copy. Therefore RunnableEntitys ex-
+ecuted in tasks which get in running state after such schedule point may already see
+the latest written value. But this depends on the placement of their fill routines.
+In opposite, a schedule point placed at the RteEventToTaskMapping via RteOsS-
+chedulePoint is always executed before the execution of the RteRipsOsSched-
+ulePoint and therefore before the implicit communication buffers are writ-
+ten back to the global copy!</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +157,7 @@ the Rte_Rips_FillFlushRoutine runs after a configur</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1067" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

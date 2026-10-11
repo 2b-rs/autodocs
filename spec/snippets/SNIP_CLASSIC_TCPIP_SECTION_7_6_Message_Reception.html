@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_7_6_Message_Reception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TcpIp.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=48" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></strong> (Seite 48)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_TcpIp_CONSTR_00001</span>
         </div>
@@ -98,7 +99,108 @@ fulfilled:
 entry (EthIfCtrl).
 2. The destination IP address contained in the IP header matches the currently
 assigned IP address of the local address table entry.
-All IP datagrams which cannot b</div></section>
+All IP datagrams which cannot be mapped to an entry in the local address table shall
+be silently discarded. All successfully mapped IP datagrams shall be forwarded to the
+upper layer protocol.⌋
+[SWS_TcpIp_00359] ⌈If IPsec is has been configured, all received IP datagrams shall
+be mapped to a Security Policy entry and processed as below:
+1. TCPIP_IPSEC_POLICY_PROTECT:
+The IP datagram is only forwarded to the upper layer if it contains a valid Au-
+thentication header as per IETF RFC 4302. Otherwise the IP Datagram shall be
+dropped and optional callback invoked.
+2. TCPIP_IPSEC_POLICY_BYPASS:
+The IP datagram is forwarded to the upper layer without any IPSec processing.
+3. TCPIP_IPSEC_POLICY_DISCARD:
+The IP datagram shall be dropped without any IPSec processing.
+⌋
+[SWS_TcpIp_00260]
+Upstream requirements: SRS_Eth_00111
+⌈All IP datagrams mapped to an IPv6 entry in the local address table, configured with
+the optional TcpIpLocalAddrIPv6ExtHeaderFilterRef ([ECUC_TcpIp_00200]),
+that contains at least one IPv6 extension header not listed in the referenced TcpIp-
+IpV6ConfigExtHeaderFilter ([ECUC_TcpIp_00198]) shall be silently discarded.
+If the Ipv6 entry in the local address table is not configured with the optional TcpIpLo-
+calAddrIPv6ExtHeaderFilterRef, then this frame shall be processed.⌋
+[SWS_TcpIp_00170] ⌈The TcpIp UDP-layer shall map received UDP datagrams to
+sockets based on the destination port as contained in the UDP protocol header and the
+local address (TcpIpAddrId). The local address (TcpIpAddrId) matches if ANY of
+the following conditions is fulfilled:
+• The socket is bound to the local address (TcpIpAddrId)
+• The socket local address uses the wildcard "ANY" AND the socket EthIfCtrl
+is identical to the EthIfCtrl used in the local address (TcpIpAddrId)
+• The socket is bound to TCPIP_LOCALADDRID_ANY
+The socket is bound to a local address and the EthIfCtrl is identical to the EthIfC-
+trl used in the local address (TcpIpAddrId) and the received local address (TcpI-
+pAddrId) is a broadcast address.⌋
+[SWS_TcpIp_00171] ⌈For received UDP datagrams where the local address (TcpI-
+pAddrId) is a broadcast or multicast address, all matching sockets shall receive the
+incoming message.⌋
+Note: A socket may either be explicitly bound to a local IP address by using TcpIp_
+Bind() or implicitly as part of TcpIp_UdpTransmit() (if it is called without a previous
+call of TcpIp_Bind()).
+[SWS_TcpIp_00172] ⌈The TcpIp TCP-layer shall map received TCP datagrams to
+sockets based on the destination port as contained in the TCP protocol header and the
+local address (TcpIpAddrId). The local address (TcpIpAddrId) matches if ANY of
+the following conditions is fulfilled:
+• The socket is bound to a unicast local address (TcpIpAddrId)
+• The socket local address uses the wildcard "ANY" AND the socket EthIfCtrl
+is identical to the used in the local address (TcpIpAddrId)
+• The socket is bound to TCPIP_LOCALADDRID_ANY
+⌋
+[SWS_TcpIp_00173] ⌈Sockets with established TCP connections shall match source
+port, source IP address, destination port and destination IP address as contained in
+the protocol headers additionally to the generic TCP mapping criteria described in
+[SWS_TcpIp_00172].⌋
+[SWS_TcpIp_00174] ⌈Received TCP datagrams where the local address (TcpIpAd-
+drId) is a broadcast or multicast address, shall be silently discarded.⌋
+[SWS_TcpIp_00266]
+Upstream requirements: SRS_Eth_00111
+⌈If the filtering of TCP options has been enabled on a socket via TcpIp_ChangePa-
+rameter(), the TcpIp shall check received segments against the allowed list of options
+([ECUC_TcpIp_00202] TcpIpTcpConfigOptionFilter) and if it contains at least
+one TCP option not listed the segment shall be silently discarded.⌋
+[SWS_TcpIp_00203] ⌈For receptions the TcpIp Module shall ignore the protocol
+checksum fields of frames with respect to the configuration of the Ethernet Controller
+according to the following list:
+• for IPv4 frames that have no additional IPv4 option if IPv4 checksum verification
+in hardware is enabled, i.e. EthCtrlEnableOffloadChecksumIPv4 is set to
+TRUE
+• for not fragmented and not IpSec secured ICMP frames that have no additional
+IPv4 option or IPv6 header if ICMP checksum verification in hardware is enabled,
+i.e. EthCtrlEnableOffloadChecksumICMP is set to TRUE
+• for not IpSec secured TCP frames that have no additional IPv4 option or IPv6
+header if TCP checksum verification in hardware is enabled, i.e. EthCtrlEn-
+ableOffloadChecksumTCP is set to TRUE
+• for not fragmented and not IpSec secured UDP frames that have no additional
+IPv4 option or IPv6 header if UDP checksum verification in hardware is enabled,
+i.e. EthCtrlEnableOffloadChecksumUDP is set to TRUE
+In all other cases, the TcpIp module shall treat frames with mismatching checksums
+according the related protocol specification.⌋
+[SWS_TcpIp_00279]
+Upstream requirements: SRS_Eth_00019
+⌈For receptions the TcpIp Module shall accept UDP datagrams containing a zero
+checksum only on sockets that have been configured accordingly (i.e.
+TcpIp_-
+ChangeParameter() has been called with TCPIP_PARAMID_UDP_CHECKSUM set to
+FALSE).⌋
+[SWS_TcpIp_00296]
+Upstream requirements: SRS_Eth_00129
+⌈If the measurement data is enabled (see TcpIpGetAndResetMeasurement-
+DataApi), TcpIp shall increment the corresponding measurement data whenever a
+received datagram is discarded.⌋
+The following guidelines are recommended for TLS data handling:
+• If a TCP datagram is accepted and the socket is assigned to a TLS connection,
+TCP should pass the data to TLS for further processing.
+• If a received TLS application message was successfully processed and verified,
+the data contents should be passed back to TCP to further provide it to the con-
+figured upper layer. This provides full transparency of data reception to the upper
+layer.
+• If message reception is passed on to TLS but cannot be processed, because a
+TLS connection has not yet been established or the message cannot be authen-
+ticated and/or decrypted correctly, the message should be dropped.
+• After TLS has processed a message and all data has been consumed completey,
+TCP should be notified to release all related resources for this message, regard-
+less if the message was processed successfully or not.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -111,7 +213,7 @@ All IP datagrams which cannot b</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TcpIp.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=48" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: keym</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 25)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 25)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00067" class="swsref internal-spec-ref"><code>SWS_KeyM_00067</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_KeyM_00068" class="swsref internal-spec-ref"><code>SWS_KeyM_00068</code></a></span>
         </div>
       </div>
 
@@ -88,11 +89,100 @@ cation of any input data to prove the authenticity for a key management operatio
 Note: The definition of KeyMCryptoKeyHandlerStartFinalizeEnabled has only effect if
 KeyMCryptoKeyStartFinalizeFunctionEnabled is set to TRUE.
 [SWS_KeyM_00007] ⌈If the configuration option KeyMCryptoKeyStartFinalizeFunction
-Enab</div></section>
+Enabled is set to FALSE, the function KeyM_Start() and KeyM_Finalize() are not pro-
+vided by the Key Management module. A key update operation can then be performed
+at any time.⌋(SRS_CryptoStack_00013)
+[SWS_KeyM_00008] ⌈A session is closed by a call to KeyM_Finalize(). During the call,
+all keys that were updated within the session will be set to valid by calling Csm_Key
+SetValid(). After the function has been completed its operation, no further key update
+operations will be accepted.⌋(SRS_CryptoStack_00118)
+[SWS_KeyM_00009] ⌈The function KeyM_Finalize() will return E_OK if all keys have
+been validated successfully. If at least one key could not be validated successfully, the
+function shall return E_NOT_OK. Nevertheless, all keys shall be validated that have
+been updated and the operation shall not be aborted if one key validation has failed.⌋
+(SRS_CryptoStack_00119, SRS_CryptoStack_00096)
+[SWS_KeyM_00010] ⌈If the configuration option KeyMCryptoKeyPrepareFunctionEn-
+abled is set to TRUE the function KeyM_Prepare() is provided. This function has cur-
+rently no functional behavior. If the configuration option is set to FALSE, the functional
+interface is not provided.⌋(SRS_CryptoStack_00013)
+[SWS_KeyM_00011] ⌈If the configuration option KeyMCryptoKeyHandlerPrepareEn-
+abled is set to TRUE, then a call to KeyM_Prepare() will in turn passed on
+to KeyM_KH_Prepare() and the arguments and return value will be passed ac-
+cordingly.⌋(SRS_CryptoStack_00108, SRS_CryptoStack_00115, SRS_CryptoStack_-
+00118, SRS_CryptoStack_00110)
+Rationale:
+The intention is to call KeyM_Prepare() once at the beginning after the key update
+session has been initiated. The calling diagnostic service can provide specific data
+to the key handler which is needed to perform the following key update operation. For
+example, it could be used to extract crypto driver specific information needed by the key
+master which is extracted from the (SHE-)hardware and provided in the output buffer
+back again. Or it can initiate an OEM specific key negotiation process with results
+that are later on necessary for the key update process. Another possibility would be,
+that a (encrypted) common key is provided by the key master during preparation. The
+specific key handler is able to (decrypt and) store the key in the CSM. This results in
+a common key that is assigned to a CSM key and can further be used to derive other
+keys from it.
+[SWS_KeyM_00012] ⌈A key update is triggered by a call to KeyM_Update(), typically
+initiated by a diagnostic service.⌋(SRS_CryptoStack_00107)
+[SWS_KeyM_00013] ⌈If KeyM_Update() is called and KeyMCryptoKeyHandlerUpda-
+teEnabled is set to FALSE and keyNameLength is greater than 0, the crypto key sub-
+module shall search for the key name configured in KeyMCryptoKey/KeyMCryptoKey
+Name. If the key name is not found, the function shall return KEYM_E_PARAMETER_
+MISMATCH. If found, the function shall trigger the key update operation.⌋(SRS_Cryp-
+toStack_00113, SRS_CryptoStack_00105)
+[SWS_KeyM_00014] ⌈If KeyM_Update() is called and KeyMCryptoKeyHandlerUpdate
+Enabled is set to FALSE and keyNameLength is 0, the crypto key submodule will inter-
+pret the input data as M1M2M3 values of a [6] "SHE" key. The key_ID is extracted
+from M1 by extracting bit 121..124 of the input data and will search for the corre-
+sponding value in KeyMCryptoKeyCryptoProps to identify the KeyMCryptoKeyId and
+the associated CsmKeyRef. If found, the function will trigger the keyupdate operation.⌋
+(SRS_CryptoStack_00118)
+Note: In this case, the CsmKey should be configured as a SHE key. The format should
+be of algorithm type SHE and the KeyMCryptoKeyGenerationType should be set to
+KEYM_STORED_KEY.
+[SWS_KeyM_00015] ⌈When KeyM_Update() is called and a KeyMCryptoKeyId is
+found through the provision of the key handler KeyM_KH_Update(), the key genera-
+tion shall be performed as configured in KeyMCryptoKeyGenerationType. If no asso-
+ciated key was found the KeyM_CryptoKeyUpdateCallbackNotification() function shall
+be called with KEYM_RT_NOT_OK.⌋(SRS_CryptoStack_00119)
+[SWS_KeyM_00016] ⌈If a key ID was identified and KeyMCryptoKeyGenerationType is
+configured as KEYM_STORED_KEY, the function Csm_KeyElementSet() will be called
+with the reference to KeyMCryptoKeyCsmKeyTargetRef and key element id ’1’. An
+internal marker will be set for this key that the contents have been altered and need to
+be finalized.⌋(SRS_CryptoStack_00118)
+[SWS_KeyM_00017] ⌈If a key ID was identified and KeyMCryptoKeyGenerationType
+is configured as KEYM_DERIVE_KEY, the function Csm_KeyDerive() will be called to
+derive a new key (referenced by KeyMCryptoKeyCsmKeyTargetRef) out of the common
+key (referenced by KeyMCryptoKeyCsmKeySourceDeriveRef). An internal marker will
+be set for this key that the contents have been altered and need to be finalized.⌋(SRS_-
+CryptoStack_00118)
+[SWS_KeyM_00018] ⌈If the KeyMCryptoKeyStartFinalizeFunctionEnabled is set to
+FALSE, the function Csm_KeySetValid() shall be called immediately after a successful
+key derive or store operation.⌋(SRS_CryptoStack_00118)
+There are several options on how to operate key updates:
+One obvious option is to call the KeyM_Update() function several times, i.e. once per
+key that shall be updated. The key master will trigger the function call from outside
+and will provide the key material with every service function. Another possibility is to
+provide a container with one single call to e.g. KeyM_Prepare() which in turn calls Key
+M_KH_Prepare(). This allows to provide the container in an OEM specific format. The
+key handler will scan the container and has to call KeyM_Update() several times for
+each key available in the container.
+[SWS_KeyM_00019] ⌈If the configuration item KeyMCryptoKeyStartFinalizeFunction
+Enabled is set to TRUE, the crypto key operation has to be concluded with a call to Key
+M_Finalize(). This function will trigger a call to Csm_KeySetValid() for all keys that have
+an internal marker set to finalize the key update operation. The key update session is
+closed after this function call and all internal markers are cleared, regardless if the
+function call was successful or not.⌋(SRS_CryptoStack_00118, SRS_CryptoStack_-
+00119)
+[SWS_KeyM_00020] ⌈If the configuration item KeyMCryptoKeyVerifyFunctionEnabled
+is set to TRUE, the crypto key submodule shall provide the function KeyM_Verify(). This
+function can be triggered by the key master and is used to run a crypto job referenced
+by KeyMCryptoKeyCsmVerifyJobRef. KeyM_Verify() can be called at any time and is
+not bound to an active crypto key session.⌋(SRS_CryptoStack_00119)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von KeyM_KH_Prepare().</p>
       </section>
 
       <section class="snip-card">
@@ -101,7 +191,7 @@ Enab</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -113,7 +203,7 @@ Enab</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00067" class="swsref internal-spec-ref"><code>SWS_KeyM_00067</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_KeyM_00068" class="swsref internal-spec-ref"><code>SWS_KeyM_00068</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -121,7 +211,7 @@ Enab</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

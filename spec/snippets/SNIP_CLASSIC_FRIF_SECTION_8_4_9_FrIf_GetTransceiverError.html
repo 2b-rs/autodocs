@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRIF_SECTION_8_4_9_FrIf_GetTransceiverError</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayInterface.pdf</strong> (Seite 85)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=85" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></strong> (Seite 85)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,33 @@ configurable ON/OFF by the configuration parameter FrIfGetTransceiverErrorSuppor
 (derived from configuration parameter FrIfGetTransceiverErrorSupport, see ECUC_Fr
 If_06101)⌋
 [SWS_FrIf_05718] ⌈If development error detection for the FrIf module is enabled: if
-the function FrIf_GetTransceiverError is called before the F</div></section>
+the function FrIf_GetTransceiverError is called before the FrIf was initialized success-
+fully, the function FrIf_GetTransceiverError shall raise the development error FRIF_E_
+UNINIT and return E_NOT_OK.⌋
+[SWS_FrIf_05719] ⌈If development error detection for the FrIf module is enabled: the
+function FrIf_GetTransceiverError shall check the parameter FrIf_CtrlIdx for being valid.
+If FrIf_CtrlIdx is invalid, the function FrIf_GetTransceiverError shall raise the develop-
+ment error FRIF_E_INV_CTRL_IDX and return E_NOT_OK.⌋
+[SWS_FrIf_05720] ⌈If parameter FrIf_ChnlIdx of FrIf_GetTransceiverError has an in-
+valid value and if development error detection is enabled (i.e.
+FrIfDevErrorDetect
+equals ON), the function FrIf_GetTransceiverError shall report development error code
+FRIF_E_INV_CHNL_IDX to the Det_ReportError service of the DET module.⌋
+[SWS_FrIf_05728] ⌈The function FrIf_GetTransceiverError shall wrap the FlexRay
+Transceiver Driver API function FrTrcv_GetTransceiverError by:
+1. Translating (based on static FrIf module configuration) the tuple (FlexRay CC
+index FrIf_CtrlIdx | FlexRay Channel index FrIf_ChnlIdx) into a tuple (FlexRay
+Transceiver Driver | Driver-specific Transceiver index FrTrcv_TrcvIdx).
+2. Setting parameters
+• FrTrcv_BranchIdx to FrIf_BranchIdx
+• FrTrcv_BusErrorState to FrIf_BusErrorState
+3. Calling FrTrcv_GetTransceiverError of the determined FlexRay Transceiver mod-
+ule with the parameters determined as described above.
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +148,7 @@ the function FrIf_GetTransceiverError is called before the F</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayInterface.pdf#page=85" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

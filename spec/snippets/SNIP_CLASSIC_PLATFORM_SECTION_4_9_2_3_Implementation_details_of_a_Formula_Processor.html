@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_4_9_2_3_Implementation_details_of_a_Formula_Processor</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</strong> (Seite 135)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/FO/AUTOSAR_FO_TPS_GenericStructureTemplate.pdf#page=135" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</a></strong> (Seite 135)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_GST_00293" class="swsref"><code>TPS_GST_00293</code></a></span>
         </div>
@@ -100,7 +101,119 @@ ExtUnaryFuncName
 ’TIMEX_occurs’ |
 ’TIMEX_hasOccurred’ |
 ’TIMEX_timeSinceLastOccurrence’ |
-’TIMEX_angleSinceLastOccur</div></section>
+’TIMEX_angleSinceLastOccurrence’
+;
+Listing 4.19: AUTOSAR Formula language extension
+• [TPS_GST_00015] result of reference/stringReference ⌈
+– reference shall yield a numerical / boolean value.
+– stringReference shall yield a string value.
+Generic Structure Template
+⌋
+• [TPS_GST_00002] aborting logical expressions ⌈The calculation of expres-
+sions with boolean AND or OR is aborted if the first operand has produced a
+result so that the total result cannot be changed anymore by the second operand
+(as in C).⌋
+Note: This is useful e.g. in the context of SwSystemconstDependentFormula,
+a specialization of the formula language. This behavior gives meaningful results
+in expressions such as:
+defined(reference("SW-SYSTEMCONST:SY_COUNT")) &amp;&amp;
+reference("SW-SYSTEMCONST:SY_COUNT") &gt; 1
+since here, if SY_COUNT is not defined, the check for "&gt; 1" is not carried out and
+an unwanted error message is thus avoided.
+• [TPS_GST_00003] true and false ⌈Like in C a integer "0" respectively floating
+point "0.0" and "-0.0" are interpreted as false. Every other value is treated as true
+within boolean expressions.
+The language also provides the literals "true" yielding 1 respectively "false"
+yielding 0 to express literal boolean values in expressions.⌋
+It is strongly recommended not to apply the Boolean operations ||, &amp;&amp;,ˆˆ, ==, != to
+floating-point values. Caused by the limited ability of float operands to hold exact
+integer (in the mathematical meaning) numbers the result of these operations
+may have (as implementation specifics have a huge impact here) values that are
+hard to predict.
+• [TPS_GST_00004] Priority of Operations ⌈
+The priority rules of C++1 apply and are modeled in the grammar: multiplica-
+tion and division take precedence over addition and subtraction. The exponent
+operator (**) has priority over these other mathematical operators.
+The unary minus has greater precedence than all other operators. For a complete
+list of the priorities please refer to [13].
+Example:
+– -2**3 becomes
+-8 = (-2)**3
+– -log(2.718281828)**2 corresponds to (-log(2.718281828))**2
+and therefore is equal to +1.
+1Note that XOR is not defined in C++.
+Generic Structure Template
+⌋
+• [TPS_GST_00005] left-to-right evaluation ⌈Binary operators shall be evaluated
+from left to right (left-to-right associativity). For example 2 == 2 == 2 shall be
+evaluated as (2 == 2) == 2.⌋
+• [TPS_GST_00006] Associativity of XOR ⌈Boolean XOR operatorˆˆis an addi-
+tional operator which has no counterpart in C. The result of a boolean XOR is "1"
+if one of the operands is interpreted as false and the other as true. The result
+of a boolean XOR is "0" if both operands have the same value independent of
+whether the value is true or false. Other than boolean AND (&amp;&amp;) and boolean OR
+(||), boolean XOR always evaluates both operands. This is because the result of
+a boolean XOR cannot be determined by only evaluating e.g. the first operand.
+Hint: In hardware circuits sometimes an XOR gate with more than two inputs
+is used. For such a hardware XOR gate the output is "1" if and only if one of
+the inputs is "1" and all other inputs are "0". The XOR operator within arithmetic
+expressions is a binary operator and therefore behaves different than hardware
+XOR gates. This means in particular that according to left-to-right associativity
+e.g.
+1ˆˆ1ˆˆ1 is interpreted as (1ˆˆ1)ˆˆ1 which yields "1".⌋
+• [TPS_GST_00007] Shift operation ⌈
+When the shift operation is performed, the first or the last bit (depending on the
+direction of the shift) is filled with "0".
+Shift left means that the bits are shifted towards the higher values. Shift right
+means that the bits are shifted towards the lower values.
+Shift is performed as long as we are in the range defined by [TPS_GST_00008]⌋
+Implementers shall apply a mask on the intended size number of bits on the
+result. For example if 0b1111 « 1 shall still yield 4 bits, then user shall write
+(0b1111 « 1) &amp; 0b1111
+to get the intended result of 0b1110. Without the mask, the result would be
+0b11110 which is 5 bit.
+Example based on 32 bit integer implementation of the formula processor (note
+that not all leading zero digits are shown):
+– 0b0001 &lt;&lt; 1 returns 0b00010
+– 0b1111 &gt;&gt; 1 returns 0b0111
+Generic Structure Template
+– 0b1111 &lt;&lt; 1 returns 0b11110
+– 0b1111 &lt;&lt; 2 returns 0b111100
+• [TPS_GST_00008] Types in Formula Expressions ⌈
+The type of an arithmetic expression is one of
+– Integer in the range (32 bit implementation)
+0x80000000 .. 0xffffffff
+-2147483648 .. +4294967295
+respectively (in a 64 bit implementation)
+0x8000000000000000 .. +0xffffffffffffffff
+-9223372036854775808 .. +18446744073709551615
+– Float (internally represented by double)
+⌋
+For the result type of a function or operand see 4.9.2.4.
+Note: The ranges of the 32-bit implementation are the set union of signed INT
+(-2147483648 .. 2147483647) and unsigned INT (0 .. 4294967295) resulting
+in (-2147483648 .. 4294967295). The same procedure is applied for the 64-bit
+implementation.
+• [TPS_GST_00359] Handling of the Sign ⌈
+In consequence of [TPS_GST_00008], implementations of a formula processor
+need to provide an extra handling of the sign in case of integer values.
+-2147483648 &lt; value &lt; 0
+=&gt; signed INT (sign "-")
+-2147483648 &lt; value &lt; 2147483647 =&gt; signed INT (sign "-" or "+")
+-0
+=&gt; signed INT (sign "-")
++0
+=&gt; signed INT (sign "+")
+0
+&lt; value &lt; 2147483647 =&gt; unsigned INT
+2147483647
+&lt; value &lt; 4294967295 =&gt; unsigned INT.
+⌋
+• [TPS_GST_00009] Keyword ’epsilon’ ⌈
+epsilon represents an implementation specific constant intended to support
+the comparison of float values. It represents the smallest increment which can be
+expressed by the given implementation.
+For example instead of comparing a float with zero, one should use</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -113,7 +226,7 @@ ExtUnaryFuncName
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/FO/AUTOSAR_FO_TPS_GenericStructureTemplate.pdf#page=135" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">AUTOSAR_FO_TPS_GenericStructureTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

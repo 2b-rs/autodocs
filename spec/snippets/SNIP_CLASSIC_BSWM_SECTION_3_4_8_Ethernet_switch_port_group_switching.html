@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_3_4_8_Ethernet_switch_port_group_switching</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>EXP_ModeManagementGuide.pdf</strong> (Seite 58)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></strong> (Seite 58)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_91102" class="swsref internal-spec-ref"><code>SWS_EthIf_91102</code></a></span>
         </div>
@@ -89,11 +90,67 @@ EthSwtPortGroup1 and ETH_MODE_ACTIV
 EthSwtPortGroup1 and ETH_MODE_DOWN
 • If PNC2 is requested, than EthIf_SwitchPortGroupRequestMode is called with
 EthSwtPortGroup2 and ETH_MODE_ACTIVE
-• If P</div></section>
+• If PNC2 is released,than EthIf_SwitchPortGroupRequestMode is called with
+EthSwtPortGroup2 and ETH_MODE_DOWN
+If a partial network is requested than the corresponding EthSwtPortGroup is
+switched on.
+rule pnc1requested initially false {
+if ( PNC1 == COMM_PNC_REQUESTED ||
+PNC1 == COMM_PNC_READY_SLEEP ||
+PNC1 == COMM_PNC_PREPARE_SLEEP ){
+actionlist pnc1requestedActions
+}
+}
+actions pnc1requestedActions on condition {
+EthIfSwitchPortGroupRequestMode {
+init false
+enable EthIfSwtPortGroup1
+}
+}
+rule pnc2requested initially false {
+if ( PNC2 == COMM_PNC_REQUESTED ||
+PNC2 == COMM_PNC_READY_SLEEP ||
+PNC2 == COMM_PNC_PREPARE_SLEEP ){
+actionlist pnc2requestedActions
+Guide to Mode Management
+}
+}
+actions pnc2requestedActions on condition {
+EthIfSwitchPortGroupRequestMode {
+init false
+enable EthIfSwtPortGroup2
+}
+}
+Listing 3.29: ComM reports the transition to COMM_PNC_FULL_COMMUNICATION
+If a partial network is released than the corresponding EthSwtPortGroup is switched
+off.
+rule pnc1released initially false {
+if ( PNC1 == COMM_PNC_NO_COMMUNICATION) {
+actionlist pnc1releasedActions
+}
+}
+actions pnc1releasedActions on condition {
+EthIfSwitchPortGroupRequestMode {
+init true
+disable EthIfSwtPortGroup1
+}
+}
+rule pnc2released initially false {
+if ( PNC2 == COMM_PNC_NO_COMMUNICATION) {
+actionlist pnc2releasedActions
+}
+}
+actions pnc2releasedActions on condition {
+EthIfSwitchPortGroupRequestMode {
+init true
+disable EthIfSwtPortGroup2
+}
+}
+Listing 3.30: ComM reports COMM_PNC_NO_COMMUNICATION</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EthIf_SwitchPortGroupRequestMode().</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +159,7 @@ EthSwtPortGroup2 and ETH_MODE_ACTIVE
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>EXP_ModeManagementGuide.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_EXP_ModeManagementGuide.pdf#page=49" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">EXP_ModeManagementGuide.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

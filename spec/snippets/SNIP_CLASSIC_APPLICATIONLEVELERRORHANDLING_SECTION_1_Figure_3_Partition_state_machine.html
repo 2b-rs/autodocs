@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: applicationlevelerrorhandling</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 60%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_APPLICATIONLEVELERRORHANDLING_SECTION_1_Figure_3_Partition_state_machine</h1>
         <div class="snip-meta-line">
           <span>Quelle: <strong>ApplicationLevelErrorHandling.pdf</strong> (Seite 66)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: CP_SYS</span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00258" class="swsref internal-spec-ref"><code>SWS_Os_00258</code></a></span>
         </div>
       </div>
 
@@ -96,11 +97,141 @@ started,
 BSW
 resources
 are
-initialised, OS-Ap</div></section>
+initialised, OS-Applications are set
+up, etc. These activities are the
+normal start-up activities of the ECU.
+P_ACTIVE
+APPLICATION_ACCESSIBLE
+Partition running normally.
+In this state, the partition adheres to
+the overall ECU state. The partition
+remains in the P_ACTIVE state also
+while the Protection Hook is executed
+as a result of a protection violation.
+Upon entry into this state, the
+following needs to be done:
+ RTE performs actions
+necessary to start partition
+execution (init runnables,
+activating schedule tables,
+etc.).
+P_TERMINATING APPLICATION_RESTARTING Partition is being terminated.
+In this state, some of the following
+actions may have to be performed:
+ Report to DEM. Note that this
+is suggested to be done by the
+Protection Hook or the caller
+of TerminateApplication(), not
+by the OSRestartTask.
+ OS-Application is in the state
+APPLICATION_RESTARTING
+. Access from other OS-
+Applications to resources in
+the terminating OS-Application
+is not allowed by the OS.
+ Avoid shutdown, sleep, or
+reset of the ECU by requesting
+a certain mode to EcuM-Fixed
+or to the BswM. While a
+partition is in this state, the
+ECU must not be shut down.
+ Notify COM to stop
+communication for relevant
+signals.
+ Issue “No Communication” to
+ComM on behalf of the
+partition.
+ Stop relevant supervised
+entities in WdgM (according to
+configuration).
+ Invalidate relevant NvM-blocks
+(according to configuration).
+ Cancel pending jobs in the
+NvM on relevant NvM blocks
+(according to configuration).
+ Notify relevant CDDs that the
+partition is terminated such
+that they can perform
+necessary clean-up.
+ Notify IOHW abstraction layer
+that the partition is terminated,
+such that appropriate actions
+can be taken.
+ RTE shall ensure
+communication consistency
+(Section 10.3.5).
+ The RTE shall not activate any
+tasks in a terminating partition.
+ Trigger transition of the
+partition to the
+P_TERMINATED state.
+ Trigger transition of the OS-
+Application to the
+APPLICATION_TERMINATED
+state.
+P_TERMINATED
+APPLICATION_TERMINATED Partition is terminated and will no
+longer execute any SW-Cs until the
+ECU is reset.
+RTE
+ensures
+communication
+consistency (Section 10.3.5).
+P_RESTARTING
+APPLICATION_RESTARTING The partition is being restarted and
+will return to the P_ACTIVE state
+when finished.
+In this state, some of the following
+actions may have to be performed:
+ Report to DEM. Note that this
+is suggested to be done by the
+Protection Hook or the caller
+of TerminateApplication(), not
+by the OSRestartTask.
+ Partition is restarted at OS-
+level  The end results shall
+be an OS-Application
+(partition) ready-to-be-started
+by the RTE. Access from other
+OS-Applications to resources
+in the restarting OS-
+Application is disallowed.
+ Notify RTE to perform
+partition-specific clean-up and
+re-initialization.
+ Avoid shutdown, sleep, or
+reset of the ECU by requesting
+a certain mode to EcuM-Fixed
+or to the BswM. While a
+partition is in this state, the
+ECU must not be shut down.
+ Notify COM to restart
+communication for relevant
+signals.
+ Issue “No Communication” to
+ComM on behalf of the
+partition
+ Reset relevant supervised
+entities in WdgM.
+ Cancel pending jobs in the
+NvM on relevant NvM blocks
+(according to configuration).
+ Notify relevant CDDs that the
+partition is restarting such that
+they can perform necessary
+re-initialization.
+ Notify IOHW abstraction layer
+that the partition is restarting,
+such that appropriate actions
+can be taken.
+ RTE shall ensure
+communication consistency
+(Section 10.3.5). [RTE]
+ RTE shall not activate any</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">ECU State Manager lifecycle and reset</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von TerminateApplication().</p>
       </section>
 
       <section class="snip-card">
@@ -121,15 +252,15 @@ initialised, OS-Ap</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>CP_SYS</td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00258" class="swsref internal-spec-ref"><code>SWS_Os_00258</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.60</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

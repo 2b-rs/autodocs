@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_8_3_3_6_KeyM_VerifyCertificateChain</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 69)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 69)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -117,11 +118,53 @@ KEYM_E_CERT_INVALID_CHAIN_OF_TRUST: An upper
 certificate is not valid.
 Description
 This function performs a certificate verification against a list of certificates. It is a pre-requisite
-that the certificate that shall be checked has already be</div></section>
+that the certificate that shall be checked has already been written with KeyM_SetCertificate()
+and that the root certificate is either in the list or is already assigned to one of the other
+certificates.
+Available via
+KeyM.h
+⌋
+The function KeyM_VerifyCertificateChain() is called when a certificate shall be vali-
+dated, but there are one or more other certificates that is required for the chain of trust.
+For example, a PKI consists of four certificates, including the root certificate and the
+certificate used for authentication. Two other certificates are not permanently avail-
+able in the configuration and they are just needed to proof the authentication of the
+one in place. Thus, only the to-be-verified certificate need to be set with KeyM_Set
+Certificate() while the other two certificates of the chain can be provided in a tempo-
+rary buffer. They are needed to complete the chain of trust. The verification will start
+by identifying the permanently provided certificate, namely the root certificate in-place.
+This certificate is checked followed by any other permanently stored certificates until
+the missing one in the chain. These certificates are referenced by certChainData. The
+first one from the list will be parsed and verified against the last one that has been
+permanently stored in the certificate submodule. This would be the root certificate in
+our example. If the first certificate in certChainData can be verified against the root
+certificate, the next one in certChainData will be verified against the previously verified
+until all certificates in certChainData have been verified. The last one in the list will
+then be used to verify the certificate referenced with CertId. Only the final result of
+this verification is important and need to be stored. The intermediate results for the
+verification of certChainData is not important and can be dropped.
+[SWS_KeyM_00124]
+Upstream requirements: SRS_CryptoStack_00106, SRS_CryptoStack_00101
+⌈The verification of the certificate(s) shall be done asynchronously. All certificates that
+are involved in the chain of trust shall be verified, from top to bottom. The callback
+function KeyM_CertificateVerifyCallbackNotification() shall be called if the verification
+has been finished and provide the result of the operation in the callback.⌋
+[SWS_KeyM_00125]
+Upstream requirements: SRS_CryptoStack_00096
+⌈The function returns E_OK if the operation has been accepted and can be performed.
+Any other return value will indicate the appropriate error and the verification will not be
+started.⌋
+[SWS_KeyM_00126]
+Upstream requirements: SRS_CryptoStack_00118
+⌈After the certificate submodule has successfully validated the certificate, the corre-
+sponding public key shall be stored in the assigned key element of the CSM. This
+allows the application to operate jobs where this key is assigned to.
+This has to be done each time a verification of a certificate was successfully performed,
+regardless of the function call that has been used.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -130,7 +173,7 @@ that the certificate that shall be checked has already be</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=69" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_5_4_5_IocReceiveGroup_IocReadGroup</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 229)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=228" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 229)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -118,11 +119,110 @@ returned in parameter.
 ▽
 △
 Description
-Performs an "explicit" sender-receiver transmi</div></section>
+Performs an "explicit" sender-receiver transmission of data elements with "event" semantic for a
+unidirectional 1:1 communication between OS-Applications located on the same or on different
+cores.
+This API involves a group of data elements which values are specified in parameter.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 communication involving many
+data elements.
+Available via
+Ioc.h
+⌋
+[SWS_Os_91006] Definition of API function IocReadGroup_&lt;IocId&gt;
+Upstream requirements: SRS_Os_80020
+⌈
+Service Name
+IocReadGroup_&lt;IocId&gt;
+Syntax
+Std_ReturnType IocReadGroup_&lt;IocId&gt; (
+&lt;Data1&gt; OUT1,
+[uint16* numberOfBytesOUT1],
+&lt;Data2&gt; OUT2,
+[uint16* numberOfBytesOUT2],
+...
+)
+Service ID [hex]
+0x25
+Sync/Async
+Synchronous
+Reentrancy
+This function is generated individually for each receiver. The individual function is not reentrant
+(if called from different runnable entities that belong to the same receiver), but different
+functions can be called in parallel.
+Parameters (in)
+None
+Parameters (inout)
+None
+OUT1
+List of data references to be filled with the received data
+elements. The specified order of the parameter shall match to the
+specified order in the corresponding send function.
+numberOfBytesOUT1
+(optional) data reference to be filled with the length of the
+received data element (OUT1) in bytes.
+OUT2
+–
+numberOfBytesOUT2
+–
+Parameters (out)
+–
+Return value
+Std_ReturnType
+IOC_E_OK: Data was received successfully
+Description
+Performs an "explicit" sender-receiver transmission of data elements with a "data" semantic for
+a unidirectional 1:1 communication between OS-Applications located on the same or on
+different cores.
+This API involves a group of data elements which values are specified in parameter.
+&lt;IocId&gt; is a unique identifier that references a unidirectional 1:1 communication involving many
+data elements.
+Available via
+Ioc.h
+⌋
+General:
+[SWS_Os_00747]
+Upstream requirements: SRS_Os_80020
+⌈A successful call to the IocReceiveGroup/IocReadGroup function indicates that
+data has been received successfully in the given parameters.
+The IocReceiveGroup/IocReadGroup function has to be generated in case of intra-
+core and inter-core communication.⌋
+[SWS_Os_00748]
+Upstream requirements: SRS_Os_80020
+⌈If the OsIocReceiverPullCB attribute is defined with a callback function name, the
+IOC shall call this function on the receiving core for each data transmission.⌋
+Parameters:
+[SWS_Os_00749]
+Upstream requirements: SRS_Os_80020
+⌈In case of "data" semantic the IocReadGroup function shall always be able to deliver
+the last available datum.⌋
+[SWS_Os_00750]
+Upstream requirements: SRS_Os_80020
+⌈The IocReceiveGroup/IocReadGroup function shall guarantee upon returning
+from execution that the references given in parameters are safe for use.⌋
+[SWS_Os_00804]
+Upstream requirements: SRS_Os_80020
+⌈The OUT &lt;DataN&gt; parameters of the IocReceiveGroup/ IocReadGroup function
+shall be passed as pointer to the array base type for arrays and by references for all
+other types.⌋
+Returned values:
+[SWS_Os_00751]
+Upstream requirements: SRS_Os_80020
+⌈The IocReceiveGroup/IocReadGroup function shall return IOC_E_OK if the data
+was received successfully in the list of references given in parameter.⌋
+[SWS_Os_00752]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic and if no data is available the function IocReceiveGroup
+shall return IOC_E_NO_DATA.⌋
+[SWS_Os_00753]
+Upstream requirements: SRS_Os_80020
+⌈In case of "event" semantic an IOC_E_LOST_DATAOverlayed Error shall be returned
+by the IocReceiveGroup function if the IOC communication service refused an Ioc-
+SendGroup request from sender due to an internal buffer overflow. There is no error
+in the data returned in parameter.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -131,7 +231,7 @@ Performs an "explicit" sender-receiver transmi</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=228" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

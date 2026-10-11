@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_2_3_7_1_Derived_Parameter_Calculation_Formula</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ECUConfiguration.pdf</strong> (Seite 105)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=100" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></strong> (Seite 105)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUC_02129" class="swsref"><code>TPS_ECUC_02129</code></a></span>
         </div>
@@ -107,7 +108,156 @@ But here, the rules how the derived values are computed are not defined. Differe
 representations can be used to specify such an informal computational rule. More
 details can be found in MSRSW. Although the MlFormula is informal there can be
 some programming language syntax and semantics interpreted.
-To derive Configuration Parameter value</div></section>
+To derive Configuration Parameter values with the formal calculation formula one or
+several EcucQuerys can be defined. An EcucQuery is Identifiable and aggre-
+gates one EcucQueryExpression. The EcucQueryExpression defines a query
+to the ECU Configuration Values and outputs the result as a numerical value.
+Four functions are currently supported by the EcucQueryExpression: count, value,
+deref and refvalue. Due the atpMixedString nature of the EcucQueryExpres-
+sion several function keywords mixed with several local and global references17 can
+be defined within an EcucQueryExpression.
+Class
+EcucQuery
+Note
+Defines a query to the ECUC Description.
+This Class is only used by the AUTOSAR Classic Platform.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+EcucConditionSpecification.ecucQuery, EcucDerivationSpecification.ecucQuery, EcucValidation
+Condition.ecucQuery
+Attribute
+Type
+Mult.
+Kind
+Note
+ecucQuery
+Expression
+EcucQueryExpression
+0..1
+aggr
+This is the EcucQuery used in the calculation formula or
+the condition formula.
+Table 2.40: EcucQuery
+Class
+«atpMixedString» EcucQueryExpression
+Note
+Defines a query expression to the ECUC Description and output the result as an numerical value. Due to
+the "mixedString" nature of the formula there can be several EcuQueryExpressions used.
+This Class is only used by the AUTOSAR Classic Platform.
+Base
+ARObject
+Aggregated by
+EcucQuery.ecucQueryExpression
+Attribute
+Type
+Mult.
+Kind
+Note
+configElement
+DefGlobal
+EcucDefinitionElement
+0..1
+ref
+The EcucQueryExpression points to an EcucDefinition
+Element that is used to find an element in the Ecuc
+Description. In order to find the right element in the Ecuc
+Description a search is necessary. If the complete Ecuc
+Description needs to be searched this global reference
+shall be used. Due to the "mixedString" nature of the
+EcucQueryExpression several references to Ecuc
+DefintionElements can be used in one EcucQuery
+Expression.
+Stereotypes: atpUriDef
+configElement
+DefLocal
+EcucDefinitionElement
+0..1
+ref
+The EcucQueryExpression points to an EcucDefinition
+Element that is used to find an element in the Ecuc
+Description. In order to find the right element in the Ecuc
+Description a search is necessary. If the search is
+executed inside of the same module that contains the
+EcucQuery this local reference shall be used. Due to the
+"mixedString" nature of the EcucQueryExpression several
+references to EcucDefintionElements can be used in one
+EcucQueryExpression.
+Stereotypes: atpUriDef
+Table 2.41: EcucQueryExpression
+[constr_5505] Configuration class of the elements of the EcucQueryExpression
+⌈The elements of the EcucQueryExpression involved in one calculation formula
+shall have lower or equal configuration class (where PreCompile configuration class
+17configElementDefLocal, configElementDefGlobal
+is considered to be the lowest and PostBuild the highest) with respect to the context
+element in which the calculation is performed (e.g. a Link configuration parameter
+can not calculate its value based on a PostBuild parameters value).⌋
+[TPS_ECUC_06018] Input and Output of the refvalue function ⌈The refvalue func-
+tion is provided with a EcucDefinitionElement and delivers a set of elements from
+the ECU Configuration Values which share the definition role of the provided
+EcucDefinitionElement.⌋
+[TPS_ECUC_06019] Output of the refvalue function if the EcucDefinitionElement
+points to a not existing element in the ECU Configuration Parameter Definition
+⌈The refvalue function shall result in an error if the EcucDefinitionElement points
+to a not existing element in the ECU Configuration Parameter Definition.⌋
+[TPS_ECUC_06020]Output of the refvalue function if no element in the ECU Con-
+figuration Values is found ⌈The refvalue function shall return an empty set, if
+the EcucDefinitionElement points to an existing element in the ECU Config-
+uration Parameter Definition, but no element in the ECU Configuration
+Values has been found.⌋
+[TPS_ECUC_06021] Input and Output of the deref function ⌈The deref function
+takes two parameters
+1. result of another deref function or refvalue function, which is an element set
+2. reference to a member of the first parameter
+and returns the member of the first parameter that is denoted by the second parame-
+ter.⌋
+[TPS_ECUC_06022] Output of the deref function in case the first input parameter
+is a reference ⌈In case the member of the first parameter is a reference the deref
+function returns the referenced element as a set.⌋
+[TPS_ECUC_06023] Cases where the deref function reports an error ⌈The deref
+function shall result in an error if
+• the first parameter is an empty set
+• the first parameter is a set with more than 1 elements18
+• the first parameter contains one element which is a value (e.g. 5)
+• second parameter points to a not existing element in the ECU Configuration Pa-
+rameter Definition or to the AUTOSAR Schema.
+⌋
+18The deref function shall only be applied to element sets which are guaranteed to contain only up to
+1 element.
+[TPS_ECUC_06024] Input of the value function ⌈The value function takes the result
+of a deref function or refvalue function, which is an element set.⌋
+[TPS_ECUC_06025] Output of the value function ⌈The value function returns the
+parameter’s value as numerical value.⌋
+[TPS_ECUC_06026] Cases where the value function reports an error ⌈The value
+function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements19
+• the parameter’s single element does not have a value (e.g. is a container)
+⌋
+[TPS_ECUC_06057] Input of the strValue function ⌈The strValue function takes the
+result of a deref function or refvalue function, which is an element set.⌋
+[TPS_ECUC_06058] Output of the strValue function ⌈The strValue function returns
+the parameter’s value as string.⌋
+[TPS_ECUC_06059] Cases where the strValue function reports an error ⌈The
+strValue function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements20
+• the parameter’s single element does not have a value (e.g. is a container)
+⌋
+[TPS_ECUC_06060] Input of the valueAt function ⌈The valueAt function takes the
+result of a deref function or refvalue function, which is an element set and a zero-based
+position argument.⌋
+[TPS_ECUC_06061] Output of the valueAt function ⌈The valueAt function returns
+the value of the parameter as numerical value at the position according to the sorting
+criteria defined in section xxx⌋
+[TPS_ECUC_06062] Cases where the valueAt function reports an error ⌈The val-
+ueAt function function shall result in an error if
+• the parameter is an empty set
+• the parameter is a set with more than 1 elements
+19The value function shall only be applied to element sets which are guaranteed to contain only up to
+1 element.
+20The strValue function shall only be applied to element sets which are guaranteed to contain only up
+to 1 element.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -120,7 +270,7 @@ To derive Configuration Parameter value</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ECUConfiguration.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_ECUConfiguration.pdf#page=100" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ECUConfiguration.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

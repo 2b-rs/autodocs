@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_4_6_5_ICV_Calculation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverFlexRay.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverFlexRay.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverFlexRay.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTSyn_00117" class="swsref internal-spec-ref"><code>SWS_FrTSyn_00117</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTSyn_91000" class="swsref internal-spec-ref"><code>SWS_FrTSyn_91000</code></a></span>
         </div>
       </div>
 
@@ -93,11 +94,113 @@ and neither in the SYNC/OFS message.⌋(RS_TS_20074)
 [SWS_FrTSyn_00117]{DRAFT} ⌈If StbM_GetTxFreshness returns E_OK, the Time
 Master shall construct the SYNC/OFS message with FV and use the full FV in the ICV
 generation.⌋(RS_TS_20074)
-[SWS_FrTSyn_0011</div></section>
+[SWS_FrTSyn_00118]{DRAFT}
+⌈If
+StbM_GetTxFreshnessTruncData
+returns
+E_OK, the Time Master shall construct the SYNC/ OFS message with truncated FV and
+use the full FV in the ICV generation.⌋(RS_TS_20074)
+[SWS_FrTSyn_00119]{DRAFT} ⌈When StbM_GetTxFreshness or StbM_Get-
+TxFreshnessTruncData return a non-recoverable error code (i.e, E_NOT_OK), then
+the Time Master shall:
+• stop the ICV generation and set the FVL and the ICVL to 0 in the SYNC/OFS
+message,
+• call Det_ReportRuntimeError with parameter ErrorId set to FRTSYN_E_-
+FRESHNESSFAILURE (refer [SWS_FrTSyn_91000]),
+FlexRay
+• call
+IdsM_SetSecurityEventWithContextData
+with
+parameter
+EventId
+set
+to
+SEV_TSYN_FR_FRESHNESS_NOT_AVAILABLE
+(refer
+[SWS_FrTSyn_00103])
+⌋(RS_TS_20074)
+Refer to the chapter 10.2.5 in [7] for the configuration details of CSM job used for ICV
+generation.
+[SWS_FrTSyn_00120]{DRAFT} ⌈If FrTSynIcvGenerationBase for the Time Do-
+main is configured to ICV_MAC, the Time Master shall call Csm_MacGenerate to gen-
+erate the ICV value.⌋(RS_TS_20074)
+[SWS_FrTSyn_00121]{DRAFT} ⌈If FrTSynIcvGenerationBase for the Time Do-
+main is configured to ICV_SIGNATURE, the Time Master shall call Csm_Signature-
+Generate to generate the ICV value.⌋(RS_TS_20074)
+Note: The mode parameter is intentionally left open for the implementer to choose (
+i.e. CRYPTO_OPERATIONMODE_SINGLECALL would possibly be the best option since
+it does not require further calls to CSM).
+The CSM job used to generate the ICV can be configured to synchronous or asyn-
+chronous behavior. The ICV generation timeout observation should be disabled, when
+the CSM job used to generate the ICV, is configured in synchronous behavior.
+[SWS_FrTSyn_00122]{DRAFT} ⌈If FrTSynIcvGenerationTimeout is set to 0, the
+Time Master shall not do ICV generation timeout monitoring.⌋(RS_TS_20074)
+[SWS_FrTSyn_00123]{DRAFT} ⌈If:
+• FrTSynIcvGenerationTimeout is set to any value greater than 0,
+• and Csm_MacGenerate or Csm_SignatureGenerate returns E_OK,
+the Time Master shall start the FrTSynIcvGenerationTimeout.⌋(RS_TS_20074)
+[SWS_FrTSyn_00124]{DRAFT} ⌈If:
+• FrTSynIcvGenerationTimeout is set to any value greater than 0,
+• the callback FrTSyn_IcvGenerationIndication is called,
+the Time Master shall stop the FrTSynIcvGenerationTimeout.⌋(RS_TS_20074)
+[SWS_FrTSyn_00125]{DRAFT} ⌈If one of the following conditions is true:
+• the authentication build counter has reached the configuration value FrTSynTx-
+AuthenticationBuildAttempts,
+• the verification of the ICV has returned a non-recoverable error such as returning
+E_NOT_OK or KEY_FAILURE,
+• FrTSynIcvGenerationTimeout expires before the notification of the FrT-
+Syn_IcvGenerationIndication callback
+FlexRay
+then the Time Master shall
+• stop the ICV generation and set the FVL and the ICVL to 0 in the SYNC/OFS
+message,
+• and
+call
+IdsM_SetSecurityEventWithContextData
+with
+parame-
+ter
+EventId
+set
+to
+SEV_TSYN_FR_ICV_GENERATION_FAILED
+(refer
+[SWS_FrTSyn_00103]).
+⌋(RS_TS_20074)
+[SWS_FrTSyn_00126]{DRAFT} ⌈With the notification of the FrTSyn_IcvGenera-
+tionIndication callback, the Time Master shall add the generated ICV to the
+SYNC/OFS message and transmit it.⌋(RS_TS_20074)
+[SWS_FrTSyn_00127]{DRAFT} ⌈When the FV is referenced (refer FrTSynIcvGen-
+erationFvIdRef), then the Time Master shall notify the successful transmission of
+the SYNC/OFS message to FVM by calling StbM_SPduTxConfirmation.⌋(RS_TS_-
+20074)
+[SWS_FrTSyn_00153]{DRAFT} ⌈For every transmission of messages of type 0x50,
+0x60, 0x74 and 0x84, the Time Master shall shall maintain an authentication build
+counter (refer to FrTSynTxAuthenticationBuildAttempts).⌋(RS_TS_20074)
+[SWS_FrTSyn_00154]{DRAFT} ⌈Upon the initial processing of messages of type
+0x50, 0x60, 0x74 and 0x84 (i.e., upon the first attempt of a freshness value and
+ICV generation for each received message) the Time Master shall set the authentica-
+tion build counter to 0.⌋(RS_TS_20074)
+[SWS_FrTSyn_00155]{DRAFT}
+⌈If
+StbM_GetTxFreshness
+or
+StbM_Get-
+TxFreshnessTruncData return a recoverable error code (e.g., STBM_E_BUSY), then
+the Time Master shall increment the authentication build counter.⌋(RS_TS_20074)
+[SWS_FrTSyn_00156]{DRAFT} ⌈If Csm_MacGenerate or Csm_SignatureGener-
+ate return a recoverable error code (e.g., E_BUSY, QUEUE_FULL), then the Time Mas-
+ter shall increment the authentication build counter.⌋(RS_TS_20074)
+[SWS_FrTSyn_00171]{DRAFT} ⌈If
+• the generation of the authenticated message has failed
+• and the authentication build counter has not yet reached the configuration value
+FrTSynTxAuthenticationBuildAttempts,
+then the Time Master shall retry the freshness attempt and the ICV calculation in the
+next call of FrTSyn_MainFunction.⌋(RS_TS_20074)</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_FrTSyn_00117] im Text von SWS_TimeSyncOverFlexRay.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrTSyn_91000] im Text von SWS_TimeSyncOverFlexRay.</p>
       </section>
 
       <section class="snip-card">
@@ -106,7 +209,7 @@ generation.⌋(RS_TS_20074)
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverFlexRay.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_TimeSyncOverFlexRay.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverFlexRay.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,7 +221,7 @@ generation.⌋(RS_TS_20074)
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrTSyn_00117" class="swsref internal-spec-ref"><code>SWS_FrTSyn_00117</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrTSyn_91000" class="swsref internal-spec-ref"><code>SWS_FrTSyn_91000</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

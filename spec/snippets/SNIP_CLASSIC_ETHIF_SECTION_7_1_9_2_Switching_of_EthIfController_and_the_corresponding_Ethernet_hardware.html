@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: ethif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETHIF_SECTION_7_1_9_2_Switching_of_EthIfController_and_the_corresponding_Ethernet_hardware</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetInterface.pdf</strong> (Seite 30)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=29" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></strong> (Seite 30)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_00231" class="swsref internal-spec-ref"><code>SWS_EthIf_00231</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_91102" class="swsref internal-spec-ref"><code>SWS_EthIf_91102</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,146 @@ the corresponding lower layers of the referenced Ethernet hardware. An imple-
 mentation has to consider the following points:
 • ETH_MODE_ACTIVE and ETH_MODE_DOWN are activating and de-activiating
 the communication capability of an Ethernet Controller, but not the control
-capability of conn</div></section>
+capability of connected Ethernet hardware (e.g. MDIO).
+• The implementation has to ensure, that the control capabilities via an Eth-
+ernet controller are always available, if needed by the driver modules (e.g.
+Ethernet switch driver)
+3. EthIf has to ensure that a request with ETH_MODE_ACTIVE_WITH_WAKEUP_-
+REQUEST is not overwritten by another call of EthIf_SetControllerMode with
+ETH_MODE_ACTIVE, if the request is deferred due to the EthIfPhysController has
+not already indicated ETH_MODE_ACTIVE.
+[SWS_EthIf_00035] ⌈The function EthIf_SetControllerMode shall forward the
+call to function &lt;EthDrv&gt;_SetControllerMode of the corresponding Ethernet Con-
+troller Driver (EthIfPhysControllerIdx) with ETH_MODE_ACTIVE, if mode ETH_MODE_-
+ACTIVE or ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST has been requested and
+the corresponding Ethernet Controller Driver (EthIfPhysControllerIdx) has NOT already
+indicated ETH_MODE_ACTIVE.⌋()
+[SWS_EthIf_00266] ⌈If EthIf_SetControllerMode has been called for an EthIf-
+Controller with ETH_MODE_ACTIVE and this EthIfController has a reference to an EthIf-
+Transceiver, then EthIf shall forward the call to the following functions in the given order,
+if the current mode of the EthIfTransceiver is ETH_MODE_DOWN:
+1. &lt;EthTrcv&gt;_SetTransceiverMode with ETH_MODE_ACTIVE
+2. &lt;EthTrcv&gt;_TransceiverLinkStateRequest
+with
+ETHTRCV_LINK_-
+STATE_ACTIVE
+⌋(SRS_Eth_00157)
+[SWS_EthIf_00478] ⌈If EthIf_SetControllerMode has been called for an EthIf-
+Controller with ETH_MODE_ACTIVE and this EthIfController has a reference to an EthIf-
+Switch, then EthIf shall forward the call to the following functions in the given order for
+all EthSwtPorts of the referenced switch if mode ETH_MODE_ACTIVE has been re-
+quested and the current EthSwtPort mode is ETH_MODE_DOWN:
+1. EthSwt_SetSwitchPortMode with ETH_MODE_ACTIVE
+2. EthSwt_PortLinkStateRequest with ETHTRCV_LINK_STATE_ACTIVE
+⌋(SRS_Eth_00157)
+[SWS_EthIf_00264] ⌈If EthIf_SetControllerMode has been called for an EthIf-
+Controller with ETH_MODE_ACTIVE and this EthIfController has a reference to an EthIf-
+SwitchPortGroup of type "control", then EthIf shall forward the call to the following
+functions in the given order for all EthSwtPorts of the respective EthIfSwitchPortGroup
+if the mode ETH_MODE_ACTIVE has been requested for the first EthIfSwitchPortGroup
+referencing the EthSwtPort and the current EthSwtPort mode is ETH_MODE_DOWN:
+1. EthSwt_SetSwitchPortMode with ETH_MODE_ACTIVE
+2. EthSwt_PortLinkStateRequest with ETHTRCV_LINK_STATE_ACTIVE
+⌋(SRS_Eth_00157)
+Note: EthIfController that reference EthIfSwitfhPortGroups and the reference is of type
+"link-information" (see [ECUC_EthIf_00048]), then those EthIfSwitchPortGroups could
+be switched according to PNC states via a dedicatd rules in the BswM. The BswM rule
+can be configured via the BswMEthIfSwitchPortGroupRequestMode action. The BswM
+call the API EthIf_SwitchPortGroupRequestMode to switch the corresponding
+EthIfSwitchPortGroup.
+[SWS_EthIf_00272] ⌈If EthIf_SwitchPortGroupRequestMode has been called
+with ETH_MODE_ACTIVE, EthIf shall forward the call to the following functions in the
+given order for all EthSwtPorts of the respective EthIfSwitchPortGroup:
+1. Call EthSwt_SetSwitchPortMode with ETH_MODE_ACTIVE, if the current
+mode is ETH_MODE_DOWN.
+2. Call
+EthSwt_PortLinkStateRequest
+with
+ETHTRCV_LINK_STATE_AC-
+TIVE, if the current link state is ETHTRCV_LINK_STATE_DOWN
+⌋()
+[SWS_EthIf_00479] ⌈Everytime EthIf_SetControllerMode has been called for
+an EthIfController with ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST and this EthIf-
+Controller has a reference to an EthIfTransceiver, then EthIf shall forward the call to the
+following functions in the given order, independent of the current mode:
+1. &lt;EthTrcv&gt;_SetTransceiverMode
+with
+ETH_MODE_ACTIVE_WITH_-
+WAKEUP_REQUEST
+2. &lt;EthTrcv&gt;_TransceiverLinkStateRequest
+with
+ETHTRCV_LINK_-
+STATE_ACTIVE, only if the current state is ETHTRCV_LINK_STATE_DOWN
+⌋(SRS_Eth_00157)
+[SWS_EthIf_00480] ⌈Everytime EthIf_SetControllerMode has been called for
+an EthIfController with ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST and this EthIf-
+Controller has a reference to an EthIfSwitch, then EthIf shall forward the call to the
+following functions in the given order for all EthSwtPorts of the respective EthIfSwitch-
+PortGroup, independ of the current mode:
+1. EthSwt_SetSwitchPortMode with ETH_MODE_ACTIVE_WITH_WAKEUP_RE-
+QUEST
+2. EthSwt_PortLinkStateRequest with ETHTRCV_LINK_STATE_ACTIVE, if
+the current mode is ETHTRCV_LINK_STATE_DOWN
+⌋(SRS_Eth_00157)
+[SWS_EthIf_00481] ⌈Everytime EthIf_SetControllerMode has been called for
+an EthIfController with ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST and this EthIf-
+Controller has a reference to an EthIfSwitchPortGroup of type "control", then EthIf shall
+forward the call to the following functions in the given order for all EthSwtPorts of the
+respective EthIfSwitchPortGroup, independent of the current mode:
+1. EthSwt_SetSwitchPortMode with ETH_MODE_ACTIVE_WITH_WAKEUP_RE-
+QUEST
+2. EthSwt_PortLinkStateRequest with ETHTRCV_LINK_STATE_ACTIVE, if
+the current mode is ETHTRCV_LINK_STATE_DOWN
+⌋(SRS_Eth_00157)
+[SWS_EthIf_00482] ⌈Everytime EthIf_SwitchPortGroupRequestMode has been
+called with ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST, EthIf shall forward the call
+for all EthSwtPorts of the respective EthIfSwitchPortGroup to the following functions in
+the given order independent of the current EthSwtPort mode:
+1. EthSwt_SetSwitchPortMode with ETH_MODE_ACTIVE_WITH_WAKEUP_RE-
+QUEST
+2. EthSwt_PortLinkStateRequest
+with
+ETHTRCV_LINK_STATE_ACTIVE,
+only if current link state is ETHTRCV_LINK_STATE_DOWN
+⌋(SRS_Eth_00157)
+Rational
+for
+[SWS_EthIf_00479],
+[SWS_EthIf_00480],
+[SWS_EthIf_00481]
+and
+[SWS_EthIf_00482]: A wake-up request has always to be forwarded to the lower layer
+independent of the current mode to ensure that a wake-up is triggered on the network.
+This could be used for e.g. communication channels where the Ethernet hardware
+is compliant to OA TC10 (see [5, OPEN Sleep/Wake-up Specification for Automotive
+Ethernet])
+[SWS_EthIf_00483] ⌈If EthIf_SwitchPortGroupRequestMode is called with
+ETH_MODE_ACTIVE or ETH_MODE_ACTIVE_WITH_WAKEUP_REQUEST, then a run-
+ning timer to delay the switch off all ports of the respective EthIfSwitchPortGroup (
+PortGroupIdx) shall be canceled.⌋(SRS_Eth_00157)
+[SWS_EthIf_00263] ⌈EthIf shall call the function &lt;EthDrv&gt;_SetControllerMode
+of the corresponding Ethernet Controller Driver (EthIfPhysControllerIdx) with ETH_-
+MODE_DOWN, if EthIf_SetControllerMode has been called with mode ETH_-
+MODE_DOWN for all Ethernet Interface Controller referencing the Ethernet Controller.⌋
+()
+Note:
+• In case of VLAN support, EthIf has to store internally the state of each EthIfCon-
+troller in order to filter out the requests from upper layers and disable the callouts
+to upper layers when the EthIfController is disabled.
+[SWS_EthIf_00484] ⌈If EthIf_SetControllerMode is called for an EthIfController
+with ETH_MODE_DOWN and this EthIfController has a reference to an EthIfTransceiver,
+then EthIf shall forward the call to the following functions in the given order, if the current
+mode of the EthIfTransceiver is ETH_MODE_ACTIVE:
+1. &lt;EthTrcv&gt;_SetTransceiverMode with ETH_MODE_DOWN
+2. &lt;EthTrcv&gt;_TransceiverLinkStateRequest
+with
+ETHTRCV_LINK_-
+STATE_DOWN
+⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Indicates controller mode change to upper layers</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von EthIf_SwitchPortGroupRequestMode().</p>
       </section>
 
       <section class="snip-card">
@@ -100,7 +236,7 @@ capability of conn</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=29" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -112,15 +248,15 @@ capability of conn</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EthIf_00231" class="swsref internal-spec-ref"><code>SWS_EthIf_00231</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_EthIf_91102" class="swsref internal-spec-ref"><code>SWS_EthIf_91102</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

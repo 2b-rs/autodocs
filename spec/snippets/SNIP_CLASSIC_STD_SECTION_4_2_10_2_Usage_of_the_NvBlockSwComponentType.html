@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_2_10_2_Usage_of_the_NvBlockSwComponentType</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 271)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=270" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 271)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01150" class="swsref"><code>TPS_SWCT_01150</code></a></span>
         </div>
@@ -98,7 +99,292 @@ supportDirtyFlag: Boolean [0..1]
 ServiceNeeds
 NvBlockNeeds
 +
-calcRamBlock</div></section>
+calcRamBlockCrc: Boolean [0..1]
++
+checkStaticBlockId: Boolean [0..1]
++
+cyclicWritingPeriod: TimeValue [0..1]
++
+nDataSets: PositiveInteger [0..1]
++
+nRomBlocks: PositiveInteger [0..1]
++
+ramBlockStatusControl: RamBlockStatusControlEnum [0..1]
++
+readonly: Boolean [0..1]
++
+reliability: NvBlockNeedsReliabilityEnum [0..1]
++
+resistantToChangedSw: Boolean [0..1]
++
+restoreAtStart: Boolean [0..1]
++
+selectBlockForFirstInitAll: Boolean [0..1]
++
+storeAtShutdown: Boolean [0..1]
++
+storeCyclic: Boolean [0..1]
++
+storeEmergency: Boolean [0..1]
++
+storeImmediate: Boolean [0..1]
++
+storeOnChange: Boolean [0..1]
++
+useAutoValidationAtShutDown: Boolean [0..1]
++
+useCRCCompMechanism: Boolean [0..1]
++
+writeOnlyOnce: Boolean [0..1]
++
+writeVerification: Boolean [0..1]
++
+writingFrequency: PositiveInteger [0..1]
++
+writingPriority: NvBlockNeedsWritingPriorityEnum [0..1]
+«enumeration»
+NvBlockNeedsReliabilityEnum
+literals
+noProtection
+errorDetection
+errorCorrection
+ValueSpecification
++
+shortLabel: Identifier [0..1]
+AutosarDataPrototype
+ParameterDataPrototype
+AutosarDataPrototype
+VariableDataPrototype
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+«enumeration»
+RamBlockStatusControlEnum
+literals
+api
+nvRamManager
+«enumeration»
+NvBlockNeedsWritingPriorityEnum
+literals
+low
+medium
+high
+RTEEvent
+TimingEvent
++
+offset: TimeValue [0..1]
++
+period: TimeValue [0..1]
+«atpVariation,atpSplitable»
++nvBlockDescriptor
+0..*
++timingEvent
+0..1
++initValue
+0..1
++initValue
+0..1
++nvBlockNeeds
+0..1
++romBlock
+0..1
++ramBlock
+0..1
+Figure 4.36: NvBlockSwComponentType and NvBlockDescriptor
+A NvBlockSwComponentType contains multiple NvBlockDescriptors. Each of
+these NvBlockDescriptor is associated to exactly one NVRAM Block.
+A NvBlockDescriptor contains a VariableDataPrototype which acts as a RAM
+Block for the NVRAM Block, and optionally a ParameterDataPrototype to act as
+the default ROM value for the NVRAM Block.
+[SWS_Rte_07353]
+Upstream requirements: SRS_Rte_00177, SRS_Rte_00018
+⌈The RTE Generator shall reject configurations where a NvBlockDescriptor of a
+NvBlockSwComponentType contains a romBlock whose data type is not compatible
+with the type of the ramBlock.⌋
+[SWS_Rte_07303]
+Upstream requirements: SRS_Rte_00177
+⌈The RTE shall allocate memory for the ramBlock VariableDataPrototype of the
+NvBlockDescriptor instances.⌋
+[SWS_Rte_07632]
+Upstream requirements: SRS_Rte_00177
+⌈The variables allocated for the ramBlocks shall be initialized if the general initializa-
+tion conditions in [SWS_Rte_07046] are fulfilled. The initialization as to be applied dur-
+ing Rte_Start depending from the configured RteInitializationStrategy.⌋
+Note: When blocks are configured to be read by NvM_ReadAll, the initialization may
+erase the value read by the NVM. These blocks should not have an initValue.
+[SWS_Rte_07355]
+Upstream requirements: SRS_Rte_00177
+⌈For each NvBlockDescriptor with a romBlock ParameterDataPrototype, the
+RTE shall allocate a constant block of default values.⌋
+[SWS_Rte_07633]
+Upstream requirements: SRS_Rte_00177
+⌈The constants allocated for the romBlocks shall be initialized to the value of the
+initValue, if they have an initValue.⌋
+AtomicSwComponentType
+NvBlockSwComponentType
+DataInterface
+NvDataInterface
+AtpStructureElement
+Identifiable
+NvBlockDescriptor
+NvBlockDataMapping
+InstantiationDataDefProps
+VariableDataPrototype
+AutosarVariableRef
+ArVariableInImplementationDataInstanceRef
+ImplementationDataTypeElement
+ImplementationDataType
+ARElement
+AtpType
+AutosarDataType
+DataPrototype
+AutosarDataPrototype
+AtpInstanceRef
+VariableInAtomicSWCTypeInstanceRef
+AtpBlueprint
+AtpBlueprintable
+AbstractImplementationDataType
+AtpStructureElement
+Identifiable
+AbstractImplementationDataTypeElement
+«isOfType»
++type
+0..1
+{redefines atpType}
++rootVariableDataPrototype
+0..1
+{subsets
+atpContextElement}
++autosarVariableInImplDatatype
+0..1
++autosarVariable
+0..1
+«atpVariation,atpSplitable»
++nvBlockDataMapping
+0..*
+«atpVariation,atpSplitable»
++subElement
+0..*
+{ordered}
++contextDataPrototype
+0..*
+{ordered}
+«atpVariation,atpSplitable»
++instantiationDataDefProps
+0..*
++ramBlock
+0..1
++rootVariableDataPrototype
+0..1
++nvRamBlockElement
+0..1
++writtenReadNvData
+0..1
++writtenNvData
+0..1
++nvData
+0..*
++readNvData
+0..1
+«atpVariation,atpSplitable»
++nvBlockDescriptor
+0..*
++variableInstance
+0..1
++targetDataPrototype
+0..1
+Figure 4.37: NvBlockDataMapping
+For each element stored in the NVRAM Block of a NvBlockDescriptor, there
+should be one NvBlockDataMapping to associate the VariableDataPrototypes
+of the ports used for read and write access and the VariableDataPrototype defin-
+ing the location of the element in the ramBlock. Thereby the Implementation-
+DataTypes of the VariableDataPrototypes have to compatible.
+[SWS_Rte_03866]
+Upstream requirements: SRS_Rte_00018
+⌈The RTE Generator shall reject any configuration that violates [constr_1395], [constr_
+1403] and [constr_1404].⌋
+[SWS_Rte_07621]
+Upstream requirements: SRS_Rte_00018
+⌈The RTE Generator shall reject configurations where [constr_2013] or [constr_1285]
+is violated.⌋
+Note: This is required to ensure that the default values in romBlock are structurally
+matching data in the ramBlock and therefore can be copied to the ramBlock in case
+that the callback Rte_NvMNotifyInitBlock of the related NvBlock is called.
+A NvBlockSwComponentType can be used to reduce the quantity of NVRAM Blocks
+needed on an ECU:
+• the same block can be used to store different flags or other small data elements;
+• the same data element can be used by different SW-Cs or different instances of
+a SW-C.
+It also permits to simplify processes and algorithms when it must be guaranteed that
+two SW-Cs of an ECU use the same NVRAM data.
+Note: this feature can increase the RAM usage of the ECU because it forces the
+NVRAM Manager to instantiate an additional RAM buffer, called RAM mirror. How-
+ever, when the same data elements have to be shared between SW-Cs, it reduces the
+number of RAM Blocks needed to be instantiated by the RTE, and can reduce the
+overall RAM usage of the ECU.
+[SWS_Rte_07356]
+Upstream requirements: SRS_Rte_00018
+⌈The RTE Generator shall reject configurations where a VariableDataPrototype
+referenced by a NvDataInterface has a queued swImplPolicy.⌋
+[SWS_Rte_CONSTR_09011] NvMBlockDescriptor related to a RAM Block of a
+NvBlockSwComponentType shall use NvMBlockUseSyncMechanism ⌈The NVRAM
+Block associated to the NvBlockDescriptors of a NvBlockSwComponentType
+shall be configured with the NvMBlockUseSyncMechanism feature enabled, and
+the NvMWriteRamBlockToNvCallback and NvMReadRamBlockFromNvCallback
+parameters set to the Rte_GetMirror and Rte_SetMirror API of the NvBlock-
+Descriptor.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -111,7 +397,7 @@ calcRamBlock</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=270" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

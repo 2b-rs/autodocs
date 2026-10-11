@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_KEYM_SECTION_8_3_3_10_KeyM_CertElementGetFirst</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_KeyManager.pdf</strong> (Seite 74)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=74" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></strong> (Seite 74)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -113,11 +114,49 @@ buffer.
 Return value
 Std_ReturnType
 E_OK: Element found and data provided in the buffer. The cert
-ElementIterator has been initialized according</div></section>
+ElementIterator has been initialized accordingly.
+E_NOT_OK: Element data not found. CertElementIterator cannot
+be used for further calls.
+KEYM_E_PARAMETER_MISMATCH: Certificate ID or certificate
+element ID invalid.
+KEYM_E_KEY_CERT_SIZE_MISMATCH: Provided buffer for the
+certificate element too small.
+KEYM_E_KEY_CERT_EMPTY: No certificate data available, the
+certificate is empty.
+KEYM_E_KEY_CERT_INVALID: Certificate is not valid or not
+verified successfully
+▽
+△
+Description
+This function is used to initialize the interative extraction of a certificate data element. It always
+retrieves the top element from the configured certificate element and initializes the structure
+KeyM_CertElementIterator so that consecutive data from this element can be read with KeyM_
+CertElementGetNext().
+Available via
+KeyM.h
+⌋
+[SWS_KeyM_00128]
+Upstream requirements: SRS_CryptoStack_00096, SRS_CryptoStack_00112
+⌈The function shall retrieve certificate elements from the certificate as defined in the
+configuration by searching the object ID in the configured section of the certificate. If
+no error is detected, the identified data from the parsed and validated shall be provided
+from the certificate by copying the content into the provided data buffer when the indi-
+cated buffer size is large enough and the function shall return E_OK. Otherwise, any
+other appropriate error code shall be provided.⌋
+[SWS_KeyM_00129]
+Upstream requirements: SRS_CryptoStack_00112
+⌈The function returns E_OK, the iterator structure shall be initialized in a way, that
+further listed elements associated to the referenced certificate element can be retrieved
+one after another.⌋
+Rationale:
+Some certificate elements can contain more than one element associated to an object
+ID. The function pair of KeyM_CertElementGetFirst()/ KeyM_CertElementGetNext()
+shall be used to retrieve a list of elements one after another. The iterator, which is
+implementation specific, shall be used to forward iterate through the list of elements.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +165,7 @@ ElementIterator has been initialized according</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_KeyManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_KeyManager.pdf#page=74" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_KeyManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

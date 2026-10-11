@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_6_Enable_and_storage_conditions_of_diagnostic_events</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 129)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=128" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 129)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_DEXT_03010" class="swsref"><code>TPS_DEXT_03010</code></a></span>
         </div>
@@ -84,7 +85,171 @@ Dem_ClearDTC. A similar functionality is used for the function inhibition. In co
 the mutual exclusion matrix of the FiM, which is based on events, the enable conditions
 are based on system parameters (e.g. ignition status, local voltage).
 The storage conditions are defined as a set of parameters, which are assigned to a
-specific condition. As long as this condition is not fulfilled, the Dem module do</div></section>
+specific condition. As long as this condition is not fulfilled, the Dem module does not
+store the event to the event memory.
+The following requirements introduce the handling of the enable conditions.
+Note:The Dem module supports enable conditions and provides the API Dem_SetEn-
+ableCondition to receive the current status (condition fulfilled or not)of a specific
+enable condition.
+Note: The Dem module supports enable conditions that can be assigned to a specific
+event.
+Note: The enable condition groups are introduced to improve the configuration method-
+ology of the Dem module. If a significant number of events depend always on the same
+enable conditions, it is less effort to select one of the defined enable condition groups
+instead of assigning several enable conditions to each of those events.
+[SWS_Dem_00447]
+Upstream requirements: RS_Diag_04192
+⌈If the Dem module is requested to support enable conditions, the Dem module shall
+check the assigned enable conditions after the diagnostic monitor reports an event
+(passed/failed or pre-passed/pre-failed, refer to Dem_SetEventStatus).⌋
+[SWS_Dem_00449]
+Upstream requirements: RS_Diag_04192
+⌈If one enable condition is not fulfilled, all of Dem_SetEventStatus calls for those
+events being assigned to this condition shall be ignored (no change of event status
+byte) by the Dem.⌋
+Note: In case of Dem-internal debouncing the related fault detection counter will be
+frozen or reset (refer to chapter Figure 29 and Figure 32).
+[SWS_Dem_00450]
+Upstream requirements: RS_Diag_04192
+⌈If all event-specific enable conditions are fulfilled, all status reports from SW-Cs and
+BSW modules via Dem_SetEventStatus for those events being assigned to these
+conditions shall be accepted by the Dem from this point in time on.⌋
+DemGeneral: EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 1
+DemEnableCondition:
+EcucParamConfContainerDef
+upperMultiplicity = 255
+lowerMultiplicity = 0
+DemEnableConditionId:
+EcucIntegerParamDef
+max = 255
+min = 0
+lowerMultiplicity = 1
+upperMultiplicity = 1
+symbolicNameValue = true
+DemEnableConditionRef:
+EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 255
+DemEnableConditionStatus:
+EcucBooleanParamDef
+lowerMultiplicity = 1
+upperMultiplicity = 1
+DemEnableConditionGroup:
+EcucParamConfContainerDef
+upperMultiplicity = 255
+lowerMultiplicity = 0
+DemEnableConditionGroupRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemEventParameter:
+EcucParamConfContainerDef
+upperMultiplicity = 65535
+lowerMultiplicity = 1
++reference
++parameter
++parameter
++subContainer
++subContainer
++reference
++destination
++destination
+Figure 7.35: Enable condition assignment configuration
+The following requirements introduce the handling of the storage conditions.
+Note: The Dem module supports storage conditions and provides the API Dem_Set-
+StorageCondition to receive the current status (condition fulfilled or not)of a specific
+storage condition.
+Note: The Dem module supports storage conditions that can be assigned to a specific
+event.
+Note:
+The storage condition groups are introduced to improve the configuration
+methodology of the Dem module. If a significant number of events depend always on
+the same storage conditions, it is less effort to select one of the defined storage condi-
+tion groups instead of assigning several storage conditions to each of those events.
+[SWS_Dem_00455]
+Upstream requirements: RS_Diag_04219
+⌈If storage conditions are used and assigned to an event, the Dem shall evaluate the as-
+signed storage conditions after the event gets qualified as PASSED or FAILED and pro-
+cess DemFreezeFrameRecordTrigger, DemExtendedDataRecordTrigger and
+DemEventMemoryEntryStorageTrigger only if the storage condition is fulfilled.⌋
+Note: The Dem module supports storage conditions and checks the assigned storage
+conditions after the event reports DEM_EVENT_STATUS_FDC_THRESHOLD_REACHED
+(e.g. either via interface call or when reaching the configured threshold in debounce
+algorithm).
+Note: If one storage condition is not fulfilled and no respective event memory entry
+exists, the Dem module will not enter the reported event into the event memory.
+Note: If one storage condition is not fulfilled and a respective event memory entry
+exists, the Dem module will not update the event memory of the reported event.
+[SWS_Dem_01309]
+Upstream requirements: RS_Diag_04219
+⌈If at least one storage condition assigned to an event is not fulfilled, the Dem shall skip
+the calculation to set the bits:
+• bit 2 (PendingDTC) and
+• bit 3 (ConfirmedDTC).
+in the corresponding event status byte and UDS status byte from 0 to 1.⌋
+[SWS_Dem_00459]
+Upstream requirements: RS_Diag_04219
+⌈If all event-specific storage conditions are fulfilled, the Dem module shall permit the
+storage of the reported event.⌋
+DemGeneral:
+EcucParamConfContainerDef
+upperMultiplicity = 1
+lowerMultiplicity = 1
+DemStorageConditionId: EcucIntegerParamDef
+symbolicNameValue = true
+min = 0
+max = 255
+DemStorageCondition:
+EcucParamConfContainerDef
+upperMultiplicity = 255
+lowerMultiplicity = 0
+DemStorageConditionStatus:
+EcucBooleanParamDef
+upperMultiplicity = 1
+lowerMultiplicity = 1
+DemStorageConditionRef:
+EcucReferenceDef
+lowerMultiplicity = 1
+upperMultiplicity = 255
+DemStorageConditionGroup:
+EcucParamConfContainerDef
+upperMultiplicity = 255
+lowerMultiplicity = 0
+DemStorageConditionGroupRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+DemEventParameter:
+EcucParamConfContainerDef
+upperMultiplicity = 65535
+lowerMultiplicity = 1
+DemStorageConditionReplacementEventRef:
+EcucReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
++subContainer
++destination
++parameter
++subContainer
++destination
++reference
++reference
++parameter
++reference
++destination
+Figure 7.36: Storage condition assignment configuration
+For each storage condition a replacement event may be defined (see DemStorage-
+ConditionReplacementEventRef). This replacement event will be used as a re-
+placement failure info.
+[SWS_Dem_01086]
+Upstream requirements: RS_Diag_04137
+⌈If an event is reported as FAILED and a storage condition referencing this event by
+DemStorageConditionReplacementEventRef exists and the storage condition is
+FALSE, the replacement event shall be set to FAILED.⌋
+Note: As long as the storage condition is not fulfilled and no event assigned to the
+storage condition reports FAILED, the replacement event shall not be set.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -97,7 +262,7 @@ specific condition. As long as this condition is not fulfilled, the Dem module d
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=128" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

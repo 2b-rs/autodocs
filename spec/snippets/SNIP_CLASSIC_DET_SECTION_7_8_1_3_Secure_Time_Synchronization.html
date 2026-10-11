@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_8_1_3_Secure_Time_Synchronization</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TimeSyncOverEthernet.pdf</strong> (Seite 55)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=54" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></strong> (Seite 55)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TS_14198" class="swsref internal-spec-ref"><code>SWS_TS_14198</code></a></span>
         </div>
@@ -99,7 +100,126 @@ Ethernet
 sage,
 the ICV verification of received Follow_Up message is considered to be failed, and the
 Time Slave shall :
-• stop the ICV verification (refer to chapter "ICV Verification". see link i</div></section>
+• stop the ICV verification (refer to chapter "ICV Verification". see link in note below)
+and discard the received Follow_Up message,
+• call
+Det_ReportRuntimeError
+with
+the
+parameter
+ErrorId
+:=
+ETHT-
+SYN_E_FRESHNESSFAILURE (refer [SWS_EthTSyn_00144]),
+• report the security event SEV_TSYN_ETH_FRESHNESS_NOT_AVAILABLE to the
+IdsM (refer to [SWS_EthTSyn_00261]).
+⌋
+Refer to the chapter in [11] for the configuration details of CSM job used for ICV verifi-
+cation.
+[SWS_EthTSyn_00237]
+Upstream requirements: RS_TS_20072
+⌈If EthTSynIcvVerificationBase for the Time Domain is configured to ICV_MAC,
+the Time Slave shall call Csm_MacVerify to verify the ICV value.⌋
+[SWS_EthTSyn_00238]
+Upstream requirements: RS_TS_20072
+⌈If
+EthTSynIcvVerificationBase
+for
+the
+Time
+Domain
+is
+configured
+to
+ICV_SIGNATURE, the Time Slave shall call Csm_SignatureVerify to verify the ICV
+value.⌋
+Note: 7.8.2.4
+Note: The mode parameter is intentionally left open for the implementer to choose (
+i.e. CRYPTO_OPERATIONMODE_SINGLECALL would possibly be the best option since
+it does not require further calls to Csm).
+The CSM job used to generate the ICV can be configured to synchronous or asyn-
+chronous behaviour.
+[SWS_EthTSyn_00239]
+Upstream requirements: RS_TS_20072
+⌈The ICV verification timeout observation is disabled, when the CSM job to verify ICV
+is configured in synchronous behaviour. In this case, the EthTSynIcvVerifica-
+tionTimeout shall be set to 0.⌋
+Ethernet
+[SWS_EthTSyn_00240]
+Upstream requirements: RS_TS_20072
+⌈If Csm_MacVerify or Csm_SignatureVerify returns E_OK, the Time Slave shall
+start the EthTSynIcvVerificationTimeout.⌋
+[SWS_EthTSyn_00241]
+Upstream requirements: RS_TS_20072
+⌈If Csm_MacVerify or Csm_SignatureVerify returns recoverable error code (e.g.,
+CRYPTO_E_BUSY, CRYPTO_QUEUE_FULL), the current verification of received Fol-
+low_Up message is considered to be failed , and the Time Slave shall increment the
+authentication build counter for this Follow_Up message.⌋
+[SWS_EthTSyn_00242]
+Upstream requirements: RS_TS_20072
+⌈The EthTSynIcvVerificationTimeout shall be stopped with the notification of
+the EthTSyn_IcvVerificationIndication callback.⌋
+[SWS_EthTSyn_00243]
+Upstream requirements: RS_TS_20072
+⌈If one of the following conditions is true:
+• the authentication build counter has reached the configuration value EthTSyn-
+RxAuthenticationBuildAttempts,
+• the ICV verification attempt counter has reached the configuration value EthT-
+SynIcvVerificationAttempts,
+• the verification of the ICV has returned a non-recoverable error such as returning
+E_NOT_OK or KEY_FAILURE,
+• EthTSynIcvVerificationTimeout expires before the notification of the EthT-
+Syn_IcvVerificationIndication callback,
+the time slave shall:
+• stop the ICV verification (refer to chapter ICV Verification, see link in note below)
+and discard the received Follow_Up message,
+• report the security event SEV_TSYN_ETH_ICV_VERIFICATION_FAILED to the
+IdsM (refer to [SWS_EthTSyn_00261]).
+⌋
+Note: 7.8.2.4
+Ethernet
+[SWS_EthTSyn_00407]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20072
+⌈For every reception of messages that require ICV verification, EthTSyn shall main-
+tain an authentication build counter (refer EthTSynRxAuthenticationBuildAt-
+tempts).⌋
+[SWS_EthTSyn_00408]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20072
+⌈Upon the initial processing of messages that require ICV verification, the authentica-
+tion build counter shall be set to 0.⌋
+[SWS_EthTSyn_00409]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20072
+⌈If StbM_GetRxFreshness returns recoverable error code (e.g., STBM_E_BUSY),
+the authentication build counter shall be incremented and no attempt for verification of
+the ICV shall be executed.⌋
+[SWS_EthTSyn_00410]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20072
+⌈If building the authenticated message verification has failed and the authentication
+build counter has not yet reached the configuration value EthTSynRxAuthentica-
+tionBuildAttempts, the freshness attempt and ICV verification shall be retried in
+the next call of the EthTSyn_MainFunction.⌋
+[SWS_EthTSyn_00411]
+Status:
+DRAFT
+Upstream requirements: RS_TS_20072
+⌈If the verification of the ICV could be successfully executed but the verification failed
+(e.g. the MAC verification has failed or the key was invalid), the ICV verification attempt
+counter shall be incremented and the authentication build counter shall be set to 0.⌋
+Note: Resetting the authentication build counter shall prevent to drop the authentica-
+tion process too early even though ICV verification attempts are still possible.
+[SWS_EthTSyn_00244]
+Upstream requirements: RS_TS_20072
+⌈When the EthTSyn_IcvVerificationIndication callback is called and ICV
+verification result is successful, the Time Slave shall accept the Follow_Up message
+and call StbM_BusSetGlobalTime to forward the global time to StbM.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -112,7 +232,7 @@ Time Slave shall :
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TimeSyncOverEthernet.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TimeSyncOverEthernet.pdf#page=54" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TimeSyncOverEthernet.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

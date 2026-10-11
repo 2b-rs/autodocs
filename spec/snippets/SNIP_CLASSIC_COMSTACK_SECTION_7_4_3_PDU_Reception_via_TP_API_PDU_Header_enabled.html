@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_4_3_PDU_Reception_via_TP_API_PDU_Header_enabled</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 42)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=42" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 42)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00571" class="swsref internal-spec-ref"><code>SWS_SoAd_00571</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00574" class="swsref internal-spec-ref"><code>SWS_SoAd_00574</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,44 @@ vided by SoAd_RxIndication() and PduInfoType.SduLength set to
 minimum of the received PDU data and the available receive buffer in the
 upper layer module specified by bufferSizePtr at &lt;Up&gt;_[SoAd][Tp]
 StartOfReception())
-(d) call &lt;Up&gt;_[SoAd][Tp]RxIndication() if th</div></section>
+(d) call &lt;Up&gt;_[SoAd][Tp]RxIndication() if the complete PDU has been
+forwarded to the upper layer, otherwise copy all received data which could
+not be forwarded to the upper layer to a SoAd receive buffer for later pro-
+cessing by SoAd_MainFunction()
+2. if a TP reception is in progress for the related socket connection and the related
+SoAd receive buffer is able to store all received data: copy all received data to
+the related SoAd receive buffer for later processing by SoAd_MainFunction()
+⌋
+[SWS_SoAd_00572] ⌈If &lt;Up&gt;_[SoAd][Tp]StartOfReception() does not return
+BUFREQ_OK for a socket connection with PDU Header mode enabled, SoAd shall sim-
+ply discard all data of the PDU.⌋
+Note: &lt;Up&gt;_[SoAd][Tp]RxIndication() will not be called for a PDU when &lt;Up&gt;
+_[SoAd][Tp]StartOfReception() does not return BUFREQ_OK.
+[SWS_SoAd_00573]
+⌈If
+&lt;Up&gt;_[SoAd][Tp]CopyRxData()
+does
+not
+return
+BUFREQ_OK for a socket connection with PDU Header mode enabled, SoAd shall
+terminate the TP receive session, simply discard all data of the PDU and call &lt;Up&gt;
+_[SoAd][Tp]RxIndication() with E_NOT_OK.⌋
+[SWS_SoAd_00574] ⌈In the SoAd_MainFunction() the SoAd shall process as spec-
+ified below if a TP reception is in progress for a socket connection with PDU Header
+mode enabled:
+1. Query the available amount of data at the upper layer by calling the con-
+figurable callback function &lt;Up&gt;_[SoAd][Tp]CopyRxData() with PduInfo-
+Type.SduLength = 0.
+2. Copy all data belonging to this socket connection from the SoAd receive buffer
+which can be accepted by the upper layer module determined at (1) to the upper
+layer by calling &lt;Up&gt;_[SoAd][Tp]CopyRxData()
+3. call &lt;Up&gt;_[SoAd][Tp]RxIndication() if the complete PDU has been for-
+warded to the upper layer and dispatch the next TP-PDU (if any)
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00571] im Text von SWS_SocketAdaptor.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00574] im Text von SWS_SocketAdaptor.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +136,7 @@ StartOfReception())
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=42" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -114,7 +148,7 @@ StartOfReception())
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00571" class="swsref internal-spec-ref"><code>SWS_SoAd_00571</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00574" class="swsref internal-spec-ref"><code>SWS_SoAd_00574</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

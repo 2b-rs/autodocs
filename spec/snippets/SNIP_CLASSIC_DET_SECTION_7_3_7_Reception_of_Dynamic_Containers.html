@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_3_7_Reception_of_Dynamic_Containers</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IPDUMultiplexer.pdf</strong> (Seite 46)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_IPDUMultiplexer.pdf#page=46" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IPDUMultiplexer.pdf</a></strong> (Seite 46)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IpduM_00251" class="swsref internal-spec-ref"><code>SWS_IpduM_00251</code></a></span>
         </div>
@@ -93,7 +94,40 @@ Upstream requirements: SRS_IpduM_02824
 and a defined IpduMContainedRxPduLongHeaderId or IpduMContainedRxP-
 duShortHeaderId, shall have a unique IpduMContainedRxPduLongHeaderId or
 IpduMContainedRxPduShortHeaderId, respectively.⌋
-Note that due to [SWS_IpduM_00206] it is NOT allowed to define several IpduMC</div></section>
+Note that due to [SWS_IpduM_00206] it is NOT allowed to define several IpduMCon-
+tainedRxPdus with the same IpduMContainedRxPduShortHeaderId / IpduM-
+ContainedRxPduLongHeaderId and no assignment to IpduMContainerRxPdu
+(no IpduMContainedRxInContainerPduRef defined).
+Note that it is well possible to have two IpduMContainedRxPdus with no assign-
+ment to IpduMContainerRxPdu (no IpduMContainedRxInContainerPduRef
+defined) which have the same header id value defined, as long as one IpduMCon-
+tainedRxPdu has an IpduMContainedRxPduShortHeaderId defined and the
+other IpduMContainedRxPdu has an IpduMContainedRxPduLongHeaderId de-
+fined.
+Note that due to two ways how IpduMContainedRxPdus can interact with IpduM-
+ContainerRxPdu (IPDUM_ACCEPT_CONFIGURED and IPDUM_ACCEPT_ALL defini-
+tion at the IpduMContainerRxPdu) it is well possible that IpduMContainedRxPdus
+with the same IpduMContainedRxPduShortHeaderId / IpduMContainedRxP-
+duLongHeaderId exist as long as the constraints defined in [SWS_IpduM_00250],
+[SWS_IpduM_00251] are fulfilled.
+[SWS_IpduM_00207]
+Upstream requirements: SRS_IpduM_02820, SRS_IpduM_02824
+⌈If a contained I-PDU of a received IpduMContainerRxPdu with IpduMContain-
+erRxAcceptContainedPdu = IPDUM_ACCEPT_ALL can not be matched according
+to [SWS_IpduM_00206] then this contained I-PDU shall be discarded silently.⌋
+[SWS_IpduM_00208]
+Upstream requirements: SRS_IpduM_02820
+⌈For each contained I-PDU the length given in its header shall be used as the length
+of the corresponding I-PDU.⌋
+[SWS_IpduM_00210]
+Upstream requirements: SRS_IpduM_02820
+⌈When processing a received Container PDU and detecting a header containing the
+ID 0 the processing for this Container PDU shall be stopped and the remaining bytes
+shall be ignored.⌋
+Rationale: A header ID of 0 means that Container PDU has been filled with padding
+bytes and no further data is contained.
+[SWS_IpduM_00210] does not mean that always a 0 has to be expected at the end of
+the payload.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -106,7 +140,7 @@ Note that due to [SWS_IpduM_00206] it is NOT allowed to define several IpduMC</d
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IPDUMultiplexer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_IPDUMultiplexer.pdf#page=46" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IPDUMultiplexer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

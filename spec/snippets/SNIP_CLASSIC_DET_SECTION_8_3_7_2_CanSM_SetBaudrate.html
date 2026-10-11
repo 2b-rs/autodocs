@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: det</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_8_3_7_2_CanSM_SetBaudrate</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANStateManager.pdf</strong> (Seite 89)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANStateManager.pdf#page=89" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANStateManager.pdf</a></strong> (Seite 90)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CanSM_00570" class="swsref internal-spec-ref"><code>SWS_CanSM_00570</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_00009" class="swsref internal-spec-ref"><code>SWS_Det_00009</code></a></span>
         </div>
       </div>
 
@@ -115,11 +116,38 @@ Upstream requirements: SRS_Can_01142
 CanSMSetBaudrateApi is configured with the value FALSE.⌋
 [SWS_CanSM_00502]
 Upstream requirements: SRS_Can_01142
-⌈The CanSM module shall deny the CanSM_SetBaudrate API request</div></section>
+⌈The CanSM module shall deny the CanSM_SetBaudrate API request, if the Net-
+workHandle parameter does not match to the configured Network handles of the
+CanSM module (ref. to [ECUC_CanSM_00161]).⌋
+[SWS_CanSM_00504]
+Upstream requirements: SRS_Can_01142
+⌈The function CanSM_SetBaudrate shall call the function Det_ReportError (ref.
+to [SWS_CanSM_91003]) with ErrorId parameter CANSM_E_INVALID_NETWORK_-
+HANDLE, if it does not accept the network handle of the request.⌋
+[SWS_CanSM_00505]
+Upstream requirements: SRS_Can_01142
+⌈The function CanSM_SetBaudrate shall deny its request, if the requested CAN net-
+work is not in the communication mode COMM_FULL_COMMUNICATION.⌋
+[SWS_CanSM_00530]
+Upstream requirements: SRS_Can_01142
+⌈The CanSM module shall deny the CanSM_SetBaudrate API request, if the CanSM
+module is not initialized.⌋
+[SWS_CanSM_00506]
+Upstream requirements: SRS_Can_01142
+⌈If the function CanSM_SetBaudrate is called and the CanSM module is not
+initialized, then this function shall call the function Det_ReportError (ref.
+to
+[SWS_CanSM_91003]) with ErrorId parameter CANSM_E_UNINIT.⌋
+[SWS_CanSM_00503]
+Upstream requirements: SRS_Can_01142
+⌈IIf no condition is present to deny the CanSM_SetBaudrate request according to
+[SWS_CanSM_00502] and [SWS_CanSM_00505], [SWS_CanSM_00530], then the
+CanSM module shall return E_OK and operate the process for the requested baud rate
+change as specified with [SWS_CanSM_00507].⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_CanSM_00570] im Text von SWS_CANStateManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Det_ReportError().</p>
       </section>
 
       <section class="snip-card">
@@ -128,11 +156,11 @@ Upstream requirements: SRS_Can_01142
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CANStateManager.pdf#page=89" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 89</td>
+              <td>Seite 90</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -140,7 +168,7 @@ Upstream requirements: SRS_Can_01142
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CanSM_00570" class="swsref internal-spec-ref"><code>SWS_CanSM_00570</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Det_00009" class="swsref internal-spec-ref"><code>SWS_Det_00009</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -148,7 +176,7 @@ Upstream requirements: SRS_Can_01142
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ETH_SECTION_7_1_7_2_Egress_queue</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetDriver.pdf</strong> (Seite 41)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></strong> (Seite 41)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_Eth_CONSTR_00020</span>
         </div>
@@ -107,7 +108,53 @@ Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
 ConfigEgressQueue shall be applied as filter on an Ethernet frame to identify a
 match. If a match is identified, then this Ethernet frame shall be enqueued in the af-
 fected EthCtrlConfigEgressQueue.⌋
-[SWS_Eth_00416] Error handling if an Ethernet frame could not</div></section>
+[SWS_Eth_00416] Error handling if an Ethernet frame could not be identified as
+match for an EthCtrlConfigEgressQueue
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an Ethernet frame could not be identified as match to be enqueued in any configured
+EthCtrlConfigEgressQueue at the same Ethernet controller, then the Ethernet
+frame shall be dropped and a runtime error with error code ETH_E_NO_MATCHING_-
+EGRESS_QUEUE_IDENTIFIED shall be reported.⌋
+[SWS_Eth_CONSTR_00018] Prioritization of EthCtrlConfigEgressQueues to
+identify a match for enqueueing an Ethernet frame
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an EthCtrlConfigEgress of the same Ethernet controller have at least
+two EthCtrlConfigEgressQueues with different EthCtrlConfigEgressQueue-
+SortingTypes configured, then it will be prioritized as per EthCtrlConfigE-
+gressQueueSortingEntry, a lower index being the higher priority.⌋
+[SWS_Eth_00417] Indentifiaction of an EthCtrlConfigEgressQueue match
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈If an EthCtrlConfig have multiple EthCtrlConfigEgressQueues configured,
+then the EthCtrlConfigEgressQueueSortingType with the highest priority i.e.
+lowest index of EthCtrlConfigEgressQueueSortingEntry shall be applied to
+identify a match for this Ethernet frame. If no match could be identified, proceed in de-
+scending order with the next sorting EthCtrlConfigEgressQueueSortingType.⌋
+[SWS_Eth_CONSTR_00019]
+EthCtrlConfigEgressQueue with no EthCtrl-
+ConfigEgressQueueSortingType configured
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An EthCtrlConfigEgressQueue with no EthCtrlConfigEgressQueueSort-
+ingType configured, shall always have the lowest priority i.e. highest index of EthC-
+trlConfigEgressQueueSortingEntry.⌋
+[SWS_Eth_CONSTR_00020]
+EthCtrlConfigEgressQueue with no EthCtrl-
+ConfigEgressQueueSortingType per EthCtrlConfig
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00171, SRS_BSW_00350, SRS_BSW_00386
+⌈An EthCtrlConfig shall have at most one EthCtrlConfigEgressQueue with no
+EthCtrlConfigEgressQueueSortingTypes configured.⌋
+Note: A EthCtrlConfigEgressQueue with no EthCtrlConfigEgressQueue-
+SortingType configured, could be used as default egress queue where all Ethernet
+frames are added which could not be sorted in other egress queues.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -120,7 +167,7 @@ fected EthCtrlConfigEgressQueue.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_EthernetDriver.pdf#page=41" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

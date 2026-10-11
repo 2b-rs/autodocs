@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_1_Std_ReturnType_Rte_Write__p___o_boolean_v</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 389)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=389" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 389)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01583" class="swsref"><code>TPS_SWCT_01583</code></a></span>
         </div>
@@ -121,7 +122,34 @@ Definition of the TextTableMapping in XML:
 &lt;/SECOND-DATA-PROTOTYPE-REF&gt;
 &lt;TEXT-TABLE-MAPPINGS&gt;
 &lt;TEXT-TABLE-MAPPING&gt;
-&lt;IDENTICAL-MAPPING&gt;true&lt;/IDENTICAL-</div></section>
+&lt;IDENTICAL-MAPPING&gt;true&lt;/IDENTICAL-MAPPING&gt;
+&lt;MAPPING-DIRECTION&gt;firstToSecond&lt;/MAPPING-DIRECTION&gt;
+&lt;BITFIELD-TEXTTABLE-MASK-FIRST&gt;
+0b00000000000000000000000000001111
+&lt;/BITFIELD-TEXTTABLE-MASK-FIRST&gt;
+&lt;BITFIELD-TEXTTABLE-MASK-SECOND&gt;
+0b00001111
+&lt;/BITFIELD-TEXTTABLE-MASK-SECOND&gt;
+&lt;/TEXT-TABLE-MAPPING&gt;
+&lt;/TEXT-TABLE-MAPPINGS&gt;
+&lt;/DATA-PROTOTYPE-MAPPING&gt;
+&lt;/DATA-MAPPINGS&gt;
+&lt;/VARIABLE-AND-PARAMETER-INTERFACE-MAPPING&gt;
+&lt;/PORT-INTERFACE-MAPPINGS&gt;
+&lt;/PORT-INTERFACE-MAPPING-SET&gt;
+C code for Implementation of Rte_Read:
+1
+Std_ReturnType Rte_Read_&lt;p&gt;_&lt;o&gt;(uint8 *v) {
+2
+/* fetch the bit field from the RAM Block */
+3
+uint32 bitfield = Rte_RamBlk_&lt;BlkNr&gt;.bitfield;
+4
+/* bit operation (masking &amp; shifting) - start position 28 and length
+5
+4 are deduced from BITFIELD-TEXTTABLE-MASK-FIRST */
+6
+*v = Bfx_GetBits_u8u8u8_u32(bitfield, 28, 4) &amp;</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -134,7 +162,7 @@ Definition of the TextTableMapping in XML:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=389" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

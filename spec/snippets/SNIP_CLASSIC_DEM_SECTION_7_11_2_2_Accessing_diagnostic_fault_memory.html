@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_11_2_2_Accessing_diagnostic_fault_memory</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 215)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=213" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 215)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91025" class="swsref internal-spec-ref"><code>SWS_Dem_91025</code></a></span>
         </div>
@@ -95,11 +96,86 @@ Dem shall return DEM_BUSY.⌋
 [SWS_Dem_01305]Behavior if one client starting a new operation while the previ-
 ous one is still running ⌈In case any of the Dem_SelectDTC related APIs according
 to [SWS_Dem_01253] is called by one client and the same client has already started
-another Dem_SelectDTC related ope</div></section>
+another Dem_SelectDTC related operation according to [SWS_Dem_01253] and this
+different operation is not completed, the Dem shall return DEM_BUSY.⌋
+[SWS_Dem_01304]
+Life cycle of Dem_Select dependent operations ⌈The
+Dem
+shall
+consider
+an
+operation
+based
+on
+Dem_SelectDTC
+according
+to
+[SWS_Dem_01253] to be finished independently if the client has requested the E_OK
+result from the Dem or not.⌋
+A client calling Dem_SelectDTC while another operation of the same client is still
+running, would indicate that the client is no longer interested in the result of the running
+operation. The result can be dropped and new select can be processed after Dem is
+ready.
+[SWS_Dem_01198] ⌈For addressing all DTCs, the Dem shall provide the symbol
+DEM_DTC_GROUP_ALL_DTCS which is selecting all configured DTCs (representation
+is 0xFFFFFF).⌋
+[SWS_Dem_01254] ⌈The API Dem_SelectDTC triggers the Dem internal DTC selec-
+tion process on the event memory assigned to the ClientId. The result of the selection
+shall be reflected in the return value of the API calls following the Dem_SelectDTC
+call, see [SWS_Dem_01253].⌋
+Note:The behaviour of Dem_SelectDTC depending APIs with calling Dem_Select-
+DTC is described in [SWS_Dem_01299].
+Note: The Dem_SelectDTC selects internally a DTC or group of DTC. In case a client
+is interested only in the result of the selection without a further action behind, the API
+Dem_GetDTCSelectionResult can be used. One use case of this API is the NRC
+handling for the UDS service 0x14 ClearDTC. The Dcm needs to perform further NRC
+relevant verifications between selecting and deleting the DTC.
+[SWS_Dem_01372] Selection of 3 byte OBD DTCs
+Upstream requirements: RS_Diag_04253
+⌈If Dem_SelectDTC is called with DTCFormat equal to DEM_DTC_FORMAT_OBD_-
+3BYTE, the Dem shall select only DTCs based on the 3 byte OBD Format defined by
+DemDtcValue3Byte.⌋
+[SWS_Dem_01261] API Behaviour on undefined DTC or format
+Upstream requirements: SRS_BSW_00369
+⌈If any of the APIs requiring a Dem_SelectDTC according to [SWS_Dem_01253] is
+called while the selection with Dem_SelectDTC is invalid, then the Dem shall return
+DEM_WRONG_DTC. A selection is invalid in case the provided DTC does not specify a
+valid DTC or GroupOfDTCs in the corresponding DTCFormat. The selection also is
+invalid, if Dem_SelectDTC was not called before.⌋
+[SWS_Dem_01299] API behavior without selected DTC
+Upstream requirements: SRS_BSW_00369
+⌈If any of the APIs requiring a Dem_SelectDTC according to [SWS_Dem_01253] is
+called without a prior call of Dem_SelectDTC for this client, the Dem shall report the
+Det DEM_E_WRONG_CONDITION.⌋
+[SWS_Dem_01262] API Behaviour on undefined DTCOrigin ⌈If any of the APIs
+requiring a Dem_SelectDTC (see [SWS_Dem_01253]) is called on a not existing se-
+lected DTCOrigin, the Dem shall return DEM_WRONG_DTCORIGIN on this API.⌋
+[SWS_Dem_01373] API behavior on not supported OBD 3 byte DTC
+Upstream requirements: RS_Diag_04253
+⌈If DemSupportedObdUdsDtcSeparation is not configured or is set to FALSE and
+any Dem API having DTC format as a parameter is called with DTCFormat set to DEM_
+DTC_FORMAT_OBD_3BYTE, the Dem shall report the Det DEM_E_PARAM_DATA.⌋
+[SWS_Dem_01256] ⌈The API Dem_GetDTCSelectionResult shall return E_OK, if
+the selection of Dem_SelectDTC was successful and the DTC or group of DTC are
+ready for further processing.⌋
+Note: The call of Dem_GetDTCSelectionResult after a Dem_SelectDTC is op-
+tional. APIs depending on Dem_SelectDTC have the same behaviour with or without
+a call of Dem_GetDTCSelectionResult.
+[SWS_Dem_01257] ⌈If the API Dem_GetDTCSelectionResult is called and the
+DTC or group of DTC from Dem_SelectDTC is invalid, the Dem shall return DEM_
+WRONG_DTC.⌋
+[SWS_Dem_01258] ⌈If the API Dem_GetDTCSelectionResult is called and the
+Origin provided to Dem_SelectDTC is invalid, the Dem shall return DEM_WRONG_-
+DTCORIGIN.⌋
+[SWS_Dem_01296] Definition of Dem_GetDTCSelectionResultForClearDTC func-
+tionality ⌈The API Dem_GetDTCSelectionResultForClearDTC shall behave ex-
+actly as Dem_GetDTCSelectionResult with the only difference that, DEM_WRONG_
+DTC is returned in case of a single DTC was selected and DemClearDTCLimitation
+is set to DEM_ONLY_CLEAR_ALL_DTCS for that client.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_GetDTCSuppression().</p>
       </section>
 
       <section class="snip-card">
@@ -108,7 +184,7 @@ another Dem_SelectDTC related ope</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=213" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

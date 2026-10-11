@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_4_2_6_Fault_Operation_and_Error_Detection</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>RS_BSWGeneral.pdf</strong> (Seite 33)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_RS_BSWGeneral.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_BSWGeneral.pdf</a></strong> (Seite 33)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Det_00026" class="swsref internal-spec-ref"><code>SWS_Det_00026</code></a></span>
         </div>
@@ -99,7 +100,150 @@ Upstream requirements: RS_BRF_02168
 ⌈
 Description:
 All AUTOSAR Basic Software Modules shall not return specific development
-error codes via the API.</div></section>
+error codes via the API. In case of a detected development error, the error shall
+only be reported to the Det.
+Rationale:
+The production version of a module shall have a limited number of return
+values.
+Use Case:
+–
+Dependencies:
+[SRS_BSW_00337] ,[SRS_BSW_00327] ,[SRS_BSW_00357]
+Supporting
+Material:
+–
+⌋
+[SRS_BSW_00339] Reporting of production relevant error status
+Upstream requirements: RS_BRF_02184, RS_BRF_02168
+⌈
+Description:
+AUTOSAR Basic Software Modules shall report all production errors and
+extended production errors to the Dem (Diagnostic Event Manager).
+Rationale:
+• Central configuration and handling of error events instead of
+• spreading the handling all over the Basic Software.
+• Common reporting to the lamps
+• Common reporting to the garage
+• Centralized fail-safe reactions through FiM
+Use Case:
+Error events like (e.g CANSM_E_BUS_OFF) are reported to the Dem.
+Dependencies:
+[RS_BSWMD_00069] Configuration for production errors and extended
+production errors
+[SRS_Diag_04063] Single Event ID for each monitoring path
+Supporting
+Material:
+–
+⌋
+[SRS_BSW_00422] Pre-de-bouncing of error status information is done within
+the Dem ⌈
+Description:
+Pre-de-bouncing of error status information reported via
+Dem_SetEventStatus is done within the Dem.
+Pre-de-bouncing is handled inside the Diagnostic Event Manager using
+AUTOSAR predefined generic signal de-bouncing libraries.
+The Diagnostic Event Manager shall define the interface to the libraries. By
+defining the interface it is possible for the user to implement further extensions
+for more complex pre-de-bouncing algorithms.
+Rationale:
+Central configuration and handling of error events instead of spreading the
+handling all over the Basic Software.
+Use Case:
+–
+Dependencies:
+[SRS_BSW_00339] Reporting of production relevant error status
+Supporting
+Material:
+–
+⌋
+Note related to [SRS_BSW_00422]: Figure 4.1 shows only one of several possible
+use cases (error detected and notified). The timer function shall be provided (in this
+example) in the pre-de-bouncing library of the Diagnostic Event Manager.
+Figure 4.1
+[SRS_BSW_00417] Software which is not part of the SW-C shall report error
+events only after the Dem is fully operational.
+Upstream requirements: RS_BRF_02184, RS_BRF_02168
+⌈
+Description:
+Software which is not part of the SW-C shall report error events only after the
+Dem is fully operational.
+Rationale:
+It is only possible to store errors in error memory after the Dem is fully
+operational. To simplify error handling within Dem (and to gain efficiency) this
+requirement is needed.
+Use Case:
+Reporting of non plausible sensor values.
+Dependencies:
+–
+Supporting
+Material:
+–
+⌋
+[SRS_BSW_00323] All AUTOSAR Basic Software Modules shall check passed
+API parameters for validity
+Upstream requirements: RS_BRF_01384
+⌈
+Description:
+All AUTOSAR Basic Software Modules shall check passed API parameters for
+validity. The (minimum) conditions if a parameter needs to be treated as invalid
+shall be described for each parameter (e.g. check of reserved values).
+This checking shall be statically configurable (ON/OFF) per module with one
+single preprocessor switch.
+Rationale:
+Ease of debugging for development, efficient code for deployment.
+▽
+△
+Use Case:
+The EEPROM driver provides internal checking of API parameters which is
+only activated for the first software integration test (’development build’) and
+disabled afterwards (’deployment build’).
+Dependencies:
+[SRS_BSW_00350],[SRS_BSW_00327]
+Supporting
+Material:
+–
+⌋
+[SRS_BSW_00004] All Basic SW Modules shall perform a pre-processor check
+of the versions of all imported include files ⌈
+Description:
+All Basic SW Modules shall perform a pre-processor check of the versions of all
+imported include files (Inter Module Checks).
+Rationale:
+Compatibility enforcement, error avoidance, ease of integration
+Use Case:
+The integration of incompatible imported files shall be avoided.
+The version numbers of all modules shall be listed in the Basic Software
+Description Template. During configuration a tool shall check whether the
+version numbers of all integrated modules belong to the same AUTOSAR major
+and minor release (same baseline). If not an error shall be reported.
+For the update of Basic Software Modules, version conflicts shall be detected.
+Example:
+• For included files from other modules, the AUTOSAR- MAJOR and MINOR
+Release Version shall be verified. I.e. Can.c includes Dem.h: Only MAJOR
+and MINOR Release versions shall be verified.
+Dependencies:
+[SRS_BSW_00003] ,[SRS_BSW_00318] ,[SRS_BSW_00402]
+Supporting
+Material:
+The term AUTOSAR baseline is defined in release management process.
+⌋
+[SRS_BSW_00409] All production code error ID symbols are defined by the Dem
+module and shall be retrieved by the other BSW modules from Dem configuration
+⌈
+Description:
+All production code error ID symbols are defined by the Dem module and shall
+be retrieved by the other BSW modules from Dem configuration.
+Rationale:
+The error codes shall be defined in a central file, to simplify the include
+structure of the Dem.
+Use Case:
+–
+Dependencies:
+–
+Supporting
+Material:
+–
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -112,7 +256,7 @@ error codes via the API.</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>RS_BSWGeneral.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_RS_BSWGeneral.pdf#page=33" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">RS_BSWGeneral.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

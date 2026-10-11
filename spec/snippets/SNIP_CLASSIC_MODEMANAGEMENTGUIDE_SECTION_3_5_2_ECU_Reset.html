@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -107,7 +108,71 @@ EXECUTE. By this ﬁnal mode switch the DCM request the BswM to ﬁnally shutdow
 the ECU and to to perform the reset.
 Listing 3.26 depicts how the different reset szenarios speziﬁed in the DCM can be
 conﬁgured in the DCM. Note that in the running example of this document the overall
-Ec</div></section>
+EcuMode is used to signal to the DCM that the ECU is ready to be reset. Depending
+on the diagnostic service the DCM shall wait for this acknowledgment or switch imme-
+diately to the EXECUTE mode, which will cause the BswM to invoke EcuM_GoDown.
+Listing 3.26: Ruleset to implement different reset szenarios
+rule DcmEcuResetHard initially false {
+if ( DcmEcuResetMode == DcmEcuReset.HARD) {
+actionlist DcmEcuResetHardActions
+}
+}
+actions DcmEcuResetHardActions on condition {
+custom "EcuM_SelectShutdownTarget(ECU_RESET, ECUM_RESET_IO)"
+custom "EcuM_SelectShutdownCause(ECUM_CAUSE_DCM)"
+custom "EcuM_SetState(ECU_RESET_READY)"
+}
+rule DcmEcuResetKeyOnOff initially false {
+if ( DcmEcuResetMode == DcmEcuReset.KEYONOFF) {
+actionlist DcmEcuResetKeyOnOffActions
+}
+}
+actions DcmEcuResetKeyOnOffActions on condition {
+custom "EcuM_SelectShutdownTarget(ECU_RESET,ECUM_RESET_IO)"
+custom "EcuM_SelectShutdownCause(ECUM_CAUSE_DCM)"
+custom "EcuM_SetState(ECU_RESET_READY)"
+}
+rule DcmEcuResetSoft initially false {
+if ( DcmEcuResetMode == DcmEcuReset.SOFT) {
+actionlist DcmEcuResetSoftActions
+}
+}
+actions DcmEcuResetSoftActions on condition {
+custom "EcuM_SelectShutdownTarget(ECU_RESET, ECUM_RESET_MCU)"
+custom "EcuM_SelectShutdownCause(ECUM_CAUSE_DCM)"
+Guide to Modemanagement
+custom "EcuM_SetState(ECU_RESET_READY)"
+}
+rule DcmEcuResetBootLoader initially false {
+if ( DcmEcuResetMode == DcmEcuReset.JUMPTOBOOTLOADER) {
+actionlist DcmEcuResetBootLoaderActions
+}
+}
+actions DcmEcuResetBootLoaderActions on condition {
+custom "EcuM_SelectShutdownTarget(ECU_RESET, ECUM_RESET_MCU)"
+custom "EcuM_SelectShutdownCause(ECUM_CAUSE_DCM)"
+custom "EcuM_SelectBootTarget(ECUM_BOOT_TARGET_OEM_BOOTLOADER)"
+custom "EcuM_SetState(ECU_RESET_READY)"
+}
+rule DcmEcuResetSupplierBootloader initially false {
+if ( DcmEcuResetMode == DcmEcuReset.JUMPTOSYSSUPPLIERBOOTLOADER ) {
+actionlist DcmEcuResetSupplierBootloaderActions
+}
+}
+actions DcmEcuResetSupplierBootloaderActions on condition {
+custom "EcuM_SelectShutdownTarget(ECU_RESET, ECUM_RESET_MCU)"
+custom "EcuM_SelectShutdownCause(ECUM_CAUSE_DCM)"
+custom "EcuM_SelectBootTarget(ECUM_BOOT_TARGET_SYS_BOOTLOADER)"
+custom "EcuM_SetState(ECU_RESET_READY)"
+}
+rule DcmEcuReset initially false {
+if ( DcmEcuResetMode == DcmEcuReset.EXECUTE ) {
+actionlist DcmEcuResetActions
+}
+}
+actions DcmEcuResetActions on condition {
+custom "EcuM_GoDown(MODULE_ID)"
+}</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

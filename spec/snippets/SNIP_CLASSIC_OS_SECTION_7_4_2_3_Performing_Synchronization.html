@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/os.html">Modul: os</a></span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 98%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_OS_SECTION_7_4_2_3_Performing_Synchronization</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 56)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=56" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 57)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00419" class="swsref internal-spec-ref"><code>SWS_Os_00419</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00422" class="swsref internal-spec-ref"><code>SWS_Os_00422</code></a></span>
         </div>
       </div>
 
@@ -92,11 +93,34 @@ configured OsScheduleTblExplicitPrecision threshold.⌋
 Upstream requirements: SRS_Os_11002
 ⌈The Operating System module shall set the state of an explicitly synchronized Sched-
 uleTable to "running" if the deviation is greater than the configured OsScheduleT-
-blExplicitPrecision threshol</div></section>
+blExplicitPrecision threshold.⌋
+[SWS_Os_00420]
+Upstream requirements: SRS_Os_11002
+⌈IF the deviation is non-zero AND the next expiry point is adjustable AND the table
+is behind the sync Counter (TableTicksAheadOfSyncCounter &lt;= TableTicksBehindOf
+SyncCounter) THEN the OS shall set the next EP to expire delay - min(MaxShorten,
+Deviation) ticks from the current expiry.⌋
+[SWS_Os_00421]
+Upstream requirements: SRS_Os_11002
+⌈IF the deviation is non-zero AND the next expiry point is adjustable AND the table is
+ahead of the sync Counter (TableTicksAheadOfSyncCounter &gt; TableTicksBehindOf
+SyncCounter) THEN the OS shall set the next EP to expire delay + min(MaxLengthen,
+Deviation) ticks from the current expiry.⌋
+Figure 7.8 shows explicit synchronization of a ScheduleTable. It assumes the fol-
+lowing:
+• EP1-3 have OsScheduleTableMaxLengthen=2
+• EP1-3 have OsScheduleTableMaxShorten =1
+Figure 7.8: Explicit ScheduleTable Synchronization
+The Operating System module provides the service SetScheduleTableAsync (see
+[SWS_Os_00422]) to cancel synchronization being performed at adjustable expiry
+points on a ScheduleTable.
+The Operating System module provides the service GetScheduleTableStatus (see
+[SWS_Os_00227]) to query the state of a ScheduleTable also with respect to syn-
+chronization.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Os_00419] im Text von SWS_OS.</p>
+        <p class="snip-rationale-text">Explizite Erwähnung von SWS_Os_00422 im Text des Dokuments AUTOSAR_CP_SWS_OS.pdf.</p>
       </section>
 
       <section class="snip-card">
@@ -105,11 +129,11 @@ blExplicitPrecision threshol</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=56" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 56</td>
+              <td>Seite 57</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -117,7 +141,7 @@ blExplicitPrecision threshol</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Os_00419" class="swsref internal-spec-ref"><code>SWS_Os_00419</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Os_00422" class="swsref internal-spec-ref"><code>SWS_Os_00422</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -125,7 +149,7 @@ blExplicitPrecision threshol</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.98</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_6_3_Configurable_interfaces_DIAGNOSTICOVERIP</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticOverIP.pdf</strong> (Seite 88)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticOverIP.pdf#page=87" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticOverIP.pdf</a></strong> (Seite 88)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -116,11 +117,163 @@ Service Name
 Syntax
 Std_ReturnType &lt;User&gt;_DoIPRoutingActivationConfirmation (
 boolean* Confirmed,
-const uint8* Confirmat</div></section>
+const uint8* ConfirmationReqData,
+uint8* ConfirmationResData
+)
+Sync/Async
+Synchronous
+Reentrancy
+Don’t care
+Parameters (in)
+ConfirmationReqData
+Pointer to OEM specific bytes for Routing activation request. Only
+needed if DoIPRoutingActivationConfirmationReqLength is not 0.
+Parameters (inout)
+None
+Confirmed
+Pointer containing the information if Confirmation was successful
+(TRUE) or not (FALSE). Only valid if the return value equals E_
+OK.
+Parameters (out)
+ConfirmationResData
+Pointer to OEM specific bytes for Response on Routing
+activation. Only needed if DoIPRoutingActivationConfirmationRes
+Length if not 0. Contains valid data if function return with E_OK.
+Return value
+Std_ReturnType
+E_OK: Confirmed and ConfirmationResData contain valid Data.
+DOIP_E_PENDING: Confirmation still running. Call next DoIP_
+MainFunction cycle again.
+E_NOT_OK: Confirmed and/or ConfirmationResData do not
+contain valid information.
+Description
+Callback function to get the confirmation for the Routing Activation.
+Available via
+DoIP_Externals.h
+⌋
+8.6.3.3
+&lt;User&gt;_DoIPRoutingActivationAuthentication
+[SWS_DoIP_00049] Definition of configurable interface &lt;User&gt;_DoIPRoutingAc-
+tivationAuthentication
+Upstream requirements: RS_Diag_00084
+⌈
+Service Name
+&lt;User&gt;_DoIPRoutingActivationAuthentication
+Syntax
+Std_ReturnType &lt;User&gt;_DoIPRoutingActivationAuthentication (
+boolean* Authentified,
+const uint8* AuthenticationReqData,
+uint8* AuthenticationResData
+)
+Sync/Async
+Synchronous
+Reentrancy
+Don’t care
+Parameters (in)
+AuthenticationReqData
+Pointer to OEM specific bytes for Routing activation request. Only
+needed if DoIPRoutingActivationAuthenticationReqLength is not
+0.
+Parameters (inout)
+None
+Authentified
+Pointer containing the information if Confirmation was successful
+(TRUE) or not (FALSE). Only valid if the return value equals E_
+OK.
+Parameters (out)
+AuthenticationResData
+Pointer to OEM specific bytes for Response on Routing activation.
+Only needed if DoIPRoutingActivationAuthenticationResLength if
+not 0. Contains valid data if function return with E_OK.
+Return value
+Std_ReturnType
+E_OK: Authentified and AuthenticationResData contain valid Data.
+DOIP_E_PENDING: Authentication still running. Call next DoIP_
+MainFunction cycle again.
+E_NOT_OK: Authentified and/or AuthenticationResData do not
+contain valid information.
+Description
+Callback function to get the confirmation for the Routing Activation.
+Available via
+DoIP_Externals.h
+⌋
+8.6.3.4
+&lt;User&gt;_DoIPTriggerGidSyncCallback
+[SWS_DoIP_00050] Definition of configurable interface &lt;User&gt;_DoIPTriggerGid
+SyncCallback
+Upstream requirements: RS_Diag_00026
+⌈
+Service Name
+&lt;User&gt;_DoIPTriggerGidSyncCallback
+Syntax
+Std_ReturnType &lt;User&gt;_DoIPTriggerGidSyncCallback (
+void
+)
+▽
+△
+Sync/Async
+Synchronous
+Reentrancy
+Don’t care
+Parameters (in)
+None
+Parameters (inout)
+None
+Parameters (out)
+None
+Return value
+Std_ReturnType
+E_OK: GroupIdentifier Synchronization was triggered
+E_NOT_OK: GroupIdentifier Synchronization could not be
+triggered so try again next MainFunction
+Description
+Function is used in the case that DoIPVinGIDMaster is set to true and a container DoIPTrigger
+GidSyncCallback is configured to trigger the synchronization process of the GroupIdentifier.
+The &lt;User&gt; part of the function name is configurable via parameter DoIPTriggerGidSyncDirect
+([ECUC_DoIP_00029]).
+Available via
+DoIP_Externals.h
+⌋
+8.6.3.5
+&lt;User&gt;_DoIPGetGidCallback
+[SWS_DoIP_00051] Definition of configurable interface &lt;User&gt;_DoIPGetGidCall-
+back
+Upstream requirements: RS_Diag_00026
+⌈
+Service Name
+&lt;User&gt;_DoIPGetGidCallback
+Syntax
+Std_ReturnType &lt;User&gt;_DoIPGetGidCallback (
+uint8* GroupId
+)
+Sync/Async
+Synchronous
+Reentrancy
+Don’t care
+Parameters (in)
+None
+Parameters (inout)
+None
+Parameters (out)
+GroupId
+Pointer to GroupIdentifier
+Return value
+Std_ReturnType
+E_OK: GroupId contains a valid value
+E_NOT_OK: GroupId does not contain a valid value
+Description
+Function is used in the case that DoIPVinGIDMaster is set to false and DoIPGetGidCallback is
+configured to get on a vehicle identification the GID. If the return value is not E_OK the DoIP
+shall use the default GID.
+The &lt;User&gt; part of the function name is configurable via parameter DoIPGetGidDirect
+([ECUC_DoIP_00028]).
+Available via
+DoIP_Externals.h
+⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -129,7 +282,7 @@ const uint8* Confirmat</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticOverIP.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_DiagnosticOverIP.pdf#page=87" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticOverIP.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

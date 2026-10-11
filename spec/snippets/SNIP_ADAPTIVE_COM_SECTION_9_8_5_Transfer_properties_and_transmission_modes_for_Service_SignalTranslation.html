@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_ADAPTIVE_COM_SECTION_9_8_5_Transfer_properties_and_transmission_modes_for_Service_SignalTranslation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_ManifestSpecification.pdf</strong> (Seite 503)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#page=503" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ManifestSpecification.pdf</a></strong> (Seite 503)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_01075" class="swsref"><code>TPS_SYST_01075</code></a></span>
         </div>
@@ -112,7 +113,86 @@ TransmissionModeDeclaration
 Note
 AUTOSAR COM provides the possibility to define two different TRANSMISSION MODES (True and
 False) for each I-PDU.
-As TransmissionMode selector the signal content can be evaluated via transmissio</div></section>
+As TransmissionMode selector the signal content can be evaluated via transmissionModeCondition
+(implemented directly in the COM module) or mode conditions can be defined with the modeDrivenTrue
+Condition or modeDrivenFalseCondition (evaluated by BswM and invoking Com_SwitchIpduTxMode
+COM API). If modeDrivenTrueCondition and modeDrivenFalseCondition are defined they shall never
+evaluate to true both at the same time.
+The mixing of Transmission Mode Switch via API and signal value is not allowed.
+Base
+ARObject
+Aggregated by
+IPduTiming.transmissionModeDeclaration
+Attribute
+Type
+Mult.
+Kind
+Note
+modeDriven
+FalseCondition
+ModeDriven
+TransmissionMode
+Condition
+*
+aggr
+Defines the trigger for the Com_SwitchIpduTxMode
+Transmission Mode switch. Only if all defined modeDriven
+FalseConditions evaluate to true (AND associated) the
+transmissionModeFalseTiming shall be activated. mode
+DrivenTrueCondition and modeDrivenFalseCondition
+shall never evaluate to true both at the same time.
+▽
+△
+Class
+TransmissionModeDeclaration
+modeDriven
+TrueCondition
+ModeDriven
+TransmissionMode
+Condition
+*
+aggr
+Defines the trigger for the Com_SwitchIpduTxMode
+Transmission Mode switch. Only if all defined modeDriven
+TrueConditions evaluate to true (AND associated) the
+transmissionModeTrueTiming shall be activated. mode
+DrivenTrueCondition and modeDrivenFalseCondition
+shall never evaluate to true both at the same time.
+transmission
+ModeCondition
+TransmissionMode
+Condition
+*
+aggr
+The Transmission Mode Selector evaluates the conditions
+for a subset of signals and decides which transmission
+mode should be used. In case only one transmission
+mode is used there is no need for the "TransmissionMode
+Condition" and its sub-structure. In case the transmission
+mode shall be switched using the COM-API "Com_Switch
+IpduTxMode" there is no need for the "TransmissionMode
+Condition" and its sub-structure.
+transmission
+ModeFalse
+Timing
+TransmissionMode
+Timing
+0..1
+aggr
+Timing Specification if the COM Transmission Mode is
+false. The Transmission Mode Selector is defined to be
+false, if all Conditions evaluate to false.
+transmission
+ModeTrue
+Timing
+TransmissionMode
+Timing
+0..1
+aggr
+Timing Specification if the COM Transmission Mode is
+true. The Transmission Mode Selector is defined to be
+true, if at least one Condition evaluates to true.
+Table 9.12: TransmissionModeDeclaration</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -125,7 +205,7 @@ As TransmissionMode selector the signal content can be evaluated via transmissio
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_ManifestSpecification.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#page=503" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_ManifestSpecification.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

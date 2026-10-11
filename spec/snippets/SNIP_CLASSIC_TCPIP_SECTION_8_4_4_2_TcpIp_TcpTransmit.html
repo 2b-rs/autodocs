@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: tcpip</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_8_4_4_2_TcpIp_TcpTransmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_TcpIp.pdf</strong> (Seite 109)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=109" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></strong> (Seite 109)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TCPIP_00125" class="swsref internal-spec-ref"><code>SWS_TCPIP_00125</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_TcpIp_00125" class="swsref internal-spec-ref"><code>SWS_TcpIp_00125</code></a></span>
         </div>
       </div>
 
@@ -113,11 +114,36 @@ None
 Return value
 Std_ReturnType
 E_OK: The request has been accepted
-E_NOT_OK: The request has not be</div></section>
+E_NOT_OK: The request has not been accepted, e.g. due to a
+lack of buffer space or the socket is not connected.
+Description
+This service requests transmission of data via TCP to a remote node. The transmission of the
+data is decoupled.
+Note: The TCP segment(s) are sent dependent on runtime factors (e.g. receive window) and
+configuration parameter (e.g. Nagle algorithm) .
+Available via
+TcpIp.h
+⌋
+[SWS_TcpIp_00123] ⌈The service TcpIp_TcpTransmit() shall transmit data via
+TCP and the socket specified by SocketId to the connected remote socket.⌋
+Note: Transmission stated in [SWS_TcpIp_00123] is done according to the sequence
+diagram specified in section Chapter 9.4.
+[SWS_TcpIp_00124] ⌈DataPtr shall either point to a linear buffer of Available-
+Length bytes containing the data for transmission or be a NULL_PTR. For data trans-
+mission the service TcpIp_TcpTransmit() shall either use all data from the linear
+buffer if DataPtr is not a NULL_PTR, or retrieve up to AvailableLength data bytes
+from the upper layer by calling &lt;Up_CopyTxData&gt;() one or multiple times in the con-
+text of this service otherwise.⌋
+[SWS_TcpIp_00125] ⌈The service TcpIp_TcpTransmit() shall retrieve exactly
+AvailableLength bytes from the upper layer if the parameter DataPtr is a
+NULL_PTR and ForceRetrieve is TRUE. (If DataPtr is a NULL_PTR and ForceRe-
+trieve is FALSE, TcpIp may retrieve less data then available).⌋
+Note: The TCP segment(s) are sent dependent on runtime factors (e.g. receive win-
+dow) and configuration parameter (e.g. Nagle algorithm).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Defines ForceRetrieve length behavior</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_TcpIp_00125] im Text von SWS_TcpIp.</p>
       </section>
 
       <section class="snip-card">
@@ -126,7 +152,7 @@ E_NOT_OK: The request has not be</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_TcpIp.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_TcpIp.pdf#page=109" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_TcpIp.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -138,15 +164,15 @@ E_NOT_OK: The request has not be</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_TCPIP_00125" class="swsref internal-spec-ref"><code>SWS_TCPIP_00125</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_TcpIp_00125" class="swsref internal-spec-ref"><code>SWS_TcpIp_00125</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

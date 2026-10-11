@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FEE_SECTION_8_3_2_Fee_Read</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlashEEPROMEmulation.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlashEEPROMEmulation.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlashEEPROMEmulation.pdf</a></strong> (Seite 26)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -120,11 +121,60 @@ Upstream requirements: SRS_MemHwAb_14029
 ⌈If the current module status is MEMIF_IDLE or if the current module status is
 MEMIF_BUSY_INTERNAL, the function Fee_Read shall accept the read request, copy
 the given / computed parameters to module internal variables, initiate a read job, set
-the FEE module</div></section>
+the FEE module status to MEMIF_BUSY, set the job result to MEMIF_JOB_PENDING
+and return with E_OK.⌋
+[SWS_Fee_00172] ⌈If the current module status is MEMIF_UNINIT or MEMIF_BUSY,
+the function Fee_Read shall reject the job request and return with E_NOT_OK.⌋
+[SWS_Fee_00073] ⌈The FEE module shall execute the read operation asynchronously
+within the FEE module’s main function.⌋
+[SWS_Fee_00122]
+Upstream requirements: SRS_BSW_00406
+⌈If development error detection is enabled for the module: the function Fee_Read shall
+check if the module state is MEMIF_UNINIT. If this is the case, the function Fee_Read
+shall raise the development error FEE_E_UNINIT.⌋
+[SWS_Fee_00133] ⌈The function Fee_Read shall check if the module state is
+MEMIF_BUSY. If this is the case, the function Fee_Read shall reject the read request,
+raise the runtime error FEE_E_BUSY and return with E_NOT_OK.⌋
+[SWS_Fee_00134]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection is enabled for the module: the function Fee_Read shall
+check that the given block number is valid (i.e. it has been configured). If this is not the
+case, the function Fee_Read shall raise the development error FEE_E_INVALID_-
+BLOCK_NO.⌋
+[SWS_Fee_00135]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection is enabled for the module: the function Fee_Read
+shall check that the given block offset is valid (i.e. that it is less than the block length
+configured for this block). If this is not the case, the function Fee_Read shall raise the
+development error FEE_E_INVALID_BLOCK_OFS.⌋
+[SWS_Fee_00136]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection is enabled for the module: the function Fee_Read shall
+check that the given data pointer is valid (i.e. that it is not NULL). If this is not the case,
+the function Fee_Read shall raise the development error FEE_E_PARAM_POINTER.⌋
+[SWS_Fee_00137]
+Upstream requirements: SRS_BSW_00323
+⌈If development error detection is enabled for the module: the function Fee_Read shall
+check that the given length information is valid, i.e. that the requested length informa-
+tion plus the block offset do not exceed the block end address (block start address plus
+configured block length). If this is not the case, the function Fee_Read shall raise the
+development error FEE_E_INVALID_BLOCK_LEN.⌋
+[SWS_Fee_00162] ⌈If a read request is rejected by the function Fee_Read,
+i.e.
+requirements
+[SWS_Fee_00122],
+[SWS_Fee_00133],
+[SWS_Fee_00134],
+[SWS_Fee_00135], [SWS_Fee_00136] or [SWS_Fee_00137] apply, the function
+Fee_Read shall not change the current module status or job result.⌋
+[SWS_Fee_00187] ⌈The function Fee_Read shall call the function MemAcc_-
+BlankCheck to determine in advance whether a given memory area can be read
+without encountering e.g. ECC errors due to trying to read erased but not programmed
+flash cells.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -133,7 +183,7 @@ the FEE module</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlashEEPROMEmulation.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlashEEPROMEmulation.pdf#page=25" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlashEEPROMEmulation.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

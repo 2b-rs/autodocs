@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -86,7 +87,202 @@ Tables are described in the FrameTriggering. Timing requirements for FlexRay,
 TTCAN and LIN Pdus can be speciﬁed with the Timing Extension model. More details
 are described in chapter 1.4.4.
 1There is one special gateway use case where a Transport Protocol NPdu can be routed directly by
-the Pdu Router and where the TP module is not involved. More details can be found in chapter 5.15.</div></section>
+the Pdu Router and where the TP module is not involved. More details can be found in chapter 5.15.
+System Template
+R4.0 Rev 3
+Identifiable
+ISignalTriggering
+Identifiable
+FrameTriggering
+Identifiable
+CoreTopology::CommunicationConnector
++
+pncGatewayType:  PncGatewayTypeEnum [0..1]
+Identifiable
+CoreTopology::CommConnectorPort
++
+communicationDirection:  CommunicationDirectionType
+IPduPort
+ISignalPort
++
+timeout:  TimeValue [0..1]
+Identifiable
+CoreTopology::PhysicalChannel
+«enumeration»
+CommunicationDirectionType
+in
+out
+FramePort
+Identifiable
+PduTriggering
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+Filter::DataFilter
++
+dataFilterType:  DataFilterTypeEnum
++
+mask:  UnlimitedInteger [0..1]
++
+max:  UnlimitedInteger [0..1]
++
+min:  UnlimitedInteger [0..1]
++
+offset:  PositiveInteger [0..1]
++
+period:  PositiveInteger [0..1]
++
+x:  UnlimitedInteger [0..1]
++framePort
+*
++iSignalTriggering 0..*
+«atpVariation,atpSplitable»
++frameTriggering 0..*
+«atpVariation,atpSplitable»
++pduTriggering 0..*
+«atpVariation,atpSplitable»
+«atpVariation»
++iSignalTriggering
+0..*
++iSignalPort
+*
++dataFilter 0..1
++iPduPort
+*
+1
+«atpVariation»
++commConnector
+1..*
++ecuCommPortInstance 0..*
+«atpVariation»
+«atpVariation»
++pduTriggering
+0..*
+Figure 5.2: Communication Matrix (FibexCore: CommunicationMatrix)
+Figure 5.2 shows the relationship between the CommConnectorPort and the
+FrameTriggering, PduTriggering and SignalTriggering. This relationship
+allows to specify explicitly which frames, IPdus, Signals are received/sent by the con-
+nected ECU on the connected channel.
+The following rules apply for the creation of Pdu Triggering and Pdu Ports:
+• UserDefinedPdus, NmPdus, NPdus which are not going through the Pdu
+Router get their triggering information via the containing FrameTriggering and
+FramePort (no Pdu Triggering is deﬁned for these Pdus).
+• In case of a low level routing of NPdus the Pdus are handled like IPdus and the
+PduTriggering and IPduPort shall be deﬁned.
+• DcmIPdus shall have PduTriggering and IPduPorts since they are handled
+by the PduR (connection to the Dcm and/or DcmIPdu-routing).
+• SignalIpdus that are part of a MultiplexedIpdu (static or dynamic) and are
+also handled by the Com module shall have PduTriggering and IPduPorts
+System Template
+R4.0 Rev 3
+since they are handled by the PduR (and Com). Especially it is allowed to ignore
+certain received parts of a MultiplexedIpdu in a speciﬁc ECU.
+• SignalIPdus (not part of MultiplexedIPdus), UserDefinedIPdus and
+MultiplexedIPdus shall have a PduTriggering and IPduPort if they are
+handled by the PduR. Especially it is allowed to ignore a certain IPdu out of a
+Flexray frame if it is not considered in a speciﬁc ECU.
+• In case a NmPdu contains user data and is handled by the BusNm via the PduR
+and Com the NmPdu gets PduTriggering and IPduPort.
+Figure 5.3: AUTOSAR Layered Architecture
+System Template
+R4.0 Rev 3
+Class
+CommConnectorPort (abstract)
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreTopology
+Note
+The Ecu communication relationship deﬁnes which signals, Pdus and frames are
+actually received and transmitted by this ECU.
+For each signal, Pdu or Frame that is transmitted or received and used by the Ecu an
+association between an ISignalPort, IPduPort or FramePort with the corresponding
+Triggering shall be created. An ISignalPort shall be created only if the corresponding
+signal is handled by COM (RTE or Signal Gateway). If a Pdu Gateway ECU only
+routes the Pdu without being interested in the content only a FramePort and an
+IPduPort needs to be created.
+Base
+ARObject,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note
+communic
+ationDirecti
+on
+Communication
+DirectionType
+1
+attr
+Communication Direction of the Connector Port
+(input or output Port).
+Table 5.1: CommConnectorPort
+Class
+FramePort
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication
+Note
+Connectors reception or send port on the referenced channel referenced by a
+FrameTriggering.
+Base
+ARObject,CommConnectorPort,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 5.2: FramePort
+Class
+IPduPort
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication
+Note
+Connectors reception or send port on the referenced channel referenced by a
+PduTriggering.
+Base
+ARObject,CommConnectorPort,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 5.3: IPduPort
+Class
+ISignalPort
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::FibexCore::CoreCommunication
+Note
+Connectors reception or send port on the referenced channel referenced by an
+ISignalTriggering. If different timeouts or DataFilters for ISignals need to be speciﬁed
+several ISignalPorts may be created.
+Base
+ARObject,CommConnectorPort,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

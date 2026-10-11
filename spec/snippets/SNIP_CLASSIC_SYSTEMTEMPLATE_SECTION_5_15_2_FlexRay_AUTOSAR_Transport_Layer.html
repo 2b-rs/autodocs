@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -85,7 +86,364 @@ Flow Control. However, each FlexRayArTpConnection may also deﬁne its own
 between one source and one target device. These communication partners are spec-
 iﬁed using the source and target associations to FlexrayArTpNodes, providing the
 diagnostic TpAddress and the connection to the topology description. The actual pay-
-load to be transported by the FlexRay</div></section>
+load to be transported by the FlexRayArTpConnection is speciﬁed by using either
+one or two references to IPdus, depending on whether the connection shall be used
+unidirectional (one reference) or bidirectional (two references).
+System Template
+R4.0 Rev 3
+FibexElement
+TpConfig
+FlexrayArTpConfig
+Identifiable
+TpAddress
++
+tpAddress:  Integer
+Identifiable
+FlexrayArTpNode
+FlexrayArTpChannel
++
+ackType:  FrArTpAckType
++
+extendedAddressing:  Boolean
++
+maxAr:  Integer [0..1]
++
+maxAs:  Integer [0..1]
++
+maxBs:  Integer [0..1]
++
+maxBufferRequest:  Integer [0..1]
++
+maxFrIf:  Integer [0..1]
++
+maximumMessageLength:  MaximumMessageLengthType
++
+maxRetries:  Integer [0..1]
++
+minimumSeparationTime:  TimeValue
++
+multicastSegmentation:  Boolean
++
+timeBr:  TimeValue [0..1]
++
+timeBuffer:  TimeValue [0..1]
++
+timeCs:  TimeValue [0..1]
++
+timeFrIf:  TimeValue [0..1]
++
+timeoutAr:  TimeValue [0..1]
++
+timeoutAs:  TimeValue [0..1]
++
+timeoutBs:  TimeValue [0..1]
++
+timeoutCr:  TimeValue [0..1]
++
+transmitCancellation:  Boolean
+FlexrayArTpConnection
+NPdu
+Pdu
+IPdu
+«enumeration»
+FrArTpAckType
+noAck
+ackWithRt
+ackWithoutRt
+«enumeration»
+MaximumMessageLengthType
+iso6
+iso
+I4g
+CommunicationConnector
+FlexrayCommunicationConnector
++
+wakeUpChannel:  Boolean
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
+«atpVariation» Tags:
+Vh.latestBindingTime
+= PostBuild
++multicast
+0..1
++reversedTpSdu
+0..1
++connector
+0..*
++tpNode 0..*
+«atpVariation»
++tpChannel 0..*
+«atpVariation»
++directTpSdu
+1
++tpAddress
+0..1
++flowControlPdu
+0..1
++source
+1
++target
+1..*
++pduPool 0..*
++tpConnection
+1..*
++flowControlPdu
+0..1
++transmitPdu
+*
++tpAddress 0..*
+«atpVariation»
+Figure 5.25:
+FlexRay Autosar Transport Layer Conﬁguration (TransportProtocols:
+FlexRayAutosarTransportProtocol)
+Class
+FlexrayArTpChannel
+Package
+M2::AUTOSARTemplates::SystemTemplate::TransportProtocols
+Note
+A channel is a group of connections sharing several properties.
+The FlexRay AutosarTransport Layer supports several channels. These channels can
+work concurrently, thus each of them requires its own state machine and
+management data structures and its own PDU-IDs.
+Base
+ARObject
+Attribute
+Datatype
+Mul.
+Kind
+Note
+ackType
+FrArTpAckType
+1
+attr
+Type of Acknowledgement.
+extendedA
+ddressing
+Boolean
+1
+attr
+Adressing Type of this connection: true: Two
+Bytes false: One Byte
+System Template
+R4.0 Rev 3
+Attribute
+Datatype
+Mul.
+Kind
+Note
+flowControl
+Pdu
+NPdu
+0..1
+ref
+Reference to the Flow Control NPdu.
+The Flow Control network protocol data unit (FC
+N_PDU) is identiﬁed by the Flow Control protocol
+control information (FC N_PCI). The Flow Control
+network protocol data unit (FC N_PDU) instructs a
+sending network entity to start, stop or resume
+transmission of CF N_PDUs.
+maxAr
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+trying to send a frame when a TIMEOUT AR
+occurs (depending on whether retry is conﬁgured).
+maxAs
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+trying to send a frame when a TIMEOUT AS
+occurs (depending on whether retry is conﬁgured).
+maxBs
+Integer
+0..1
+attr
+This attribute limits the maximal block size the
+FrTp can choose in order to limit the amount of Tx
+buffer that will be requested at the sender side in a
+segmented transfer. range when retry is activated:
+1-16 range when retry is not activated: 0-255
+maxBuffer
+Request
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+trying to get a buffer (Transmit / Receive),
+depending of the return value of
+PduR_FrTpProvideTxBuffer /
+PduR_FrTpProvideRxBuffer and on whether retry
+is conﬁgured.
+maxFrIf
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+trying to send a frame when the FrIf returns an
+error.
+maxRetrie
+s
+Integer
+0..1
+attr
+This attribute deﬁnes the maximum number of
+retries (if retry is conﬁgured for the particular
+channel).
+maximum
+MessageL
+ength
+MaximumMessa
+geLengthType
+1
+attr
+This speciﬁes the maximum message length for
+the particular channel.
+minimumS
+eparationTi
+me
+TimeValue
+1
+attr
+This attribute deﬁnes the minimum amount of time
+(separation Time) between two succeeding CFs.
+Speciﬁed in seconds.
+multicastS
+egmentatio
+n
+Boolean
+1
+attr
+This attribute deﬁnes whether segmentation within
+a 1:n connection is allowed or not.
+pduPool
+NPdu
+*
+aggr
+A FlexRayTpChannel contains a pool of NPdus.
+timeBr
+TimeValue
+0..1
+attr
+This attribute deﬁnes the time in seconds between
+receiving the last CF of a block or an FF-x (or
+SF-x) and sending out an FC or AF.
+timeBuffer
+TimeValue
+0..1
+attr
+This attribute deﬁnes the time in seconds of
+waiting for the next try (if retry is activated) to get a
+Tx or Rx buffer.
+System Template
+R4.0 Rev 3
+Attribute
+Datatype
+Mul.
+Kind
+Note
+timeCs
+TimeValue
+0..1
+attr
+This attribute deﬁnes the time in seconds between
+the sending of two consecutive frames or between
+a consecutive frame and a ﬂow control (for
+Transmit Cancellation) or between reception of an
+ﬂow control or Acknowledgement Frame and
+sending of the next consecutive frame or a ﬂow
+control (for Transmit Cancellation).
+timeFrIf
+TimeValue
+0..1
+attr
+This attribute deﬁnes the time in seconds of
+waiting for the next try (if retry is activated) to send
+via FrIf_Transmit. Speciﬁed in seconds.
+timeoutAr
+TimeValue
+0..1
+attr
+This attribute states the timeout in seconds
+between the PDU transmit request of the
+Transport Layer to the FlexRay Interface and the
+corresponding conﬁrmation of the FlexRay
+Interface on the receiver side (for FC or AF).
+timeoutAs
+TimeValue
+0..1
+attr
+This attribute states the timeout in seconds
+between the PDU transmit request for the ﬁrst
+PDU of the group used in the current connection
+of the Transport Layer to the FlexRay Interface
+and the corresponding conﬁrmation of the FlexRay
+Interface (when having sent the last PDU of the
+group used in this connection) on the sender side
+(SF-x, FF-x, CF).
+timeoutBs
+TimeValue
+0..1
+attr
+This attribute deﬁnes the timeout in seconds for
+waiting for an FC or AF on the sender side in a 1:1
+connection.
+timeoutCr
+TimeValue
+0..1
+attr
+This attribute deﬁnes the timeout value in seconds
+for waiting for a CF or FF-x (in case of retry) after
+receiving the last CF or after sending an FC or AF
+on the receiver side.
+tpConnecti
+on
+FlexrayArTpCon
+nection
+1..*
+aggr
+Group of connections that can be used in this
+channel.
+transmitCa
+ncellation
+Boolean
+1
+attr
+This attribute states whether Transmit
+Cancellation is supported on this channel.
+Table 5.110: FlexrayArTpChannel
+Class
+FlexrayArTpNode
+Package
+M2::AUTOSARTemplates::SystemTemplate::TransportProtocols
+Note
+TP Node (Sender or Receiver) provides the TP Address and the connection to the
+Topology description.
+Base
+ARObject,Identiﬁable,MultilanguageReferrable,Referrable
+Attribute
+Datatype
+Mul.
+Kind
+Note
+connector
+FlexrayCommu
+nicationConnect
+or
+*
+ref
+Association to one or more physical connectors
+(max number of connectors for FlexRay: 2).
+In a System Description this reference is
+mandatory. In an ECU Extract this reference is
+optional (references to ECUs that are not part of
+the ECU Extract shall be avoided).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

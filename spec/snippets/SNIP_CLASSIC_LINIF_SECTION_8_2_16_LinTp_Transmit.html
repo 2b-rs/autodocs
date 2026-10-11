@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_LINIF_SECTION_8_2_16_LinTp_Transmit</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_LINInterface.pdf</strong> (Seite 108)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=107" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></strong> (Seite 108)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -112,11 +113,42 @@ referenced channel to LINTP_CHANNEL_BUSY.⌋
 the slave. This requirement is only applicable to LIN master nodes.⌋
 [SWS_LinIf_00584] ⌈The function LinTp_Transmit shall accept a functional trans-
 mission request also when a TP message is currently ongoing on the selected channel.
-This requirement is only applicable to LIN</div></section>
+This requirement is only applicable to LIN master nodes.⌋
+[SWS_LinIf_00616] ⌈If the transmission for a further physical request is triggered while
+transmission of a previously triggered physical request is ongoing, the LIN Interface
+shall accept the new physical request and drop the old physical request.⌋
+Note: According to the ISO 17987 specifications, the NAD 0x7E shall be used for a
+functional transmission request.
+[SWS_LinIf_00586] ⌈The LIN Interface shall use the NAD 0x7E for transmission of
+functional requests by LIN master nodes.⌋
+[SWS_LinIf_00702]
+Upstream requirements: SRS_Lin_01564
+⌈When LinTp_Transmit was successful (returned E_OK), the LIN Interface shall
+call PduR_LinTpTxConfirmation after successful completion or failure (e.g.,
+since some other schedule table change is currently going on) of required sched-
+ule table switch (see [SWS_LinIf_00646], [SWS_LinIf_00642], [SWS_LinIf_00643],
+[SWS_LinIf_00707]), with a negative or positive result. When LinTp_Transmit was
+not successful, PduR_LinTpTxConfirmation shall not be called.⌋
+[SWS_LinIf_00878]
+Upstream requirements: SRS_Lin_01564
+⌈The function LinTp_Transmit shall return E_NOT_OK when the corresponding
+LinIf_ScheduleRequest call (called from BswM_LinTp_RequestMode resulting
+from the LinTp_Transmit call, see [SWS_LinIf_00646] and [SWS_LinIf_00641]) re-
+turned E_NOT_OK for the Schedule Request.⌋
+[SWS_LinIf_00574] ⌈If development error detection is enabled and the parameter
+PduInfoPtr has an invalid value, the function LinTp_Transmit shall raise the de-
+velopment error code LINIF_E_PARAM_POINTER.⌋
+[SWS_LinIf_00576] ⌈If development error detection is enabled and the parameter
+TxPduId has an invalid value, the function LinTp_Transmit shall raise the develop-
+ment error code LINIF_E_PARAMETER.⌋
+[SWS_LinIf_00682] ⌈The function LinTp_Transmit shall be pre-compile time con-
+figurable On/Off by the configuration parameter LinIfTpSupported.⌋
+Caveats: The LIN Interface has to be initialized with a call of LinIf_Init and
+LinTp_Init before this API service may be called, see [SRS_BSW_00487].</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -125,7 +157,7 @@ This requirement is only applicable to LIN</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_LINInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_LINInterface.pdf#page=107" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_LINInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

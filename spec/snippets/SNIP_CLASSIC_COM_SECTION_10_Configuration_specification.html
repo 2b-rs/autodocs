@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COM_SECTION_10_Configuration_specification</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_COMBasedTransformer.pdf</strong> (Seite 32)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMBasedTransformer.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMBasedTransformer.pdf</a></strong> (Seite 32)</span>
           <span>&bull;</span>
           <span>Ziel-Element: SWS_ComXf_NA_00999</span>
         </div>
@@ -106,7 +107,196 @@ SRS_BSW_00386,
 SRS_BSW_00384,
 SRS_BSW_00383, SRS_BSW_00375, SRS_BSW_00369, SRS_BSW_
 00170, SRS_BSW_00168, SRS_BSW_00461
-⌈These requirements are not applicable to this specif</div></section>
+⌈These requirements are not applicable to this specification.⌋
+B
+Referenced Meta Classes
+For the sake of completeness, this chapter contains a set of class tables representing
+meta-classes mentioned in the context of this document but which are not contained
+directly in the scope of describing specific meta-model semantics.
+Class
+DataTransformation
+Note
+A DataTransformation represents a transformer chain. It is an ordered list of transformers.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+DataTransformationSet.dataTransformation
+Attribute
+Type
+Mult.
+Kind
+Note
+data
+Transformation
+Kind
+DataTransformationKind
+Enum
+0..1
+attr
+This attribute controls the kind of DataTransformation to
+be applied.
+executeDespite
+Data
+Unavailability
+Boolean
+0..1
+attr
+Specifies whether the transformer chain is executed even
+if no input data are available.
+transformer
+Chain (ordered)
+Transformation
+Technology
+*
+ref
+This attribute represents the definition of a chain of
+transformers that are supposed to be executed according
+to the order of being referenced from DataTransformation.
+Table B.1: DataTransformation
+Class
+EcucModuleDef
+Note
+Used as the top-level element for configuration definition for Software Modules, including BSW and RTE
+as well as ECU Infrastructure.
+Tags: atp.recommendedPackage=EcucDefs
+This Class is only used by the AUTOSAR Classic Platform.
+Base
+ARElement, ARObject, AtpBlueprint, AtpBlueprintable, AtpDefinition, CollectableElement, Ecuc
+DefinitionElement, Identifiable, MultilanguageReferrable, PackageableElement, Referrable
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+apiServicePrefix
+CIdentifier
+0..1
+attr
+For modules where several instances of the VSMD can
+be defined the apiServicePrefix defines the API
+namespace of the derived instances, e.g. Cdd, Xfrm
+(ComXf, SomeIpXf, E2EXf).
+container
+EcucContainerDef
+*
+aggr
+Aggregates the top-level container definitions of this
+specific module definition.
+Stereotypes: atpSplitable
+Tags:
+atp.Splitkey=container.shortName
+xml.sequenceOffset=11
+postBuildVariant
+Support
+Boolean
+0..1
+attr
+Indicates if a module supports different post-build variants
+(previously known as post-build selectable configuration
+sets). TRUE means yes, FALSE means no.
+refinedModule
+Def
+EcucModuleDef
+0..1
+ref
+Optional reference from the Vendor Specific Module
+Definition to the Standardized Module Definition it refines.
+In case this EcucModuleDef has the category
+STANDARDIZED_MODULE_DEFINITION this reference
+shall not be provided. In case this EcucModuleDef has
+the category VENDOR_SPECIFIC_MODULE_
+DEFINITION this reference is mandatory.
+Stereotypes: atpUriDef
+▽
+△
+Class
+EcucModuleDef
+supported
+ConfigVariant
+EcucConfiguration
+VariantEnum
+*
+attr
+Specifies which ConfigurationVariants are supported by
+this software module. This attribute is optional if the Ecuc
+ModuleDef has the category STANDARDIZED_
+MODULE_DEFINITION. If the category attribute of the
+EcucModuleDef is set to VENDOR_SPECIFIC_
+MODULE_DEFINITION then this attribute is mandatory.
+Table B.2: EcucModuleDef
+Class
+ISignal
+Note
+Signal of the Interaction Layer. The RTE supports a "signal fan-out" where the same System Signal is
+sent in different SignalIPdus to multiple receivers.
+To support the RTE "signal fan-out" each SignalIPdu contains ISignals. If the same System Signal is to
+be mapped into several SignalIPdus there is one ISignal needed for each ISignalToIPduMapping.
+ISignals describe the Interface between the Precompile configured RTE and the potentially Postbuild
+configured Com Stack (see ECUC Parameter Mapping).
+In case of the SystemSignalGroup an ISignal shall be created for each SystemSignal contained in the
+SystemSignalGroup.
+Tags: atp.recommendedPackage=ISignals
+Base
+ARElement, ARObject, CollectableElement, FibexElement, Identifiable, MultilanguageReferrable,
+PackageableElement, Referrable, UploadableDesignElement, UploadablePackageElement
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+data
+Transformation
+DataTransformation
+0..1
+ref
+Optional reference to a DataTransformation which
+represents the transformer chain that is used to transform
+the data that shall be placed inside this ISignal.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=dataTransformation.dataTransformation,
+dataTransformation.variationPoint.shortLabel
+vh.latestBindingTime=codeGenerationTime
+dataTypePolicy
+DataTypePolicyEnum
+0..1
+attr
+With the aggregation of SwDataDefProps an ISignal
+specifies how it is represented on the network. This
+representation follows a particular policy. Note that this
+causes some redundancy which is intended and can be
+used to support flexible development methodology as well
+as subsequent integrity checks.
+If the policy "networkRepresentationFromComSpec" is
+chosen the network representation from the ComSpec
+that is aggregated by the PortPrototype shall be used. If
+the "override" policy is chosen the requirements specified
+in the PortInterface and in the ComSpec are not fulfilled
+by the networkRepresentationProps. In case the System
+Description doesn’t use a complete Software Component
+Description (VFB View) the "legacy" policy can be
+chosen.
+initValue
+ValueSpecification
+0..1
+aggr
+Optional definition of a ISignal’s initValue in case the
+System Description doesn’t use a complete Software
+Component Description (VFB View). This supports the
+inclusion of legacy system signals.
+This value can be used to configure the Signal’s "Init
+Value".
+If a full DataMapping exist for the SystemSignal this
+information may be available from a configured Sender
+ComSpec and ReceiverComSpec. In this case the
+initvalues in SenderComSpec and/or ReceiverComSpec
+override this optional value specification. Further
+restrictions apply from the RTE specification.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -119,7 +309,7 @@ SRS_BSW_00383, SRS_BSW_00375, SRS_BSW_00369, SRS_BSW_
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_COMBasedTransformer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_COMBasedTransformer.pdf#page=32" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_COMBasedTransformer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_8_I2C_StartListening</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_I2CDriver.pdf</strong> (Seite 30)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_I2CDriver.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_I2CDriver.pdf</a></strong> (Seite 30)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -119,11 +120,49 @@ shall return E_NOT_OK.⌋
 Status:
 DRAFT
 Upstream requirements: CP_RS_I2C_00015, SRS_SPAL_00157
-⌈In case the received message is a read message, the I2C driver</div></section>
+⌈In case the received message is a read message, the I2C driver shall copy the data
+into the corresponding RxDataBufferPtr. In case of write message the I2C driver
+shall copy the data from the TxDataBufferPtr into the response message.⌋
+[CP_SWS_I2C_80803] Last Message or any error received
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00015, SRS_SPAL_00157
+⌈If the last message of the sequence or any error is received after setting the driver into
+listening mode (i.e. call of I2C_StartListening), I2C driver shall set the Sequence
+state to
+• I2C_SEQ_FAILED, if any failure occured
+• I2C_SEQ_NACK, if a NACK message was recived
+• I2C_SEQ_OK, if everything was successfully recived.
+and afterwards invoke the sequence notification callback function I2C_SeqEndNoti-
+fication.⌋
+[CP_SWS_I2C_82806] Development Error Detection
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00015
+⌈If development error detection is enabled (I2cDevErrorDetect == True), the func-
+tion I2C_StartListening shall raise the development error I2C_E_PARAM_SE-
+QUENCE if the function I2C_SetupEB is a not called once in advance for all Jobs
+in the Sequence.⌋
+Note: I2C_SetupEB does not need to be called every time before a call to I2C_-
+SyncTransmit, e.g. if the EB parameter have not changed a single call of I2C_-
+SetupEB is enough.
+[CP_SWS_I2C_80804] Development Error Detection
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00015, CP_RS_I2C_00017
+⌈If development error detection is enabled (I2cDevErrorDetect == True), the func-
+tion I2C_StartListening shall raise the development error I2C_E_WRONG_CON-
+DITION if I2cHwUnitMode is NOT set to I2C_HW_UNIT_MODE_TARGET.⌋
+[CP_SWS_I2C_80805] I2C_E_WRONG_MODE
+Status:
+DRAFT
+Upstream requirements: CP_RS_I2C_00015, CP_RS_I2C_00017
+⌈The function I2C_StartListening shall report the runtime error I2C_E_WRONG_-
+MODE if I2cTargetListening is NOT set.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -132,7 +171,7 @@ Upstream requirements: CP_RS_I2C_00015, SRS_SPAL_00157
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_I2CDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_I2CDriver.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_I2CDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

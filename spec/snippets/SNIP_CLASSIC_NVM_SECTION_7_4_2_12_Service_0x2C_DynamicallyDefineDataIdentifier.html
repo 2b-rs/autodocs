@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_7_4_2_12_Service_0x2C_DynamicallyDefineDataIdentifier</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticCommunicationManager.pdf</strong> (Seite 172)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=172" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></strong> (Seite 172)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00453" class="swsref internal-spec-ref"><code>SWS_NvM_00453</code></a></span>
         </div>
@@ -94,11 +95,55 @@ tifier (0x2C), the Dcm module shall check if the DDDID will not exceed the confi
 ured parameter value DcmDspDDDIDMaxElements. Otherwise (in case the number
 of elements will be exceeded) the Dcm module shall send a NRC 0x31 (RequestOut-
 OfRange).⌋
-[SWS_Dcm_00854] ⌈On reception of the UDS Service DynamicallyDefineDataIdenti-</div></section>
+[SWS_Dcm_00854] ⌈On reception of the UDS Service DynamicallyDefineDataIdenti-
+fier (0x2C) with subservice defineByMemoryAddress, the Dcm shall check if the re-
+quested AddressAndLengthFormatIdentifier is supported (refer to configura-
+tion parameter DcmDspSupportedAddressAndLengthFormatIdentifier), Oth-
+erwise the NRC 0x31 (requestOutOfRange) shall be responded. In case the container
+AddressAndLengthFormatIdentifier is not present, the Dcm shall accept all
+possible AddressAndLengthFormatIdentifiers.⌋
+[SWS_Dcm_00647] ⌈On reception of service DynamicallyDefineDataIdentifier with
+subservice clearDynamicallyDefinedDataIdentifier, the Dcm module shall remove the
+configuration of this DID.⌋
+[SWS_Dcm_00723] ⌈On reception of the UDS Service DynamicallyDefineDataIdenti-
+fier (0x2C),the Dcm module shall check if the DDDID can be defined in the current
+session (see configuration parameter DcmDspDidReadSessionRef). If not, the Dcm
+module shall send a NRC 0x31 (RequestOutOfRange).⌋
+[SWS_Dcm_00724] ⌈On reception of the UDS Service DynamicallyDefineDataIdenti-
+fier (0x2C), the Dcm module shall check if the DDDID can be defined in the current
+Manager
+security level (see configuration parameter DcmDspDidReadSecurityLevelRef). If
+not, the Dcm module shall send NRC 0x33 (Security access denied).⌋
+[SWS_Dcm_00725] ⌈On reception of the UDS Service DynamicallyDefineDataIdenti-
+fier (0x2C), the Dcm module shall check if the requested Source-DIDs are supported in
+the current session (see configuration parameter of referenced DID DcmDspDidRead-
+SessionRef)). If not, the Dcm module shall send a NRC 0x31 (RequestOutOfRange).⌋
+[SWS_Dcm_00726] ⌈On reception of the UDS Service DynamicallyDefineDataIden-
+tifier (0x2C), the Dcm module shall check if the requested Source-DID or the mem-
+oryRange are supported in the current security level (see configuration parameter
+of referenced DID DcmDspDidReadSecurityLevelRef or memoryRange DcmD-
+spReadMemoryRangeSecurityLevelRef). If not, the Dcm module shall send a NRC 0x33
+(Security access denied).⌋
+[SWS_Dcm_00821] ⌈On reception of the UDS Service DynamicallyDefineDataIden-
+tifier (0x2C), the Dcm module shall check if the requested Source-DID or the mem-
+oryRange are supported in the current mode condition (see configuration parameter
+of referenced DID DcmDspDidReadModeRuleRef or memoryRange DcmDspRead-
+MemoryRangeModeRuleRef). If not, the Dcm module shall send the calculated nega-
+tive response code of the referenced DcmModeRule.⌋
+In case of memory address(es), on reception of ReadDataByIdentifier or Read-
+DataByPeriodicIdentifier request for a dynamically defined DID, the Dcm will use the
+callout Dcm_ReadMemory for all contained memory addresses to access the data.
+[SWS_Dcm_01051] ⌈On reception of the UDS Service DynamicallyDefineDataIdenti-
+fier (0x2C), if the request message contains different MemoryIdValue compare to the
+configured values in DcmDspMemoryIdInfo container, the Dcm shall send a NRC 0x31
+(RequestOutOfRange).⌋
+In case of DID source(s), on reception of ReadDataByIdentifier or ReadDataByPeriod-
+icIdentifier request for a dynamically defined DID, the Dcm will use the configuration of
+the contained DIDs to read the data.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von NvM_SetRamBlockStatus().</p>
       </section>
 
       <section class="snip-card">
@@ -107,7 +152,7 @@ OfRange).⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticCommunicationManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticCommunicationManager.pdf#page=172" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticCommunicationManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

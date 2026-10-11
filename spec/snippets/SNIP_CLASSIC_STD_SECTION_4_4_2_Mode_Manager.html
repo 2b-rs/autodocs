@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_4_4_2_Mode_Manager</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 367)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=367" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 367)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_07540" class="swsref internal-spec-ref"><code>SWS_Rte_07540</code></a></span>
         </div>
@@ -88,7 +89,40 @@ machine to keep track of the currently active modes and transitions initiated by
 mode manager. The RTE’s / Basic Software Scheduler’s mode machine is called
 mode machine instance.
 There is exactly one mode machine instance for
-each ModeDeclarationGroupPrototype of a mode manager’s provide</div></section>
+each ModeDeclarationGroupPrototype of a mode manager’s provide mode switch
+port respectively providedModeGroup ModeDeclarationGroupPrototype.
+It is the responsibility of the mode manager to advance the RTE’s / Basic Soft-
+ware Scheduler’s mode machine instance by sending mode switch notifi-
+cations to the mode users.
+The mode switch notifications are imple-
+mented by a non blocking API (see 5.6.6 / 6.5.7). So, the mode switch notifi-
+cations alone provide only a loose coupling between the state machine of the mode
+manager and the mode machine instance of the RTE / Basic Software Scheduler.
+To prevent, that the mode machine instance lags behind and the states of the
+mode manager and the RTE / Basic Software Scheduler get out of phase, the mode
+manager can use acknowledgment feedback for the mode switch notification.
+RTE / Basic Software Scheduler can be configured to send an acknowledgment of the
+mode switch notification to the mode manager when the requested transition
+is completed.
+At the mode manager, the acknowledgment results in an ModeSwitchedAckEvent.
+As with DataSendCompletedEvents, this event can be picked up with the polling
+or blocking Rte_SwitchAck API. And the event can be used to trigger a Mod-
+eSwitchAck ExecutableEntity to pick up the status.
+Note: The Basic Soft-
+ware Scheduler do not support WaitPoints. Therefore the SchM_SwitchAck never
+blocks.
+Some possible usage patterns for the acknowledgement are:
+• The most straight forward method is to use a sequence of Rte_Switch and a
+blocking Rte_SwitchAck to send the mode switch notification and wait
+for the completion. This requires the use of an extended task.
+• Another possibility is to have a cyclic RunnableEntity / BswSchedulableEn-
+tity (maybe the same that switches the modes via Rte_Switch / SchM_-
+Switch) to poll for the acknowledgement using Rte_SwitchAck / SchM_-
+SwitchAck.
+• The acknowledgement can also be polled from a RunnableEntity or
+BswSchedulableEntity that is started by the ModeSwitchedAckEvent.
+The mode manager can also use the Rte_Mode / SchM_Mode API to read the cur-
+rently active mode from the RTE’s / Basic Software Scheduler’s perspective.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +135,7 @@ each ModeDeclarationGroupPrototype of a mode manager’s provide</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=367" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

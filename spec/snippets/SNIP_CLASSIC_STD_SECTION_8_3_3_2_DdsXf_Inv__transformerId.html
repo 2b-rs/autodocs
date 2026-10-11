@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_8_3_3_2_DdsXf_Inv__transformerId</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DataDistributionServiceTransformer.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DataDistributionServiceTransformer.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DataDistributionServiceTransformer.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00044" class="swsref internal-spec-ref"><code>SWS_Xfrm_00044</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Xfrm_00045" class="swsref internal-spec-ref"><code>SWS_Xfrm_00045</code></a></span>
         </div>
       </div>
 
@@ -118,11 +119,95 @@ uint8
 0x00 (E_OK): Unmarshalling successful 0x01 (E_NO_DATA): No
 data available which can be marshalled 0x89 (E_SER_
 MALFORMED_MESSAGE): The received message is
-malfor</div></section>
+malformed. The transformer is not able to produce an output.
+Description
+This function unmarshalls a Client/Server communication using the unmarshalling procedure of
+Dds. It takes the uint8 array containing the marshalled data as input and outputs the return
+value of the server runnable and the operation arguments which have to be passed from the
+server to the client.
+Available via
+DdsXf.h
+⌋
+Transformer
+[CP_SWS_DdsXf_00232] DdsXf_Inv_&lt;transformerId&gt; parameters definition
+Upstream requirements: SRS_Xfrm_00002
+⌈In function DdsXf_Inv_&lt;transformerId&gt; defined in [CP_SWS_DdsXf_00145]
+the parameters:
+• paramtype
+• type
+• transformerId
+shall be defined according to [SWS_Xfrm_00044] in [4, TransformerGeneral].⌋
+Please note that both the IN and IN-OUT arguments of the ClientServerOpera-
+tion which are transformed are OUT arguments from the transformer’s point of view
+because both are only read by the transformer and not written.
+This function specified in [CP_SWS_DdsXf_00141] exists for the server and each client
+of each transformed ClientServerInterface communication which uses the Dds
+unmarshalling of VariableDataPrototypes, ClientServerOperations proce-
+dure according to [CP_SWS_DdsXf_00149]
+It exists on both the Client and the Server but the arguments are different.
+On the server it unmarshalls the request of the Client/Server call. There, the data_1,
+..., data_n arguments of the API correpsond to the IN and INOUT arguments of the
+ClientServerOperation. The argument returnValue doesn’t exist.
+On the client it unmarshalls the response of the Client/Server call. There, the data_1,
+..., data_n arguments of the API correpsond to the INOUT and OUT arguments of
+the ClientServerOperation. If the ClientServerOperation has at least one
+possibleError defined, the returnValue shall be determined by subtracting 0x1F from
+the Return Code value. Otherwise the return value shall be set to the actual value of
+the Return Code.
+[CP_SWS_DdsXf_00148] DDS inverse Transformer in a chain
+Upstream requirements: SRS_Xfrm_00301
+⌈The function DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00145]
+shall be defined according to [SWS_Xfrm_00045] in [4, TransformerGeneral].⌋
+Due to [CP_SWS_DdsXf_00148], the API of [CP_SWS_DdsXf_00145] exists both on
+client and server.
+[CP_SWS_DdsXf_00149] DDS Transformer operation parameters unmarshalling
+procedure
+Upstream requirements: SRS_Xfrm_00002
+⌈The function DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00145]
+shall retrieve the set of primitive or complex operation arguments in a ClientServer-
+Transformer
+Interface from a provided buffer created according to [CP_SWS_DdsXf_00143],
+[CP_SWS_DdsXf_00169].⌋
+[CP_SWS_DdsXf_00170] DDS Transformer infrastructure header get
+Upstream requirements: SRS_Xfrm_00305
+⌈The function DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00141]
+shall get the infrastructure header from a provided buffer created according to [CP_-
+SWS_DdsXf_00143], [CP_SWS_DdsXf_00160]⌋
+[CP_SWS_DdsXf_00161] DDS Transformer returnValue get
+Upstream requirements: SRS_Xfrm_00002, SRS_Xfrm_00305
+⌈If executed on client side, the function DdsXf_Inv_&lt;transformerId&gt; specified in
+[CP_SWS_DdsXf_00145] shall copy the ReturnValue from a provided buffer cre-
+ated according to [CP_SWS_DdsXf_00143], [CP_SWS_DdsXf_00169] into the output
+parameter *returnValue.⌋
+[CP_SWS_DdsXf_00165] DDS Transformer clientId get
+Upstream requirements: SRS_Xfrm_00002
+⌈The function DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00145]
+shall copy the requestId.clientId from a provided buffer created according
+to [CP_SWS_DdsXf_00143], [CP_SWS_DdsXf_00169] into the output parameter
+TransactionHandle-&gt;clientId.⌋
+[CP_SWS_DdsXf_00166] DDS Transformer sequenceCounter get
+Upstream requirements: SRS_Xfrm_00002
+⌈The function DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00145]
+shall copy the requestId.sequenceCounter from a provided buffer created ac-
+cording to [CP_SWS_DdsXf_00143], [CP_SWS_DdsXf_00169] into the output param-
+eter TransactionHandle-&gt;sequenceCounter.⌋
+[CP_SWS_DdsXf_00167] Infrastructure header reserved field check
+Upstream requirements: SRS_Xfrm_00305
+⌈The function DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00145]
+shall return with E_SER_MALFORMED_MESSAGE and the output buffer shall not be
+changed if the provided buffer, created according to [CP_SWS_DdsXf_00143], [CP_
+SWS_DdsXf_00169], contains a reserved field not set to 0.⌋
+[CP_SWS_DdsXf_00265] DDS Transformer operation parameters unmarshalling
+procedure with empty buffer
+Upstream requirements: SRS_Xfrm_00001, SRS_Xfrm_00004
+⌈If DdsXf_Inv_&lt;transformerId&gt; specified in [CP_SWS_DdsXf_00145] is called
+with buffer equal to NULL_PTR and bufferLength equal to 0, the output buffer shall not
+be changed and DdsXf_Inv_&lt;transformerId&gt; shall return with E_NO_DATA.⌋
+Transformer</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Generic transformer inverse client-server specification</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Xfrm_00045] im Text von SWS_DataDistributionServiceTransformer.</p>
       </section>
 
       <section class="snip-card">
@@ -131,7 +216,7 @@ malfor</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DataDistributionServiceTransformer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DataDistributionServiceTransformer.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DataDistributionServiceTransformer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -143,15 +228,15 @@ malfor</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Xfrm_00044" class="swsref internal-spec-ref"><code>SWS_Xfrm_00044</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Xfrm_00045" class="swsref internal-spec-ref"><code>SWS_Xfrm_00045</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

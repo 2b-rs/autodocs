@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_APPLICATIONLEVELERRORHANDLING_SECTION_7_3_1_5_OS_Application_state_machine</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ApplicationLevelErrorHandling.pdf</strong> (Seite 53)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_ApplicationLevelErrorHandling.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ApplicationLevelErrorHandling.pdf</a></strong> (Seite 53)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Os_00555" class="swsref internal-spec-ref"><code>SWS_Os_00555</code></a></span>
         </div>
@@ -88,7 +89,28 @@ to exceptional events which trigger the Protection Hook, or explicit requests to
 the state of an OS-Application by calls to TerminateApplication().
 After the Protection Hook returns PRO_TERMINATEAPPL_RESTART to the OS, or the
 application-level request for restart is issued, the state of the OS-Application changes
-from APPL</div></section>
+from APPLICATION_ACCESSIBLE to APPLICATION_RESTARTING. This means that
+resources held by the OS-Application are made inaccessible to other OS-Applications
+and no tasks belonging to the OS-Applications are running (or being activated). The
+OS then starts the OSRestartTask which can perform any necessary cleaning (e.g.,
+in the SW-Cs and the BSW) before a decision is made to either restart or completely
+terminate the OS-Application.
+Going from APPLICATION_RESTARTING to APPLICATION_ACCESSIBLE is achieved
+by allowing access to OS-Application resources using the call AllowAccess() in the
+OSRestartTask.
+Going from APPLICATION_RESTARTING to APPLICATION_TERMINATED is achieved
+by an explicit request for termination from within the OSRestartTask, i.e., a call to
+TerminateApplication() with the ego-ID and NO_RESTART as parameters.
+Going from APPLICATION_ACCESSIBLE to APPLICATION_TERMINATED is achieved
+by returning PRO_TERMINATEAPPL from the Protection Hook or by an external re-
+quest using the TerminateApplication() call with NO_RESTART as parameter.
+This transition should not be used when dealing with partitions as no cleanup activities
+will be performed here and thus the partition is potentially left in an inconsistent state
+which may persist in future starts of the ECU.
+When in APPLICATION_RESTARTING calling TerminateApplication() with ego-
+ID and RESTART does not make sense. In fact may lead to an infinite loop (a new
+OSRestartTask is started, which may again call TerminateApplication with the
+ego-ID and RESTART).</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +123,7 @@ from APPL</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ApplicationLevelErrorHandling.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_EXP_ApplicationLevelErrorHandling.pdf#page=53" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ApplicationLevelErrorHandling.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

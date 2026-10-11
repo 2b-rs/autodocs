@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -89,7 +90,293 @@ ISignalIPdu shall not overlap. ⌋()
 of all ISignals and updateIndicationBitPositions that are mapped into an
 ISignalIPdu shall not exceed the deﬁned Pdu length. ⌋()
 [constr_3011] Overlapping of updateIndicationBits of ISignals is prohib-
-ited ⌈The updateIndicationBitPosition for an ISignal in an ISignalIPdu</div></section>
+ited ⌈The updateIndicationBitPosition for an ISignal in an ISignalIPdu
+shall not overlap with other updateIndicationBitPositions or ISignal loca-
+tions. ⌋()
+[TPS_SYST_01062] Network representation of an ISignal ⌈With the aggregation
+of SwDataDefProps in the role networkRepresentationProps the actual repre-
+sentation of the ISignal on the network can be speciﬁed. ⌋(RS_SYST_00047)
+[TPS_SYST_01063] Context of network representation of an ISignal ⌈The
+dataTypePolicy deﬁnes from which context the network representation speciﬁca-
+tion shall be taken. ⌋(RS_SYST_00001, RS_SYST_00047)
+For an alternative network representation it is important to deﬁne an alternative Sw-
+DataDefProps especially SwBaseType deﬁning alternative encoding (e.g. from ﬂoat
+in PortInterface to integer on bus).
+[constr_3060] Usage of networkRepresentationProps and physicalProps ⌈
+Usage of networkRepresentationProps and physicalProps shall follow the re-
+strictions given in table 6.6. ⌋()
+System Template
+Element
+Attributes of SwDataDefProps
+SystemSignal.physicalProps
+ISignal.networkProps
+additionalNativeTypeQualiﬁer
+NA
+NA
+annotation
+NA
+NA
+baseType
+NA
+D
+compuMethod
+D
+I
+dataConstr
+D
+M
+displayFormat
+D
+M
+implementationDataType
+NA
+NA
+invalidValue
+NA
+D
+mcFunction
+NA
+NA
+swAddrMethod
+NA
+NA
+swAlignment
+NA
+NA
+swBitRepresentation
+NA
+NA
+swCalibrationAccess
+NA
+NA
+swCalprmAxisSet
+NA
+NA
+swCalprmAxisSet.
+swCal-
+prmAxis
+/SwAxisGrouped.
+swCalprmRef
+NA
+NA
+swCalprmAxisSet.
+swCal-
+prmAxis
+/SwAxisIndividual.
+swVariableRef
+NA
+NA
+swCalprmAxisSet.
+swCal-
+prmAxis
+/SwAxisGrouped.
+sharedAxisType
+NA
+NA
+swCalprmAxisSet.
+swCal-
+prmAxis
+/SwAxisIndividual.
+inputVariableType
+NA
+NA
+swCalprmAxisSet/
+AxisIndi-
+vidual/ Unit
+NA
+NA
+swCalprmAxisSet/ BaseType
+NA
+NA
+swComparisonVariable
+NA
+NA
+swDataDependency
+NA
+NA
+swHostVariable
+NA
+NA
+swImplPolicy
+NA
+NA
+swIntendedResolution
+NA
+NA
+swInterpolationMethod
+NA
+NA
+swIsVirtual
+NA
+NA
+swPointerTargetProps
+NA
+NA
+swRecordLayout
+NA
+NA
+swRefreshTiming
+NA
+NA
+swTextProps
+NA
+NA
+swValueBlockSize
+NA
+NA
+unit
+D
+M
+valueAxisDataType
+NA
+NA
+Table 6.6: Allowed SwDataDefProps Attributes for the ISignal and SystemSignal
+The following settings apply in table 6.6:
+D Deﬁne the attribute independent from settings to the left.
+I Inherit the deﬁnition from the left for usage in the scope of this element.
+NA Attribute is not applicable for usage in the scope of this element.
+System Template
+M Attribute is meaningless in the scope of this element. As it was allowed in previous
+versions, declaring it as Not Applicable (NA) would break compatibility. Tools
+shall ignore such an attribute without a warning.
+[constr_3061] CompuMethod speciﬁcation in networkRepresentationProps ⌈
+A CompuMethod that is deﬁned in the networkRepresentationProps for the
+ISignal shall be compatible to the CompuMethod that is deﬁned in the physical-
+Props for the SystemSignal that is referenced by the ISignal. ⌋()
+In case that the System Description doesn’t use a complete Software Component De-
+scription (VFB View) the physicalProps and networkRepresentationProps are
+used to conﬁgure the Data Semantics.
+The networkRepresentationProps contains a reference to the SwBaseType.
+This reference can be used for the derivation of the ComSignalType in the AUTOSAR
+Com Conﬁguration.
+[TPS_SYST_02001] networkRepresentationProps are mandatory in case the
+dataTypePolicy is set to override or legacy ⌈If the dataTypePolicy of an
+ISignal is set to override or legacy, the networkRepresentationProps for
+the respective ISignal have to be speciﬁed. ⌋()
+[TPS_SYST_02006] Usage of networkRepresentationFromComSpec ⌈If the
+networkRepresentationFromComSpec is used either the SwDataDefProps in
+the role networkRepresentation aggregated by the SenderComSpec or Re-
+ceiverComSpec shall exist or the ImplementationDataType shall exist. ⌋()
+[TPS_SYST_02079] Identiﬁcation of ImplementationDataType for a given
+ISignal in an Ecu Extract ⌈
+1. From the ISignal go to the referenced SystemSignal
+2. Find all DataMappings that refer to the SystemSignal
+3. For all VariableDataPrototypes referenced by the applicable DataMap-
+pings
+(a) If
+the
+VariableDataPrototype
+is
+typed
+by
+an
+Application-
+DataType and belongs to a CompositionSwComponentType then for all
+DataTypeMappingSets referenced by the CompositionSwComponent-
+Type ﬁnd the DataTypeMap that refers to this ApplicationDataType.
+The DataTypeMap also refers to the wanted ImplementationDataType.
+(b) If the VariableDataPrototype is typed by an ApplicationDataType
+and belongs to an AtomicSwComponentType then for all DataTypeMap-
+pingSets referenced by the InternalBehavior of the AtomicSwCom-
+ponentType ﬁnd the DataTypeMap that refers to this Application-
+DataType. The DataTypeMap also refers to the wanted Implementa-
+tionDataType.
+(c) If the VariableDataPrototype is typed by an Implementation-
+DataType then the ImplementationDataType is the wanted one.
+System Template
+⌋()
+[TPS_SYST_02076] networkRepresentationProps in case the dataTypePol-
+icy is set to transformingISignal ⌈If the value of ISignal.dataTypePolicy
+is set to transformingISignal then ISignal.networkRepresentationProps
+shall be ignored. ⌋()
+[constr_3199] ISignal that has dataTypePolicy set to transformingISig-
+nal shall reference a DataTransformation ⌈In a complete model every ISignal
+that has dataTypePolicy set to transformingISignal shall reference a Data-
+Transformation. ⌋()
+[TPS_SYST_01141] Derivation of ComSignalType ⌈The ComSignalType shall be
+derived from the baseTypeSize (or maxBaseTypeSize) and the baseTypeEncod-
+ing. ⌋()
+[TPS_SYST_01065] Mapping onto the ComSignalType enumeration ⌈The map-
+ping of baseTypeSize (or maxBaseTypeSize) and baseTypeEncoding onto the
+ComSignalType enumeration is described in Table 6.7, “SwBaseType to ComSignal-
+Type Mapping”. ⌋(RS_SYST_00029)
+BaseTypeEncoding
+BaseTypeSize
+ComSignalType
+2C
+8 bits
+SINT8
+2C
+16 bits
+SINT16
+2C
+32 bits
+SINT32
+2C
+64 bits
+SINT64
+NONE
+8 bits
+UINT8
+NONE
+16 bits
+UINT16
+NONE
+32 bits
+UINT32
+NONE
+64 bits
+UINT64
+IEEE754
+32 bits
+FLOAT32
+IEEE754
+64 bits
+FLOAT64
+ISO-8859-1
+baseTypeSize
+UINT8_N (from the deﬁnition of
+baseTypeSize
+the
+ComSignal-
+Length can be determined)
+ISO-8859-2
+baseTypeSize
+UINT8_N (from the deﬁnition of
+baseTypeSize
+the
+ComSignal-
+Length can be determined)
+WINDOWS-1252
+baseTypeSize
+UINT8_N (from the deﬁnition of
+baseTypeSize
+the
+ComSignal-
+Length can be determined)
+UTF-8
+baseTypeSize
+UINT8_N (from the deﬁnition of
+baseTypeSize
+the
+ComSignal-
+Length can be determined)
+UCS-2
+baseTypeSize
+UINT8_N (from the deﬁnition of
+baseTypeSize
+the
+ComSignal-
+Length can be determined)
+-
+maxBaseTypeSize
+UINT8_DYN (from the deﬁnition
+of maxBaseTypeSize the ComSig-
+nalLength can be determined)
+BOOLEAN
+-
+BOOLEAN
+Table 6.7: SwBaseType to ComSignalType Mapping</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

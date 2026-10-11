@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/crypto.html">Modul: crypto</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 75%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYPTO_SECTION_7_2_5_Key_Formats</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoDriver.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Crypto_00188" class="swsref internal-spec-ref"><code>SWS_Crypto_00188</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Crypto_00254" class="swsref internal-spec-ref"><code>SWS_Crypto_00254</code></a></span>
         </div>
       </div>
 
@@ -114,11 +115,63 @@ KeyAlgorithm KeyAlgorithmIdentifier,
 keyMaterial KeyMaterial,
 attributes* [0] Attributes OPTIONAL,
 ...,
-[[2: publicKey</div></section>
+[[2: publicKey* [1] PublicKey OPTIONAL ]],
+...
+}
+* The optional values for key attributes and the PublicKey are currently not used within
+the crypto driver and is listed here just for compatibility reason to RFC5958. A driver
+shall tolerate the provision of this information but doesn’t need to evaluate its contents.
+The elements have the following meaning:
+Version ::= INTEGER { v1(0), v2(1) } (v1, ..., v2)
+KeyAlgorithmIdentifier ::= AlgorithmIdentifier
+{ PUBLIC-KEY,
+{ PrivateKeyAlgorithms } }
+KeyMaterial ::= OCTET STRING
+– Content varies based on the type of the key and is specified by its AlgorithmIdentifier.
+– The KeyAlgorithmIdentifier defines which format specifier for KeyMaterial shall be
+applied.
+AlgorithmIdentifier: A value that identifies the format by its object identifier (OID).⌋
+[SWS_Crypto_00254]
+Upstream requirements: SRS_CryptoStack_00008
+⌈Public
+key
+material
+with
+identification
+is
+specified
+in
+accordance
+to
+RFC5280,
+section
+4.1.
+The
+key
+material
+with
+the
+format
+specifier
+CRYPTO_KE_FORMAT_BIN_IDENT_PUBLICKEY
+needs
+to
+follow
+this
+format
+specification:
+SubjectPublicKeyInfo ::= SEQUENCE
+{ algorithm AlgorithmIdentifier,
+subjectPublicKey BIT STRING }
+The elements have the following meaning:
+AlgorithmIdentifier:
+A value that identifies the format by its object identifier (OID).
+subjectPublicKey:
+The public key itself.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Algorithm identifier for RSA PKCS8 format</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Crypto_00254] im Text von SWS_CryptoDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +180,7 @@ attributes* [0] Attributes OPTIONAL,
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=28" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -139,15 +192,15 @@ attributes* [0] Attributes OPTIONAL,
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Crypto_00188" class="swsref internal-spec-ref"><code>SWS_Crypto_00188</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Crypto_00254" class="swsref internal-spec-ref"><code>SWS_Crypto_00254</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.75</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_4_8_Formal_Definition_of_implicit_Communication_Behavior</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_SoftwareComponentTemplate.pdf</strong> (Seite 216)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SoftwareComponentTemplate.pdf#page=216" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SoftwareComponentTemplate.pdf</a></strong> (Seite 216)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01509" class="swsref"><code>TPS_SWCT_01509</code></a></span>
         </div>
@@ -90,7 +91,272 @@ partly updated values.
 tencyNeeds ⌈The meaning of the term stability is that the values of a group of Vari-
 ableDataPrototypes shall not change values during the execution of a group of
 RunnableEntitys.⌋
-[TPS_SWCT_01482] The meaning of the term coherence with respec</div></section>
+[TPS_SWCT_01482] The meaning of the term coherence with respect to Consis-
+tencyNeeds ⌈The meaning of the term coherence means that the values of a group of
+VariableDataPrototypes shall not be read by receiving RunnableEntitys until
+all the producing RunnableEntitys are terminated.⌋
+In response to these goals the meta-model provides means to express the correlation
+between a group of RunnableEntitys and a group of DataPrototypes. These
+groups might be defined hierarchically.
+The information (in terms of ConsistencyNeeds) can be defined primarily during the
+design of an AtomicSwComponentType but it is just as well possible to specify this
+ConsistencyNeeds during the definition of CompositionSwComponentTypes.
+For example, the existence of stable data is typically expected for the execution of
+RunnableEntitys of several AtomicSwComponentTypes.
+Please note that the two aspects stability and coherence are not necessarily con-
+nected to each other. It is possible to require stability without coherence and vice
+versa. For this purpose the roles dpgDoesNotRequireCoherency and regDoes-
+NotRequireStability are needed.
+[TPS_SWCT_01480] Stability and/or coherence is not required ⌈In order to be able
+to clearly separate the aspect of stability from coherence it is possible to use the roles
+dpgDoesNotRequireCoherency to express that a group of VariableDataProto-
+types explicitly does not require consistency.
+Likewise, regDoesNotRequireStability can be used to express that for a group
+of RunnableEntitys stability with respect to data access is not required.⌋
+[TPS_SWCT_01479] Applicability of ConsistencyNeeds ⌈ConsistencyNeeds
+can only be applied to RunnableEntitys that make use of “implicit” communication.⌋
+[TPS_SWCT_01466]
+ConsistencyNeeds applied on RunnableEntitys that
+do not use implicit communication ⌈If a ConsistencyNeeds is applied on
+RunnableEntitys that do not use implicit communication, it shall be ignored.⌋
+Software Component Template
+ARElement
+AtpBlueprint
+AtpBlueprintable
+AtpType
+SwComponentType
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+AtpStructureElement
+Identifiable
+RunnableEntityGroup
+AtpStructureElement
+Identifiable
+DataPrototypeGroup
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+
+
+
+AtpStructureElement
+ExecutableEntity
+RunnableEntity
++
+canBeInvokedConcurrently: Boolean [0..1]
++
+symbol: CIdentifier [0..1]
+AutosarDataPrototype
+VariableDataPrototype
+DataInterface
+SenderReceiverInterface
+DataInterface
+NvDataInterface
+AtpBlueprint
+AtpBlueprintable
+Identifiable
+ConsistencyNeeds
++nvData
+0..*
+«atpVariation,atpSplitable»
++consistencyNeeds
+0..*
+«instanceRef,atpVariation,atpSplitable»
++runnableEntity
+0..*
+«instanceRef,atpVariation,atpSplitable»
++dataPrototypeGroup 0..*
+«atpVariation,atpSplitable»
++regDoesNotRequireStability
+0..*
+«instanceRef,atpVariation,atpSplitable»
++implicitDataAccess
+0..*
+«instanceRef,atpVariation,atpSplitable»
++runnableEntityGroup 0..*
+«atpVariation,atpSplitable»
++dpgDoesNotRequireCoherency
+0..*
++dataElement
+0..*
+«atpVariation,atpSplitable»
++regRequiresStability
+0..*
+«atpVariation,atpSplitable»
++dpgRequiresCoherency
+0..*
+Figure 4.53: Formal definition of implicit communication behavior
+The formal definition of the implicit communication behavior foresees the grouping of
+model elements in order to indicate their relevance for consistent implicit communica-
+tion.
+[TPS_SWCT_01470] RunnableEntityGroup ⌈A RunnableEntitys belongs to
+a specific RunnableEntityGroup if it is associated either directly with the given
+RunnableEntityGroup or if the RunnableEntityGroup the RunnableEntity
+belongs to is eventually (there can be more than one nesting level) referenced by the
+given RunnableEntityGroup.⌋
+[TPS_SWCT_01471] DataPrototypeGroup ⌈A VariableDataPrototypes be-
+longs to a specific DataPrototypeGroup if it is associated either directly with the
+given DataPrototypeGroup or if the DataPrototypeGroup the VariableDat-
+aPrototype belongs to is eventually (there can be more than one nesting level) ref-
+erenced by the given DataPrototypeGroup.⌋
+[constr_1231] ConsistencyNeeds aggregated by CompositionSwComponent-
+Type
+Imposition time: CP: IT_CompSwcT
+⌈If ConsistencyNeeds are aggregated by a CompositionSwComponentType the
+associations stereotyped ≪instanceRef≫may only refer to context and target ele-
+ments within the context of this CompositionSwComponentType.⌋
+Software Component Template
+For clarification, [constr_1231] includes VariableDataPrototypes owned by del-
+egation PortPrototypes of the owning CompositionSwComponentType, Vari-
+ableDataPrototypes in delegation PortPrototypes of CompositionSwCompo-
+nentType instantiated in the enclosing CompositionSwComponentType, or Vari-
+ableDataPrototypes in PortPrototypes owned by AtomicSwComponentTypes
+instantiated inside the context of the enclosing CompositionSwComponentType.
+[constr_1232] ConsistencyNeeds aggregated by AtomicSwComponentType
+Imposition time: CP: IT_CpgExe
+⌈If ConsistencyNeeds are aggregated by a AtomicSwComponentType the asso-
+ciations stereotyped ≪instanceRef≫may only refer to context and target elements
+within the context of this AtomicSwComponentType.⌋
+Strictly speaking, these are the RunnableEntitys and PortPrototypes of this
+particular AtomicSwComponentType or RunnableEntityGroups and DataPro-
+totypeGroups which are owned by the same AtomicSwComponentType.
+Please note that pre-defined values for the category of RunnableEntityGroup
+and DataPrototypeGroup are described in the [1, AUTOSAR TPS Standardization
+Template].
+Class
+ConsistencyNeeds
+Note
+This meta-class represents the ability to define requirements on the implicit communication behavior.
+Base
+ARObject, AtpBlueprint, AtpBlueprintable, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+ConsistencyNeedsBlueprintSet.consistencyNeeds, SwComponentType.consistencyNeeds
+Attribute
+Type
+Mult.
+Kind
+Note
+dpgDoesNot
+Require
+Coherency
+DataPrototypeGroup
+*
+aggr
+This group of VariableDataPrototypes does not require
+coherency with respect to the implicit communication
+behavior.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=dpgDoesNotRequireCoherency.shortName,
+dpgDoesNotRequireCoherency.variationPoint.shortLabel
+vh.latestBindingTime=preCompileTime
+dpgRequires
+Coherency
+DataPrototypeGroup
+*
+aggr
+This group of VariableDataPrototypes requires coherency
+with respect to the implicit communication behavior, i.e. all
+read and write access to VariableDataPrototypes in the
+DataPrototypeGroup by the RunnableEntitys of the
+RunnableEntityGroup need to be handled in a coherent
+manner.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=dpgRequiresCoherency.shortName, dpg
+RequiresCoherency.variationPoint.shortLabel
+vh.latestBindingTime=preCompileTime
+regDoesNot
+RequireStability
+RunnableEntityGroup
+*
+aggr
+This group of RunnableEntities does not require stability
+with respect to the implicit communication behavior.
+Stereotypes: atpSplitable; atpVariation
+Tags:
+atp.Splitkey=regDoesNotRequireStability.shortName, reg
+DoesNotRequireStability.variationPoint.shortLabel
+vh.latestBindingTime=preCompileTime
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -103,7 +369,7 @@ RunnableEntitys.⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_SoftwareComponentTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_TPS_SoftwareComponentTemplate.pdf#page=216" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_SoftwareComponentTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

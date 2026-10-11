@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_8_2_IPdu_Mapping</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SystemTemplate.pdf</strong> (Seite 736)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=736" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></strong> (Seite 736)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SYST_02207" class="swsref"><code>TPS_SYST_02207</code></a></span>
         </div>
@@ -88,7 +89,164 @@ IF) all routing paths can be active at run time.
 [TPS_SYST_02207] Routing on the fly ⌈If routing on the fly is not possible in case:
 • there is more than one destination routing path or
 • the routing path uses the Interface (IF) API instead of Transport Protocol (TP) API
-then IPduMapping.pdurTpCh</div></section>
+then IPduMapping.pdurTpChunkSize will be ignored in the Ecu configuration.⌋()
+System Template
+IPduMapping
++
+pduMaxLength: PositiveInteger [0..1]
++
+pdurTpChunkSize: PositiveInteger [0..1]
+PduMappingDefaultValue
+TargetIPduRef
+DefaultValueElement
++
+elementByteValue: Integer
++
+elementPosition: Integer
+Identifiable
+PduTriggering
+«atpMixed»
+DocumentationBlock
++defaultValue
+0..1
++sourceIPdu
+1
++introduction
+0..1
++defaultValueElement 1..*
++targetIPdu
+1
++targetIPdu 1
+Figure 8.3: I-Pdu Mapping (Fibex4Multiplatform: IPduMapping)
+Class
+IPduMapping
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::Fibex4Multiplatform
+Note
+Arranges those IPdus that are transferred by the gateway from one channel to the other in pairs and
+defines the mapping between them.
+Base
+ARObject
+Aggregated by
+Gateway.iPduMapping
+Attribute
+Type
+Mult.
+Kind
+Note
+introduction
+DocumentationBlock
+0..1
+aggr
+This represents introductory documentation about the
+IPdu mapping.
+pduMaxLength
+PositiveInteger
+0..1
+attr
+Define the maximum length in bytes which limits the
+length of the Pdu during gateway operation if the runtime
+length of the received Pdu exceeds this limit.
+pdurTpChunk
+Size
+PositiveInteger
+0..1
+attr
+Optionally defines the to be configured Pdu Router Tp
+ChunkSize for this routing relation.
+sourceIPdu
+PduTriggering
+1
+ref
+Source destination of the referencing mapping.
+targetIPdu
+TargetIPduRef
+1
+aggr
+Target destination of the referencing mapping.
+Table 8.3: IPduMapping
+System Template
+Class
+TargetIPduRef
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::Fibex4Multiplatform
+Note
+Target destination of the referencing mapping.
+Base
+ARObject
+Aggregated by
+IPduMapping.targetIPdu
+Attribute
+Type
+Mult.
+Kind
+Note
+defaultValue
+PduMappingDefault
+Value
+0..1
+aggr
+If no I-Pdu has been received a default value will be
+distributed.
+targetIPdu
+PduTriggering
+1
+ref
+IPdu Reference
+Table 8.4: TargetIPduRef
+Class
+PduMappingDefaultValue
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::Fibex4Multiplatform
+Note
+Default Value which will be distributed if no I-Pdu has been received since last sending.
+Base
+ARObject
+Aggregated by
+TargetIPduRef.defaultValue
+Attribute
+Type
+Mult.
+Kind
+Note
+defaultValue
+Element
+DefaultValueElement
+1..*
+aggr
+The default value consists of a number of elements. Each
+default value element is represented by the element and
+the position in an array.
+Table 8.5: PduMappingDefaultValue
+Class
+DefaultValueElement
+Package
+M2::AUTOSARTemplates::SystemTemplate::Fibex::Fibex4Multiplatform
+Note
+The default value consists of a number of elements. Each element is one byte long and the number of
+elements is specified by SduLength.
+Base
+ARObject
+Aggregated by
+PduMappingDefaultValue.defaultValueElement
+Attribute
+Type
+Mult.
+Kind
+Note
+elementByte
+Value
+Integer
+1
+attr
+The integer value of a freely defined data byte.
+elementPosition
+Integer
+1
+attr
+This attribute specifies the byte position of the element
+within the default value
+Table 8.6: DefaultValueElement</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +259,7 @@ then IPduMapping.pdurTpCh</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SystemTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_SystemTemplate.pdf#page=736" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SystemTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

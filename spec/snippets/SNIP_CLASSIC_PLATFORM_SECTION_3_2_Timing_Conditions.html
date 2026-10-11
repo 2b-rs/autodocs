@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_3_2_Timing_Conditions</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>TPS_TimingExtensions.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_TPS_TimingExtensions.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_TimingExtensions.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=RS_TIMEX_00011" class="swsref"><code>RS_TIMEX_00011</code></a></span>
         </div>
@@ -88,7 +89,95 @@ coolant temperature (TCO) of an internal combustion engine. This SW-C shall cons
 various modes of operation as shown in the lower left corner of the components, namely
 the mode ports called ”Ignition Key Position”, ”Engine Operating States”, and ”Engine
 Start and Stop”.
-As shown in Figure 3.8 the</div></section>
+As shown in Figure 3.8 the SWC controlling the coolant temperature requires informa-
+tion on the current operating conditions of the internal combustion engine. Depending
+on these conditions different timing constraints are imposed on an event chain requiring
+different reaction time constraints.
+In one situation, the reaction time shall be much faster than in other situation. For ex-
+ample, the mode port called Engine Operating States indicates a specific con-
+dition respectively mode the internal combustion engine operates in. In this specific
+mode it may happen that the internal combustion engine faces a critical thermal condi-
+tion.
+In order to prevent the engine from being damaged the Electronically Controlled Ther-
+mostat (ETC) shall be actuated much faster (client port called ECT Actuator) than
+in other cases. This is accomplished by specifying a tighter reaction time for this con-
+dition; and under any other condition the reaction time may be more relaxed.
+Besides this particular example, there are a lot more cases where the timing constraints
+imposed on given event chains change depending on the internal combustion engines
+mode.
+Platform
+In dependable systems an application is typically designed in a fault tolerant manner.
+It either operates under normal condition — normal mode — or under failure condition
+— failure mode. As sketched in the upper part of Figure 3.9 in such an application
+a number of runnable entities process the values of three sensors. In a first step the
+sensor values are corrected by a runnable entity and are passed to another runnable
+entity of the application that utilizes a control algorithm to calculate an output. This
+output value is used to control an actuator or is processed by other runnable entities in
+the system. In the same application another runnable entity checks the plausibility of
+the values received from the sensors.
+The purpose of this runnable entity is to determine any unexpected and implausible
+deviation from the expected values of each sensor. If such an deviation is detected by
+the runnable entity checking the plausibility of the sensor values then a runnable entity
+correcting the sensor values is notified about this condition, namely indicating a failure
+of one of the sensors. The runnable entity correcting the sensor values is capable of
+deriving the value of the erroneous sensor based on the values of the other sensors
+which monitor other physical properties.
+Thus, the application is operating under different conditions — normal and failure mode
+— and with regard to the software implementation this results in different worst case
+execution times of the runnable entity correcting the sensor values.
+Figure 3.9: Generic fault tolerant control application
+Assumed the application executing the three runnable entities is mapped to an ECU ex-
+ecuting already runnable entities of another application. The runnable entities of these
+two applications are executed in the context of two tasks called Task Control and
+Task Application. The former task executes the runnable entities of the given fault
+tolerant application and the latter task executes the application already being mapped
+to the ECU and consisting of a number of runnable entities. Both tasks respectively
+Platform
+applications are activated periodically every 9ms.
+The task Task Control has a
+deadline of 7ms and the task Task Application has a deadline of 4ms.
+As mentioned above the first application operates under two different conditions: Under
+normal condition the execution time of the runnable entities does not exceed 5ms, and
+under failure condition the execution time of the runnable entities increases to 7ms due
+to the additional time required for executing the algorithm to derive the value of the
+erroneous sensor.
+A rough sketch of the task schedule containing both tasks is given in the lower part
+of Figure 3.9. On the left hand side the fault tolerant application is operating under
+normal conditions and on the right hand side this application is operating under failure
+condition. In this case — failure condition — the execution time 3ms of the task ask
+Application leads to a violation of the schedule, which means that the two applica-
+tions cannot be integrated onto the same ECU unless both applications are mapped
+onto a more powerful ECU — resulting in a decrease of execution times. Another possi-
+bility would be that the application executed by the task Task Application provides
+capabilities to operate under degraded conditions resulting in a shorter execution time,
+for example 2ms.
+However, in the cases described above timing constraints imposed on timing properties
+of SWCs and/or runnable entities depend on specific conditions a system shall operate
+properly.
+TIMEX is capable of specifying timing constraints for specific conditions as shown in
+Figure 3.10. Such a timing constraint is valid if and only if the given timing condition
+holds.
+Identifiable
+Traceable
+TimingConstraint
+Identifiable
+TimingCondition
++timingCondition
+0..1
+Figure 3.10: Conditional Timing Constraint
+Since a TimingConstraint plays either the role of a timing requirement or timing
+guarantee the dependency on a condition can be specified on both types of timing
+information, namely timing constraint and timing property.
+[TPS_TIMEX_00049] Purpose of TimingCondition ⌈The purpose of the Tim-
+ingCondition is to describe a condition a timing constraint is depending on.⌋(RS_-
+TIMEX_00011)
+[TPS_TIMEX_00050] Purpose of TimingConditionFormula ⌈The purpose of the
+TimingConditionFormula is to specify an expression describing a dependency on
+a specific condition.⌋(RS_TIMEX_00011)
+[TPS_TIMEX_00051] Purpose of TimingExtensionResource ⌈The purpose of the
+TimingExtensionResource is to subsume a number of re-usable elements, like
+instance references to various timing relevant elements, that are referenced from within
+a TimingConditionFormula. These elements of a TimingExtensionResource</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +190,7 @@ As shown in Figure 3.8 the</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>TPS_TimingExtensions.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_TPS_TimingExtensions.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">TPS_TimingExtensions.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

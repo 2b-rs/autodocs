@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DET_SECTION_7_6_Message_Decoding_and_Forwarding</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_V2XDataManager.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_V2XDataManager.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_V2XDataManager.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_SWCT_01869" class="swsref"><code>TPS_SWCT_01869</code></a></span>
         </div>
@@ -92,7 +93,47 @@ implementation
 of this callback function shall be user specific (see V2xDM_Callback_&lt;Stack&gt;_
 &lt;Msg&gt;_&lt;Type&gt;). If this function returns E_OK, the decoder proceeds its operation
 with decoding the next sequence of the V2x message. Any other return value will
-abort the decoding process and no V2x object</div></section>
+abort the decoding process and no V2x object assigned to the V2x message will
+be indicated to the RTE.⌋
+[CP_SWS_V2xDM_00039]
+Upstream requirements: SRS_V2X_26002
+⌈If an error occurs during decoding of a V2x message then V2xDM shall generate a
+RuntimeError and call Det_ReportRuntimeError with the error code V2xDM_E_-
+DECODING_FAILURE.⌋
+[CP_SWS_V2xDM_00038]
+Upstream requirements: SRS_V2X_26001
+⌈If the value of a V2x catalog item is not an immediate copy of the V2x mes-
+sage element, the conversion function &lt;V2xDM_ItemConversionFunc&gt; shall be
+applied to derive the value. The name of the conversion function shall be configured in
+V2xDMConversionFunc as a parameter of the container V2xDMConversion which
+is a sub container of V2xDMConnection inside the corresponding catalog item con-
+nection. The assigned conversion function name shall be unique and must not collide
+with an unrelated function’s name.⌋
+A conversion function is needed if a V2x catalog item is derived from one V2x
+message element and the source of this message element needs to be converted
+into another unit (e.g. through linear trasformation). Or a V2x catalog item is de-
+rived from several V2x message elements. In the latter case the conversion func-
+tion generates the resulting V2x catalog item out of the input values of the V2x
+message elements.
+An alternative to a user defined conversion function is the usage of standard conversion
+functions offered by the V2xDM, e.g. the V2xDMConversionFunctionLinear.
+Note: The conversion function will only be generated if a V2x catalog item is refer-
+enced by a V2x object. Without a reference, no conversion function will be generated.
+[CP_SWS_V2xDM_00034]
+Upstream requirements: SRS_V2X_26001
+⌈The V2xDM shall indicate any V2x objects that are associated to the V2x cata-
+log item of a V2x message to the RTE only after the complete V2x message was
+successfully decoded and all V2x objects have been filled completely.⌋
+[CP_SWS_V2xDM_00037]
+Upstream requirements: SRS_V2X_26001
+⌈If an error occurs during conversion of a V2x message then V2xDM shall generate a
+RuntimeError and call Det_ReportRuntimeError with the error code V2xDM_E_-
+CONVERSION_FAILURE.⌋
+Details of the conversion flow can be found in Figure 9.1.
+Note: A V2x object may be configured for transmission via SOME/IP. Values for the
+transformer and event type are configured accordingly. The V2x Data Manager does
+not manage service discovery. Either, event types are auto initialized on startup or are
+managed by SW-C.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -105,7 +146,7 @@ abort the decoding process and no V2x object</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_V2XDataManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_V2XDataManager.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_V2XDataManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

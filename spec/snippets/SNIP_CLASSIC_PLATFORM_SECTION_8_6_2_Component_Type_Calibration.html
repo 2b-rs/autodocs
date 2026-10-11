@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/platform.html">Modul: platform</a></span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_6_2_Component_Type_Calibration</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 1198)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1197" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 1197)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Rte_05145" class="swsref internal-spec-ref"><code>SWS_Rte_05145</code></a></span>
         </div>
@@ -123,11 +124,88 @@ min = 0
 max = 65535
 lowerMultiplicity = 0
 upperMultiplicity = 1
-RteParameterRef: EcucForeignReferenceDe</div></section>
+RteParameterRef: EcucForeignReferenceDef
+lowerMultiplicity = 0
+upperMultiplicity = 1
+destinationType = PARAMETER-DATA-PROTOTYPE
+AutosarDataPrototype
+ParameterDataPrototype
++reference
++parameter
++subContainer
++reference
++subContainer
++reference
++subContainer
++reference
++swAddrMethod
+0..1
++parameter
+Figure 8.21: Configuration of the calibration for the SwComponentType
+The foreign reference RteComponentTypeRef identifies the SwComponentType
+(which is limited to ParameterSwComponentType and AtomicSwComponentType).
+The boolean parameter RteCalibrationSupportEnabled specifies whether cali-
+bration shall be enabled for the specified SwComponentType.
+[SWS_Rte_05145]
+Upstream requirements: SRS_Rte_00154, SRS_Rte_00156, SRS_Rte_00158
+⌈For a ParameterDataPrototype of the referenced SwComponentType software
+calibration support shall be enabled if the parameter RteCalibrationSupportEn-
+abled is set to true and in the corresponding container RteComponentTypeCali-
+bration
+• not a single RteCalibrationSwAddrMethodRef exists or
+• a reference RteCalibrationSwAddrMethodRef to the SwAddrMethod of the
+ParameterDataPrototype exists.
+⌋
+A RteComponentTypeParameterGroup container is used to configure the se-
+quence order of ParameterDataPrototypes in a ParameterElementGroup for
+a given SwAddrMethod.
+The SwAddrMethod is represented by the reference
+RteParameterGroupSwAddrMethodRef. This reference RteParameterGroup-
+SwAddrMethodRef can be left empty, meaning that the integrator can configure the
+order of ParameterDataPrototypes which have no property SwAddrMethod (see
+[SWS_Rte_03908]). The reference RteParameterRef identifies a ParameterDat-
+aPrototype owned by a ParameterSwComponentType or by an AtomicSwCom-
+ponentType.
+[ECUC_Rte_09039] Definition of EcucParamConfContainerDef RteComponent
+TypeCalibration ⌈
+Container Name
+RteComponentTypeCalibration
+Parent Container
+RteSwComponentType
+Description
+Specifies for each ParameterSwComponentType or AtomicSwComponentType whether
+calibration is enabled. If references to SwAddrMethod are provided in RteCalibration
+SwAddrMethodRef only ParameterDataPrototypes with the referenced SwAddrMethod
+shall have software calibration support enabled.
+Multiplicity
+0..1
+Configuration Parameters
+Included Parameters
+Parameter Name
+Multiplicity
+ECUC ID
+RteCalibrationSupportEnabled
+1
+[ECUC_Rte_09037]
+RteCalibrationSwAddrMethodRef
+0..*
+[ECUC_Rte_09038]
+No Included Containers
+⌋
+[ECUC_Rte_09037] Definition of EcucBooleanParamDef RteCalibrationSupport
+Enabled ⌈
+Parameter Name
+RteCalibrationSupportEnabled
+Parent Container
+RteComponentTypeCalibration
+Description
+Enables calibration support for the specified ParameterSwComponentType or Atomic
+SwComponentType.
+Multiplicity</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Specifies RteComponentTypeCalibration configuration parameters.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Rte_05145] im Text von SWS_RTE.</p>
       </section>
 
       <section class="snip-card">
@@ -136,11 +214,11 @@ RteParameterRef: EcucForeignReferenceDe</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=1197" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 1198</td>
+              <td>Seite 1197</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -152,11 +230,11 @@ RteParameterRef: EcucForeignReferenceDe</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

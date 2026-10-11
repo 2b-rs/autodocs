@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module"><a href="../../de/classic/modules/std.html">Modul: std</a></span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_4_1_Activities_in_the_OffPreOS_Sequence</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_ECUStateManager.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=48" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></strong> (Seite 48)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EcuM_04152" class="swsref internal-spec-ref"><code>SWS_EcuM_04152</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
       </div>
 
@@ -108,11 +109,47 @@ other wakeup events shall be ignored.⌋
 [SWS_EcuM_04152]
 Upstream requirements: SRS_ModeMgm_00003, SRS_ModeMgm_00004
 ⌈In OffPreOS and configuration parameter EcuMIgnoreWakeupEvValOffPreOS is
-set to false, wakeup events which do not need validation and pending wake</div></section>
+set to false, wakeup events which do not need validation and pending wakeup events
+that need validation shall be considered.⌋
+Note: As the SchM is already de-initalized during the OffPreOS sequence, scheduled
+functions are not executed therefore validation of wakeups is no longer possible. The
+wakeup events that will be considered in the OffPreOS depend on the configuration of
+EcuMIgnoreWakeupEvValOffPreOS
+[SWS_EcuM_02952]
+Upstream requirements: SRS_ModeMgm_00006
+⌈As its last activity, the ECU Manager module shall call the ShutdownOS function.⌋
+The OS calls the shutdown hook at the end of its shutdown.
+[SWS_EcuM_02953]
+Upstream requirements: SRS_ModeMgm_00006
+⌈The shutdown hook shall call EcuM_Shutdown (see [SWS_EcuM_02812] ) to ter-
+minate the shutdown process. EcuM_Shutdown(see [SWS_EcuM_02812] ) shall not
+return but switch off the ECU or issue a reset.⌋
+«module»
+EcuM
+«module»
+Os
+«module»
+SchM
+«module»
+BswM
+Integration Code
+alt
+[EcuMIgnoreWakeupEvValOffPreOS is TRUE]
+[EcuMIgnoreWakeupEvValOffPreOS is FALSE]
+opt Pending wakeup events?
+ShutdownOS()
+EcuM_GetPendingWakeupEvents(EcuM_WakeupSourceType)
+EcuM_GetValidatedWakeupEvents(EcuM_WakeupSourceType)
+EcuM_SelectShutdownTarget(Std_ReturnType,
+EcuM_ShutdownTargetType, EcuM_ShutdownModeType)
+SchM_Deinit()
+EcuM_OnGoOffOne()
+BswM_Deinit()
+Figure 7.8: OffPreOS Sequence</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_EcuM_04152] im Text von SWS_ECUStateManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -121,7 +158,7 @@ set to false, wakeup events which do not need validation and pending wake</div><
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_ECUStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_ECUStateManager.pdf#page=48" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_ECUStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -133,7 +170,7 @@ set to false, wakeup events which do not need validation and pending wake</div><
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_EcuM_04152" class="swsref internal-spec-ref"><code>SWS_EcuM_04152</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -141,7 +178,7 @@ set to false, wakeup events which do not need validation and pending wake</div><
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

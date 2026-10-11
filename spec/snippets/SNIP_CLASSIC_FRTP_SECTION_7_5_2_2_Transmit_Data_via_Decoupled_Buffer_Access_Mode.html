@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FRTP_SECTION_7_5_2_2_Transmit_Data_via_Decoupled_Buffer_Access_Mode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayISOTransportLayer.pdf</strong> (Seite 49)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></strong> (Seite 49)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTp_01123" class="swsref internal-spec-ref"><code>SWS_FrTp_01123</code></a></span>
         </div>
@@ -105,7 +106,36 @@ THEN:
 22. Reset Flag TX_SDU_AVAILABLE
 23. Call Pdu_TxConfirmation (TxSDU-ID, ..)
 ELSE:
-24. Continu</div></section>
+24. Continue at Step 8
+t
+t
+t
+t
+12. LSduR_FrTpTriggerTransmit
+13. Call routine FrTp_TriggerTransmit and copy N-PDU to provided buffer
+Figure 7.8: Transmit data overview in ’Decoupled Buffer Access’ mode
+Step 01 - 10
+Step 01 - 10 in ’decoupled access mode’ are equal to step 01 - 10 in ’immediate access
+mode’. Please refer to Chapter 7.5.2.1.
+For step 09 it is recommended to set the address information and PCI to a local buffer
+because the service primitive FrTp_TriggerTransmit is called in interrupt mode
+and therefore the processing time to copy the complete N-PDU (Address Information,
+PCI and (part of) SDU data) shall be as short as possible.
+Step 11 - 12
+[SWS_FrTp_01059] Trigger transmit call by lower layer ⌈The service primitive
+FrTp_TriggerTransmit shall be called by LSduR, which was originated by the FrIf
+module via a call of LSduR_FrIfTriggerTransmit to propagate FrTp N-PDUs to
+the lower layers e.g. FlexRay Driver).⌋
+[SWS_FrTp_01060] Handling of trigger transmit ⌈The service primitive FrTp_-
+TriggerTransmit shall copy the Address Information, PCI and N-SDU data to the
+corresponding buffer, which is referenced by the service primitive parameter PduIn-
+foType.⌋
+[SWS_FrTp_01061] Data length handling for trigger transmit ⌈The service primitive
+FrTp_TriggerTransmit shall set the corresponding data length referenced by the
+service primitive parameter PduInfoType to the exact data length of the buffer.⌋
+Step 13 - 23
+Steps 13 - 23 in ’decoupled access mode’ are equal to step 10 - 20 in ’immediate
+access mode’. Please refer to Chapter 7.5.2.1.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -118,7 +148,7 @@ ELSE:
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayISOTransportLayer.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayISOTransportLayer.pdf#page=45" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayISOTransportLayer.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

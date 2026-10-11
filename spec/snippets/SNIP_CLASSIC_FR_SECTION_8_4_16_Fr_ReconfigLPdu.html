@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_FR_SECTION_8_4_16_Fr_ReconfigLPdu</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayDriver.pdf</strong> (Seite 63)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></strong> (Seite 63)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -124,11 +125,99 @@ Available via
 Fr.h
 ⌋
 CC precondition for the function Fr_ReconfigLPdu(): None.
-[SWS_Fr_00525] ⌈Th</div></section>
+[SWS_Fr_00525] ⌈The function Fr_ReconfigLPdu() shall perform the following
+tasks on FlexRay CC Fr_CtrIdx:
+• Figure out the physical resource (e.g., a buffer) mapped to the processing of the
+FlexRay frame as identified by Fr_LpduIdx.
+• Configure the physical resource (a buffer) according to the parameters given at
+the API. The Lpdu direction is statically associated with the Lpdu and cannot be
+changed by this service.
+• Return E_OK.
+⌋
+[SWS_Fr_00526] ⌈Whether an Lpdu is dynamically reconfigurable is determined via
+the configuration parameter FrIfReconfigurable which is a property of the FrI-
+fLPdu configuration parameter container.⌋
+[SWS_Fr_00527] ⌈Since FlexRay supports only even number of bytes as payload
+length, the parameter Fr_PayloadLength must be internally rounded to the next
+higher even number if it is odd.⌋
+[SWS_Fr_00528] ⌈The function Fr_ReconfigLPdu() shall be pre compile time con-
+figurable On/Off by the configuration parameter: FrReconfigLPduSupport.⌋
+[SWS_Fr_00529]
+⌈If
+the
+function
+Fr_ReconfigLPdu()
+is
+able
+to
+and
+detects
+a
+hardware
+error
+while
+performing
+the
+requested
+functionality,
+then
+it
+shall
+call
+Dem_SetEventStatus()
+(FR_E_CTRL_TESTRESULT,
+DEM_EVENT_STATUS_FAILED) and return E_NOT_OK.⌋
+[SWS_Fr_00530] ⌈If development error detection for the Fr module is enabled,
+and if the function Fr_ReconfigLPdu() is called before the successful initializa-
+tion of Fr, then the function Fr_ReconfigLPdu() shall raise the development error
+FR_E_INIT_FAILED.⌋
+[SWS_Fr_00531] ⌈If development error detection for the Fr module is enabled, then the
+function Fr_ReconfigLPdu() shall check the validity of the parameter Fr_CtrlIdx.
+If Fr_CtrlIdx is invalid, then the function Fr_ReconfigLPdu() shall raise the devel-
+opment error FR_E_INV_CTRL_IDX.⌋
+[SWS_Fr_00532] ⌈If development error detection for the Fr module is enabled, then the
+function Fr_ReconfigLPdu() shall check the validity of the parameter Fr_LpduIdx.
+If Fr_LpduIdx is invalid, then the function Fr_ReconfigLPdu() shall raise the devel-
+opment error FR_E_INV_LPDU_IDX.⌋
+[SWS_Fr_00533] ⌈If development error detection for the Fr module is enabled, then the
+function Fr_ReconfigLPdu() shall check the validity of the parameter Fr_ChnlIdx.
+If Fr_ChnlIdx is invalid, then the function Fr_ReconfigLPdu() shall raise the devel-
+opment error FR_E_INV_CHNL_IDX.⌋
+[SWS_Fr_00534] ⌈If development error detection for the Fr module is enabled,
+then the function Fr_ReconfigLPdu() shall check the validity of the parameter
+Fr_CycleRepetition. If Fr_CycleRepetition is invalid, then the function Fr_Re-
+configLPdu() shall raise the development error FR_E_INV_CYCLE.⌋
+[SWS_Fr_00535] ⌈Valid values5 for parameter Fr_CycleRepetition are 1, 2, 4, 5,
+8, 10, 16, 20, 32, 40, 50 and 64.⌋
+5For FlexRay Controllers compliant to [2] only cycle repetition values 1, 2, 4, 8, 16, 32 and 64 shall
+be supported.
+[SWS_Fr_00536] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_ReconfigLPdu() shall check the parameter Fr_CycleOffset for
+being valid. If Fr_CycleOffset is invalid, then the function Fr_ReconfigLPdu()
+shall raise the development error FR_E_INV_CYCLE.⌋
+[SWS_Fr_00537]
+⌈Valid
+values
+for
+parameter
+Fr_CycleOffset
+are
+0
+to
+(
+Fr_CycleRepetition - 1).⌋
+[SWS_Fr_00538] ⌈If development error detection for the Fr module is enabled,
+then the function Fr_ReconfigLPdu() shall check the validity of the parameter
+Fr_PayloadLength. If Fr_PayloadLength is invalid, then the function Fr_Re-
+configLPdu() shall raise the development error FR_E_INV_LENGTH.⌋
+[SWS_Fr_00634] ⌈If development error detection for the Fr module is enabled, then
+the function Fr_ReconfigLPdu() shall check the parameter Fr_HeaderCRC for being
+valid6. If Fr_HeaderCRC is invalid, then the function Fr_ReconfigLPdu() shall raise
+the development error FR_E_INV_HEADERCRC.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -137,7 +226,7 @@ CC precondition for the function Fr_ReconfigLPdu(): None.
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayDriver.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

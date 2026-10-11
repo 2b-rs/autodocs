@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_10_1_5_DTC_data_acqusition</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 199)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=199" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 199)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01415" class="swsref internal-spec-ref"><code>SWS_Dem_01415</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01418" class="swsref internal-spec-ref"><code>SWS_Dem_01418</code></a></span>
         </div>
       </div>
 
@@ -97,11 +98,140 @@ Upstream requirements: RS_Diag_04113
 DTC_KIND_EMISSION_REL_DTCS, the Dem shall consider all OBD emission related
 J1939 DTCs.⌋
 [SWS_Dem_01415] Selecting all J1939 emission related Class_A DTCs
-Upstream req</div></section>
+Upstream requirements: RS_Diag_04113
+⌈If Dem_J1939DcmSetDTCFilter is called with Dem_DTCKindType equal to DEM_
+DTC_KIND_WWHOBD_CLASS_A, the Dem shall consider all OBD emission related J1939
+DTCs with DemWWHOBDDTCClass set to DEM_DTC_WWHOBD_CLASS_A.⌋
+[SWS_Dem_01416] Selecting all J1939 emission related Class_B1 DTCs
+Upstream requirements: RS_Diag_04113
+⌈If Dem_J1939DcmSetDTCFilter is called with Dem_DTCKindType equal to DEM_
+DTC_KIND_WWHOBD_CLASS_B1, the Dem shall consider all OBD emission related
+J1939 DTCs with DemWWHOBDDTCClass set to DEM_DTC_WWHOBD_CLASS_B1.⌋
+[SWS_Dem_01417] Selecting all J1939 emission related Class_B2 DTCs
+Upstream requirements: RS_Diag_04113
+⌈If Dem_J1939DcmSetDTCFilter is called with Dem_DTCKindType equal to DEM_
+DTC_KIND_WWHOBD_CLASS_B2, the Dem shall consider all OBD emission related
+J1939 DTCs with DemWWHOBDDTCClass set to DEM_DTC_WWHOBD_CLASS_B2.⌋
+[SWS_Dem_01418] Selecting all J1939 emission related Class_C DTCs
+Upstream requirements: RS_Diag_04113
+⌈If Dem_J1939DcmSetDTCFilter is called with Dem_DTCKindType equal to DEM_
+DTC_KIND_WWHOBD_CLASS_C, the Dem shall consider all OBD emission related J1939
+DTCs with DemWWHOBDDTCClass set to DEM_DTC_WWHOBD_CLASS_C.⌋
+[SWS_Dem_00875]
+Upstream requirements: RS_Diag_04112
+⌈Each call of the function Dem_J1939DcmGetNextFilteredDTC shall search for the
+next event having a J1939DTC assigned and matching the filter criteria of Table 7.7
+for the node provided by the function call of Dem_J1939DcmSetDTCFilter. In case
+no more events are matching the filter criteria, the function return value shall be DEM_
+NO_SUCH_ELEMENT. The out parameters need not to be valid in this case.⌋
+[SWS_Dem_00877]
+Upstream requirements: RS_Diag_04111
+⌈In case the function Dem_J1939DcmGetNextFilteredDTC has found an event
+matching the filter criteria it shall return the corresponding J1939DTC (refer to
+DemDTCAttributes for details) and the corresponding occurrence counter.
+The
+return value shall be E_OK. In case the search needs to be interrupted due to in-
+ternal implementations or limitations, the return value can be set to DEM_PEND-
+ING. The out parameter needs not to be valid in this case. The next call of Dem_
+J1939DcmGetNextFilteredDTC should continue after the interrupted element. In
+case the occurrence counter is above +126 (0x7E), the returned values shall be set to
++126 (0x7E).⌋
+An example how to use Dem_J1939DcmSetDTCFilter to provide data for the DM41
+throughout DM52 is given in table Table 7.8.
+DM mes-
+sage
+DTCStatusFilter
+DTCKind
+DTCOrigin
+DM41
+DEM_J1939DTC_
+PENDING
+DEM_DTC_KIND_WWHOBD_
+CLASS_A
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM42
+DEM_J1939DTC_
+ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_A
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM43
+DEM_J1939DTC_
+PREVIOUSLY_ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_A
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM44
+DEM_J1939DTC_
+PENDING
+DEM_DTC_KIND_WWHOBD_
+CLASS_B1
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM45
+DEM_J1939DTC_
+ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_B1
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM46
+DEM_J1939DTC_
+PREVIOUSLY_ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_B1
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM47
+DEM_J1939DTC_
+PENDING
+DEM_DTC_KIND_WWHOBD_
+CLASS_B2
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM48
+DEM_J1939DTC_
+ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_B2
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM49
+DEM_J1939DTC_
+PREVIOUSLY_ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_B2
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM50
+DEM_J1939DTC_
+PENDING
+DEM_DTC_KIND_WWHOBD_
+CLASS_C
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM51
+DEM_J1939DTC_
+ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_C
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+DM52
+DEM_J1939DTC_
+PREVIOUSLY_ACTIVE
+DEM_DTC_KIND_WWHOBD_
+CLASS_C
+DEM_DTC_ORIGIN_
+PRIMARY_MEMORY
+Table 7.8: J1939 Diagnostic Message Mapping to DTC Filters and Kinds</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01415] im Text von SWS_DiagnosticEventManager.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01418] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -110,7 +240,7 @@ Upstream req</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=199" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -122,7 +252,7 @@ Upstream req</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01415" class="swsref internal-spec-ref"><code>SWS_Dem_01415</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_01418" class="swsref internal-spec-ref"><code>SWS_Dem_01418</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

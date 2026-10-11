@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWMODULEDESCRIPTIONTEMPLATE_SECTION_4_2_BSW_Scheduling</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>BSWModuleDescriptionTemplate.pdf</strong> (Seite 27)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_RS_BSWModuleDescriptionTemplate.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWModuleDescriptionTemplate.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Com_00399" class="swsref internal-spec-ref"><code>SWS_Com_00399</code></a></span>
         </div>
@@ -108,11 +109,192 @@ Material:
 01480, RS_BRF_01520)
 [RS_BSWMD_00055] Simultaneous Mode transitions ⌈
 Description:
-The BSWMD template SHALL provide m</div></section>
+The BSWMD template SHALL provide means to specify the required
+simultaneous switching of a Mode controlling BSW Modules and Application
+Software Components.
+Rationale:
+Synchronized behavior during a mode transition controlling AUTOSAR BSW
+Modules and Application Software Components
+Dependencies:
+–
+Use Case:
+ECU global Initialization and finalization phase
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01320, RS_BRF_01448, RS_BRF_01472, RS_BRF_-
+01480)
+Description Template
+[RS_BSWMD_00056] API for Mode switch notification of BSW modules ⌈
+Description:
+The BSWMD template SHALL provide means to describe that a particular
+BswModuleEntity communicates modes.
+Rationale:
+The code generator for the BSW Scheduler shall generate the Mode Switch
+API used by the BSW module service as Mode Manager.
+Dependencies:
+–
+Use Case:
+EcuM communicates the ECU’s operating state to all BSW modules via BSW
+Scheduler.
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01320, RS_BRF_01448, RS_BRF_01472, RS_BRF_-
+01480)
+[RS_BSWMD_00057] Triggering of BSW Main Functions by Triggered Events ⌈
+Description:
+The BSWMD template SHALL provide means to describe the triggering of
+BSW Main Functions by the occurrence of Triggered Events.
+Particular BSW Main Functions in BSW dependent from Triggered Events shall
+be executed after occurrence of the event.
+The occurrence of the Triggered Event is either reported via API to the BSW
+Scheduler or by means of the OS (e.g. expiration of an OS Alarm).
+Restriction: This is only applicable for intra-ECU usage.
+Rationale:
+Sporadic and non timing based periodic activation of BSW Main Functions in
+different BSW Modules.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the ignition for a combustion engine.
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01328, RS_BRF_01320)
+[RS_BSWMD_00058] Simultaneous Triggering by Triggered Events ⌈
+Description:
+The BSWMD template SHALL provide means to specify the required
+synchronized triggering of Runnable Entities and BSW Main Functions by
+shared Triggered Events.
+Rationale:
+Synchronized activation of routines in AUTOSAR BSW modules and
+Application Software Components.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the routines in Application Software Components
+and Complex Device Drivers for a combustion engine.
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01328, RS_BRF_01320)
+Description Template
+[RS_BSWMD_00059] API for Triggering BSW modules by Triggered Events ⌈
+Description:
+The BSWMD template SHALL provide means to describe that a particular
+BswModuleEntity raises Triggered Events.
+Rationale:
+The code generator for the BSW Scheduler shall generate the Trigger API used
+by the BSW module capturing the source of the Triggered Events.
+Dependencies:
+–
+Use Case:
+Angle periodic triggering of the routines in Application Software Components
+and Complex Device Drivers for a combustion engine.
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01328, RS_BRF_01320)
+[RS_BSWMD_00060] Support exclusive areas in BSW Modules and Application
+Software Components ⌈
+Description:
+The BSWMD template SHALL provide means to define exclusive areas used
+by particular BswModuleEntitys to allow priority determination for preventing
+simultaneous access to shared resources.
+The exclusive areas shall be defined with a name and the accessing
+BswModuleEntitys.
+Exclusive areas shall only protect module internal data.
+Rationale:
+Decouple the module implementation from applying data consistency
+mechanisms.
+The code generator for BSW Scheduler shall provide APIs to enter or exit
+exclusive areas for BSW Modules.
+Dependencies:
+–
+Use Case:
+Provide data consistency for a data buffer shared between a
+BswSchedulableEntity and a BswInterruptEntity.
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01320, RS_BRF_01360, RS_BRF_02040)
+[RS_BSWMD_00063] Allow enabling of providing Activating Bsw Event API ⌈
+Description:
+The BSWMD template shall provide means to request, that the Basic Software
+Scheduler activates the feature to pass the activating BSW-Event to the called
+Schedulable Entity. The request shall be available per Schedulable Entity.
+Rationale:
+In case the activating BSW-Event is not required by the Schedulable Entity
+code it shall not be available and the generated Basic Software Scheduler shall
+not keep track of the activating BSW-Events for this Schedulable Entity.
+Dependencies:
+–
+Use Case:
+A Schedulable Entity is defined to be activated by a "BswTimingEvent" as well
+as by a "BswDataReceivedEvent". During the execution of the Schedulable
+Entity the code needs to distinguish which activation source actually triggered
+the execution.
+▽
+Description Template
+△
+Supporting
+Material:
+–
+⌋(RS_BRF_01048)
+[RS_BSWMD_00064]
+Support optional configuration of ExclusiveArea usage
+within BSWModuleEntities ⌈
+Description:
+The BSW module configuration shall support specifying optional configuration
+information for each implemented BSWModuleEntitiy to describe:
+• Which ExclusiveAreas are used in a nested way by the entity.
+• Which other software entities are invoked from within an ExclusiveArea
+or nested ExclusiveArea.
+Rationale:
+The additional configuration information can be checked by a tool at
+configuration time. The goal is to prevent deadlocks by providing warnings to
+the implementer in case of possible conflicts when resources are shared
+between different software entities.
+Dependencies:
+–
+Use Case:
+• Release of safety critical systems: Deadlocks and some other problems
+may only occur in unusual situations and cannot all be found by testing.
+Safe operation of safety critical ASIL systems may require that freedom
+of deadlocks is proven by static analysis, in addition to other verification
+and validation methods.
+• Optimization of resource consumption for locking shared resources:
+Depending on the distribution of software to tasks and cores, different
+implementations of ExclusiveAreas are required. By analyzing the
+dependencies, the most efficient alternative can be chosen.
+• Integration of 3rd party software: For 3rd party software the source code
+is typically not available to analyze the way ExclusiveAreas are used.
+This has to be specified and provided in detail in the configuration
+description.
+Supporting
+Material:
+–
+⌋(RS_BRF_01048, RS_BRF_01360)
+[RS_BSWMD_00066] BSW inter-partition client-server communication ⌈
+Description:
+The BSWMDT shall provide means to specify required and provided procedure
+calls for inter-partition and/or inter-core communication within BSW. These
+shall support both synchronous and asynchronous client-server pattern and
+shall allow the corresponding BSW Scheduler API to be generated.
+Rationale:
+Optimize load balancing between the cores w.r.t. BSW services. Increase
+efficiency of BSW service execution. Enable optimization of multi core SW
+distribution.
+Dependencies:
+–
+Use Case:
+Parallel execution of applications on a multi-core system.
+▽</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Com_MainFunctionTx().</p>
       </section>
 
       <section class="snip-card">
@@ -121,7 +303,7 @@ The BSWMD template SHALL provide m</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>BSWModuleDescriptionTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_RS_BSWModuleDescriptionTemplate.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">BSWModuleDescriptionTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

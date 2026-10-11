@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: bswm</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_9_2_Single_Channel_Wakeup</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayStateManager.pdf</strong> (Seite 48)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayStateManager.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayStateManager.pdf</a></strong> (Seite 48)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05102" class="swsref internal-spec-ref"><code>SWS_FrIf_05102</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrIf_05174" class="swsref internal-spec-ref"><code>SWS_FrIf_05174</code></a></span>
         </div>
       </div>
 
@@ -180,11 +181,25 @@ FrSM_MainFunction_&lt;FrSMCluster.ShortName&gt;
 BswM_FrSM_CurrentState(FRSM_ONLINE)
 FR_POCSTATE_READY
 Dem_SetEventStatus
-(FRSM_E_CLUSTER_START</div></section>
+(FRSM_E_CLUSTER_STARTUP, PASSED)
+ComM_FrSM_ModeIndication(NetworkHandle, COMM_FULL_COM)
+FrIf_GetPOCStatus(CtrlIdx, POCStatusPtr)
+FR_POCSTATE_NORMAL_ACTIVE
+FrIf_SetState(CtrlIdx, FRIF_GOTO_ONLINE)
+FrSM_MainFunction_&lt;FrSMCluster.ShortName&gt;
+FrIf_GetPOCStatus(CtrlIdx, POCStatusPtr)
+FR_POCSTATE_STARTUP
+FrSM_MainFunction_&lt;FrSMCluster.ShortName&gt;
+FrIf_AllowColdstart(CtrlIdx)
+BswM_FrSM_CurrentState(FRSM_STARTUP)
+FrIf_StartCommunication(CtrlIdx)
+FrIf_GetPOCStatus(CtrlIdx, POCStatusPtr)
+Figure 9.3: Transition from no communication to full communication for the case of an
+ECU that has a local wakeup reason.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von FrIf_SetState().</p>
       </section>
 
       <section class="snip-card">
@@ -193,7 +208,7 @@ Dem_SetEventStatus
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayStateManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_FlexRayStateManager.pdf#page=47" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayStateManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -205,7 +220,7 @@ Dem_SetEventStatus
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrIf_05102" class="swsref internal-spec-ref"><code>SWS_FrIf_05102</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrIf_05174" class="swsref internal-spec-ref"><code>SWS_FrIf_05174</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -213,7 +228,7 @@ Dem_SetEventStatus
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

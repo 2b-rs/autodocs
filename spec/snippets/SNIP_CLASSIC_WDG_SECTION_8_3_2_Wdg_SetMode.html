@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_WDG_SECTION_8_3_2_Wdg_SetMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_WatchdogDriver.pdf</strong> (Seite 26)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogDriver.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogDriver.pdf</a></strong> (Seite 26)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Wdg_00160" class="swsref internal-spec-ref"><code>SWS_Wdg_00160</code></a></span>
         </div>
@@ -116,7 +117,51 @@ Upstream requirements: SRS_Wdg_12015
 the hardware / driver specific parameters to be used in the different watchdog modes.⌋
 [SWS_Wdg_00145] ⌈The Wdg_SetMode function shall reset the watchdog timeout
 counter based on the new watchdog mode i.e. the timeout frame remaining shall be
-recalculated based on a ch</div></section>
+recalculated based on a changed trigger period.⌋
+[SWS_Wdg_00103] ⌈The Wdg_SetMode function shall return E_OK if the mode
+switch has been executed completely and successfully, i.e. all parameters of the Wdg
+module and the watchdog hardware have been set to the new values⌋
+[SWS_Wdg_00016]
+Upstream requirements: SRS_SPAL_12064
+⌈If switching the Wdg module and the watchdog hardware into the requested mode
+is not possible, e.g. because of inconsistent mode settings or because some timing
+constraints have not been met, the Wdg_SetMode function shall return the value E_
+NOT_OK and raise the extended production error WDG_E_MODE_FAILED.⌋
+[SWS_Wdg_00026]
+Upstream requirements: SRS_BSW_00323, SRS_SPAL_12163, SRS_Wdg_12106
+⌈If disabling the watchdog is not allowed (e.g. in safety relevant systems, seeECUC_
+Wdg_00115) the Wdg_SetMode function shall check whether the settings for the re-
+quested mode would disable the watchdog. In this case, the function shall not ex-
+ecute the mode switch but raise the extended production error WDG_E_DISABLE_
+REJECTED and return with the value E_NOT_OK.⌋
+[SWS_Wdg_00091]
+Upstream requirements: SRS_BSW_00323, SRS_SPAL_12448
+⌈When development error detection is enabled for the Wdg module: The Wdg_Set
+Mode function shall check that the parameter Mode is within the allowed range. If this
+is not the case, the function shall not execute the mode switch but raise development
+error WDG_E_PARAM_MODE.⌋
+[SWS_Wdg_00092]
+Upstream requirements: SRS_BSW_00323, SRS_SPAL_12448
+⌈When development error detection is enabled for the Wdg module: The Wdg_Set
+Mode function shall check that the (hardware specific) settings for the requested mode
+are within the allowed boundaries. If this is not the case, the function shall not execute
+the mode switch but raise the development error WDG_E_PARAM_MODE.⌋
+[SWS_Wdg_00017]
+Upstream requirements: SRS_BSW_00335, SRS_SPAL_12064, SRS_SPAL_12448
+⌈When development error detection is enabled for the Wdg module: The Wdg_Set
+Mode function shall check that the Wdg module’s state is WDG_IDLE (meaning the
+Wdg module and the watchdog hardware are initialized and the watchdog is currently
+not being triggered or switched). If this is not the case, the function shall not execute
+the mode switch but raise the development error WDG_E_DRIVER_STATE.⌋
+[SWS_Wdg_00018]
+Upstream requirements: SRS_BSW_00335
+⌈When development error detection is enabled for the Wdg module: The function Wdg_
+SetMode shall set the Wdg module’s state to WDG_BUSY during its execution (indi-
+cating, that the module is busy) and shall reset the Wdg module’s state to WDG_IDLE
+as last operation before it returns to the caller.⌋
+Note: This specification prescribes the symbols WDG_IDLE and WDG_BUSY only, if
+they are externally visible, e.g. for debugging (see SRS_BSW_00335). Choosing the
+data type for the status variable is up to the implementation.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -129,7 +174,7 @@ recalculated based on a ch</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_WatchdogDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_WatchdogDriver.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_WatchdogDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CRYPTO_SECTION_7_2_1_Normal_Operation</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoDriver.pdf</strong> (Seite 25)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></strong> (Seite 25)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_01039" class="swsref internal-spec-ref"><code>SWS_Csm_01039</code></a></span>
         </div>
@@ -88,7 +89,66 @@ operations are performed in the order "START", "UPDATE", "FINISH".
 The coherent single call approach could improve the performance due to less over-
 head. Instead of calling the explicit API multiple times, only one call is necessary. This
 approach is intended to be used with small data input, which demand fast processing.
-The diagram in [SWS_Crypto_00018] shows the st</div></section>
+The diagram in [SWS_Crypto_00018] shows the state machine of a job of this design
+without considering the transitions because of errors.
+[SWS_Crypto_00018] ⌈
+stm Domain Objects
+Initial
+Idle
+Active
+Start
+E_OK
+Error
+EntryPoint
+Error
+E_OK
+Finish
+Update
+[successful finish]
+Crypto_Operationmode_Update
+Crypto_Operationmode_Start
+[error]
+Crypto_Operationmode_Finish
+Crypto_Operationmode_Update
+[error]
+[error]
+⌋
+[SWS_Crypto_00019] ⌈After initialization the crypto driver is in "idle" state.⌋
+[SWS_Crypto_00020] ⌈If Crypto_ProcessJob is called while in "Idle" or "Active"
+state and with the operation mode "START", the previous request shall be cancelled.
+That means, that all previously buffered data for this job shall be reset, and the job
+shall switch to "Active" state and process the new one.⌋
+Note:
+Resetting a job using "START" is only possible when the job is not actively being pro-
+cessed.
+[SWS_Crypto_00118] ⌈If Crypto_ProcessJob is called while the job is in state
+"Idle" and the "START" flag in the operation mode is not set, the function shall return
+with E_NOT_OK.⌋
+Note:
+If Crypto_ProcessJob is called while in "Active" state and with the operation mode
+"UPDATE", the crypto primitive is fed with input data. In terms of streaming of arbitrary
+amounts of user data multiple calls with operation mode "UPDATE" is used, to feed
+more input data to the previously ones. In the "Update" state, there are usually also
+calculations of intermediate results of cryptographic primitives. Actually, in some cases
+(e.g. AES Encryption in CBC mode) there is also the generation of output data. While
+operating with the streaming approach ("Start", "Update", "Finish") the Crypto Driver
+Object is waiting for further input ("Update") until the "Finish" state has been reached.
+No other job could be processed meanwhile.
+[SWS_Crypto_00023] ⌈If Crypto_ProcessJob is called while in "Active" state and
+with the operation mode "FINISH", the cryptographic calculations shall be finalized.
+Additional data (i.e. the MAC to be tested on a MAC verification service) shall be
+available at this point to process this job successfully. The results of the calculations
+shall be stored in the output buffers. At end of the processing the Crypto Driver shall
+switch to "Idle" state.⌋
+To process a crypto service with a single call with Crypto_ProcessJob the operation
+mode "CRYPTO_OPERATIONMODE_SINGLECALL" is a disjunction (bitwise OR) of
+the 3 modes "START", "UPDATE" and "FINISH".
+[SWS_Crypto_00025] ⌈If an internal error occurs, the corresponding job state shall be
+set to "Idle" and all input data and intermediate results shall be discarded.⌋
+[SWS_Crypto_00119] ⌈If an internal error occurs while processing an asynchronous
+job, the corresponding job state shall be set to "Idle" and all input data and intermediate
+results shall be discarded. Further, the callback notification shall be called with an
+appropriate error code.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +161,7 @@ The diagram in [SWS_Crypto_00018] shows the st</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoDriver.pdf#page=24" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

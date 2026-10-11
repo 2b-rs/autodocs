@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -98,7 +99,73 @@ values for attribute BaseTypeDirectDefinition.baseTypeEncoding are:
 – ISO-8859-2: ASCII-Strings
 – WINDOWS-1252: ASCII-Strings
 – UTF-8: UCS Transformation Format 8
-– UTF-16: Character encoding</div></section>
+– UTF-16: Character encoding for Unicode code points based on 16 bit code
+units [16]
+– UCS-2: Universal Character Set 2
+– NONE: Unsigned Integer
+– VOID: corresponds to a void in C. The encoding is not formally speciﬁed
+here.
+Software Component Template
+– BOOLEAN: This represents an unsigned integer to be interpreted as boolean.
+The value shall be interpreted as true if the value of the unsigned integer
+is 1 and it shall be interpreted as false if the value of the unsigned integer
+is 0.
+A CompuMethod shall be referenced by the corresponding Autosar-
+DataType that implements the common sense behind the boolean concept,
+i.e. deﬁne a TEXTTABLE with two CompuScales: e.g. true –&gt; 1, false
+–&gt; 0.
+⌋()
+• [TPS_SWCT_01262] memAlignment and byteOrder are platform-speciﬁc
+⌈The value of attributes BaseTypeDirectDefinition.memAlignment and
+BaseTypeDirectDefinition.byteOrder is platform-speciﬁc and therefore
+should be set only in use cases where this is really needed.
+These attributes shall be considered as optional.
+If a SwBaseType is platform-speciﬁc then also the ImplementationDataType
+and software-component descriptions build on top of it become platform-speciﬁc.
+⌋()
+However, there are use cases for SwBaseType where this does not matter: es-
+pecially the calibration support format which is generated in ECU-speciﬁc scope
+(and also contains SwBaseType, see [7]) could well be platform-speciﬁc.
+Further regulations apply for the case that the value UTF-16 is used for setting the
+attribute BaseTypeDirectDefinition.baseTypeEncoding:
+[constr_1398] Existence of attributes of BaseTypeDirectDefinition ⌈If the
+value of attribute BaseTypeDirectDefinition.baseTypeEncoding is set to UTF-
+16 then the attribute BaseTypeDirectDefinition.byteOrder shall exist.
+The only allowed values of BaseTypeDirectDefinition.byteOrder in this case
+are mostSignificantByteFirst and mostSignificantByteLast ⌋()
+There is already predeﬁned terminology (see [16]) existing that describes the two pos-
+sible cases of byte orientation in a UTF-16-encoded string. The connection to this
+terminology is deﬁned by [TPS_SWCT_01651] and [TPS_SWCT_01652].
+[TPS_SWCT_01651] UTF-16BE ⌈If the value of attribute BaseTypeDirectDefi-
+nition.baseTypeEncoding is set to UTF-16 and the attribute BaseTypeDirect-
+Definition.byteOrder in this case are mostSignificantByteFirst then the
+SwBaseType corresponds to the deﬁnition of UTF-16BE according to the Unicode
+standard [16]. ⌋()
+[TPS_SWCT_01652] UTF-16LE ⌈If the value of attribute BaseTypeDirectDefi-
+nition.baseTypeEncoding is set to UTF-16 and the attribute BaseTypeDirect-
+Definition.byteOrder in this case are mostSignificantByteLast then the
+SwBaseType corresponds to the deﬁnition of UTF-16LE according to the Unicode
+standard [16]. ⌋()
+Software Component Template
+A further question that needs clariﬁcation is the usage of the so-called Byte Order
+Mark which allows (at run-time) for determining the actual byte order directly from the
+payload of a unicode string.
+As AUTOSAR has means to formally and comprehensively deﬁne the byte order of any
+given DataPrototype that can hold a string at run time it is not necessary to support
+a further instrument that pretty much takes care of the same purpose.
+[TPS_SWCT_01653] UTF-16-encoded strings are not allowed to start with a BOM
+⌈If the value of attribute BaseTypeDirectDefinition.baseTypeEncoding is set
+to UTF-16 then the value of a DataPrototype (which is effectively representing a
+string) is not allowed to start with a Byte Order Mark (BOM). ⌋()
+Please note that [TPS_SWCT_01653] removes a possible redundancy in the deﬁnition
+and execution of UTF-16-encoded strings.
+The redundancy is not only regarded unnecessary but also potentially dangerous be-
+cause it is not possible to check whether the deﬁnition is consistent with the execution
+at conﬁguration time.
+From the formal point of view, [TPS_SWCT_01653] does not represent an actual con-
+straint although it is formulated as such.
+However, an AUTOSAR tool would not be able to properly check the condition at con-
+ﬁguration time and therefore this rule is published as a speciﬁcation item.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_4_Transmission_of_AddressClaimed</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SAEJ1939NetworkManagement.pdf</strong> (Seite 20)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SAEJ1939NetworkManagement.pdf#page=20" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939NetworkManagement.pdf</a></strong> (Seite 20)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_J1939Nm_00073" class="swsref internal-spec-ref"><code>SWS_J1939Nm_00073</code></a></span>
         </div>
@@ -87,7 +88,26 @@ AddressClaimed and CannotClaimAddress PGs. The source address resides
 in the last (least significant) byte of the meta data item.⌋(SRS_J1939_00033, SRS_-
 J1939_00034, SRS_J1939_00035, SRS_J1939_00049)
 [SWS_J1939Nm_00017] ⌈When the J1939 Network Management module needs
-to send an AddressClaimed (or CannotClaimAddress) PG, and the CAN Inter</div></section>
+to send an AddressClaimed (or CannotClaimAddress) PG, and the CAN Inter-
+face has not yet called J1939Nm_TxConfirmation for the previous transmission,
+the J1939 Network Management module shall buffer this PG for later transmission.⌋
+(SRS_J1939_00033, SRS_J1939_00034, SRS_J1939_00035)
+[SWS_J1939Nm_00018] ⌈Apart from the initial AddressClaimed PG, the J1939
+Network Management module shall buffer only the latest AddressClaimed or Can-
+notClaimAddress PG.⌋(SRS_J1939_00034, SRS_J1939_00035)
+Rationale: The initial AddressClaimed PG must be transmitted before any Cannot-
+ClaimAddress PG according to [3, SAE J1939-81]. Otherwise, the J1939 Network
+Management module should report current state even if the original request preceded
+a state change.
+[SWS_J1939Nm_00019] ⌈A call to J1939Nm_TxConfirmation with result E_OK
+shall trigger transmission of a buffered AddressClaimed or CannotClaimAddress
+PG via CanIf_Transmit.⌋(SRS_J1939_00033, SRS_J1939_00034, SRS_J1939_-
+00035)
+[SWS_J1939Nm_00062] ⌈When CanIf_Transmit returns with E_NOT_OK or when
+J1939Nm_TxConfirmation is called with result E_NOT_OK, the transmission of that
+PG shall be triggered again.⌋(SRS_J1939_00033, SRS_J1939_00034, SRS_J1939_-
+00035)
+J1939</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -100,7 +120,7 @@ to send an AddressClaimed (or CannotClaimAddress) PG, and the CAN Inter</div></s
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SAEJ1939NetworkManagement.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_SAEJ1939NetworkManagement.pdf#page=20" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SAEJ1939NetworkManagement.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

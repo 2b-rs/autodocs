@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: csm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CSM_SECTION_7_2_2_2_2_Queuing</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CryptoServiceManager.pdf</strong> (Seite 29)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></strong> (Seite 27)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_00944" class="swsref internal-spec-ref"><code>SWS_Csm_00944</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Csm_91074" class="swsref internal-spec-ref"><code>SWS_Csm_91074</code></a></span>
         </div>
       </div>
 
@@ -87,11 +88,84 @@ own channel. Each channel is connected to a CSM queue and a Crypto Driver Object
 queue.
 In this case, both Crypto Driver Objects are processing a crypto job (AES-high and
 RSA) each, while the queue of the Crypto Driver Object contains one more job (AES-
-low). If the HW-AES of the HSM finished the AES-high job, AES-low job w</div></section>
+low). If the HW-AES of the HSM finished the AES-high job, AES-low job will be pro-
+cessed as next one.
+Other scenarios with the same setup (without jobs in process or in queues) can be
+derived as follows: It will be assumed, that a new job of an application calls RSA.
+• If the Crypto Driver Object of the RSA is not busy, the job will be processed
+immediately.
+• If the Crypto Driver Object of the RSA is busy, but the queue of the Crypto Driver
+Object is not full, the job will be listed into that queue in order of its priority. As
+soon as the Crypto Driver Object is free, the job with the highest priority from the
+Crypto Driver Object queue will be executed.
+• If the Crypto Driver Object of the RSA is busy and the queue of the Crypto Driver
+Object is full, the job will be stored in the CSM queue in order of its priority.
+• If the Crypto Driver Object of the RSA is busy and the queue of the Crypto Driver
+Object as well as the CSM queue are full, the CSM rejects the request.
+• If the Crypto Driver Object of the RSA is active, the job is already started in
+the Crypto Driver and is waiting for either more data to process or the finish
+command.
+[SWS_Csm_00940] ⌈It shall be possible to queue CSM jobs in configured CsmQueues
+in the CSM.⌋
+[SWS_Csm_00944] ⌈The CsmQueues shall sort the jobs according to the configured
+job’s priority.⌋
+Note: The higher the job priority value, the higher the job’s priority.
+[SWS_Csm_91072] ⌈A service operation shall only be added to the queue if the data
+consistency of the job structure can be guaranteed. This shall be particularly consid-
+ered when services with the same jobID are added to the queue (e.g. with subsequent
+calls to Csm_SignatureVerify and Csm_SaveContextJob). If this cannot be guar-
+anteed, the service operation shall return with CRYPTO_E_BUSY.⌋
+[SWS_Csm_91073] ⌈If services with the same JobID can be added to the queue,
+then the order of execution of these services shall correspond to the order if incoming
+services operation requests ("First-In-First-Out").⌋
+[SWS_Csm_91074] ⌈The Csm_&lt;Service&gt; function shall behave as shown in dia-
+gram [SWS_Csm_01041].⌋
+[SWS_Csm_01041] ⌈The Csm_&lt;Service&gt; function behavior.⌋
+JOB =
+ACTIVE?
+retVal = CryIf_ProcessJob()
+JOB =
+SYNC?
+Csm queue
+empty?
+retVAL = CryIf_ProcessJob()
+Is the job priority
+higher than the
+highest in the
+queue?
+retVal = BUSY
+CSM queue full?
+Return BUSY
+Return
+Crypto_E_BUSY
+Enqueue
+job CSM
+queue
+[yes]
+[no]
+[no]
+[yes]
+[yes]
+[yes]
+[no]
+[no]
+[yes]
+[yes]
+[no]
+[no]
+Figure 7.5: Csm_&lt;Service&gt; Function Behavior
+Synchronous job processing and queuing might not be useful. So, if synchronous job
+processing is chosen, the queue sizes should be "0". However, it is also possible to
+use channels (including queues) with synchronous and asynchronous jobs.
+The queued jobs can be passed to the CRYIF in the Csm_MainFunction.
+If the job has the state "active" the CSM shall assume, that the mapped cryptographic
+driver instance is currently processing this job and the caller wants to continue with the
+operation (e.g. feeding more data using "update"). The plausibility check has to be
+performed in the cryptographic driver instance.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">sorting jobs by priority</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Csm_91074] im Text von SWS_CryptoServiceManager.</p>
       </section>
 
       <section class="snip-card">
@@ -100,11 +174,11 @@ low). If the HW-AES of the HSM finished the AES-high job, AES-low job w</div></s
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CryptoServiceManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CryptoServiceManager.pdf#page=27" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CryptoServiceManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 29</td>
+              <td>Seite 27</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -112,15 +186,15 @@ low). If the HW-AES of the HSM finished the AES-high job, AES-low job w</div></s
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Csm_00944" class="swsref internal-spec-ref"><code>SWS_Csm_00944</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Csm_91074" class="swsref internal-spec-ref"><code>SWS_Csm_91074</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

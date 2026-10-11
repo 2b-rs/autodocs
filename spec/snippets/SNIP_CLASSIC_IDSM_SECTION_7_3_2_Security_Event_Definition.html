@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,12 +56,12 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: idsm</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 80%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_IDSM_SECTION_7_3_2_Security_Event_Definition</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_IntrusionDetectionSystemManager.pdf</strong> (Seite 22)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=22" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></strong> (Seite 22)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_IdsM_00608" class="swsref internal-spec-ref"><code>SWS_IdsM_00608</code></a></span>
         </div>
@@ -89,11 +90,38 @@ internal handling of the SEvs.⌋
 value of the parameter IdsMInternalEventId. Instead, they shall use the symbolic
 constant (SymbolicNameValue) of the corresponding SEv.⌋
 [SWS_IdsM_00603] ⌈Each SEv shall have an external event ID IdsMExter-
-nalEven</div></section>
+nalEventId, which is a global and unique ID per Security Event Type repre-
+sented by the ECU configuration, and it is defined in the SecXT.⌋
+[SWS_IdsM_00604] ⌈A IdsMExternalEventId with value 0xFFFF shall be consid-
+ered invalid.⌋
+All sensors use the symbolic name of their corresponding IdsMEvent Container as
+identifier to report their SEvs. When generating the dynamic code, the symbolic names
+are replaced by numbers (the calculated number is published as internal event ID). The
+generated symbolic name represents the tuple of an external event id and a sensor
+instance id. This ID is used for internal handling of the SEvs.
+[SWS_IdsM_00605] ⌈Each SEv shall have a sensor instance ID IdsMSensorIn-
+stanceId. This is the representation of the module number, in case there are many
+instances of the same module reporting to the IdsM.⌋
+[SWS_IdsM_00606] ⌈The combination of external event ID IdsMExternalEventId
+and sensor instance ID IdsMSensorInstanceId shall make the SEvs uniquely iden-
+tifiable within the configuration. This parameter tuple is represented by the Symbolic
+Name Value of the IdsMEvent Container.⌋
+[SWS_IdsM_00607] ⌈Sensors using the IdsM services shall report a SEv using the
+symbolic constant (SymbolicNameValue) of the IdsMEvent Container .⌋
+Manager
+The IdsM is designed to handle the case where more than one SEv shares the same
+IdsMExternalEventId as long as the reporting modules have unique sensor in-
+stance Id.
+[SWS_IdsM_00608] ⌈Each SEv shall have a IdsMSensorInstanceId configured.
+In case there are several instances of the same sensor reporting SEvs with the same
+Event Definition ID in a ECU, the reporting entity shall be uniquely identified through the
+configuration parameter IdsMSensorInstanceId. In case there is only one instance
+of the module in the configuration, the value of the instance ID shall be, by default, set
+to 0.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">IdsMSensorInstanceId configuration requirement</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_IdsM_00608] im Text von SWS_IntrusionDetectionSystemManager.</p>
       </section>
 
       <section class="snip-card">
@@ -102,7 +130,7 @@ nalEven</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_IntrusionDetectionSystemManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_IntrusionDetectionSystemManager.pdf#page=22" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_IntrusionDetectionSystemManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -118,11 +146,11 @@ nalEven</div></section>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.80</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

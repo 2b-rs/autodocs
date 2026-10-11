@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_8_Rte_Feedback</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 711)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=711" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 711)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00005" class="swsref internal-spec-ref"><code>SWS_Std_00005</code></a></span>
         </div>
@@ -103,11 +104,99 @@ the related VariableDataPrototype is ongoing.⌋
 Upstream requirements: SRS_Rte_00051, SRS_Rte_00122
 ⌈A blocking Rte_Feedback API shall return:
 • if the sender port is not connected or
-• if the calling runnable runs in</div></section>
+• if the calling runnable runs in an exclusive area or
+• if no transmission of the related VariableDataPrototype is
+ongoing or
+• when the wait point timeout occurs or
+• when the related DataSendCompletedEvent is triggered.
+⌋
+[SWS_Rte_01285]
+Upstream requirements: SRS_Rte_00051, SRS_Rte_00122
+⌈A non-blocking Rte_Feedback API shall be generated for a pro-
+vided VariableDataPrototype if acknowledgement is enabled
+and a VariableAccess in the dataSendPoint role references
+the VariableDataPrototype but no WaitPoint references the
+DataSendCompletedEvent that references the VariableAccess
+which in turn references the VariableDataPrototype.⌋
+Please note that a non-blocking Rte_Feedback API does not re-
+quire the existence of a DataSendCompletedEvent.
+If the
+DataSendCompletedEvent exists it can be used to trigger the exe-
+cution of a RunnableEntity in which the non-blocking Rte_Feed-
+back API function may be called.
+[SWS_Rte_CONSTR_09019]
+Rte_Feedback API may only be
+used by the runnable that describe its usage ⌈A blocking Rte_
+Feedback API may only be used by the runnable that contains the
+corresponding WaitPoint⌋
+[SWS_Rte_07634]
+Upstream requirements: SRS_Rte_00122
+⌈A call to Rte_Feedback shall not change the status returned by
+Rte_Feedback.⌋
+The Rte_Feedback API return value is only changed when a new
+transmission is requested (Rte_Send or Rte_Write) or when the
+notification from COM is received.
+[SWS_Rte_07635]
+Upstream requirements: SRS_Rte_00122
+⌈After a Rte_Send or Rte_Write transmission request, only the
+first notification from COM shall be taken into account for a given
+Signal or SignalGroup.⌋
+[SWS_Rte_07635] is needed in case of cyclic transmission which
+could result in multiple transmissions with different status.
+Description:
+The Rte_Feedback API takes no parameters other than the in-
+stance handle – the return value is used to indicate the acknowledge-
+ment status to the caller.
+The Rte_Feedback API applies only to explicit sender-receiver
+communication.
+Return Value:
+The return value is used to indicate the status of the transmission and
+errors detected by the RTE.
+• [SWS_Rte_01084]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈RTE_E_NO_DATA – No acknowledgments or error notifications
+were received from COM when the Rte_Feedback API was
+called (non-blocking call) or when the WaitPoint timeout ex-
+pired (blocking call).⌋
+• RTE_E_COM_STOPPED – returned in one of these cases:
+– [SWS_Rte_07636]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈(Inter-ECU communication only) The last transmission was
+rejected (when the Rte_Send or Rte_Write API was
+called), with an RTE_E_COM_STOPPED return code.⌋
+– [SWS_Rte_03774]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈(Inter-ECU communication only) An error notification from
+COM was received before any timeout notification.⌋
+• [SWS_Rte_07637]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈RTE_E_TIMEOUT – (Inter-ECU and Inter-Partition only) A time-
+out notification was received from COM or IOC before any error
+notification.⌋
+• [SWS_Rte_01086]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00122
+⌈RTE_E_TRANSMIT_ACK – In case of inter-ECU communica-
+tion, a transmission acknowledgment was received from COM;
+or in case of intra-ECU communication, even if a queue overflow
+occurred.⌋
+• RTE_E_UNCONNECTED – Indicates that the sender port is not
+connected [SWS_Rte_01344].
+• [SWS_Rte_02740]
+Upstream requirements: SRS_Rte_00092,
+SRS_Rte_00046,
+SRS_-
+Rte_00032
+⌈RTE_E_IN_EXCLUSIVE_AREA – Used only for the blocking
+API. RTE_E_IN_EXCLUSIVE_AREA indicates that the runnable
+can not enter wait, as one of the ExecutableEntitys in the
+call stack of this task is currently in an exclusive area, see
+[SWS_Rte_02739]. - In a properly configured system, this er-
+ror should not occur. The check can be disabled according to
+[SWS_Rte_08318].⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_ReturnType().</p>
       </section>
 
       <section class="snip-card">
@@ -116,7 +205,7 @@ Upstream requirements: SRS_Rte_00051, SRS_Rte_00122
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=711" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

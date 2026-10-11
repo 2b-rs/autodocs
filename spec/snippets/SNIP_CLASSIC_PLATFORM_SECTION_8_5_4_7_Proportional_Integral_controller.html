@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_PLATFORM_SECTION_8_5_4_7_Proportional_Integral_controller</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_MFLLibrary.pdf</strong> (Seite 54)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=54" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></strong> (Seite 54)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00326" class="swsref internal-spec-ref"><code>SWS_Mfl_00326</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Mfl_00332" class="swsref internal-spec-ref"><code>SWS_Mfl_00332</code></a></span>
         </div>
       </div>
 
@@ -129,11 +130,159 @@ Syntax
 void Mfl_PITyp1LimCalc (
 float32 X_f32,
 Mfl_StatePI_Type* State_cpst,
-cons</div></section>
+const Mfl_ParamPI_Type* Param_cpst,
+const Mfl_Limits_Type* Limit_cpst,
+float32 dT_f32
+)
+Service ID [hex]
+0xC3
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X_f32
+Input value for the ’PI’ controller
+Param_cpst
+Pointer to parameter structure
+Limit_cpst
+Pointer to limit structure
+Parameters (in)
+dT_f32
+Sample Time
+Parameters (inout)
+State_cpst
+Pointer to the internal state structure
+Parameters (out)
+None
+Return value
+None
+Description
+This routine computes Proportional plus integral controller (implicit type) output value using
+differential equation
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00327] ⌈
+Yn= Yn-1+ K * Xn- K * (1 - dT/Tn) * Xn-1
+This derives implementation:
+Output_value = State_cpst-&gt;Y1 + (Param_cpst-&gt;K_C * X_f32) - (Param_cpst-&gt;K_C *
+(1 - Param_cpst-&gt;Tnrec_C * dT_f32) * State_cpst-&gt;X1)
+⌋
+[SWS_Mfl_00328] ⌈
+Limit output value with maximum and minimum controller limits.
+If (Output_value &lt; Limit_cpst-&gt;Min_C) Then,
+Output_value = Limit_cpst-&gt;Min_C
+If (Output_value &gt; Limit_cpst-&gt;Max_C) Then,
+Output_value = Limit_cpst-&gt;Max_C
+⌋
+[SWS_Mfl_00329] ⌈
+Calculated Output_value shall be stored to State_cpst-&gt;Y1.
+State_cpst-&gt;Y1 = Output_value
+⌋
+[SWS_Mfl_00330] ⌈
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+⌋
+8.5.4.7.3
+’PI’ Controller - Type2 (Explicit type)
+[SWS_Mfl_00080] Definition of API function Mfl_PITyp2Calc ⌈
+Service Name
+Mfl_PITyp2Calc
+Syntax
+void Mfl_PITyp2Calc (
+float32 X_f32,
+Mfl_StatePI_Type* State_cpst,
+const Mfl_ParamPI_Type* Param_cpst,
+float32 dT_f32
+)
+Service ID [hex]
+0x36
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X_f32
+Input value for the ’PI’ controller
+Param_cpst
+Pointer to parameter structure
+Parameters (in)
+dT_f32
+Sample Time
+Parameters (inout)
+None
+Parameters (out)
+State_cpst
+Pointer to the internal state structure.
+Return value
+None
+Description
+This routine computes Proportional plus integral controller (explicit type) output value using
+differential equation
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00081] ⌈
+Yn= Yn-1 + K * (1 + dT/Tn) * Xn - K * Xn-1
+This derives implementation:
+Output_value = State_cpst-&gt;Y1 + (Param_cpst-&gt;K_C * (1 + Param_cpst-&gt;Tnrec_C * d
+T_f32) * X_f32) - (Param_cpst-&gt;K_C * State_cpst-&gt;X1)
+⌋
+[SWS_Mfl_00082] ⌈
+Calculated Output_value shall be stored to State_cpst-&gt;Y1.
+State_cpst-&gt;Y1 = Output_value
+⌋
+[SWS_Mfl_00083] ⌈
+Current input value X_f32 shall be stored to State_cpst-&gt;X1.
+State_cpst-&gt;X1 = X_f32
+⌋
+8.5.4.7.4
+’PI’ Controller - Type2 with limitation (Explicit type)
+[SWS_Mfl_00331] Definition of API function Mfl_PITyp2LimCalc ⌈
+Service Name
+Mfl_PITyp2LimCalc
+Syntax
+void Mfl_PITyp2LimCalc (
+float32 X_f32,
+Mfl_StatePI_Type* State_cpst,
+const Mfl_ParamPI_Type* Param_cpst,
+const Mfl_Limits_Type* Limit_cpst,
+float32 dT_f32
+)
+Service ID [hex]
+0xC4
+Sync/Async
+Synchronous
+Reentrancy
+Reentrant
+X_f32
+Input value for the ’PI’ controller
+Param_cpst
+Pointer to parameter structure
+Limit_cpst
+Pointer to limit structure
+Parameters (in)
+dT_f32
+Sample Time
+Parameters (inout)
+State_cpst
+Pointer to the internal state structure
+Parameters (out)
+None
+Return value
+None
+Description
+This routine computes Proportional plus integral controller (explicit type) output value using
+differential equation
+Available via
+Mfl.h
+⌋
+[SWS_Mfl_00332] ⌈
+Yn= Yn-1 + K * (1 + dT/Tn) * Xn - K * Xn-1
+This derives implementation:</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00326] im Text von SWS_MFLLibrary.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Mfl_00332] im Text von SWS_MFLLibrary.</p>
       </section>
 
       <section class="snip-card">
@@ -142,7 +291,7 @@ cons</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_MFLLibrary.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_MFLLibrary.pdf#page=54" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_MFLLibrary.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -154,7 +303,7 @@ cons</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00326" class="swsref internal-spec-ref"><code>SWS_Mfl_00326</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Mfl_00332" class="swsref internal-spec-ref"><code>SWS_Mfl_00332</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

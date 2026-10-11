@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECURESOURCETEMPLATE_SECTION_2_6_Hardware_Category_Definition</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>ECUResourceTemplate.pdf</strong> (Seite 28)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_ECUResourceTemplate.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ECUResourceTemplate.pdf</a></strong> (Seite 28)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=TPS_ECUR_01019" class="swsref"><code>TPS_ECUR_01019</code></a></span>
         </div>
@@ -164,7 +165,144 @@ The element HwCategory specifies what type of hardware is defined. This can be a
 for example a memory segment, a processing unit, a communication transceiver etc.
 The HwCategory is later referenced from the HwDescriptionEntity in the role
 hwCategory to describe what type of hardware is described. Possible values for the
-shortName of t</div></section>
+shortName of the HwCategory element are defined in table 3.1 and table 3.5.
+The HwCategory may contain several HwAttributeDef elements.
+Class
+HwCategory
+Package
+M2::AUTOSARTemplates::EcuResourceTemplate::HwElementCategory
+Note
+This metaclass represents the ability to declare hardware categories and its particular attributes.
+Tags:atp.recommendedPackage=HwCategorys
+Base
+ARElement, ARObject, AtpDefinition, CollectableElement, Identifiable, MultilanguageReferrable,
+PackageableElement, Referrable
+Aggregated by
+ARPackage.element
+Attribute
+Type
+Mult.
+Kind
+Note
+hwAttributeDef
+HwAttributeDef
+*
+aggr
+This aggregation describes particular hardware attribute
+definition.
+Table 2.11: HwCategory
+The HwAttributeDef specifies one attribute which is applicable for the HwCate-
+gory.
+The name of the attribute is defined in the shortName.
+The type of the attribute is specified by the category. Applicable values for the
+category of HwAttributeDef are defined in table 2.12.
+[constr_3500] category of HwAttributeDef shall not be extended ⌈In contrast
+to the general rule that category can be extended by user-specific values it is not al-
+lowed to extend the meaning of the attribute category of meta-class HwAttribut-
+eDef⌋()
+Category
+Description
+BOOLEAN
+Defines a boolean attribute.
+The values of a boolean attribute can be provided in
+• textual format ’true’ / ’false’ (using the vt element
+of HwAttributeValue
+• numerical format ’1’ (true) / ’0’ (false) (using the v
+element of HwAttributeValue
+INTEGER
+Defines an integer attribute.
+The values of an integer attribute can be a signed /
+unsigned whole number. The value has to fit in a signed /
+unsigned 64-bit number space.
+FLOAT
+Defines a float attribute.
+The value of a float attribute is represented as an IEEE
+double-precision 64-bit floating point of the IEEE
+754-1985 standard [7].
+ENUMERATION
+Defines an enumeration attribute. The possible
+enumeration literals are defined with the element vt.
+The value of an enumeration attribute is provided as text
+in the vt element of HwAttributeValue.
+STRING
+Defines a string attribute.
+The value of a string attribute is provided as text in the vt
+element of HwAttributeValue.
+Table 2.12: Hardware Attribute Categories
+The element isRequired specifies whether the attribute is mandatory for the defined
+category.
+[TPS_ECUR_01031] Definition of attribute unit ⌈Optionally the attribute definition
+can have a reference to a Unit element which specifies in which unit the value of this
+attribute shall be specified.⌋(RS_ECUR_00014)
+For details on the Unit specification please refer to the Software Component Tem-
+plate [3].
+Class
+HwAttributeDef
+Package
+M2::AUTOSARTemplates::EcuResourceTemplate::HwElementCategory
+Note
+This metaclass represents the ability to define a particular hardware attribute.
+The category of this element defines the type of the attributeValue. If the category is Enumeration the hw
+AttributeEnumerationLiterals specify the available literals.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+HwCategory.hwAttributeDef
+Attribute
+Type
+Mult.
+Kind
+Note
+hwAttribute
+Literal
+HwAttributeLiteralDef
+*
+aggr
+The available EnumerationLiterals of the Enumeration
+definition. Only applicable if the category of the Hw
+AttributeDef equals Enumeration.
+isRequired
+Boolean
+0..1
+attr
+This attribute specifies if the defined attribute value is
+required to be provided.
+unit
+Unit
+0..1
+ref
+This association specifies the physical unit of the defined
+hardware attribute. This is optional due to the fact that
+there are textual attributes.
+Table 2.13: HwAttributeDef
+[constr_11005] Multiplicity of HwAttributeDef.isRequired ⌈For each HwAt-
+tributeDef the attribute isRequired shall exist.⌋()
+In case the category of the HwAttributeDef is set to Enumeration the applicable
+enumeration literals are specified with the element HwAttributeLiteralDef.
+Class
+HwAttributeLiteralDef
+Package
+M2::AUTOSARTemplates::EcuResourceTemplate::HwElementCategory
+Note
+One available EnumerationLiteral of the Enumeration definition. Only applicable if the category of the Hw
+AttributeDef equals Enumeration.
+Base
+ARObject, Identifiable, MultilanguageReferrable, Referrable
+Aggregated by
+HwAttributeDef.hwAttributeLiteral
+Attribute
+Type
+Mult.
+Kind
+Note
+–
+–
+–
+–
+–
+Table 2.14: HwAttributeLiteralDef
+In example A.8 the definition of some attributes for the MemorySegment category are
+described.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -177,7 +315,7 @@ shortName of t</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>ECUResourceTemplate.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R22-11/CP/AUTOSAR_TPS_ECUResourceTemplate.pdf#page=26" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">ECUResourceTemplate.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -4100,6 +4100,8 @@ details[open] > summary .dropdown-caret {
   border: 1px solid var(--border-default, #ddd);
   border-radius: 12px;
   overflow: hidden;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
   max-height: 650px;
   height: 600px;
   background: var(--bg-canvas, #fafafa);
@@ -4200,6 +4202,8 @@ details[open] > summary .dropdown-caret {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
   position: relative;
   box-sizing: border-box;
 }
@@ -4383,6 +4387,8 @@ details[open] > summary .dropdown-caret {
   border: 1px solid var(--border-default, #ddd);
   border-radius: 12px;
   overflow: hidden;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
   background: var(--bg-canvas, #fafafa);
   font-family: var(--font-mono, monospace);
   font-size: 0.88rem;
@@ -5390,7 +5396,23 @@ main > h1.nsx-pin.nsx-drop-over { outline-style: solid; box-shadow: 0 0 0 6px co
   border-end-start-radius: 0; border-end-end-radius: 0; box-shadow: none; }
 .nsx-pop .nsx-grip { display: none; }
 .nsx-backbtn { display: none; }
-.nsx-pop .nsx-backbtn { display: inline-grid; }
+.nsx-pop .nsx-backbtn, .nsx-topdock .nsx-backbtn { display: inline-grid; }
+
+/* Seitenspannende Dropzone oberhalb der Überschrift (Themenkarte & Cluster-Guide über die volle Breite) */
+.nsx-topdock { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; box-sizing: border-box; margin-bottom: var(--space-4); }
+.nsx-topdock:empty { display: none; }
+.nsx-topdock.nsx-drop-zone:empty { display: flex; position: absolute; z-index: 5; height: 48px; border: 2px dashed var(--primary); border-radius: 8px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--bg)); align-items: center; justify-content: center;
+  color: var(--primary); font-size: 13px; font-weight: 600; pointer-events: none; }
+.nsx-topdock.nsx-drop-zone:empty::before { content: "Hier andocken (volle Breite)"; }
+.nsx-topdock.nsx-drop-zone.nsx-drop-over { outline: 2px solid var(--primary); outline-offset: 2px;
+  background: color-mix(in srgb, var(--primary) 12%, transparent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 18%, transparent); }
+.nsx-topdock > details.nsx-fold { width: 100%; box-sizing: border-box; margin: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.nsx-topdock > details.nsx-fold > summary { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface); cursor: pointer; border-bottom: 1px solid transparent; }
+.nsx-topdock > details.nsx-fold[open] > summary { border-bottom: 1px solid var(--border); }
+.nsx-topdock > details.nsx-fold > :not(summary) { padding: 14px; background: var(--bg); }
+.nsx-topdock > details.nsx-fold .nsx-backbtn { display: inline-grid; margin-inline-start: auto; }
+.nsx-topdock > details.nsx-fold .nsx-map { width: 100%; }
 
 /* Hervorhebung beim Überfahren von Verweisen im Inspektor */
 .nsx a.nsx-chip.peek, .nsx a.nsx-oi.peek { outline: 2px solid var(--status-candidate); outline-offset: 1px; border-radius: 4px; }
@@ -6081,3 +6103,156 @@ details.impl-fold > summary h2.sect { color: var(--impl-accent); }
   .site-search-panel .ss-title, .site-search-panel .ss-sub, .site-search-panel .ss-text { grid-column: 1; grid-row: auto; }
   .site-search-panel .ss-hint { display: none; }
 }
+
+/* ---------------------------------------------------------------- Kurations-Dossier: Platz, Scrollen, Zuordnung
+   UX-Aufnahmen 09.10.2026 21:45 (Begründung und Volltext der Belege, Kopfzeile verrutscht) und 21:52
+   (Kurationsvorschlag nicht erreichbar). Grundsatz: Jeder Bereich scrollt selbst, nichts wird abgeschnitten,
+   und die Übernahmewege eines Vorschlags bleiben am unteren Rand der Diskussion sichtbar. */
+
+/* Der Dialog selbst und seine Rahmen scrollen nie: scrollIntoView() verschob sonst über overflow: hidden
+   den Kopf mit Reitern und ✕ nach oben aus dem Bild. Scrollbereiche sind nur die beiden Arbeitsbereiche. */
+.dossier-modal-body,
+.dossier-view-mode,
+.dossier-view-editor,
+.dossier-workbench-layout { overflow: hidden; overflow: clip; }
+.dossier-modal { min-width: min(600px, 98vw); min-height: min(420px, 94vh); }
+/* Kopf und Körper teilen die Höhe des Dialogs: Der Körper rechnete mit 50 px Kopf (calc(100% - 50px)) und
+   ragte bei höherem oder umbrochenem Kopf unten aus dem Dialog, die Übernahmewege waren abgeschnitten. */
+.dossier-modal[open] { display: flex; flex-direction: column; }
+.dossier-modal[open] > .dossier-modal-head { flex: none; }
+.dossier-modal[open] > .dossier-modal-body { flex: 1 1 auto; min-height: 0; height: auto; max-height: none; }
+.dossier-modal-head { gap: 8px; padding: 10px 16px; align-items: flex-start; }
+.dossier-modal-head > div:first-child { min-width: 0; flex: 1 1 auto; row-gap: 6px !important; }
+.dossier-modal-head h3 { min-width: 0; overflow-wrap: anywhere; }
+.dossier-modal-head h3 .ai-badge { white-space: nowrap; flex: none; }
+.dossier-modal-head .dossier-close-btn { flex: none; }
+
+/* Liste: Kopf, Kennzahlen und Werkzeugleiste brauchen weniger Höhe, damit die Belege Platz haben */
+.dossier-view-editor .dossier-header .ai-note { margin: 0 0 6px; font-size: 12.5px; line-height: 1.4; }
+.dossier-view-editor .dossier-meta-grid {
+  margin: 6px 0 10px !important; padding: 8px 10px !important; gap: 4px 14px !important;
+  font-size: 12.5px !important; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important; }
+.dossier-view-editor .dossier-meta-grid .dossier-stale-banner { padding: 6px 10px; font-size: 12.5px; }
+.dossier-view-editor .dossier-section-head { margin-top: 12px !important; }
+.dossier-view-editor .dossier-section-head h3 { margin: 0; font-size: 15px; }
+.dossier-view-editor .dossier-section-head .desc { margin: 2px 0 6px !important; }
+.dossier-toolbar { padding: 6px 10px; margin-bottom: 8px; }
+.dossier-toolbar .dossier-search-bar { margin-bottom: 6px; }
+.dossier-toolbar .dossier-search-input { padding-top: 5px; padding-bottom: 5px; }
+.dossier-toolbar .dossier-filter-row { gap: 6px 10px; justify-content: flex-start; }
+.dossier-toolbar .dossier-filter-pill { padding: 2px 8px; font-size: 11.5px; }
+.dossier-toolbar .dossier-filter-summary { margin-top: 4px; padding-top: 3px; }
+.dossier-toolbar .btn-regenerate-from-context { padding: 4px 10px !important; }
+
+/* Kartenkopf: Titel bricht um statt bei 280 px abzuschneiden; Schaltflächen mittig, bei Platzmangel darunter */
+.dossier-view-editor .snippet-card-header { flex-wrap: wrap; row-gap: 6px; }
+.dossier-view-editor .snippet-card-summary { flex: 1 1 260px; row-gap: 4px; }
+.dossier-view-editor .snippet-card-header-actions { flex-wrap: wrap; margin-inline-start: auto; align-self: center; max-width: 100%; }
+.dossier-view-editor .snippet-title {
+  white-space: normal; max-width: none; overflow: visible; text-overflow: clip; overflow-wrap: anywhere;
+  line-height: 1.3; flex: 1 1 200px; min-width: 0; }
+
+/* Begründung der Zuordnung: in der Kopfzeile vollständig, im Inhalt je Eintrag mit Konfidenz, Rolle, Methode */
+.snippet-card-why { flex: 1 0 100%; order: 30; font-size: 12px; line-height: 1.4; color: var(--color-ink-muted, #566269);
+  padding-inline-start: 22px; overflow-wrap: anywhere; }
+.snippet-card-why .why-label { font-weight: 700; color: #01696f; }
+.snippet-card-why .why-meta, .snippet-card-why .why-more { color: var(--color-ink-muted, #666); font-size: 11.5px; }
+.snippet-card-why .why-more { font-style: italic; }
+.snippet-card .why-none { font-style: italic; color: #8a5a00; }
+.snippet-assign { margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--border-default, #dcd7ce);
+  border-left: 3px solid #01696f; border-radius: 6px; background: var(--bg-subtle, #f5f4ef); font-size: 12.5px; line-height: 1.45; }
+.snippet-assign .assign-title { font-weight: 700; font-size: 12px; color: #01696f; margin-bottom: 4px; }
+.snippet-assign .assign-sub { font-weight: 400; color: var(--color-ink-muted, #666); }
+.snippet-assign ul { margin: 0; padding: 0 0 0 18px; }
+.snippet-assign .assign-sub-title { margin: 8px 0 4px; font-weight: 600; font-size: 11.5px; color: var(--color-ink-muted, #666); }
+.snippet-assign li + li { margin-top: 6px; }
+.snippet-assign .assign-reason { display: block; overflow-wrap: anywhere; }
+.snippet-assign .assign-meta { display: block; font-size: 11.5px; color: var(--color-ink-muted, #666); }
+.snippet-assign .assign-meta code { font-size: 11px; }
+
+/* Belegtext vollständig: eigener Scrollbereich statt Abschnitt; Hinweis zu Auszug/Volltext darunter */
+.snippet-card-body .snippet-fulltext { max-height: min(46vh, 24em); overflow: auto; overscroll-behavior: contain; }
+.snippet-card-body .snippet-fulltext p { margin: 0; overflow-wrap: anywhere; }
+.snippet-fulltext-note { margin: -2px 0 8px; font-size: 11.5px; color: var(--color-ink-muted, #666); }
+.snippet-card[data-fulltext="error"] .snippet-fulltext-note { color: #8a5a00; }
+/* Nachladedaten des Dossiers (fold.js loadDossierData): Lade- und Fehlerhinweis über den Belegkarten */
+.dossier-data-status { margin: 6px 0 10px; padding: 6px 10px; border-radius: 6px; font-size: 12.5px; background: #f3f6fa; color: var(--color-ink-muted, #555); }
+.dossier-data-status[data-state="error"] { background: #fff6e5; color: #8a5a00; border: 1px solid #f0d39a; }
+.dossier-data-status .curation-btn { margin-left: 6px; }
+.snippet-no-text { margin: 0 0 8px; font-style: italic; color: #8a5a00; font-size: 12.5px; }
+
+/* Breite: die Diskussion nimmt höchstens ihre Wunschbreite, den Rest die Liste (flex: 1 rechnete bei schmalen
+   Fenstern 2/3 der Breite der Diskussion zu und ließ der Liste 210 px) */
+.dossier-view-editor .dossier-workbench-layout > .dossier-viewer-pane { flex: 1 1 0; min-width: 0; }
+.dossier-view-editor .dossier-workbench-layout > .dossier-chat-pane { flex: 0 1 clamp(340px, 38%, 540px); min-width: 0; }
+
+/* Diskussion: der Bereich scrollt als Ganzes, wenn er nicht in die Höhe passt; Kopf und Vorschlag bleiben
+   stehen. Der Kurationsvorschlag scrollt in seinem Text, die Übernahmewege darunter sind immer sichtbar. */
+.dossier-chat-pane { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.dossier-chat-pane > * { flex-shrink: 0; }
+.dossier-chat-pane > .chat-pane-thread { flex: 1 1 auto; min-height: clamp(72px, 16vh, 180px); max-height: none; }
+.dossier-chat-pane > .chat-pane-head { position: sticky; top: 0; z-index: 4; }
+.dossier-chat-pane .chat-attached-chips { max-height: 72px; min-width: 0; }
+.dossier-chat-pane .chat-attached-chip { max-width: 100%; min-width: 0; }
+.dossier-chat-pane .chat-attached-chip .chat-chip-goto { min-width: 0; text-align: start; }
+.dossier-chat-pane .chat-attached-chip code { white-space: normal; overflow-wrap: anywhere; }
+.chat-pane-proposal-box { position: sticky; bottom: 0; z-index: 3; display: flex; flex-direction: column;
+  margin: 8px 8px 0; max-height: min(64%, 460px); box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.12); }
+.chat-pane-proposal-box[hidden] { display: none !important; }
+.chat-pane-proposal-box > .proposal-card-header { flex: none; }
+.chat-pane-proposal-box > .proposal-card-body { flex: 1 1 auto; min-height: 3.6em; overflow: auto; overscroll-behavior: contain;
+  overflow-wrap: anywhere; }
+.chat-pane-proposal-box > .proposal-exit-section { flex: none; margin-top: 6px !important; padding-top: 6px !important; }
+.chat-pane-proposal-box .proposal-card-actions { flex-direction: row !important; flex-wrap: wrap; }
+.chat-pane-proposal-box .btn-proposal-exit { flex: 1 1 200px; width: auto; }
+/* Eingabezeile bleibt am unteren Rand erreichbar; mit Vorschlag übernimmt der Vorschlag diesen Platz */
+.dossier-chat-pane > .chat-pane-form { position: sticky; bottom: 0; z-index: 2; }
+.dossier-chat-pane:has(.chat-pane-proposal-box:not([hidden])) > .chat-pane-form { position: static; }
+/* mit Vorschlag zählt der Vorschlag: Schnellfragen weichen */
+.dossier-chat-pane:has(.chat-pane-proposal-box:not([hidden])) .chat-pane-chips { display: none; }
+
+/* niedrige Fenster: Werkzeugleiste scrollt mit, Erklärung entfällt, Schaltflächen etwas kleiner */
+@media (max-height: 720px) {
+  .dossier-toolbar { position: static; }
+  .dossier-view-editor .dossier-header .ai-note { display: none; }
+  .dossier-modal-head { padding: 6px 12px; }
+  .dossier-modal-head h3 { font-size: 14px; }
+  .dossier-modal-body { padding: 8px 12px; }
+  .dossier-chat-pane > .chat-pane-thread { min-height: 64px; }
+  .chat-pane-chips { padding: 6px 10px; flex-wrap: nowrap; overflow-x: auto; }
+  .chat-pane-chips .workbench-prompt-chip { flex: none; white-space: nowrap; }
+  .chat-pane-proposal-box { max-height: min(82%, 460px); }
+  .chat-pane-proposal-box .btn-proposal-exit { padding: 5px 10px; line-height: 1.25; }
+  .chat-pane-proposal-box .proposal-exit-title { margin-bottom: 4px !important; }
+}
+/* sehr schmale Fenster: die geöffnete Diskussion ersetzt die Liste (✕ in ihrem Kopf führt zurück) */
+@media (max-width: 700px) {
+  .dossier-modal.has-chat-open .dossier-viewer-pane { display: none; }
+  .dossier-modal.has-chat-open .dossier-chat-pane { flex: 1 1 100%; min-width: 0; max-width: none; }
+}
+
+[data-theme="dark"] .snippet-assign { background: #1a242b; border-color: #2c3842; border-left-color: #38b2ac; }
+[data-theme="dark"] .snippet-assign .assign-title, [data-theme="dark"] .snippet-card-why .why-label { color: #6edfd5; }
+[data-theme="dark"] .snippet-card-why, [data-theme="dark"] .snippet-assign .assign-meta,
+[data-theme="dark"] .snippet-assign .assign-sub, [data-theme="dark"] .snippet-fulltext-note,
+[data-theme="dark"] .snippet-card-why .why-meta { color: #a8b5bf; }
+[data-theme="dark"] .snippet-card .why-none, [data-theme="dark"] .snippet-no-text,
+[data-theme="dark"] .snippet-card[data-fulltext="error"] .snippet-fulltext-note { color: #f3c969; }
+[data-theme="dark"] .dossier-data-status { background: #1f2630; color: #c9d1d9; }
+[data-theme="dark"] .dossier-data-status[data-state="error"] { background: #3a2e14; color: #f3c969; border-color: #6b5421; }
+[data-theme="dark"] .snippet-assign .assign-reason { color: #e5edf2; }
+[data-theme="dark"] .snippet-card-body blockquote { background: #1f2430 !important; color: #e5edf2; border-left-color: #38b2ac !important; }
+[data-theme="dark"] .dossier-view-editor .dossier-meta-grid { background: #182026 !important; border-color: #2c3842 !important; color: #e5edf2; }
+[data-theme="dark"] .dossier-view-editor .dossier-meta-grid code { background: #202d38 !important; color: #cfe3ea; }
+[data-theme="dark"] .chat-pane-proposal-box { box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.45); }
+[data-theme="dark"] .chat-pane-proposal-box .proposal-card-header span { color: #6edfd5 !important; }
+[data-theme="dark"] .chat-pane-proposal-box .proposal-card-body { background: #1f1b10 !important; color: #f1e7c8; border-left-color: #b08900 !important; }
+[data-theme="dark"] .chat-pane-proposal-box .proposal-exit-title { color: #cbbf9c !important; }
+[data-theme="dark"] .chat-pane-proposal-box .proposal-exit-section { border-top-color: #5c4819 !important; }
+[data-theme="dark"] .chat-pane-proposal-box .btn-dismiss-proposal { color: #cbbf9c !important; }
+
+/* Plaintext-Reiter: das Textfeld (inline min-height 460 px) ragte in niedrigen Fenstern unten aus dem Dialog */
+#dossier-view-prompt .raw-prompt-textarea { min-height: 120px !important; }
+[data-theme="dark"] .btn-toggle-workbench-chat { background: #1c242a; border-color: #3b4954; color: #6edfd5; }
+[data-theme="dark"] .btn-toggle-workbench-chat:hover { background: #253139; border-color: #49b3aa; }
+[data-theme="dark"] .chip-kind.kind-inbound { background: #14373a; color: #6edfd5; }

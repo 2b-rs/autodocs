@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -56,13 +57,13 @@
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
           <span class="badge-role">Rolle: constitutive</span>
-          <span class="badge-conf">Konfidenz: 95%</span>
+          <span class="badge-conf">Konfidenz: 90%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_4_7_Suppress_DTC_output</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 63)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 63)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_01101" class="swsref internal-spec-ref"><code>SWS_Dem_01101</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Dem_91017" class="swsref internal-spec-ref"><code>SWS_Dem_91017</code></a></span>
         </div>
       </div>
 
@@ -95,11 +96,60 @@ DTC.⌋
 [SWS_Dem_01101]
 Upstream requirements: RS_Diag_04220
 ⌈A suppressed DTC shall not be visible for the following Dcm query-functions; therefore
-the following functions shall treat th</div></section>
+the following functions shall treat the DTC as if filter is not matching:
+• Dem_DcmGetDTCOfOBDFreezeFrame
+• Dem_DcmReadDataOfOBDFreezeFrame
+• Dem_DcmGetInfoTypeValue08
+• Dem_DcmGetInfoTypeValue0B
+• Dem_DcmReadDataOfPID01
+• Dem_GetDTCByOccurrenceTime
+• Dem_GetNextFilteredDTC
+• Dem_GetNextFilteredDTCAndFDC
+• Dem_GetNextFilteredDTCAndSeverity
+• Dem_GetNextFilteredRecord
+• Dem_J1939DcmFirstDTCwithLampStatus
+• Dem_J1939DcmGetNextDTCwithLampStatus
+• Dem_J1939DcmGetNextFreezeFrame
+• Dem_J1939DcmSetDTCFilter
+• Dem_J1939DcmGetNumberOfFilteredDTC
+• Dem_J1939DcmGetNextFilteredDTC
+• Dem_J1939DcmSetRatioFilter
+• Dem_J1939DcmGetNextFilteredRatio
+• Dem_J1939DcmReadDiagnosticReadiness1
+• Dem_J1939DcmReadDiagnosticReadiness2
+• Dem_J1939DcmReadDiagnosticReadiness3
+• Dem_SelectFreezeFrameData
+• Dem_SetDTCFilter
+• Dem_SelectExtendedDataRecord
+• Dem_SetDTCFilterByExtendedDataRecordNumber
+• Dem_SetDTCFilterByReadinessGroup
+⌋
+Note: This means, the (external) reporting (e.g. DTC number, UDS status, DTC ex-
+tended data records, DTC statistical data, IUMPR, ...) of the DTC is suppressed.
+[SWS_Dem_01102]
+Upstream requirements: RS_Diag_04220
+⌈DTC suppression shall not stop event processing of the corresponding DTC.⌋
+Note: This means that e.g. event qualification, update of environmental data
+and functional degradation is still processed within the Dem.
+Note: If DTC/freeze frame should not be stored in the fault memory storage condi-
+tions should be used in addition.
+[SWS_Dem_01307] Functionality of Dem_GetDTCSuppression
+Upstream requirements: RS_Diag_04220
+⌈If Dem_GetDTCSuppression is called, the Dem shall return the DTC suppression
+status in the output parameter SuppressionStatus. A value of TRUE means that the
+DTC was suppressed by a call of Dem_SetDTCSuppression with Suppression-
+Status = TRUE, a value of FALSE means, that the DTC is currently not suppressed.⌋
+[SWS_Dem_01315]
+Upstream requirements: RS_Diag_04220
+⌈If Dem_SetDTCSuppression is called the Dem shall set the suppression status of
+the selected DTC to value of the parameter SuppressionStatus.⌋
+Also there are various reasons, why a DTC is not processed and thus is not visible for
+diagnostics, the suppression state itself is only changed by Dem_SetDTCSuppres-
+sion. Dem_GetDTCSuppression only evaluates this suppression state.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_Dem_01101] im Text von SWS_DiagnosticEventManager.</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Dem_SelectExtendedDataRecord().</p>
       </section>
 
       <section class="snip-card">
@@ -108,7 +158,7 @@ the following functions shall treat th</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=63" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -120,7 +170,7 @@ the following functions shall treat th</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_Dem_01101" class="swsref internal-spec-ref"><code>SWS_Dem_01101</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_Dem_91017" class="swsref internal-spec-ref"><code>SWS_Dem_91017</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
@@ -128,7 +178,7 @@ the following functions shall treat th</div></section>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.95</strong></td>
+              <td><strong>0.90</strong></td>
             </tr>
           </tbody>
         </table>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_BSWM_SECTION_7_1_10_3_1_Link_state_accumulation_of_EthIfSwitchPortGroup</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_EthernetInterface.pdf</strong> (Seite 43)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=43" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></strong> (Seite 43)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_EthIf_00687" class="swsref internal-spec-ref"><code>SWS_EthIf_00687</code></a></span>
         </div>
@@ -88,7 +89,28 @@ as prerequisite for the link state accumulation:
 • If an EthSwtPort belongs to an EthIfSwitchPortGroup which is referenced
 by an EthIfController that references a MkaPaeInstance that protects this
 EthSwtPort, then the link state of this EthSwtPort shall be considered as
-ETHTRCV_LINK_STATE_</div></section>
+ETHTRCV_LINK_STATE_ACTIVE if the current link state of the corresponding
+Ethernet switch port is identified as ETHTRCV_LINK_STATE_ACTIVE and the
+current MACsec operational state of this EthSwtPort is set to TRUE. Other-
+wise the link state of this EthSwtPort shall be considered as ETHTRCV_LINK_
+STATE_DOWN
+• If a EthSwtPort belongs to a EthIfSwitchPortGroup which is referenced
+by an EthIfController that do not reference any MkaPaeInstance, then
+the link state of this EthSwtPort shall be considered as the current link state of
+the corresponding Ethernet switch port
+⌋
+[SWS_EthIf_00259] Link state accumulation of an EthIfSwitchPortGroup ⌈The
+link state for an EthIfSwitchPortGroup shall be computed over all link states of the
+EthSwtPorts which are referenced by the EthIfSwitchPortGroup. The link state
+of an EthSwtPort shall be derived with respect to [SWS_EthIf_00687]. The link state
+of an EthIfSwitchPortGroup shall result in ETHTRCV_LINK_STATE_DOWN if one
+of the following conditions is fulfilled:
+• The referenced EthSwtPort with the role "host port" or the role "up link port"
+has a derived link state of ETHTRCV_LINK_STATE_DOWN
+• Each referenced EthSwtPort without a role has a derived link state of
+ETHTRCV_LINK_STATE_DOWN
+Otherwise the accumulated link state of an EthIfSwitchPortGroup shall result in
+ETHTRCV_LINK_STATE_ACTIVE.⌋</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +123,7 @@ ETHTRCV_LINK_STATE_</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_EthernetInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_EthernetInterface.pdf#page=43" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_EthernetInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: canif</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 85%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_CANIF_SECTION_7_7_BasicCAN_and_FullCAN_reception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_CANInterface.pdf</strong> (Seite 39)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></strong> (Seite 38)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00665" class="swsref internal-spec-ref"><code>SWS_CANIF_00665</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_CANIF_00877" class="swsref internal-spec-ref"><code>SWS_CANIF_00877</code></a></span>
         </div>
       </div>
 
@@ -89,11 +90,35 @@ HOH derived from the configuration parameters CanIfHthIdSymRef and Can-
 IfHrhIdSymRef.⌋
 The main difference between BasicCAN and FullCAN operation is in the need of a
 software acceptance filtering mechanism (see Chapter 7.20 “Software receive filter”).
-[SWS_CANIF_00469]</div></section>
+[SWS_CANIF_00469] ⌈CanIf shall give the possibility to configure and store a soft-
+ware acceptance filter for each HRH of type BasicCAN configured by parameter Can-
+IfHrhSoftwareFilter.⌋
+[SWS_CANIF_00211] ⌈CanIf shall execute the software acceptance filter from
+[SWS_CANIF_00469] for the HRH passed by callback function CanIf_RxIndica-
+tion().⌋
+BasicCAN and FullCAN objects may coexist in a single configuration setup. Multiple
+BasicCAN and FullCAN receive objects can be used, if provided by the underlying CAN
+Controllers.
+[SWS_CANIF_00877]
+Upstream requirements: SRS_Can_01140, SRS_Can_01141, SRS_Can_01162
+⌈If CanIf receives an L-PDU (see CanIf_RxIndication()), it shall compare the
+masked CanIfRxPduCanId with the passed Mailbox-&gt;CanId to select the correct
+reception L-SDU configured in CanIfRxPduCfg. The mask is defined by CanIfRxP-
+duCanIdMask in both cases.⌋
+[SWS_CANIF_00281]
+Upstream requirements: SRS_Can_01140
+⌈CanIf shall accept and handle StandardCAN IDs and ExtendedCAN IDs on the same
+Physical Channel (= mixed mode operation).⌋
+In a mixed mode operation Standard CAN IDs and Extended CAN IDs can be used
+mixed at the same time on the same CAN network. Mixed mode operation can be
+accomplished, if the BasicCAN/FullCAN Hardware Objects have been configured
+separately for either StandardCAN or ExtendedCAN operation. In case of mixed mode
+operation the software acceptance filter algorithm (see Chapter 7.20 “Software receive
+filter”) must be able to deal with both type of CanIds.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">BasicCAN and FullCAN reception method handling</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_CANIF_00877] im Text von SWS_CANInterface.</p>
       </section>
 
       <section class="snip-card">
@@ -102,11 +127,11 @@ software acceptance filtering mechanism (see Chapter 7.20 “Software receive fi
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_CANInterface.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_CANInterface.pdf#page=38" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_CANInterface.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
-              <td>Seite 39</td>
+              <td>Seite 38</td>
             </tr>
             <tr>
               <th>Ziel-Modul</th>
@@ -114,15 +139,15 @@ software acceptance filtering mechanism (see Chapter 7.20 “Software receive fi
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_CANIF_00665" class="swsref internal-spec-ref"><code>SWS_CANIF_00665</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_CANIF_00877" class="swsref internal-spec-ref"><code>SWS_CANIF_00877</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.85</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

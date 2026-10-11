@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_NVM_SECTION_12_9_Termination_of_OS_Applications</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_OS.pdf</strong> (Seite 328)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=328" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></strong> (Seite 328)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_NvM_00537" class="swsref internal-spec-ref"><code>SWS_NvM_00537</code></a></span>
         </div>
@@ -88,7 +89,30 @@ the call to NvM_CancelJobs can return an error; in that case, the OsApplication
 shall wait until end of the job to continue. After all jobs are ensured to be cancelled, then
 all memory blocks shall be reset to their initial value, in order to avoid inconsistency of
 data which might have been written before the cancellation.
-Any SW-C having responsible for requesting mode or</div></section>
+Any SW-C having responsible for requesting mode or state to BSW mode managers
+shall always request a default mode upon a restart of its OsApplication. Thus the
+BSW mode manager would not be stuck into a mode previously requested by the
+OsApplication before its termination. To support this task, note that RTE offers
+mechanisms to handle partition stop and restart wrt. mode machines. For mode man-
+agers an "error mode" to be set by RTE can be identified. For mode user partition
+the behaviour can also be selected. Furthermore an interaction to BswM to trigger an
+action list in case of partition restart can be initiated. Refer to RTE specification for
+details.
+As a global hint, in any non-trusted OsApplication, which could be terminated, there
+shall always be a restart Task which does the following actions:
+• Cancel all jobs which can result in an asynchronous notification or shared mem-
+ory, I/O access.
+• Reset all shared memory with a default value.
+• Reset any mode or state residing in another OsApplication and controlled by
+this given OsApplication to a default value.
+Please note that some of these actions need to be performed even if an OS-Application
+is merely terminated and not restarted. For example, it may still be necessary to stop
+all signals and signal groups used by the OsApplication. Otherwise, it may happen
+that a bus never goes to sleep.
+Consequently, in such a case it is necessary to activate the restart Task to perform
+the necessary cleanup even if the OS-Application is only terminated and not restarted.
+Calling TerminateApplication(&lt;ownappid&gt;,OS_OSAPPLICATION_NO_RESTART)
+in the restart Task will finally set the OS-Application to APPLICATION_TERMINATED.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -101,7 +125,7 @@ Any SW-C having responsible for requesting mode or</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_OS.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_OS.pdf#page=328" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_OS.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

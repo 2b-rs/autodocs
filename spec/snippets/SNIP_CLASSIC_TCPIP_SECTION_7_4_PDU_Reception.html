@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_TCPIP_SECTION_7_4_PDU_Reception</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 37)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 37)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00680" class="swsref internal-spec-ref"><code>SWS_SoAd_00680</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00775" class="swsref internal-spec-ref"><code>SWS_SoAd_00775</code></a></span>
         </div>
       </div>
 
@@ -91,11 +92,117 @@ etRouteDest configuration
 socket connection group, a UDP socket is shared between all socket connections of
 the group and the related socket connection shall be selected according to the best
 match algorithm (see [SWS_SoAd_00680]).⌋
-[SWS_SoAd_</div></section>
+[SWS_SoAd_00563] ⌈In case PDU header option is disabled (SoAdPduHeaderEn-
+able is FALSE) for a socket connection, SoAd shall convert the received message as
+followed:
+1. In case the corresponding SoAdSocketRoute has SoAdRxUpperLayerType =
+IF, SoAd shall map the UDP message or TCP segment 1:1 to the PDU and
+process according to [SWS_SoAd_00567].
+2. In case the corresponding SoAdSocketRoute has SoAdRxUpperLayerType =
+TP, SoAd shall map the UDP message or TCP segment to a PDU with unknown
+length and process according to [SWS_SoAd_00595], [SWS_SoAd_00568] and
+[SWS_SoAd_00641].
+⌋
+Note: Since the TCP segmentation of transmitted PDUs is independent of PDU board-
+ers, the received IF PDU can defer from the transmitted PDU.
+[SWS_SoAd_00709] ⌈If SoAdSocketUdpStrictHeaderLenCheckEnabled is en-
+abled SoAd shall check if the length of the received UDP message does match the
+accumulated length of all PDUs including their PDU headers prior to forwarding any
+data to an upper layer. If the their lengths are different SoAd shall silently drop the
+whole message without forwarding any data.⌋
+[SWS_SoAd_00559] ⌈In case PDU header option is enabled (SoAdPduHeaderEn-
+able is TRUE) for a UDP socket connection, SoAd shall convert the message into a
+PDU within SoAd_RxIndication() according to the following:
+1. extract the PDU Header from the received message
+2. select the related socket route according to the received PDU Header ID (SoAd-
+RxPduHeaderId); if no socket route can be found, simply discard the PDU and
+raise the runtime error SOAD_E_INV_PDUHEADER_ID.
+3. use the length field of the PDU Header to identify the length of the actual PDU
+and the start of the next PDU to proceed with (1) until the end of the message is
+reached. If the remainder is smaller than a PDU Header or the indicated length
+within the header SoAd shall stop processing and ignore the rest of the message.
+⌋
+[SWS_SoAd_00771] ⌈In case PDU header option is enabled (SoAdPduHeaderEn-
+able is TRUE) for a TCP socket connection, SoAd shall convert the message into a
+PDU within SoAd_RxIndication() according to the following:
+1. extract remaining PDU payload from the received TCP segment if the previous
+TCP segment contained fragmented PDU payload. If the end of the TCP segment
+is not reached continue with (3)
+2. extract remaining PDU header from the received TCP segment if the previous
+TCP segment contained fragmented PDU header and continue with (4).
+3. extract the PDU header from the received TCP segment. If the PDU header is
+fragmented over this and the next TCP segment, then store the received part of
+the PDU header and continue with (2) for the next TCP segment.
+4. select the related socket route according to the received PDU Header ID (SoAd-
+RxPduHeaderId). If no socket route can be found, simply discard the PDU and
+raise the runtime error SOAD_E_INV_PDUHEADER_ID.
+5. use the length field of the PDU header to identify the length of the actual PDU and
+the start of the next PDU to proceed with (3) until the end of the TCP fragment
+is reached. If at the end of the TCP segment the PDU header or payload is not
+completed, it shall be remembered for the next TCP segment.
+⌋
+[SWS_SoAd_00710] ⌈In case no valid PDU data was forwarded to an upper layer
+and the remote address of the socket connection was overwritten according to
+[SWS_SoAd_00592] in context of the same SoAd_RxIndication(), SoAd shall re-
+vert the remote address change and set the state of the socket connection back to
+SOAD_SOCON_RECONNECT.⌋
+[SWS_SoAd_00564] ⌈In case of a TCP socket connection the SoAd shall confirm the
+reception of all data either forwarded to the upper layer or finally handled by SoAd (e.g.
+discarded data or processed PDU Header) by calling TcpIp_TcpReceived() within
+SoAd_RxIndication() or SoAd_MainFunction() respectively.⌋
+[SWS_SoAd_00565] ⌈SoAd shall process TP- and IF-PDUs independently and within
+each type according to the received order per socket connection.⌋
+Note: an ongoing TP reception on a socket connection blocks further TP receptions on
+the same socket connection, but does not block any reception of IF-PDUs.
+[SWS_SoAd_00566] ⌈SoAd shall preserve the order of received data when using a
+SoAd receive buffer.⌋
+[SWS_SoAd_00693] ⌈Whenever a PDU or a part of a PDU is received, that has to be
+stored in a SoAd receive buffer, is larger than the remaining available buffer size SoAd
+shall shall raise the runtime error SOAD_E_NOBUFS.⌋
+[SWS_SoAd_00758]
+Upstream requirements: SRS_Eth_00131
+⌈If the measurement data is enabled (see SoAdGetAndResetMeasurement-
+DataApi), SoAd shall increment the corresponding measurement data whenever a
+received PDU is discarded.⌋
+[SWS_SoAd_00772]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00163
+⌈If SoAdBswModuleRef is referencing Sd, then SoAd shall process incoming PDUs
+according to [SWS_SoAd_00773].⌋
+[SWS_SoAd_00773]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00163
+⌈In case a received PDU is extracted according to [SWS_SoAd_00559], the match-
+ing SoAdSocketRoute references a SoAdRoutingGroup which is also referenced
+by SdServerServiceActivationRef of SdProvidedMethods and is disabled,
+then SoAd shall call Sd_RequestRoutingGroupEnable().
+Sd_RequestRout-
+ingGroupEnable() provides feedback to Sd that a Sd client tries to use a method of
+the server.⌋
+[SWS_SoAd_00774]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00163
+⌈If Sd_RequestRoutingGroupEnable() returns E_OK, SoAd shall forward the Pdu
+data to the related upper layer.⌋
+Note: Within Sd_RequestRoutingGroupEnable() Sd performs the ACL check. In
+case of success, it enables the corresponding routing group for faster processing of
+consecutive PDUs coming from the same remote node and it returns E_OK.
+[SWS_SoAd_00775]
+Status:
+DRAFT
+Upstream requirements: SRS_Eth_00163
+⌈If Sd_RequestRoutingGroupEnable() returns E_NOT_OK, SoAd shall drop the
+received PDU.⌋
+Note: Within Sd_RequestRoutingGroupEnable() Sd performs the ACL check.
+In case of failure, the corresponding routing group stays disabled and it returns
+E_NOT_OK.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00680] im Text von SWS_SocketAdaptor.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_SoAd_00775] im Text von SWS_SocketAdaptor.</p>
       </section>
 
       <section class="snip-card">
@@ -104,7 +211,7 @@ match algorithm (see [SWS_SoAd_00680]).⌋
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=37" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -116,7 +223,7 @@ match algorithm (see [SWS_SoAd_00680]).⌋
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00680" class="swsref internal-spec-ref"><code>SWS_SoAd_00680</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_SoAd_00775" class="swsref internal-spec-ref"><code>SWS_SoAd_00775</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>

@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -55,14 +56,14 @@
         <div class="snip-badges">
           <span class="badge-platform">CLASSIC</span>
           <span class="badge-module">Modul: dem</span>
-          <span class="badge-role">Rolle: heuristic</span>
-          <span class="badge-conf">Konfidenz: 70%</span>
+          <span class="badge-role">Rolle: constitutive</span>
+          <span class="badge-conf">Konfidenz: 95%</span>
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_DEM_SECTION_7_7_7_3_Storage_of_extended_data</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_DiagnosticEventManager.pdf</strong> (Seite 121)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=121" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></strong> (Seite 121)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: SWS_Dem_CONSTR_06155</span>
+          <span>Ziel-Element: SWS_Dem_CONSTR_06174</span>
         </div>
       </div>
 
@@ -90,11 +91,64 @@ quirement [SWS_Dem_00809] applies.⌋(RS_Diag_04127)
 TRIGGER_ON_FDC_THRESHOLD, the ExtendedDataRecord shall be captured (as al-
 lowed by [SWS_Dem_00810]) each time the configured FDC threshold (refer to Dem-
 CounterBasedFdcThresholdStorageValue or DemTimeBasedFdcThreshold-
-StorageValue) is reached (by a positive increment), bu</div></section>
+StorageValue) is reached (by a positive increment), but at most once per operation
+cycle.⌋(RS_Diag_04127)
+[SWS_Dem_01069] ⌈If the DemExtendedDataRecordTrigger is set to DEM_-
+TRIGGER_ON_FDC_THRESHOLD and the event reports DEM_EVENT_STATUS_FDC_-
+THRESHOLD_REACHED (monitor-internal debounced event), the ExtendedDataRecord
+shall be captured (refer [SWS_Dem_00810]), but at most once per operation cycle.⌋
+(RS_Diag_04127)
+[SWS_Dem_00812] ⌈If the DemExtendedDataRecordTrigger is set to DEM_-
+TRIGGER_ON_TEST_FAILED, the ExtendedDataRecord shall be captured (as allowed
+by [SWS_Dem_00810]) each time the UDS status bit 0 is set (changing from 0
+to 1).⌋(RS_Diag_04127)
+[SWS_Dem_00813] ⌈If the DemExtendedDataRecordTrigger is set to DEM_-
+TRIGGER_ON_PENDING, the ExtendedDataRecord shall be captured (as allowed by
+[SWS_Dem_00810]) each time the UDS status bit 2 is set (changing from 0 to
+1).⌋(RS_Diag_04127)
+[SWS_Dem_00814] ⌈If the DemExtendedDataRecordTrigger is set to DEM_-
+TRIGGER_ON_CONFIRMED, the ExtendedDataRecord shall be captured (as allowed
+by [SWS_Dem_00810]) each time the UDS status bit 3 is set (changing from 0
+to 1).⌋(RS_Diag_04127)
+[SWS_Dem_01070] ⌈If the DemExtendedDataRecordTrigger is set to DEM_-
+TRIGGER_ON_PASSED, the ExtendedDataRecord shall be captured with the change
+of Testfailed UDS status bit 0 is reset (changing from 1 to 0). If no entry exists,
+on passed report no new entry shall be created.⌋(RS_Diag_04127)
+[SWS_Dem_CONSTR_06101] ⌈DemExtendedDataRecordTrigger needs to be
+configured. DemExtendedDataRecordTrigger shall always be configured, except
+for internal data elements like occurrence counters.⌋()
+[SWS_Dem_00815] ⌈If the configuration parameter DemExtendedDataRecordUp-
+date is set to DEM_UPDATE_RECORD_NO, the ExtendedDataRecord shall be stored
+only if the ExtendedDataRecord is currently not stored in this event memory en-
+try.⌋(RS_Diag_04127)
+[SWS_Dem_00816] ⌈If the configuration parameter DemExtendedDataRecordUp-
+date is set to DEM_UPDATE_RECORD_YES, the ExtendedDataRecord shall be updated
+with each trigger (refer to DemExtendedDataRecordTrigger).⌋(RS_Diag_04127)
+[SWS_Dem_00282] ⌈The Dem module shall use the C-callback ReadDataElement re-
+spectively the operation ReadData of the interface DataServicesCS to collect all
+configured data elements which are not typed as internal data elements (refer to Dem-
+InternalDataElementClass) of the respective extended data record.⌋()
+[SWS_Dem_00468] ⌈If an event is stored or updated in the event memory, the
+Dem module shall store the collected extended data into the event memory entry.⌋
+(RS_Diag_04127)
+[SWS_Dem_01391] Configuration of DTC priority as extended data record ⌈If
+DemInternalDataElement is set to DEM_DTC_PRIORITY, the Dem shall set the value
+of this internal data element to the DTC priority assigned by DemDTCPriority for this
+DTC. The length of this internal data element is one byte.⌋()
+[SWS_Dem_CONSTR_06173]Extended data record values for primary fault mem-
+ory ⌈A DemExtendedDataRecordClass container referenced from a DTC assigned
+to the primary memory shall have DemExtendedDataRecordNumber in the range
+0x01-0xEF.⌋()
+[SWS_Dem_CONSTR_06174] Extended data record values for user defined event
+memory ⌈A DemExtendedDataRecordClass container referenced from a DTC as-
+signed to a user defined memory shall have DemExtendedDataRecordNumber in
+the range 0x01-0xFE.⌋()
+The idea behind constraint [SWS_Dem_CONSTR_06174] is to support the definition
+for user defined memory based on ISO 14229-1:2020[16] DAMD1.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Time based FDC threshold dependency.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_Dem_CONSTR_06174] im Text von SWS_DiagnosticEventManager.</p>
       </section>
 
       <section class="snip-card">
@@ -103,7 +157,7 @@ StorageValue) is reached (by a positive increment), bu</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_DiagnosticEventManager.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_DiagnosticEventManager.pdf#page=121" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_DiagnosticEventManager.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -115,15 +169,15 @@ StorageValue) is reached (by a positive increment), bu</div></section>
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td>SWS_Dem_CONSTR_06155</td>
+              <td>SWS_Dem_CONSTR_06174</td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
-              <td><code>heuristic</code></td>
+              <td><code>constitutive</code></td>
             </tr>
             <tr>
               <th>Automatisierungs-Konfidenz</th>
-              <td><strong>0.70</strong></td>
+              <td><strong>0.95</strong></td>
             </tr>
           </tbody>
         </table>

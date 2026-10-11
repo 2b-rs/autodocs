@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_7_2_4_5_2_Rte_Rips_Write</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 969)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=969" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 969)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00021" class="swsref internal-spec-ref"><code>SWS_Std_00021</code></a></span>
         </div>
@@ -110,11 +111,127 @@ Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
 provide the Rte_Rips_Write Service for each VariableDataPrototype instance
 in an AbstractProvidedPortPrototype for which an VariableAccess of a
 RunnableEntity in the role dataSendPoint exists
-and for each VariableAccess in ro</div></section>
+and for each VariableAccess in role writtenLocalVariable to an explicit-
+InterRunnableVariable if
+• for the related Data Communication Graph the Local Software Clus-
+ter Communication Plug-In support is enabled
+AND
+– for
+the
+associated Local Software Cluster Communication
+Plug-In the RteRipsGlobalCopyInstantiationPolicy is set to
+RTE_RIPS_INSTANTIATION_BY_PLUGIN.
+OR
+– a data transformation is configured according [SWS_Rte_08794] or
+[SWS_Rte_08105].
+⌋
+[SWS_Rte_70057]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
+⌈The associated Local Software Cluster Communication Plug-In shall
+provide the Rte_Rips_Write Service for each BswVariableAccess of a BswMod-
+uleEntity in the role dataSendPoint if
+• for the related Data Communication Graph the Local Software Clus-
+ter Communication Plug-In support is enabled
+AND
+• for the associated Local Software Cluster Communication Plug-
+-In the RteRipsGlobalCopyInstantiationPolicy is set to RTE_RIPS_
+INSTANTIATION_BY_PLUGIN.
+⌋
+[SWS_Rte_70131]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
+⌈The associated Cross Software Cluster Communication Plug-In shall
+provide the Rte_Rips_Write Service for each VariableDataPrototype instance
+in an AbstractProvidedPortPrototype for which an VariableAccess of a
+RunnableEntity in the role dataSendPoint exists if
+• for the related Data Communication Graph the Cross Software Clus-
+ter Communication Plug-In support is enabled
+AND
+• for the dataElement “event” semantics (swImplPolicy = queued) applies.
+⌋
+[SWS_Rte_70132]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
+⌈In
+case
+of
+the
+existence
+condition
+described
+in
+[SWS_Rte_70056],
+[SWS_Rte_70057],
+[SWS_Rte_70131]
+the
+optional
+name
+part
+[&lt;SwcBswI&gt;]
+exists for the related Rte_Rips_Write Services.⌋
+[SWS_Rte_70133]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
+⌈The associated Cross Software Cluster Communication Plug-In shall
+provide the Rte_Rips_Write Service once for each partition which has a software
+component mapped to it where the software component has a VariableDataPro-
+totype instance in an AbstractProvidedPortPrototype for which an Vari-
+ableAccess of a RunnableEntity in the role
+• dataSendPoint
+or
+• dataWriteAccess exists
+AND
+• for the related Data Communication Graph the Cross Software Clus-
+ter Communication Plug-In support is enabled
+AND
+• for the dataElement “last-is-best” semantics (swImplPolicy = standard)
+applies.
+⌋
+[SWS_Rte_70134]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
+⌈In case of the existence condition described in [SWS_Rte_70133] the optional name
+part [Partition] exists for the related Rte_Rips_Write Services.⌋
+[SWS_Rte_70058]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300
+⌈The optional OUT parameter transformerError of the Rte_Rips_Write service
+shall be generated according to [SWS_Rte_08574].⌋
+The return value is used to indicate errors detected by the RTE Implementation
+Plug-In during execution of the Rte_Rips_Write service call or errors detected by
+the communication system.
+• [SWS_Rte_70059]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00094
+⌈RTE_E_OK – data written successfully.⌋
+• [SWS_Rte_70060]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00094, SRS_Rte_
+00091
+⌈RTE_E_HARD_TRANSFORMER_ERROR – The return value of one transformer in
+the transformer chain represented a hard transformer error.⌋
+• [SWS_Rte_70061]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00094, SRS_Rte_
+00091
+⌈RTE_E_SOFT_TRANSFORMER_ERROR – The return value of at least one trans-
+former in the transformer chain was a soft error and no hard error occurred in the
+transformer chain.⌋
+• [SWS_Rte_70102]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00143
+⌈RTE_E_LIMIT – an ‘event’ has been discarded due to a full queue by one of
+the ECU local receivers (intra ECU communication only).⌋
+[SWS_Rte_70138]
+Upstream requirements: SRS_Rte_00028, SRS_Rte_00306, SRS_Rte_00300
+⌈In case of multiple faults during a call of Rte_Rips_Write the resulting return value
+shall be derived according to the following priority rules (highest priority first):
+1. RTE_E_LIMIT
+2. RTE_E_HARD_TRANSFORMER_ERROR
+3. RTE_E_SOFT_TRANSFORMER_ERROR
+⌋
+[SWS_Rte_80066]
+Upstream requirements: SRS_Rte_00306, SRS_Rte_00300, SRS_Rte_00303
+⌈The RTE shall call Rte_Rips_Write at the position and instead of the RTE’s regular
+write access to the data, if
+• for the related Data Communication Graph the Local Software Clus-
+ter Communication Plug-In support is enabled
+AND</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerError().</p>
       </section>
 
       <section class="snip-card">
@@ -123,7 +240,7 @@ and for each VariableAccess in ro</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=969" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

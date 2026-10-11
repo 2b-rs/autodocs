@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_COMSTACK_SECTION_7_2_1_PDU_Transmission_via_IF_API</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_SocketAdaptor.pdf</strong> (Seite 30)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></strong> (Seite 30)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_SoAd_00739" class="swsref internal-spec-ref"><code>SWS_SoAd_00739</code></a></span>
         </div>
@@ -93,7 +94,35 @@ and the contained SoAdPduRouteDest refers to a socket connection group, SoAd
 shall only perform the transmission on the socket connection identified by PduInfo-
 Type.MetaDataPtr instead of the whole group.⌋
 [SWS_SoAd_00540] ⌈In case of a UDP socket connection the SoAd shall (if not spec-
-ified other</div></section>
+ified otherwise) call TcpIp_UdpTransmit() with SocketId and remote address
+specified in the SocketConnection and the PDU length specified in the SoAd_If-
+Transmit() call as TotalLength.⌋
+[SWS_SoAd_00542] ⌈In case of a TCP socket connection the SoAd shall call
+TcpIp_TcpTransmit() with SocketId specified in the SocketConnection, the
+PDU length specified in the SoAd_IfTransmit() call, as AvailableLength and
+ForceRetrieve set to TRUE.⌋
+Note: TxPduId identifies a SoAdPduRoute in the SoAd configuration which contains
+one or more SoAdPduRouteDest container which references to a SoAdSocketCon-
+nection
+[SWS_SoAd_00543] ⌈The TcpIp module will retrieve the PDU data within the context
+of the TcpIp transmit call by using SoAd_CopyTxData() where the SoAd shall copy
+(the requested part of) the PDU to the memory specified by parameter BufPtr.⌋
+[SWS_SoAd_00731] ⌈If SoAd_IfTransmit() was called with PduInfoPtr-&gt;Sdu-
+DataPtr set to NULL_PTR, SoAd shall use &lt;Up&gt;_[SoAd][If]TriggerTransmit
+() to retrieve the PDU data from the upper layer.⌋
+[SWS_SoAd_00544] ⌈In case of a UDP socket connection the SoAd shall call the up-
+per layer with the configured transmit confirmation function (&lt;Up&gt;_[SoAd][If]Tx-
+Confirmation()) with result set to E_OK within the next SoAd_MainFunction()
+after the latest TcpIp_UdpTransmit() call returning successfully.⌋
+[SWS_SoAd_00545] ⌈In case of a TCP socket connection the SoAd shall call the
+upper layer with the configured transmit confirmation function (&lt;Up&gt;_[SoAd][If]
+TxConfirmation()) with result set to E_OK within the SoAd_TxConfirmation()
+callback function after all PDU data (from one or multiple transmit requests) have been
+confirmed for transmission.⌋
+Note: there is only a single confirmation even in case of multiple transmit requests
+for the same PDU, i.e. in case a further transmit is requested for the same PDU on
+a TCP socket connection before the last request is completed, there is no separate
+confirmation for the last request, but only a final confirmation for all PDU data.</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
@@ -106,7 +135,7 @@ ified other</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_SocketAdaptor.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R24-11/CP/AUTOSAR_CP_SWS_SocketAdaptor.pdf#page=30" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_SocketAdaptor.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

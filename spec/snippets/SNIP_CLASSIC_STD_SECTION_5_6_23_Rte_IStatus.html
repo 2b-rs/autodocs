@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,7 +61,7 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_STD_SECTION_5_6_23_Rte_IStatus</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_RTE.pdf</strong> (Seite 754)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=754" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></strong> (Seite 754)</span>
           <span>&bull;</span>
           <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_Std_00021" class="swsref internal-spec-ref"><code>SWS_Std_00021</code></a></span>
         </div>
@@ -105,11 +106,119 @@ is specified for this VariableDataPrototype.⌋
 [SWS_Rte_CONSTR_09027]
 Rte_IStatus API shall only be
 used by a RunnableEntity describing an read access to
-the related data ⌈The Rte_IStatus API sha</div></section>
+the related data ⌈The Rte_IStatus API shall only be used
+by a RunnableEntity that has a VariableAccess in the
+dataReadAccess role referring to the VariableDataPrototype
+to which the status belongs.⌋
+[SWS_Rte_08568]
+Upstream requirements: SRS_Rte_00249
+⌈The optional OUT parameter transformerError of the API shall
+be generated if the PortPrototype of port &lt;p&gt; is referenced by
+a PortAPIOption which has the attribute errorHandling set to
+transformerErrorHandling.⌋
+Description:
+The Rte_IStatus API provides access to the current status of the
+data elements declared as accessed by a runnable using a Vari-
+ableAccess in the dataReadAccess role.
+The API function is
+guaranteed to be have constant execution time and therefore can
+also be used within category 1A runnable entities.
+To provide the required consistency access by a runnable is to a copy
+of the status together with the data that is guaranteed never to be
+modified by the RTE during the lifetime of the runnable entity.
+The OUT parameter transformerError contains the transformer
+error which occured during execution of the transformer chain. See
+chapter 4.10.5.
+Return Value:
+The return value is used to indicate errors detected by the communi-
+cation system.
+• [SWS_Rte_02602]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_OK – no errors.⌋
+• [SWS_Rte_02603]
+Upstream requirements: SRS_Rte_00078
+⌈RTE_E_INVALID – data element invalid.⌋
+• [SWS_Rte_02604]
+Upstream requirements: SRS_Rte_00147
+⌈RTE_E_MAX_AGE_EXCEEDED – data element outdated.
+This Overlayed Error can be combined with any other error
+code.⌋
+• [SWS_Rte_07644]
+Upstream requirements: SRS_Rte_00184
+⌈RTE_E_NEVER_RECEIVED – No data received since system
+start.⌋
+• [SWS_Rte_01372]
+Upstream requirements: SRS_Rte_00180
+⌈RTE_E_OUT_OF_RANGE
+–
+data element out of
+range.⌋
+• [SWS_Rte_06828]
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_COM_STOPPED
+–
+The
+RTE
+could
+not
+perform
+the operation because the COM service is currently not
+available (inter ECU communication).
+RTE shall return
+RTE_E_COM_STOPPED when the corresponding COM service
+returns COM_SERVICE_NOT_AVAILABLE. In case of stopped
+I-PDUS the last known value (or init value) shall be given back
+as data.⌋
+• [SWS_Rte_08932]
+RTE_E_INVALID_LENGTH returned by
+Rte_IStatus
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_INVALID_LENGTH – The RTE could not perform the
+operation because the COM service was invoked with the
+Length (as in-parameter) being smaller than the received length
+of the dynamic length signal (inter ECU communication only).⌋
+Note: E_NOT_OK is only returned by the COM service when the
+length is inappropriate (See [SWS_COM_00690]).
+• [SWS_Rte_08933]
+RTE_E_UNCONNECTED returned by
+Rte_IStatus
+Upstream requirements: SRS_Rte_00094
+⌈RTE_E_UNCONNECTED – indicates that the receiver port is not
+connected [SWS_Rte_03785].⌋
+• [SWS_Rte_08572]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_HARD_TRANSFORMER_ERROR – The return value of
+one transformer in the transformer chain represented a hard
+transformer error.⌋
+• [SWS_Rte_08573]
+Upstream requirements: SRS_Rte_00094, SRS_Rte_00091
+⌈RTE_E_SOFT_TRANSFORMER_ERROR – The return value of at
+least one transformer in the transformer chain was a soft error
+and no hard error occurred in the transformer chain.⌋
+Notes:
+[SWS_Rte_06829]
+Upstream requirements: SRS_Rte_00147,
+SRS_Rte_00078,
+SRS_Rte_
+00184, SRS_Rte_00180
+⌈In case of multiple faults during reception of the related data the
+resulting return value of Rte_IStatus shall be derived according to
+the following priority rules (highest priority first):
+1. RTE_E_UNCONNECTED
+2. RTE_E_COM_STOPPED
+3. RTE_E_NEVER_RECEIVED
+4. RTE_E_INVALID_LENGTH
+5. RTE_E_HARD_TRANSFORMER_ERROR
+6. RTE_E_INVALID
+7. RTE_E_OUT_OF_RANGE
+8. RTE_E_SOFT_TRANSFORMER_ERROR
+⌋
+Please note that RTE_E_MAX_AGE_EXCEEDED is an overlay error
+and could be combined with any other error. Nevertheless in case</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">EXPLICIT_REFERENCE (deterministic citation)</p>
+        <p class="snip-rationale-text">Spezifiziert oder visualisiert den Aufrufkontext von Std_TransformerError().</p>
       </section>
 
       <section class="snip-card">
@@ -118,7 +227,7 @@ the related data ⌈The Rte_IStatus API sha</div></section>
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_RTE.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R25-11/CP/AUTOSAR_CP_SWS_RTE.pdf#page=754" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_RTE.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>

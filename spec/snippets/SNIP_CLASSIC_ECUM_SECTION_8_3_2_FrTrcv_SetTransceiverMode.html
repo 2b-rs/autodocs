@@ -43,6 +43,7 @@
       }
       .snip-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; color: #1f2937; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; max-height: 480px; overflow: auto; }
       .snip-meta-line { flex-wrap: wrap; }
+      a.autosar-pdf { color: var(--primary, #0284c7); text-decoration: underline; }
       .btn-primary { background: #0284c7; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; }
       .btn-primary:hover { background: #0369a1; }
       .btn-secondary { background: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; }
@@ -60,9 +61,9 @@
         </div>
         <h1 class="snip-h1">SNIP_CLASSIC_ECUM_SECTION_8_3_2_FrTrcv_SetTransceiverMode</h1>
         <div class="snip-meta-line">
-          <span>Quelle: <strong>SWS_FlexRayTransceiverDriver.pdf</strong> (Seite 35)</span>
+          <span>Quelle: <strong><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayTransceiverDriver.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayTransceiverDriver.pdf</a></strong> (Seite 35)</span>
           <span>&bull;</span>
-          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTrcv_00392" class="swsref internal-spec-ref"><code>SWS_FrTrcv_00392</code></a></span>
+          <span>Ziel-Element: <a href="../../de/spec/record.html?id=SWS_FrTrcv_00474" class="swsref internal-spec-ref"><code>SWS_FrTrcv_00474</code></a></span>
         </div>
       </div>
 
@@ -114,11 +115,110 @@ STANDBY, it shall clear error history in transceiver as long as the hardware sup
 such a function.
 This modification has the same effect as introducing a new API
 FrTrcv_ClearErrorHistory() and adding a call of the function in FrSm’s sequence.⌋()
-[SWS_FrTrc</div></section>
+[SWS_FrTrcv_00474] ⌈A mode request of the current mode is allowed and shall not
+lead to an error even if DET is enabled.⌋()
+[SWS_FrTrcv_00064] Standard API return type ⌈The Std_ReturnType shall normally
+be used with value E_OK or E_NOT_OK. If those return values are not sufficient user
+specific values can be defined by using the 6 least specific bits.⌋(SRS_BSW_00357)
+[SWS_FrTrcv_00272] ⌈The function FrTrcv_SetTransceiverMode shall switch the in-
+ternal state of the transceiver identified by FrTrcv_TrcvIdx to the state indicated by
+FrTrcv_TrcvMode.⌋()
+[SWS_FrTrcv_00273]
+⌈The
+function
+FrTrcv_SetTransceiverMode
+shall
+return
+E_NOT_OK and doesn’t change the current state if a transition not defined in
+FrTrcv_TrcvModeType is requested.⌋()
+[SWS_FrTrcv_00274] ⌈If an optional state is NOT supported by the transceiver and
+ECU hardware, the function FrTrcv_SetTransceiverMode shall switch to an equivalent
+state.⌋()
+[SWS_FrTrcv_00440] ⌈If the FlexRay transceiver and ECU hardware does not support
+a receive only state, FrTRCV_TRCVMODE_NORMAL shall be used.⌋()
+[SWS_FrTrcv_00236] ⌈If the FlexRay transceiver and ECU hardware does not support
+a sleep state, FrTRCV_TRCVMODE_STANDBY shall be used.
+(EcuM2486: The driver shall provide an explicit service to put the wakeup source to
+sleep. This service shall put the wakeup source into a energy saving and inert opera-
+tion mode and re-arm the wakeup notification mechanism.)⌋()
+[SWS_FrTrcv_00278]
+⌈In
+case
+of
+a
+fault
+during
+transceiver
+ac-
+cess,
+the
+function
+FrTrcv_SetTransceiverMode
+shall
+raise
+runtime
+error
+FRTRCV_E_FR_NO_CONTROL_TRCV (see also [SWS_FrTrcv_00237]).⌋()
+[SWS_FrTrcv_00368] ⌈The API function calls to the FlexRay Transceiver Driver shall
+be synchronuous.⌋()
+[SWS_FrTrcv_00275]
+⌈If
+development
+error
+detection
+for
+the
+module
+FrTrcv
+is
+enabled:
+If
+the
+parameter
+FrTrcv_TrcvIdx
+is
+not
+within
+the
+allowed
+range,
+the
+function
+FrTrcv_SetTransceiverMode
+shall
+raise
+development
+error
+FRTRCV_E_FR_INVALID_TRCVIDX.⌋()
+[SWS_FrTrcv_00276] ⌈If the mode transition fails [SWS_FrTrcv_00452], the function
+FrTrcv_SetTransceiverMode shall raise the following runtime error:
+• FRTRCV_E_FR_TRCV_NOT_STANDBY:
+Transition to FRTRCV_TRCVMODE_STANDBY failed
+• FRTRCV_E_FR_TRCV_NOT_NORMAL:
+Transition to FRTRCV_TRCVMODE_NORMAL failed
+• FRTRCV_E_FR_TRCV_NOT_SLEEP:
+Transition to FRTRCV_TRCVMODE_SLEEP failed
+• FRTRCV_E_FR_TRCV_NOT_RECEIVEONLY:
+Transition to FRTRCV_TRCVMODE_RECEIVEONLY failed
+⌋()
+[SWS_FrTrcv_00452] ⌈A mode transition fails, if the mode returned by the API service
+FrTrcv_GetTransceiverMode() would mismatch the mode requested by the API service
+FrTrcv_SetTransceiverMode().⌋()
+[SWS_FrTrcv_00277] ⌈If development error detection for the module FrTrcv is enabled:
+if the transceiver has not been initialized, the function FrTrcv_SetTransceiverMode shall
+raise development error FRTRCV_E_UNINIT.⌋()
+[SWS_FrTrcv_00415] Hardware Checking Function on Bus Driver ⌈The FlexRay
+Transceiver Driver’s initialization function shall check error status in BD to ensure the
+hardware is working properly.
+This functionality ensures that the hardware is working as expected.
+Improvement of hardware reliability.⌋(SRS_Fr_05213)
+[SWS_FrTrcv_00454] ⌈If a transceiver is in active star mode and one or more branches
+are disabled, the FlexRay Transceiver Driver shall avoid side effects of the API service
+FrTrcv_SetTransceiverMode() which re-enable any branches.⌋()</div></section>
 
       <section class="snip-card snip-rationale-card">
         <h3>Begründung &amp; Zuweisungs-Evidenz</h3>
-        <p class="snip-rationale-text">Direktzitat [SWS_FrTrcv_00392] im Text von SWS_FlexRayTransceiverDriver.</p>
+        <p class="snip-rationale-text">Direktzitat [SWS_FrTrcv_00474] im Text von SWS_FlexRayTransceiverDriver.</p>
       </section>
 
       <section class="snip-card">
@@ -127,7 +227,7 @@ FrTrcv_ClearErrorHistory() and adding a call of the function in FrSm’s sequenc
           <tbody>
             <tr>
               <th style="width: 200px;">Spezifikations-Dokument</th>
-              <td><code>SWS_FlexRayTransceiverDriver.pdf</code></td>
+              <td><code><a class="autosar-pdf" href="https://www.autosar.org/fileadmin/standards/R23-11/CP/AUTOSAR_CP_SWS_FlexRayTransceiverDriver.pdf#page=35" target="_blank" rel="noopener noreferrer" title="Quelldokument auf autosar.org">SWS_FlexRayTransceiverDriver.pdf</a></code></td>
             </tr>
             <tr>
               <th>Dokumentseite</th>
@@ -139,7 +239,7 @@ FrTrcv_ClearErrorHistory() and adding a call of the function in FrSm’s sequenc
             </tr>
             <tr>
               <th>Ziel-Anforderung / Element</th>
-              <td><a href="../../de/spec/record.html?id=SWS_FrTrcv_00392" class="swsref internal-spec-ref"><code>SWS_FrTrcv_00392</code></a></td>
+              <td><a href="../../de/spec/record.html?id=SWS_FrTrcv_00474" class="swsref internal-spec-ref"><code>SWS_FrTrcv_00474</code></a></td>
             </tr>
             <tr>
               <th>Semantische Rolle</th>
