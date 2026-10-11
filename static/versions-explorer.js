@@ -560,7 +560,7 @@
    * Abschnitte wie buildTimeline: aufeinanderfolgende Releases mit gleichem Schlüssel bilden einen Abschnitt
    * (content); Releases ohne vergleichbaren Wortlaut (Überschrift nicht gefunden, kein PDF) bilden nocapture.
    */
-  var COMPARABLE = { section: 1, caption: 1 };
+  var COMPARABLE = { section: 1, caption: 1, page_excerpt: 1 };
   function releaseTextTimeline(info) {
     var segs = [], seen = {}, cur = null, gap = null, lastKey = null, rt = info.rt || [], rk = info.rk || [];
     var spanShots = {};
@@ -1668,23 +1668,30 @@
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     }
     var D = data.el, di = D ? D.byId.get(id) : null;
-    var isRef = di != null && D.ref[di] === 1;
-    var fromFile = fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
-      .catch(function (err) {
-        // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
-        if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
-        return fetchJson("/api/versions?id=" + encodeURIComponent(id), signal);
-      });
-    var fromPack = (typeof FrozenPack !== "undefined")
-      ? FrozenPack.record(ROOT, id, signal).catch(function (err) {
-          if (C.isAbortError(err)) throw err;
-          return null;
-        })
-      : Promise.resolve(null);
-    var p = (EL.rec && EL.rec.id === id) ? Promise.resolve(EL.rec) : isRef
+    function loadFromFile() {
+      return fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
+        .catch(function (err) {
+          // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
+          if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
+          return fetchJson("/api/versions?id=" + encodeURIComponent(id), signal);
+        });
+    }
+    var p;
+    if (EL.rec && EL.rec.id === id) {
+      p = Promise.resolve(EL.rec);
+    } else if (isRef) {
       // nur zitierte Kennung: kein Versions-Record, Belege aus versions/explorer/refs/
-      ? fetchJson(ROOT + "versions/explorer/refs/" + encodeURIComponent(C.recordFile(id, stems("ref"))), signal)
-      : fromPack.then(function (rec) { return rec && rec.versions ? rec : fromFile; });
+      p = fetchJson(ROOT + "versions/explorer/refs/" + encodeURIComponent(C.recordFile(id, stems("ref"))), signal);
+    } else if (typeof FrozenPack !== "undefined") {
+      p = FrozenPack.record(ROOT, id, signal).then(function (rec) {
+        return (rec && rec.versions) ? rec : loadFromFile();
+      }).catch(function (err) {
+        if (C.isAbortError(err)) throw err;
+        return loadFromFile();
+      });
+    } else {
+      p = loadFromFile();
+    }
     p.then(function (rec) {
       if (my !== token.el) return;
       if (!rec || (!rec.ok && !rec.versions)) throw new Error(t("not_found", { id: id }));
@@ -1968,8 +1975,25 @@
   }
 
   function onViewerClick(tab, e) {
-    var b = e.target.closest("[data-view],[data-goto],[data-goto-tab],[data-open-el],[data-showmore],[data-act]");
+    var b = e.target.closest("[data-view],[data-goto],[data-goto-tab],[data-open-el],[data-showmore],[data-act],.ve-shot-badge");
     if (!b) return;
+    if (b.classList.contains("ve-shot-badge")) {
+      var sHash = b.getAttribute("data-snip-hash");
+      var sPage = parseInt(b.getAttribute("data-snip-page") || "0", 10);
+      var F = window.FigureImages;
+      if (sHash && sPage && F && typeof F.getSnippet === "function") {
+        e.preventDefault();
+        F.getSnippet(sHash, sPage).then(function (r) {
+          if (r.url) {
+            window.open(r.url, "_blank", "noopener,noreferrer");
+          } else if (r.kind === "signin" || r.kind === "forbidden") {
+            var A = window.AiAccess;
+            if (A && typeof A.open === "function") A.open(r.kind === "forbidden" ? "request" : "signin");
+          }
+        });
+        return;
+      }
+    }
     if (b.hasAttribute("data-view") && tab === "el") {
       state.view = b.getAttribute("data-view");
       shown.el = EL.rec.id + "|" + state.view;
@@ -2336,9 +2360,14 @@
       }
       var shotBadge = "";
       if (shot) {
+        var mShot = /([0-9a-f]{12})\/page_(\d+)\.webp/.exec(shot);
+        var sHash = mShot ? mShot[1] : "";
+        var sPage = mShot ? mShot[2] : "";
         var shotUrl = C.snippetScreenshotUrl(ROOT, shot);
         shotBadge = '<div class="ve-epoch-shot">' +
-          '<a href="' + esc(shotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-shot-badge" title="' + esc(t("open_page")) + '">' +
+          '<a href="' + esc(shotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-shot-badge" ' +
+          (sHash && sPage ? 'data-snip-hash="' + esc(sHash) + '" data-snip-page="' + esc(sPage) + '" ' : "") +
+          'title="' + esc(t("open_page")) + '">' +
           '<span class="ve-shot-icon" aria-hidden="true">🖼️</span> ' + esc(t("v_snip")) +
           '</a></div>';
       }
@@ -2350,7 +2379,10 @@
         var sub = seg.releases.length === 1 ? "" : "<strong>" + esc(t("ep_many", { n: seg.releases.length })) + "</strong>";
         if (seg.texts.length > 1) sub += '<div class="ve-epoch-variants">' + esc(t("ep_variants", { n: seg.texts.length })) + "</div>";
         var ncl = 0, cut = false;
-        seg.entries.forEach(function (v) { ncl += v.cl || 0; cut = cut || !!v.cut; });
+        seg.entries.forEach(function (v) {
+          ncl += v.cl || 0;
+          cut = cut || !!v.cut;
+        });
         if (ncl) sub += '<div class="ve-epoch-cleaned">' + esc(t("ep_cleaned", { n: ncl })) + "</div>";
         if (cut) sub += '<div class="ve-epoch-cleaned">' + esc(t("snip_cut")) + "</div>";
         return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
@@ -2380,7 +2412,8 @@
     function textOf(k) {
       if (!perRel) return C.decodeFully(info.text || "");
       var v = byRel[k];
-      return v && v.t != null && info.rt ? C.decodeFully(info.rt[v.t] || "") : "";
+      var relText = (v && v.t != null && info.rt) ? C.decodeFully(info.rt[v.t] || "") : "";
+      return relText || C.decodeFully(info.text || "");
     }
     // PDF-Zeilen sind Layout-Umbrüche: zu Fließtext verbinden, dann an Satzgrenzen teilen
     function linesOf(k) { return TD.splitLong([textOf(k).replace(/\s*\n\s*/g, " ")]); }
@@ -2392,7 +2425,7 @@
     }
     SR.ctl = TD.revisions(box, {
       segments: gsegs, from: from, to: to, hint: perRel ? null : t("snip_rev_hint"),
-      emptyText: t("snip_notext"), singleText: !contents.length ? t("snip_notext") : (perRel ? t("tl_single") : t("snip_rev_single")),
+      emptyText: t("snip_notext"), singleText: !contents.length ? (info.text ? t("snip_rev_single") : t("snip_notext")) : (perRel ? t("tl_single") : t("snip_rev_single")),
       diff: function (a, b) {
         var al = TD.align(isDrop(a) ? [] : linesOf(a), isDrop(b) ? [] : linesOf(b));
         return {
@@ -2487,17 +2520,18 @@
     }
     if (!isFig) {
       var snipShot = info.screenshot_path || info.screenshot;
-      if (snipShot) {
-        var snipShotUrl = C.snippetScreenshotUrl(ROOT, snipShot);
+      var mShot = snipShot ? /([0-9a-f]{12})\/page_(\d+)\.webp/.exec(snipShot) : null;
+      if (mShot) {
+        var sHash = mShot[1];
+        var sPage = mShot[2];
+        var fullCls = "snipfull-" + sHash + "-" + sPage;
         h += '<div class="ve-snipbig" id="ve-snipbig-' + esc(info.id) + '">' +
           '<div class="ve-snipbig-bar">' +
           '<button type="button" class="ve-btn ve-snipbig-toggle" data-act="snip-zoom" aria-expanded="false">🔍 Zoom</button>' +
-          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-linkbtn ve-linkbtn-small">↗ ' + esc(t("open_image")) + '</a>' +
+          '<a href="#" target="_blank" rel="noopener noreferrer" class="ve-linkbtn ve-linkbtn-small ' + fullCls + '" hidden>↗ ' + esc(t("open_image")) + '</a>' +
           '</div>' +
           '<div class="ve-snipbig-frame">' +
-          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-snipbig-link" title="' + esc(t("open_image")) + '">' +
-          '<' + 'img src="' + esc(snipShotUrl) + '" alt="' + esc(info.caption || info.id) + '" loading="lazy" class="ve-snipbig-img" onerror="this.closest(\'.ve-snipbig\').style.display=\'none\';" />' +
-          '</a>' +
+          '<div data-snip-hash="' + esc(sHash) + '" data-snip-page="' + esc(sPage) + '" data-fig-alt="' + esc(info.caption || info.id) + '" data-fig-size="big" data-fig-img-class="ve-snipbig-img" data-full-target=".' + fullCls + '"></div>' +
           '</div></div>';
       }
     }

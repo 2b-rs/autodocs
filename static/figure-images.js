@@ -50,8 +50,11 @@
     return (u.origin + u.pathname).replace(/\/+$/, "");
   }
 
+  var SNIP_RE = /^[0-9a-f]{12}$/;
   function figureUrl(service, sha) { return SHA_RE.test(sha) && service ? service + "/fig/" + sha + ".webp" : ""; }
+  function snippetUrl(service, hash, page) { return SNIP_RE.test(hash) && page && service ? service + "/snippets/assets/" + hash + "/page_" + page + ".webp" : ""; }
   function localUrl(root, sha) { return SHA_RE.test(sha) ? root + "assets/figures/" + sha.slice(0, 2) + "/" + sha + ".webp" : ""; }
+  function localSnippetUrl(root, hash, page) { return SNIP_RE.test(hash) && page ? root + "spec/snippets/assets/" + hash + "/page_" + page + ".webp" : ""; }
 
   // Wurzel der Website aus der Adresse dieses Skripts (…/static/figure-images.js)
   function rootFromSrc(src) {
@@ -86,8 +89,8 @@
     }
   };
 
-  return { SHA_RE: SHA_RE, statusKind: statusKind, isLocalHost: isLocalHost, serviceFrom: serviceFrom,
-           figureUrl: figureUrl, localUrl: localUrl, rootFromSrc: rootFromSrc, TEXTS: TEXTS };
+  return { SHA_RE: SHA_RE, SNIP_RE: SNIP_RE, statusKind: statusKind, isLocalHost: isLocalHost, serviceFrom: serviceFrom,
+           figureUrl: figureUrl, snippetUrl: snippetUrl, localUrl: localUrl, localSnippetUrl: localSnippetUrl, rootFromSrc: rootFromSrc, TEXTS: TEXTS };
 });
 
 /* ======================================================================== Browser */
@@ -215,7 +218,13 @@
     el.appendChild(img);
     el.setAttribute("data-fig-state", "ok");
     el.classList.add("fia-loaded");
-    document.querySelectorAll('[data-fig-full="' + sha + '"]').forEach(function (a) { a.href = url; a.hidden = false; });
+    if (sha) {
+      document.querySelectorAll('[data-fig-full="' + sha + '"]').forEach(function (a) { a.href = url; a.hidden = false; });
+    }
+    var full = el.getAttribute("data-full-target");
+    if (full) {
+      document.querySelectorAll(full).forEach(function (a) { a.href = url; a.hidden = false; });
+    }
   }
 
   // ---------------------------------------------------------------- Laden
@@ -248,13 +257,50 @@
     return p;
   }
 
+  function requestSnippet(hash, page, tok) {
+    return fetch(C.snippetUrl(S.service, hash, page), { headers: { Authorization: "Bearer " + tok }, credentials: "omit", mode: "cors" });
+  }
+
+  function getSnippet(hash, page) {
+    var key = "snip:" + hash + ":" + page;
+    if (urls.has(key)) return Promise.resolve({ kind: "ok", url: urls.get(key) });
+    if (inflight.has(key)) return inflight.get(key);
+    var p = token(false).then(function (tok) {
+      if (!tok) { S.access = authOffered() ? "signin" : "private"; return { kind: S.access }; }
+      return requestSnippet(hash, page, tok).then(function (res) {
+        if (res.status !== 401) return res;
+        return token(true).then(function (t2) { return t2 ? requestSnippet(hash, page, t2) : res; });
+      }).then(function (res) {
+        var kind = C.statusKind(res.status);
+        if (kind === "ok") {
+          return res.blob().then(function (b) {
+            var url = URL.createObjectURL(b);
+            remember(key, url);
+            S.access = "ok";
+            return { kind: "ok", url: url };
+          });
+        }
+        if (kind === "signin" || kind === "forbidden") { S.access = kind; S.probeAt = Date.now(); }
+        return { kind: kind };
+      });
+    }).catch(function () { return { kind: "error" }; }).then(function (r) { inflight.delete(key); return r; });
+    inflight.set(key, p);
+    return p;
+  }
+
   function loadOne(el) {
-    var sha = el.getAttribute("data-fig-sha");
-    if (urls.has(sha)) { var u = urls.get(sha); remember(sha, u); show(el, u); return Promise.resolve(); }
+    var snipHash = el.getAttribute("data-snip-hash");
+    var isSnip = !!snipHash;
+    var snipPage = isSnip ? parseInt(el.getAttribute("data-snip-page") || "0", 10) : 0;
+    var key = isSnip ? ("snip:" + snipHash + ":" + snipPage) : el.getAttribute("data-fig-sha");
+
+    if (urls.has(key)) { var u = urls.get(key); remember(key, u); show(el, u); return Promise.resolve(); }
     var b = blocked();
     if (b) { placeholder(el, b); return Promise.resolve(); }
     if (el.getAttribute("data-fig-state") !== "loading") placeholder(el, "loading");
-    return getFigure(sha).then(function (r) {
+
+    var fetchPromise = isSnip ? getSnippet(snipHash, snipPage) : getFigure(key);
+    return fetchPromise.then(function (r) {
       if (!el.isConnected) return;
       if (r.url) show(el, r.url);
       else placeholder(el, r.kind);
@@ -278,6 +324,36 @@
   }
 
   function start(el) {
+    var snipHash = el.getAttribute("data-snip-hash");
+    if (snipHash) {
+      var snipPage = parseInt(el.getAttribute("data-snip-page") || "0", 10);
+      if (!C.SNIP_RE.test(snipHash) || !snipPage) { placeholder(el, "missing"); return; }
+      var snipKey = "snip:" + snipHash + ":" + snipPage;
+      if (urls.has(snipKey)) { show(el, urls.get(snipKey)); return; }
+      if (LOCAL && !el.__figLocalFailed) {
+        var sImg = document.createElement("img");
+        sImg.alt = el.getAttribute("data-fig-alt") || "";
+        sImg.decoding = "async";
+        var sCls = el.getAttribute("data-fig-img-class");
+        if (sCls) sImg.className = sCls;
+        sImg.onload = function () {
+          el.setAttribute("data-fig-state", "ok");
+          el.classList.add("fia-loaded");
+          var full = el.getAttribute("data-full-target");
+          if (full) document.querySelectorAll(full).forEach(function (a) { a.href = sImg.src; a.hidden = false; });
+        };
+        sImg.onerror = function () { el.__figLocalFailed = true; placeholder(el, "loading"); enqueue(el); };
+        sImg.src = C.localSnippetUrl(ROOT, snipHash, snipPage);
+        el.innerHTML = "";
+        el.appendChild(sImg);
+        el.setAttribute("data-fig-state", "local");
+        return;
+      }
+      placeholder(el, "loading");
+      enqueue(el);
+      return;
+    }
+
     var sha = el.getAttribute("data-fig-sha") || "";
     if (!C.SHA_RE.test(sha)) { placeholder(el, "missing"); return; }
     if (urls.has(sha)) { show(el, urls.get(sha)); return; }
@@ -319,7 +395,7 @@
     // Platzhalter, die mit neu gerenderten Ansichten verschwunden sind, nicht weiter beobachten
     watched.forEach(function (el) { if (!el.isConnected) { io.unobserve(el); watched.delete(el); } });
     var scope = container || document;
-    var list = scope.querySelectorAll ? scope.querySelectorAll("[data-fig-sha]") : [];
+    var list = scope.querySelectorAll ? scope.querySelectorAll("[data-fig-sha],[data-snip-hash]") : [];
     Array.prototype.forEach.call(list, function (el) {
       if (el.__figBound) return;
       el.__figBound = true;
@@ -330,7 +406,7 @@
 
   // Blockierte Platzhalter nach einer Änderung der Anmeldung oder Freigabe erneut versuchen
   function requeueBlocked() {
-    document.querySelectorAll('[data-fig-sha][data-fig-state="signin"],[data-fig-sha][data-fig-state="forbidden"],[data-fig-sha][data-fig-state="private"]')
+    document.querySelectorAll('[data-fig-sha][data-fig-state="signin"],[data-fig-sha][data-fig-state="forbidden"],[data-fig-sha][data-fig-state="private"],[data-snip-hash][data-fig-state="signin"],[data-snip-hash][data-fig-state="forbidden"],[data-snip-hash][data-fig-state="private"]')
       .forEach(function (el) { placeholder(el, "loading"); enqueue(el); });
   }
   window.addEventListener("aiaccess-change", function (e) {
@@ -356,7 +432,7 @@
     var act = b.getAttribute("data-fig-act");
     var A = api();
     if (act === "retry") {
-      var el = b.closest("[data-fig-sha]");
+      var el = b.closest("[data-fig-sha],[data-snip-hash]");
       if (el) { if (S.access !== "ok") S.access = "unknown"; placeholder(el, "loading"); enqueue(el); }
       return;
     }
@@ -384,12 +460,16 @@
       ".fia-btn:hover{background:var(--color-teal-600,#0d9488);color:#fff}" +
       ".fia-btn:focus-visible{outline:2px solid var(--color-teal-600,#0d9488);outline-offset:2px}" +
       ".fia-icobtn{padding:.2rem;min-height:0;display:inline-flex;border-radius:50%}" +
-      "[data-fig-sha]>img{max-width:100%;height:auto}";
+      "[data-fig-sha]>img,[data-snip-hash]>img{max-width:100%;height:auto}";
     (document.head || document.documentElement).appendChild(st);
   }
 
   window.FigureImages = {
     observe: observe,
+    getFigure: getFigure,
+    getSnippet: getSnippet,
+    figureUrl: function (sha) { return C.figureUrl(S.service, sha); },
+    snippetUrl: function (hash, page) { return C.snippetUrl(S.service, hash, page); },
     configure: function (opts) { if (opts && typeof opts.text === "function") textFn = opts.text; },
     // für Tests
     _state: function () { return { access: S.access, service: S.service, cached: urls.size, local: LOCAL, root: ROOT }; }

@@ -400,6 +400,7 @@
   </article>
 </div>
 
+<script src="../../static/frozen-pack.js"></script>
 <script>
 (function() {
   const path = window.location.pathname;
@@ -772,6 +773,33 @@
     return;
   }
 
+  function loadRecordData(reqId) {
+    if (typeof FrozenPack !== "undefined") {
+      return FrozenPack.record(rootPrefix, reqId).then(data => {
+        if (data && data.versions && data.versions.length) return data;
+        return caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop());
+      }).catch(() => caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
+    }
+    return new Promise(resolve => {
+      const s = document.createElement("script");
+      s.src = rootPrefix + "static/frozen-pack.js";
+      s.onload = () => {
+        if (typeof FrozenPack !== "undefined") {
+          FrozenPack.record(rootPrefix, reqId).then(data => {
+            if (data && data.versions && data.versions.length) resolve(data);
+            else resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
+          }).catch(() => resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop())));
+        } else {
+          resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
+        }
+      };
+      s.onerror = () => {
+        resolve(caseSafeJson("versions/data/", reqId, d => d && String(d.canonical_id || "").split("/").pop()));
+      };
+      document.head.appendChild(s);
+    });
+  }
+
   /* case-safe-names:begin */
   // Dateien je Kennung (versions/data, versions/snippets) heißen <id>.json; Kennungen, die sich nur
   // in der Schreibweise unterscheiden (SWS_CanIf_00068 / SWS_CANIF_00068), liegen unter
@@ -839,7 +867,7 @@
     if (navRecordId) navRecordId.textContent = reqId;
     document.title = reqId + ' — ' + t.title;
 
-    caseSafeJson('versions/data/', reqId, d => d && String(d.canonical_id || '').split('/').pop())
+    loadRecordData(reqId)
       .then(data => {
         renderRecord(data, selectedRelease);
       })
