@@ -157,14 +157,14 @@
       (fnIndex[fname] = fnIndex[fname] || []).push({ id: go.getAttribute("href").slice(1), code: code });
     });
 
-    // ---- Clusterseiten: die Modulkarten stehen als Zeile über der Überschrift und scrollen
-    // mit der Seite heraus (Aufnahme 13:03); ihre Überschrift „Module im Cluster“ entfällt
+    // ---- Clusterseiten: die Modulkarten stehen als Zeile unter der Überschrift (und Einleitung)
     var cluCards = isClu && document.querySelector("main > div.cards"), mainH1 = document.querySelector("main > h1");
     if (cluCards && mainH1) {
       var ch2 = cluCards.previousElementSibling;
       if (ch2 && ch2.matches("h2.sect")) ch2.hidden = true;
       cluCards.classList.add("nsx-clucards");
-      mainH1.parentNode.insertBefore(cluCards, mainH1);
+      var afterEl = document.querySelector("main > div.cluster-overview") || mainH1;
+      afterEl.parentNode.insertBefore(cluCards, afterEl.nextSibling);
     }
 
     // ---- Seitenspannende Dropzone über die volle Breite (Themenkarte & Guides)
@@ -209,25 +209,35 @@
     }
     // ---- User Guide, Cluster Guide und Implementer's Guide als erste Folds der Mitte
     var guideFold = null;
+    var candidateGuides = [];
     for (var p = root.previousElementSibling, prevP; p; p = prevP) {
       prevP = p.previousElementSibling;   // vor dem Umhängen merken
       if (p.tagName === "DETAILS" && p.classList.contains("fold") && !p.classList.contains("nsx-doc") && p.querySelector(".ai")) {
-        var gkind = p.classList.contains("impl-fold") ? "impl" : "guide";
-        var key = allocFoldKey(p, gkind);
-        p.classList.add("nsx-fold");
-        p.setAttribute("data-fold", key);
-        if (key === "guide" || (key === "impl" && !guideFold)) guideFold = p;
-        var sm = p.querySelector("summary");
-        if (sm && !sm.querySelector(".nsx-grip")) {
-          var gr = document.createElement("span");
-          gr.className = "nsx-grip";
-          gr.setAttribute("role", "button");
-          gr.setAttribute("tabindex", "0");
-          sm.insertBefore(gr, sm.firstChild);
-        }
-        folds.insertBefore(p, folds.firstChild);
+        candidateGuides.unshift(p);
       }
     }
+    for (var n = root.nextElementSibling, nextN; n; n = nextN) {
+      nextN = n.nextElementSibling;
+      if (n.tagName === "DETAILS" && n.classList.contains("fold") && !n.classList.contains("nsx-doc") && n.querySelector(".ai")) {
+        candidateGuides.push(n);
+      }
+    }
+    candidateGuides.forEach(function (g) {
+      var gkind = g.classList.contains("impl-fold") ? "impl" : "guide";
+      var key = allocFoldKey(g, gkind);
+      g.classList.add("nsx-fold");
+      g.setAttribute("data-fold", key);
+      if (key === "guide" || (key === "impl" && !guideFold)) guideFold = g;
+      var sm = g.querySelector("summary");
+      if (sm && !sm.querySelector(".nsx-grip")) {
+        var gr = document.createElement("span");
+        gr.className = "nsx-grip";
+        gr.setAttribute("role", "button");
+        gr.setAttribute("tabindex", "0");
+        sm.insertBefore(gr, sm.firstChild);
+      }
+      folds.insertBefore(g, folds.firstChild);
+    });
 
     // ---- Service-Interfaces: die Mitgliederliste der Seite (Überschrift + Liste, jeder
     // Eintrag verweist auf einen Record) ersetzt im Kompaktmodus die Gliederung
@@ -627,7 +637,7 @@
       if (!f) return false;
       var k = f.getAttribute("data-fold") || "";
       var kind = titleKeyKind(k);
-      return kind === "map" || (kind === "guide" && k !== "guide");
+      return kind === "map" || kind === "guide";
     }
     function saveTopDock() {
       if (!topDock) return;

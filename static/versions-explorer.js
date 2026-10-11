@@ -2440,10 +2440,20 @@
       '<p class="ve-ai-note">' + esc(t("ai_note")) + "</p></section>";
   }
 
+  function figureSha(info) {
+    if (info && info.sha && /^[0-9a-f]{64}$/i.test(info.sha)) return info.sha;
+    if (info && info.id && data.fig && data.fig.id) {
+      var idx = data.fig.id.indexOf(info.id);
+      if (idx >= 0 && data.fig.sha && data.fig.sha[idx]) return data.fig.sha[idx];
+    }
+    return (info && info.sha) || "";
+  }
+
   function itemHtml(tab, info) {
     var isFig = tab === "fig";
     var platform = info.platform || "";
     var rels = info.releases || [];
+    var targets = info.targets || [];
     var h = '<div class="ve-vh"><div class="ve-vh-top"><h2 class="ve-vh-id ve-vh-title">' + esc(info.caption || info.id) + "</h2></div>" +
       '<div class="ve-vh-name"><code>' + esc(info.id) + '</code><span class="ve-kind">' + esc(t(!isFig && info.src === "manifest" ? "src_section" : "src_" + (info.src || "matrix"))) + "</span></div>" +
       '<dl class="ve-meta">' +
@@ -2452,9 +2462,12 @@
       (rels.length ? "<div><dt>" + esc(t("lbl_releases")) + "</dt><dd>" + esc(rels.join(", ")) + "</dd></div>" : "") +
       "</dl>" +
       '<div class="ve-links">' + canonLink(info.id, "ve-linkbtn-primary") +
-      (info.doc ? pdfAnchor(info.doc, rels.filter(function (r) { return /^R\d\d-\d\d$/.test(r); }), info.page, platform) : "") + "</div></div>";
+      (info.doc ? pdfAnchor(info.doc, rels.filter(function (r) { return /^R\d\d-\d\d$/.test(r); }), info.page, platform) : "") +
+      (!isFig && targets.length ? '<button type="button" class="ve-linkbtn" data-open-el="' + esc(targets[0].id) + '" data-el-view="snip">↗ ' + esc(targets[0].id) + '</button>' : "") +
+      "</div></div>";
     if (isFig) {
-      if (info.sha) h += '<div class="ve-figbig">' + thumbHtml(info.sha, info.caption, "big") + "</div>";
+      var fsha = figureSha(info);
+      if (fsha) h += '<div class="ve-figbig">' + thumbHtml(fsha, info.caption, "big") + "</div>";
       h += aiHtml(info);
       var series = info.series || [];
       if (series.length) {
@@ -2472,9 +2485,6 @@
         h += "</ul></section>";
       }
     }
-    if (info.text) {
-      h += '<section class="ve-sect"><h3>' + esc(t(isFig ? "fig_text_head" : "text_head")) + '</h3><div class="ve-fulltext">' + linkIds(esc(info.text), null) + "</div></section>";
-    }
     if (!isFig) {
       var snipShot = info.screenshot_path || info.screenshot;
       if (snipShot) {
@@ -2482,17 +2492,21 @@
         h += '<div class="ve-snipbig" id="ve-snipbig-' + esc(info.id) + '">' +
           '<div class="ve-snipbig-bar">' +
           '<button type="button" class="ve-btn ve-snipbig-toggle" data-act="snip-zoom" aria-expanded="false">🔍 Zoom</button>' +
-          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-linkbtn ve-linkbtn-small">↗ ' + esc(t("open_page")) + '</a>' +
+          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-linkbtn ve-linkbtn-small">↗ ' + esc(t("open_image")) + '</a>' +
           '</div>' +
           '<div class="ve-snipbig-frame">' +
-          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-snipbig-link" title="' + esc(t("open_page")) + '">' +
-          '<img src="' + esc(snipShotUrl) + '" alt="' + esc(info.caption || info.id) + '" loading="lazy" class="ve-snipbig-img" />' +
+          '<a href="' + esc(snipShotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-snipbig-link" title="' + esc(t("open_image")) + '">' +
+          '<' + 'img src="' + esc(snipShotUrl) + '" alt="' + esc(info.caption || info.id) + '" loading="lazy" class="ve-snipbig-img" onerror="this.closest(\'.ve-snipbig\').style.display=\'none\';" />' +
           '</a>' +
           '</div></div>';
       }
+    }
+    if (info.text) {
+      h += '<section class="ve-sect"><h3>' + esc(t(isFig ? "fig_text_head" : "text_head")) + '</h3><div class="ve-fulltext">' + linkIds(esc(info.text), null) + "</div></section>";
+    }
+    if (!isFig) {
       h += '<section class="ve-sect ve-revsect" aria-labelledby="ve-sr-h"><h3 id="ve-sr-h">' + esc(t("v_ver")) + '</h3><div data-role="sniprev"></div></section>';
     }
-    var targets = info.targets || [];
     var D = data.el;
     var targetIds = targets.map(function (tg) { return tg.id; });
     // Im Text zitierte Kennungen, die nicht schon zugeordnet sind
