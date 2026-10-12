@@ -93,19 +93,38 @@
     return JSON.parse(new TextDecoder().decode(buf.subarray(offset, offset + length)));
   }
 
-  function record(root, id, signal) {
-    return locate(root, id, signal).then(function (loc) {
-      if (!loc) return null;
-      return buffer(root, loc.pack, signal).then(function (buf) {
-        return buf ? sliceJson(buf, loc.o, loc.n) : null;
+  // Eine Zeile über einen Range-Abruf, ohne die ganze Pack-Datei zu laden (Packs sind bis zu ~35 MB groß;
+  // ein Beleg braucht wenige KB). Liegt das Pack schon im Speicher, wird daraus geschnitten. Liefert der
+  // Server statt 206 die ganze Datei (200), wird sie wie bei buffer() behalten.
+  function rangeJson(root, pack, offset, length, signal) {
+    var slot = cache[pack] || (cache[pack] = {});
+    if (slot.buf) return Promise.resolve(sliceJson(slot.buf, offset, length));
+    var meta = index && index.packs ? index.packs[pack] : null;
+    if (!meta) return Promise.resolve(null);
+    return fetch(join(root, meta.file), {
+      signal: signal,
+      headers: { Range: "bytes=" + offset + "-" + (offset + length - 1) }
+    }).then(function (res) {
+      if (res.status === 206) {
+        return res.arrayBuffer().then(function (raw) { return sliceJson(new Uint8Array(raw), 0, length); });
+      }
+      if (!res.ok) throw new Error("pack");
+      return res.arrayBuffer().then(function (raw) {
+        slot.buf = new Uint8Array(raw);
+        return sliceJson(slot.buf, offset, length);
       });
     });
   }
 
-  function textAt(root, pack, offset, length, signal) {
-    return buffer(root, pack, signal).then(function (buf) {
-      return buf ? sliceJson(buf, offset, length) : null;
+  function record(root, id, signal) {
+    return locate(root, id, signal).then(function (loc) {
+      if (!loc) return null;
+      return rangeJson(root, loc.pack, loc.o, loc.n, signal);
     });
+  }
+
+  function textAt(root, pack, offset, length, signal) {
+    return rangeJson(root, pack, offset, length, signal);
   }
 
   // Alle Zeilen eines Moduls, ohne die übrigen Module des Clusters zu parsen.
