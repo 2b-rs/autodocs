@@ -5391,14 +5391,50 @@
           window.location.href = pfx + langPrefix + "curation-report.html";
         }
 
-        // On-Demand Nachladen des Kurations-Dossiers aus dossier-data/<targetId>.html
+        // On-Demand Nachladen des Kurations-Dossiers aus dossier-data/<data-dossier-src>: der Auslöser nennt die
+        // Datei seines Dialogs (lib_docmodel.render_page), in allen Sprachen den kanonischen Dialog; mehrfach
+        // verwendete IDs (AP- und Classic-Modul gleichen Namens) haben seitenbezogene Dateien. Ältere Seiten ohne
+        // Attribut: dossier-data/<targetId>.html.
         if (targetId) {
           var pfx = getRootBasePrefix();
-          var modalUrl = pfx + "dossier-data/" + encodeURIComponent(targetId) + ".html";
+          var modalFile = trigger.getAttribute("data-dossier-src") || (targetId + ".html");
+          var modalPath = modalFile.split("/").map(encodeURIComponent).join("/");
+          var modalUrl = pfx + "dossier-data/" + modalPath;
           trigger.classList.add("is-loading-dossier");
+
+          // Sofortiges Öffnen eines Platzhalter-Modals (< 16ms), damit die UI niemals einfriert
+          var placeholder = document.getElementById("dossier-placeholder-modal");
+          if (!placeholder) {
+            placeholder = document.createElement("dialog");
+            placeholder.id = "dossier-placeholder-modal";
+            placeholder.className = "dossier-modal is-loading-placeholder";
+            placeholder.setAttribute("aria-label", "Audit-Dossier wird geladen");
+            placeholder.innerHTML =
+              '<div class="dossier-modal-content" style="min-height:360px; display:flex; flex-direction:column; height:100%;">' +
+                '<div class="dossier-header-bar" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border-default, #e2e8f0); background:var(--bg-subtle, #f8fafc);">' +
+                  '<h3 style="margin:0; font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">' +
+                    '<span class="ai-badge" style="background:#0284c7; color:#fff; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700;">AUDIT-DOSSIER</span>' +
+                    '<span>Agenten-Kontext &amp; Nachweis-Dossier</span>' +
+                  '</h3>' +
+                  '<button type="button" class="dossier-close-btn" aria-label="Schließen" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--color-ink-muted, #64748b); padding:4px 8px; line-height:1;">✕</button>' +
+                '</div>' +
+                '<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1.5rem; text-align:center;">' +
+                  '<div class="dossier-loading-spinner" style="width:40px; height:40px; margin-bottom:1.2rem;"></div>' +
+                  '<div style="font-size:16px; font-weight:600; color:var(--color-ink, #0f172a); margin-bottom:0.4rem;">Dossier wird geladen…</div>' +
+                  '<div style="font-size:13px; color:var(--color-ink-muted, #64748b); max-width:440px; line-height:1.5;">Der vollständige Audit-Trail, Belege und der interaktive Kurations-Editor werden geladen.</div>' +
+                '</div>' +
+              '</div>';
+            document.body.appendChild(placeholder);
+          }
+          try {
+            if (!placeholder.open) placeholder.showModal();
+          } catch (err) {
+            placeholder.setAttribute("open", "");
+          }
+
           fetch(modalUrl).then(function (res) {
             if (!res.ok) {
-              var altUrl = "/dossier-data/" + encodeURIComponent(targetId) + ".html";
+              var altUrl = "/dossier-data/" + modalPath;
               if (modalUrl !== altUrl && !modalUrl.endsWith(altUrl)) {
                 return fetch(altUrl);
               }
@@ -5410,18 +5446,26 @@
             return res.text();
           }).then(function (html) {
             trigger.classList.remove("is-loading-dossier");
+            if (placeholder && placeholder.open) placeholder.close();
             var div = document.createElement("div");
             div.innerHTML = html.trim();
             var escId = (window.CSS && CSS.escape) ? CSS.escape(targetId) : targetId;
             var loaded = div.querySelector("dialog#" + escId) || div.querySelector("dialog.dossier-modal") || div.firstElementChild;
             if (loaded) {
+              // Nachladedaten relativ zur Site-Wurzel dieser Seite, nicht zur Seite, die den Dialog erzeugt hat
+              Array.prototype.forEach.call(loaded.querySelectorAll("script.dossier-data-ref"), function (s) {
+                s.setAttribute("data-root", pfx);
+              });
               document.body.appendChild(loaded);
+              // Der Dialog ist kanonisch (deutsch); nur seine Bedienelemente folgen der Sprache der Seite
+              watchUi(loaded);
               openFoundModal(loaded);
             } else {
               fallbackNavigation();
             }
           }).catch(function (err) {
             trigger.classList.remove("is-loading-dossier");
+            if (placeholder && placeholder.open) placeholder.close();
             console.warn("Kurations-Dossier konnte nicht asynchron geladen werden:", modalUrl, err);
             fallbackNavigation();
           });
@@ -5572,6 +5616,16 @@
           oldMain.style.opacity = "1";
           setProgress(100, true);
 
+          // Skripte im neuen Inhalt reaktivieren (HTML5 ignoriert via innerHTML eingefügte <script>-Tags)
+          oldMain.querySelectorAll("script").forEach(function (oldScript) {
+            var s = document.createElement("script");
+            Array.from(oldScript.attributes).forEach(function (attr) {
+              s.setAttribute(attr.name, attr.value);
+            });
+            s.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(s, oldScript);
+          });
+
           // Scrollen: Anker anspringen oder nach oben scrollen
           var hashIdx = url.indexOf("#");
           if (hashIdx >= 0) {
@@ -5584,6 +5638,9 @@
           // Komponenten neu initialisieren ("Building in Pieces")
           if (typeof window.initNsx === "function") {
             window.initNsx();
+          }
+          if (typeof window.initRecordPage === "function") {
+            window.initRecordPage();
           }
           if (typeof bindSnippetCurationControls === "function") {
             bindSnippetCurationControls();

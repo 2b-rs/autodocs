@@ -729,7 +729,7 @@
       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   // Inline: Code, fett, kursiv. Alles wird zuerst maskiert; Links zeigen nur ihren Text (keine Adresse aus
-  // der KI-Ausgabe, z. B. file:///…). Rohes HTML erscheint als Text.
+  // der KI-Ausgabe, z. B. lokale file:-Pfade). Rohes HTML erscheint als Text.
   function mdInline(raw) {
     var codes = [];
     var s = String(raw == null ? "" : raw).replace(/[\u0001\u0002]/g, "");

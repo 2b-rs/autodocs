@@ -794,8 +794,34 @@
       if (!dragging) { cleanupDnd(); return; }
       var f = dragging;
       var at = lastDrag, zone = dropZoneAt(at);
+      var tb = title ? title.getBoundingClientRect() : null;
       if (!f._dropped) {
-        if ((zone === "lead" || zone === "pre" || zone === "post") && canTopDock(f)) {
+        if (f._fromTitle) {
+          // Tab aus der Titelleiste nach unten gezogen:
+          // Soll immer zuverlässig ausdocken, wenn unterhalb der Titelleiste abgelegt!
+          if (at && tb && at.y > tb.bottom) {
+            f._dropped = true;
+            if ((zone === "lead" || zone === "pre" || zone === "post") && canTopDock(f)) {
+              dockTo(f, zone);
+            } else {
+              dockTo(f, "center");
+            }
+          } else if (zone === "title" && canTitleDock(f)) {
+            f._dropped = true;
+            dockTitle(f);
+          } else if (zone === "lead" || zone === "pre" || zone === "post") {
+            f._dropped = true;
+            if (canTopDock(f)) dockTo(f, zone);
+            else dockTo(f, "center");
+          } else if (zone === "center") {
+            f._dropped = true;
+            dockTo(f, "center");
+          } else {
+            // Nur oberhalb der Titelleiste darf nicht abgelegt werden
+            if (at && tb && at.y < tb.top - 8) showDropHint(at);
+            dockTitle(f);
+          }
+        } else if ((zone === "lead" || zone === "pre" || zone === "post") && canTopDock(f)) {
           f._dropped = true;
           dockTo(f, zone);
         } else if (zone === "title" && canTitleDock(f)) {
@@ -805,16 +831,14 @@
           f._dropped = true;
           dockTo(f, "center");
         } else {
-          if (!zone && (f._fromTitle || canTitleDock(f))) showDropHint(at);
-          // Snap back silently
-          if (f._fromTitle) dockTitle(f);
-          else if (f._fromTop) dockTo(f, f._fromZone);
+          showDropHint(at);
+          if (f._fromTop) dockTo(f, f._fromZone);
           else dockTo(f, "center");
         }
       }
       if (f._fromTitle && f._dropped && !f.classList.contains("nsx-tdocked")) {
-        var tb = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
-        if (tb) tb.remove();
+        var tbEl = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
+        if (tbEl) tbEl.remove();
         saveTitleDock();
       }
       cleanupDnd();
@@ -865,7 +889,11 @@
       var refs = {};
       ai.querySelectorAll(".spec-record-ref[data-req]").forEach(function (a) { refs[a.getAttribute("data-req")] = 1; });
       var rev = ai.querySelector(".ai-review-state"), parts = [];
-      if (rev) parts.push('<span class="nsx-st nsx-st-rev nsx-st-' + esc(ai.getAttribute("data-trace-review") || "") + '">' + esc(rev.textContent.trim()) + "</span>");
+      var revState = ai.getAttribute("data-trace-review") || "";
+      // "ungeprüft" weglassen (Nutzerwunsch: Ungeprüft wird in der Titelzeile nicht benötigt)
+      if (rev && revState && revState !== "unreviewed") {
+        parts.push('<span class="nsx-st nsx-st-rev nsx-st-' + esc(revState) + '">' + esc(rev.textContent.trim()) + "</span>");
+      }
 
       var model = ai.getAttribute("data-trace-model");
       if (!model) {
@@ -877,20 +905,22 @@
       }
 
       var asof = v.getAttribute && v.getAttribute("data-asof-release");
-      if (asof) parts.push('<span class="nsx-st">' + esc(asof) + "</span>");
-      function st(k, n) { if (n) parts.push('<span class="nsx-st">' + esc(labels[k] || "") + " <b>" + n + "</b></span>"); }
+      if (asof) parts.push('<span class="nsx-st nsx-st-asof">' + esc(asof) + "</span>");
+      function st(k, n) { if (n) parts.push('<span class="nsx-st nsx-st-' + k + '">' + esc(labels[k] || "") + " <b>" + n + "</b></span>"); }
       st("secs", ai.querySelectorAll("h4, h3").length);
-      if (nw) parts.push('<span class="nsx-st">' + esc(labels.read || "") + " <b>≈" + Math.max(1, Math.round(nw / 200)) + " min</b></span>");
+      if (nw) parts.push('<span class="nsx-st nsx-st-read">' + esc(labels.read || "") + " <b>≈" + Math.max(1, Math.round(nw / 200)) + " min</b></span>");
       st("refs", Object.keys(refs).length);
       st("diag", ai.querySelectorAll(".diagram").length);
 
       var dosBtn = scope.querySelector(".dossier-open-link, .ai-badge-dossier-btn");
+      var dossierHtml = "";
       if (dosBtn) {
         var tgt = dosBtn.getAttribute("data-dossier-target") || "";
-        parts.push('<button type="button" class="nsx-st nsx-st-dossier dossier-open-link" data-dossier-target="' + esc(tgt) + '" title="Audit-Dossier öffnen">🗎 Dossier</button>');
+        dossierHtml = '<button type="button" class="nsx-st nsx-st-dossier dossier-open-link" data-dossier-target="' + esc(tgt) + '" title="Audit-Dossier öffnen">🗎 Dossier</button>';
       }
 
-      return parts.join("");
+      // Die Metadaten-Pillen in einen schrumpfbaren Track packen, Dossier direkt daneben anheften
+      return '<span class="nsx-stats-track">' + parts.join("") + '</span>' + dossierHtml;
     }
 
     // ---- Kennzahlen aller Guides in ihren Titelzeilen
