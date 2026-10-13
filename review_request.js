@@ -334,6 +334,13 @@
 
 (function () {
   "use strict";
+  // /api/ nur, wenn die Site auf localhost an der Origin-Wurzel liegt (_src/serve.py)
+  var RR_LOCAL_API = (function () {
+    try {
+      var u = new URL(document.currentScript.src);
+      return u.pathname === "/review_request.js" && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(u.hostname);
+    } catch (e) { return false; }
+  })();
 
   // ------------------------------------------------------------------ Feedback melden
   // Kompakter Dialog (docs/concepts/fachkonzept-feedback-und-rollen.md): ein Beschreibungsfeld, die Art als kleine
@@ -981,6 +988,13 @@
     }
 
     function fetchAIStatus() {
+      // /api/ gehört nur auf localhost an der Origin-Wurzel (_src/serve.py) zur Site; unter GitHub Pages
+      // (/autodocs/) nicht abfragen.
+      if (!RR_LOCAL_API) {
+        activeLabel.textContent = "KI: Bereit";
+        dot.className = "ai-status-dot healthy";
+        return;
+      }
       fetch("/api/ai/status")
         .then(function (r) { return r.json(); })
         .then(renderStatus)

@@ -13,32 +13,44 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var index = null;
-  var indexWait = null;
-  var indexFailed = false;
-  var cache = {};
+  // Zustand je Site-Wurzel (absolut aufgelöst): Ein Abruf mit falscher Wurzel (z. B. ein relativer
+  // Präfix, der nach einem Inhaltsaustausch nicht mehr zur Adresse passt) darf den Index der echten
+  // Wurzel nicht als „fehlt“ markieren. Ein fehlender Index bleibt je Wurzel gemerkt (kein erneuter 404).
+  var sites = {};
 
   function join(root, file) {
     return String(root || "") + "versions/packs/" + file;
   }
 
+  function site(root) {
+    var key = String(root || "");
+    try {
+      if (typeof location !== "undefined" && location.href) key = new URL(key || "./", location.href).href;
+    } catch (e) { /* Node-Prüfungen: Wurzel wörtlich */ }
+    return sites[key] || (sites[key] = { index: null, wait: null, failed: false, cache: {} });
+  }
+
   function loadIndex(root, signal) {
-    if (index) return Promise.resolve(index);
-    if (indexFailed) return Promise.resolve(null);
-    if (indexWait) return indexWait;
-    indexWait = fetch(join(root, "index.json"), { signal: signal }).then(function (res) {
+    var st = site(root);
+    if (st.index) return Promise.resolve(st.index);
+    if (st.failed) return Promise.resolve(null);
+    if (st.wait) return st.wait;
+    st.wait = fetch(join(root, "index.json"), { signal: signal }).then(function (res) {
       if (!res.ok) throw new Error("index");
       return res.json();
     }).then(function (data) {
-      index = data;
+      st.index = data;
+      st.wait = null;
       return data;
     }).catch(function (err) {
-      indexWait = null;
+      st.wait = null;
       if (err && err.name === "AbortError") throw err;
-      indexFailed = true;
+      // Nur ein fehlender Index (HTTP-Fehler) gilt dauerhaft; ein Netzfehler (z. B. Safari bricht beim
+      // Verlassen der Seite ab, „Load failed“) darf die Packs nach der Rückkehr nicht abschalten.
+      if (!(err && err.name === "TypeError")) st.failed = true;
       return null;
     });
-    return indexWait;
+    return st.wait;
   }
 
   function locate(root, id, signal) {
@@ -49,11 +61,21 @@
     });
   }
 
+  function packMeta(root, pack) {
+    var idx = site(root).index;
+    return idx && idx.packs ? idx.packs[pack] : null;
+  }
+
+  function slotFor(root, pack) {
+    var cache = site(root).cache;
+    return cache[pack] || (cache[pack] = {});
+  }
+
   function buffer(root, pack, signal) {
-    var slot = cache[pack] || (cache[pack] = {});
+    var slot = slotFor(root, pack);
     if (slot.buf) return Promise.resolve(slot.buf);
     if (slot.bufWait) return slot.bufWait;
-    var meta = index && index.packs ? index.packs[pack] : null;
+    var meta = packMeta(root, pack);
     if (!meta) return Promise.resolve(null);
     slot.bufWait = fetch(join(root, meta.file), { signal: signal }).then(function (res) {
       if (!res.ok) throw new Error("pack");
@@ -70,10 +92,10 @@
   }
 
   function packIndex(root, pack, signal) {
-    var slot = cache[pack] || (cache[pack] = {});
+    var slot = slotFor(root, pack);
     if (slot.idx) return Promise.resolve(slot.idx);
     if (slot.idxWait) return slot.idxWait;
-    var meta = index && index.packs ? index.packs[pack] : null;
+    var meta = packMeta(root, pack);
     if (!meta) return Promise.resolve(null);
     slot.idxWait = fetch(join(root, meta.idx), { signal: signal }).then(function (res) {
       if (!res.ok) throw new Error("idx");
@@ -97,9 +119,9 @@
   // ein Beleg braucht wenige KB). Liegt das Pack schon im Speicher, wird daraus geschnitten. Liefert der
   // Server statt 206 die ganze Datei (200), wird sie wie bei buffer() behalten.
   function rangeJson(root, pack, offset, length, signal) {
-    var slot = cache[pack] || (cache[pack] = {});
+    var slot = slotFor(root, pack);
     if (slot.buf) return Promise.resolve(sliceJson(slot.buf, offset, length));
-    var meta = index && index.packs ? index.packs[pack] : null;
+    var meta = packMeta(root, pack);
     if (!meta) return Promise.resolve(null);
     return fetch(join(root, meta.file), {
       signal: signal,

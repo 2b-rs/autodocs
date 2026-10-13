@@ -36,6 +36,18 @@
   }
   // Lokaler Dienst: relativ auf localhost, sonst über die geprüfte localhost-Adresse (ai-access.js).
   function localApi(path) { var a = typeof window !== "undefined" && window.AiAccess; return a && a.localUrl ? a.localUrl(path) : path; }
+  // Liegt die Site auf localhost an der Origin-Wurzel (_src/serve.py), gehört /api/ zu ihr. Unter GitHub
+  // Pages (/autodocs/) gehört /api/ der Origin jemand anderem: dann nur über einen von ai-access.js
+  // gefundenen lokalen Dienst (absolute Adresse), sonst gar nicht abfragen.
+  var FOLD_SRC = !isNode && document.currentScript ? document.currentScript.src : "";
+  function localApiReachable() {
+    var a = typeof window !== "undefined" && window.AiAccess;
+    if (a && a.localUrl && /^https?:/.test(a.localUrl(""))) return true;
+    try {
+      var u = new URL(FOLD_SRC);
+      return u.pathname === "/fold.js" && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(u.hostname);
+    } catch (e) { return false; }
+  }
 
   // ---- Feste Oberflächentexte der Kuration (lib_ui_i18n.py): Die Seite bettet den Katalog ihrer Sprache
   // ein (<script id="autodocs-ui-i18n">, Gruppe „curation“ aus _src/i18n/ui.json). Schlüssel ist der deutsche
@@ -1149,6 +1161,10 @@
   }
 
   function bindReleaseNavigation() {
+    bindReleaseLinks();
+    bindReleaseRewrite();
+  }
+  function bindReleaseLinks() {
     document.querySelectorAll("details.release-dropdown .releases a").forEach(function (a) {
       if (a.getAttribute("data-release-bound")) return;
       a.setAttribute("data-release-bound", "1");
@@ -1170,7 +1186,8 @@
         location.hash = next;
       });
     });
-
+  }
+  function bindReleaseRewrite() {
     document.addEventListener("click", function (e) {
       var a = e.target.closest("a");
       if (!a) return;
@@ -1260,31 +1277,27 @@
     bindCrumbsHover();
     bindReleaseNavigation();
     var root = document.documentElement;
-    var themeBtn = document.querySelector("[data-theme-toggle]");
-    var densBtn = document.querySelector("[data-density-toggle]");
-    var searchBtn = document.querySelector("[data-search-open]");
     var searchInput = document.querySelector("[data-search-input]");
-    if (themeBtn) {
-      themeBtn.addEventListener("click", function () {
-        var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        root.setAttribute("data-theme", next);
-        try { localStorage.setItem("autodocs-theme", next); } catch (e) {}
+    // Design, Dichte und Suchknopf über Delegation am Dokument: Der Seamless Router ersetzt
+    // den Inhalt der Breadcrumb-Zeile (innerHTML), direkt gebundene Knöpfe wären danach tot.
+    document.addEventListener("click", function (e) {
+      var t = e.target && e.target.closest ? e.target : null;
+      if (!t) return;
+      if (t.closest("[data-theme-toggle]")) {
+        var nt = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", nt);
+        try { localStorage.setItem("autodocs-theme", nt); } catch (err) {}
         syncShellControls();
-      });
-    }
-    if (densBtn) {
-      densBtn.addEventListener("click", function () {
-        var next = root.getAttribute("data-density") === "compact" ? "comfortable" : "compact";
-        root.setAttribute("data-density", next);
-        try { localStorage.setItem("autodocs-density", next); } catch (e) {}
+      } else if (t.closest("[data-density-toggle]")) {
+        var nd = root.getAttribute("data-density") === "compact" ? "comfortable" : "compact";
+        root.setAttribute("data-density", nd);
+        try { localStorage.setItem("autodocs-density", nd); } catch (err) {}
         syncShellControls();
-      });
-    }
-    if (searchBtn && searchInput) {
-      searchBtn.addEventListener("click", function () {
-        searchInput.focus();
-      });
-    }
+      } else if (t.closest("[data-search-open]")) {
+        var si = document.querySelector("[data-search-input]");
+        if (si) si.focus();
+      }
+    });
     bindSiteSearch(searchInput);
 
     document.addEventListener("click", function (e) {
@@ -1334,12 +1347,11 @@
   // Volltextsuche der Kopfzeile: static/site-search.js (Index search/, _src/tools/export_search.py) wird
   // erst beim ersten Fokus, bei einer Eingabe oder bei ?q=… in der Adresse geladen.
   function bindSiteSearch(input) {
-    if (!input || bindSiteSearch.done) return;
-    bindSiteSearch.done = true;
-    var started = false;
+    if (!input || input._siteSearchBound) return;
+    input._siteSearchBound = true;
     function start() {
-      if (started) return;
-      started = true;
+      if (bindSiteSearch.started) return;
+      bindSiteSearch.started = true;
       var s = document.createElement("script");
       s.src = getRootBasePrefix() + "static/site-search.js";
       document.head.appendChild(s);
@@ -2526,7 +2538,8 @@
 
     // Server-side vote synchronization if available
     try {
-      fetch("/api/curation/votes").then(function (r) { return r.json(); }).then(function (data) {
+      if (!localApiReachable()) throw new Error("kein lokaler Dienst");
+      fetch(localApi("/api/curation/votes")).then(function (r) { return r.json(); }).then(function (data) {
         if (data && data.votes) {
           var local = loadVotes();
           Object.keys(data.votes).forEach(function (sid) {
@@ -5570,7 +5583,62 @@
       }
     }
 
+    // Der Austausch ersetzt nur <main>; Kopf, Stylesheet-Links und geladene Skripte bleiben vom
+    // vorigen Dokument. Relative Pfade, die Skripte daraus ableiten (Wurzelpräfix aus dem
+    // style.css-Link, ROOT im Versions-Explorer, rootPrefix der Record-Seite), stimmen deshalb nur,
+    // wenn Ziel und Quelle im selben Verzeichnis liegen. Seiten mit ausführbaren Skripten im <main>
+    // (Record-Seite, Versions-Explorer, Schaubild-/Snippet-Seiten) sind eigenständige Anwendungen mit
+    // globalen Listenern; sie werden immer vollständig geladen. Sonst: normale Navigation, die der
+    // Back-Forward-Cache des Browsers sauber wiederherstellt.
+    var shownPath = window.location.pathname;   // Seite, deren Inhalt das Dokument gerade zeigt
+
+    function dirOf(href) {
+      return new URL(href, window.location.href).pathname.replace(/[^/]*$/, "");
+    }
+    function runnableScripts(root) {
+      return Array.from(root.querySelectorAll("script")).filter(function (s) {
+        var type = (s.getAttribute("type") || "").trim().toLowerCase();
+        return !type || type === "module" || /(?:java|ecma)script$/.test(type);
+      });
+    }
+    function swappedBar(doc) {
+      return doc.querySelector(".crumbbar") || doc.querySelector("nav.crumbs, nav");
+    }
+    // Rahmen außerhalb von <main>: Stylesheets, Skripte und die Verweise im Kopf (Release-, Domänen-,
+    // Sprachwahl). Nur die Brotkrumenleiste wird mit getauscht; unterscheidet sich der übrige Rahmen
+    // (z. B. eine Modulseite mit anderen Releases), wird vollständig geladen.
+    function shellAssets(doc, base) {
+      var out = [];
+      var bar = swappedBar(doc);
+      doc.querySelectorAll('link[rel~="stylesheet"][href], script[src], a[href]').forEach(function (el) {
+        if (el.closest("main") || (bar && bar.contains(el))) return;
+        var attr = el.tagName === "SCRIPT" ? "src" : "href";
+        try { out.push(el.tagName + " " + new URL(el.getAttribute(attr), base).href); }
+        catch (e) { out.push(el.tagName + " " + String(el.getAttribute(attr))); }
+      });
+      return out.join("\n");
+    }
+    // Darf url ohne vollständiges Laden in dieses Dokument getauscht werden?
+    function swappable(url, newDoc) {
+      if (dirOf(url) !== dirOf(shownPath)) return false;
+      var oldMain = document.querySelector("main");
+      var newMain = newDoc && newDoc.querySelector("main");
+      if (!oldMain || !newMain) return false;
+      if (runnableScripts(oldMain).length || runnableScripts(newMain).length) return false;
+      return shellAssets(document, new URL(shownPath, window.location.href).href) === shellAssets(newDoc, url);
+    }
+    function hardNavigate(url, push) {
+      if (push) window.location.assign(url);
+      else window.location.replace(url);   // Zurück/Vor: Adresse steht schon, Eintrag nicht verdoppeln
+    }
+    window.AutodocsRouter = { swappable: swappable, shownPath: function () { return shownPath; } };
+
     function navigate(url, push) {
+      var curMain = document.querySelector("main");
+      if (dirOf(url) !== dirOf(shownPath) || !curMain || runnableScripts(curMain).length) {
+        hardNavigate(url, push);
+        return;
+      }
       clearTimeout(progressTimer);
       setProgress(0);
       setProgress(35);
@@ -5588,10 +5656,12 @@
 
         var oldMain = document.querySelector("main");
         var newMain = newDoc.querySelector("main");
-        if (!oldMain || !newMain) {
-          window.location.href = url;
+        if (!oldMain || !newMain || !swappable(url, newDoc)) {
+          setProgress(100, true);
+          hardNavigate(url, push);
           return;
         }
+        shownPath = new URL(url, window.location.href).pathname;
 
         // Title aktualisieren
         if (newDoc.title) document.title = newDoc.title;
@@ -5609,9 +5679,17 @@
           oldMain.className = newMain.className;
           oldMain.innerHTML = newMain.innerHTML;
 
-          var oldBar = document.querySelector(".crumbbar") || document.querySelector("nav.crumbs, nav");
-          var newBar = newDoc.querySelector(".crumbbar") || newDoc.querySelector("nav.crumbs, nav");
-          if (oldBar && newBar) oldBar.innerHTML = newBar.innerHTML;
+          var oldBar = swappedBar(document);
+          var newBar = swappedBar(newDoc);
+          if (oldBar && newBar) {
+            oldBar.innerHTML = newBar.innerHTML;
+            // Neue Knoten der Leiste: Hover-Menüs, Release-Links und Suchfeld neu binden,
+            // Zustand der Umschalter (aria-pressed, Beschriftung) aus <html> übernehmen
+            bindCrumbsHover();
+            bindReleaseLinks();
+            bindSiteSearch(document.querySelector("[data-search-input]"));
+            syncShellControls();
+          }
 
           oldMain.style.opacity = "1";
           setProgress(100, true);
@@ -5652,7 +5730,7 @@
         clearTimeout(progressTimer);
         setProgress(100, true);
         console.warn("Seamless Router Fallback:", err);
-        window.location.href = url;
+        hardNavigate(url, push);
       });
     }
 
@@ -5681,7 +5759,10 @@
       navigate(targetUrl.href, true);
     });
 
-    window.addEventListener("popstate", function (ev) {
+    // Nur Einträge, die der Router selbst angelegt hat, gehören zu ihm: Zustandswechsel der Seite
+    // (Versions-Explorer, Anker, Namensraum-Index) behalten den Pfad und laden nichts neu.
+    window.addEventListener("popstate", function () {
+      if (window.location.pathname === shownPath) return;
       navigate(window.location.href, false);
     });
   }

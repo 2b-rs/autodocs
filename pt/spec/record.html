@@ -425,12 +425,12 @@
   }
   const currentLang = langMatch[1];
 
-  let rootPrefix = '../../';
-  const cssLink = document.querySelector('link[rel="stylesheet"]');
-  if (cssLink) {
-    const href = cssLink.getAttribute('href') || '';
-    rootPrefix = href.replace('style.css', '') || '../../';
-  }
+  // Site-Wurzel aus der eigenen Adresse (<wurzel>/<lang>/spec/record.html), absolut als Pfad.
+  // Nicht aus dem style.css-Link im Kopf: Nach einem Inhaltsaustausch (fold.js) oder einer
+  // Wiederherstellung kann dort noch der Link einer Seite aus einem anderen Verzeichnis stehen
+  // (../style.css), und alle Abrufe landeten neben der Site („Record nicht gefunden“).
+  const rootMatch = path.match(/^(.*\/)(?:de|en|es|pt|fr|ru|ar|hi|ko|zh|nl)\/spec\/[^/]*$/);
+  let rootPrefix = rootMatch ? rootMatch[1] : '../../';
 
   const I18N = {
     de: {
@@ -855,6 +855,9 @@
         renderRecord(data, selectedRelease);
       })
       .catch(err => {
+        // Beim Verlassen abgebrochener Abruf (Safari: „Load failed“): kein „nicht gefunden“; kommt die Seite
+        // aus dem Back-Forward-Cache zurück, lädt der pageshow-Handler unten sie neu.
+        if (recPageHidden) return;
         // Keine Record-Daten: ehrliche Fehlermeldung, kein synthetischer Ersatzinhalt.
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
@@ -1758,6 +1761,15 @@
   } // end initRecordPage
 
   window.initRecordPage = initRecordPage;
+  // Aus dem Back-Forward-Cache zurück, aber unfertig (Abruf beim Verlassen abgebrochen) oder mit Fehler: neu laden.
+  var recPageHidden = false;
+  window.addEventListener('pagehide', function () { recPageHidden = true; });
+  window.addEventListener('pageshow', function (e) {
+    recPageHidden = false;
+    if (!e.persisted) return;
+    const shown = id => { const el = document.getElementById(id); return !!el && getComputedStyle(el).display !== 'none'; };
+    if (shown('rec-error') || shown('rec-loading')) window.location.reload();
+  });
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initRecordPage);
   } else {

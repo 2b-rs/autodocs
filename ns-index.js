@@ -85,6 +85,8 @@
     if (next === (location.hash || "")) return;
     try { history.replaceState(history.state, "", location.pathname + location.search + next); } catch (e) { /* file:// u. ä. */ }
   }
+  // Wurzel der veröffentlichten Seite (ns-index.js liegt dort): versions/data/, static/
+  var SITE_ROOT = ((document.currentScript && document.currentScript.src) || "").replace(/[^\/]*$/, "");
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var behavior = reduceMotion ? "auto" : "smooth";
 
@@ -114,6 +116,7 @@
     });
     setTimeout(function () {
       root.classList.remove("nsx-assembling");
+      if (typeof placePop === "function") placePop();
     }, 700);
 
     // Namensschlüssel ohne Prototyp: Mitglieder heißen auch toString oder constructor
@@ -269,6 +272,18 @@
       elHead.appendChild(elH2);
       root.insertBefore(elHead, root.firstChild);
     }
+    // Ein- und Ausklappen wie bei den Folds (Pfeil vor dem Titel, Klick auf die Kopfzeile),
+    // angedockt über den Reiter in der Titelleiste
+    var elChev = elHead.querySelector(".nsx-elchev");
+    if (!elChev) {
+      elChev = document.createElement("span");
+      elChev.className = "nsx-elchev";
+      elChev.setAttribute("role", "button");
+      elChev.setAttribute("tabindex", "0");
+      elChev.setAttribute("aria-label", "Elemente");
+      var elH = elHead.querySelector("h2");
+      elHead.insertBefore(elChev, elH || null);
+    }
 
     // ---- Titelleiste des Namespace bleibt oben stehen
     var title = document.querySelector("main > h1");
@@ -334,6 +349,7 @@
     // ---- User Guide, Cluster Guide und Implementer's Guide als erste Folds der Mitte
     var guideFold = null;
     var candidateGuides = [];
+    var guideAt = dockPre || root;
     for (var p = root.previousElementSibling, prevP; p; p = prevP) {
       prevP = p.previousElementSibling;   // vor dem Umhängen merken
       if (p.tagName === "DETAILS" && p.classList.contains("fold") && !p.classList.contains("nsx-doc") && p.querySelector(".ai")) {
@@ -361,7 +377,9 @@
         bindGrip(gr);
         sm.insertBefore(gr, sm.firstChild);
       }
-      folds.insertBefore(g, folds.firstChild);
+      // Guides gehören nicht in die Elemente: Ablage auf der Fläche der Seite (vor der Gliederung)
+      guideAt.parentNode.insertBefore(g, guideAt);
+      guideAt = g;
     });
 
     // ---- Service-Interfaces: die Mitgliederliste der Seite (Überschrift + Liste, jeder
@@ -603,7 +621,8 @@
           return;
         }
         if (f.classList.contains("nsx-topdocked")) {
-          if (ev.key === "ArrowDown") undockTop(f);
+          if (ev.key === "ArrowDown" && canCenter(f)) undockTop(f);
+          else if (ev.key === "ArrowUp" && !canCenter(f) && canTitleDock(f)) dockTitle(f);
           return;
         }
         var fl = foldList().filter(function (x) { return !x.classList.contains("nsx-tdocked"); }), i = fl.indexOf(f);
@@ -666,6 +685,8 @@
       if (dropZoneAt(at) === "lead" || dropZoneAt(at) === "pre" || dropZoneAt(at) === "post" || overTop) return;
       ev.preventDefault();
       try { ev.dataTransfer.dropEffect = "move"; } catch (e) { /* alte Browser */ }
+      // Die Elemente selbst und Guides werden nie in die Mitte (in die Elemente) eingefügt
+      if (!canCenter(dragging)) return;
       var t = ev.target.closest && ev.target.closest("details[data-fold]");
       if (t && t !== dragging && t.parentNode === folds) {
         var r = t.getBoundingClientRect();
@@ -746,7 +767,14 @@
     });
 
     function inRect(p, r, tol) { return p && r && p.x >= r.left - tol && p.x <= r.right + tol && p.y >= r.top - tol && p.y <= r.bottom + tol; }
+    // Ablagezone für den gerade gezogenen Fold: Guides dürfen nicht in die Elemente; über der
+    // mittleren Spalte gilt für sie die Fläche direkt vor der Gliederung (pre).
     function dropZoneAt(p) {
+      var z = rawZoneAt(p);
+      if (z === "center" && dragging && dragging !== root && !canCenter(dragging)) return "pre";
+      return z;
+    }
+    function rawZoneAt(p) {
       if (!p) return null;
       var tb = title ? title.getBoundingClientRect() : null;
       var rb = root ? root.getBoundingClientRect() : null;
@@ -795,7 +823,12 @@
       var f = dragging;
       var at = lastDrag, zone = dropZoneAt(at);
       var tb = title ? title.getBoundingClientRect() : null;
-      if (!f._dropped) {
+      if (!f._dropped && f === root) {
+        // Elemente: auf der Titelleiste andocken, unterhalb davon an ihren Platz auf der Fläche
+        if (zone === "title") { f._dropped = true; dockTitle(root); }
+        else if (at && tb && at.y > tb.bottom) { f._dropped = true; undockTitle(root); }
+        else { showDropHint(at); if (f._fromTitle) dockTitle(root); }
+      } else if (!f._dropped) {
         if (f._fromTitle) {
           // Tab aus der Titelleiste nach unten gezogen:
           // Soll immer zuverlässig ausdocken, wenn unterhalb der Titelleiste abgelegt!
@@ -959,6 +992,36 @@
       var k = f.getAttribute("data-fold");
       return !!(k && k !== "detail" && k !== "elements");
     }
+    // User Guide, Cluster Guide, Implementer's Guide: andockbar an Titelleiste und Fläche,
+    // aber nie innerhalb der Elemente (mittlere Spalte)
+    function isGuideFold(f) {
+      var kind = titleKeyKind((f && f.getAttribute && f.getAttribute("data-fold")) || "");
+      return kind === "guide" || kind === "impl";
+    }
+    function canCenter(f) { return !!f && f !== root && !isGuideFold(f); }
+
+    // ---- Elemente ein- und ausklappen (gelöst über die Kopfzeile, angedockt über den Reiter)
+    function elementsOpen() { return !root.classList.contains("nsx-collapsed"); }
+    function setElementsOpen(open) {
+      root.classList.toggle("nsx-collapsed", !open);
+      elHead.setAttribute("aria-expanded", String(open));
+      if (elChev) elChev.setAttribute("aria-expanded", String(open));
+      var tb = tdock && tdock.querySelector('[data-fold="elements"]');
+      if (tb) tb.setAttribute("aria-expanded", String(open));
+      updateEmpty();
+      placePop();
+      if (open && selected) drawArrows(selected);
+    }
+    elHead.addEventListener("click", function (ev) {
+      if (ev.target.closest(".nsx-grip, button, a")) return;
+      if (root.classList.contains("nsx-tdocked")) return;
+      setElementsOpen(!elementsOpen());
+    });
+    elHead.addEventListener("keydown", function (ev) {
+      if ((ev.key !== "Enter" && ev.key !== " ") || !ev.target.matches(".nsx-elchev")) return;
+      ev.preventDefault();
+      setElementsOpen(!elementsOpen());
+    });
     function foldLabel(f) {
       if (!f) return "";
       if (f === root || f.getAttribute("data-fold") === "elements") return "Elemente";
@@ -1014,15 +1077,23 @@
       if (!popFold) return;
       var b = tdock.querySelector('[data-fold="' + popFold.getAttribute("data-fold") + '"]');
       if (!b) return;
-      if (popFold === root) {
-        var ob = tdock.querySelector('[data-fold="elements"]');
-        if (ob) ob.setAttribute("aria-expanded", "true");
-        return;
-      }
       var t = b.getBoundingClientRect(), c = folds.getBoundingClientRect();
       var rtl = getComputedStyle(root).direction === "rtl";
       var w = Math.max(t.width, Math.min(Math.max(c.width, 480), innerWidth - 24));
       var left = rtl ? Math.max(12, Math.min(t.right - w, innerWidth - 12 - w)) : Math.max(12, Math.min(t.left, innerWidth - 12 - w));
+      // Guides bei sichtbarer Gliederung: das Panel beginnt am Rand der Gliederung und deckt
+      // die mittlere Spalte (mindestens bis unter den Reiter); die Gliederung bleibt frei.
+      var ob = outline && isGuideFold(popFold) && outline.getClientRects().length ? outline.getBoundingClientRect() : null;
+      var bb = ob && dropZone.getBoundingClientRect();
+      if (ob && ob.width && bb && bb.width) {
+        if (rtl) {
+          var gr = ob.left, gl = Math.max(12, Math.min(bb.left, t.left));
+          if (gr - gl >= t.width) { left = gl; w = gr - gl; }
+        } else {
+          var gl2 = ob.right, gr2 = Math.min(innerWidth - 12, Math.max(bb.right, t.right));
+          if (gr2 - gl2 >= t.width) { left = gl2; w = gr2 - gl2; }
+        }
+      }
       var tabx = rtl ? left + w - t.right : t.left - left;
       popFold.style.top = t.bottom - 1 + "px";
       popFold.style.left = left + "px";
@@ -1032,6 +1103,7 @@
       popFold.classList.toggle("nsx-pop-shift", tabx > 1);
     }
     function setPop(f) {
+      if (f === root) f = null;      // Elemente klappen an ihrem Platz auf, nie als schwebendes Panel
       if (popFold && popFold !== f) {
         popFold.classList.remove("nsx-pop", "nsx-pop-shift");
         ["top", "left", "width"].forEach(function (k) { popFold.style[k] = ""; });
@@ -1053,7 +1125,7 @@
       var headerEl = f.querySelector("summary, .nsx-elements-head");
       if (!headerEl) return;
       var c = headerEl.cloneNode(true);
-      c.querySelectorAll(".nsx-hbtn, .nsx-canon-link, .nsx-tabbtn, .nsx-backbtn").forEach(function (x) { x.remove(); });
+      c.querySelectorAll(".nsx-hbtn, .nsx-canon-link, .nsx-tabbtn, .nsx-backbtn, .nsx-elchev").forEach(function (x) { x.remove(); });
       c.querySelectorAll("[role], [tabindex], [id]").forEach(function (x) { x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("id"); });
       var g = c.querySelector(".nsx-grip");
       if (g) { g.removeAttribute("title"); g.removeAttribute("aria-label"); g.setAttribute("aria-hidden", "true"); }
@@ -1111,7 +1183,8 @@
       
       // Zurück-Knopf: In die mittlere Spalte zurück
       var backBtn = sm.querySelector(".nsx-backbtn");
-      if (f.classList.contains("nsx-topdocked") || f.classList.contains("nsx-tdocked")) {
+      // Guides auf der Fläche haben kein „zurück in die Mitte“ (sie gehören nicht in die Elemente)
+      if ((f.classList.contains("nsx-topdocked") && canCenter(f)) || f.classList.contains("nsx-tdocked")) {
         if (!backBtn) {
           backBtn = document.createElement("button");
           backBtn.type = "button";
@@ -1141,8 +1214,10 @@
       f.classList.remove("nsx-topdocked", "nsx-pop", "nsx-pop-shift", "nsx-dragging");
       f.removeAttribute("data-docked-zone");
       ["top", "left", "width"].forEach(function (k) { f.style[k] = ""; });
-      if (f !== root && f.parentNode !== folds) {
-        folds.appendChild(f);
+      if (f !== root) {
+        // Guides warten angedockt auf der Fläche der Seite (verborgen), nicht in den Elementen
+        if (canCenter(f)) { if (f.parentNode !== folds) folds.appendChild(f); }
+        else if (root.contains(f) || f.parentNode !== root.parentNode) root.parentNode.insertBefore(f, dockPre || root);
       }
       f.classList.add("nsx-tdocked");
 
@@ -1155,7 +1230,7 @@
         b.className = "nsx-tab";
         b.draggable = true;
         b.setAttribute("data-fold", key);
-        b.setAttribute("aria-expanded", "false");
+        b.setAttribute("aria-expanded", f === root ? String(elementsOpen()) : "false");
         b.title = labels.tundock || "";
         tdock.appendChild(b);
       }
@@ -1171,6 +1246,11 @@
       f.classList.remove("nsx-tdocked");
       var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
       if (b) { if (preview) b.hidden = true; else b.remove(); }
+      if (f !== root && !canCenter(f)) {
+        // Guide: zurück auf die Fläche (vor der Gliederung), nie in die Elemente
+        dockTo(f, "pre");
+        return;
+      }
       if (f !== root) {
         if (before !== undefined) folds.insertBefore(f, before);
         else if (f.parentNode !== folds) folds.appendChild(f);
@@ -1194,7 +1274,9 @@
         dockTitle(f);
         return;
       }
+      if (zoneName === "center" && !canCenter(f)) zoneName = "pre";
       if (zoneName === "center") {
+        if (!elementsOpen()) setElementsOpen(true);   // Ziel in den Elementen muss sichtbar sein
         if (f.classList.contains("nsx-tdocked")) {
           undockTitle(f, beforeEl || folds.firstChild);
         } else {
@@ -1250,15 +1332,20 @@
         try { saved = JSON.parse(raw); } catch (e) { saved = null; }
       }
       var savedTitle = (saved && saved.title) || (load(tdockKey) || "").split(",").filter(Boolean);
-      var td = savedTitle.filter(function (k) { return foldByKey(k); });
-      var tdDefault = isCls ? ["map", "guide", "uml"] : ["guide", "map"];
+      // Beim Öffnen stehen die Elemente immer gelöst und ausgeklappt auf der Fläche
+      var td = savedTitle.filter(function (k) { return k !== "elements" && foldByKey(k); });
+      // Beim Öffnen immer angedockt (Aufnahme 12:02; Clusterseiten: „Module im Cluster“ angedockt
+      // und eingeklappt, Wunsch des Admins vom 2026-10-13), auch wenn eine frühere Sitzung sie auf
+      // der Fläche abgelegt hatte
+      var tdDefault = isCls ? ["map", "guide", "uml"] : isClu ? ["guide", "map", "cards"] : ["guide", "map"];
       tdDefault.forEach(function (k) { if (td.indexOf(k) < 0 && foldByKey(k)) td.push(k); });
       td.forEach(function (k) { var f = foldByKey(k); if (f && canTitleDock(f)) dockTitle(f); });
+      function keepSaved(k) { return tdDefault.indexOf(k) < 0; }
 
       if (saved) {
-        if (saved.lead) saved.lead.forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "lead"); });
-        if (saved.pre) saved.pre.forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "pre"); });
-        if (saved.post) saved.post.forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "post"); });
+        if (saved.lead) saved.lead.filter(keepSaved).forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "lead"); });
+        if (saved.pre) saved.pre.filter(keepSaved).forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "pre"); });
+        if (saved.post) saved.post.filter(keepSaved).forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "post"); });
       } else {
         var fl = foldList();
         fl.forEach(function (f) {
@@ -1267,8 +1354,13 @@
           }
         });
       }
+      // Guides ohne gemerkten Platz: auf die Fläche vor der Gliederung, nie in die Elemente
+      candidateGuides.forEach(function (g) {
+        if (!g.classList.contains("nsx-tdocked") && !g.classList.contains("nsx-topdocked")) dockTo(g, "pre");
+      });
       foldList().forEach(decorateFoldButtons);
       decorateFoldButtons(root);
+      setElementsOpen(true);
       updateEmpty();
     }
 
@@ -1294,6 +1386,8 @@
         if (!dock.contains(ev.relatedTarget)) dock.classList.remove("nsx-drop-over");
       });
       dock.addEventListener("drop", function (ev) {
+        // Elemente über einer Ablage der Fläche: kein Abbruch, dragend legt sie an ihren Platz
+        if (dragging === root) return;
         if (!dragging || !canTopDock(dragging)) { cleanupDnd(); return; }
         ev.preventDefault();
         ev.stopPropagation();
@@ -1327,6 +1421,7 @@
         if (!b) return;
         clearSelection();
         var f = foldByKey(b.getAttribute("data-fold"));
+        if (f === root) { setElementsOpen(!elementsOpen()); return; }   // an ihrem Platz auf der Fläche
         setPop(popFold === f ? null : f);
       });
       tdock.addEventListener("keydown", function (ev) {
@@ -1420,6 +1515,7 @@
       outline.querySelectorAll(".nsx-by button").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
       outline.querySelectorAll(".nsx-ol").forEach(function (o) { o.hidden = o.getAttribute("data-by") !== mode; });
       revealSelected();
+      histModeChanged(mode === "since");
       return true;
     }
     setBy(load(BY_KEY) || "");
@@ -1768,20 +1864,22 @@
         }
       }
       // Beschreibung
-      var desc = main ? main.querySelector(":scope > .desc") : (recs[0] && recs[0].querySelector(".desc"));
+      var desc = main ? main.querySelector(":scope > .desc") : (recs[0] && recs[0].querySelector(".desc:not(.nsx-hmark)"));
       if (!desc) desc = r.querySelector(".nsx-desc");
       if (desc) {
         var d = desc.cloneNode(true);
         d.removeAttribute("id");
+        d.hidden = false;                       // Original kann in der Historie verborgen sein
+        d.removeAttribute("data-nsx-hhide");
         d.className = "nsx-idesc";
         relBox.appendChild(d);
       }
       // Signatur (Funktionen, Typen, Enumerationen)
       if (!isClass) {
-        var sigs = recs.map(function (rec) { return rec.querySelector("pre.syntax"); }).filter(Boolean);
+        var sigs = recs.map(function (rec) { return rec.querySelector("pre.syntax:not(.nsx-hmark)"); }).filter(Boolean);
         if (sigs.length) {
           var ss = section(labels.sig, sigs.length > 1 ? sigs.length : 0);
-          sigs.forEach(function (sg) { var c = sg.cloneNode(true); c.removeAttribute("id"); c.className = "nsx-isig"; ss.appendChild(c); });
+          sigs.forEach(function (sg) { var c = sg.cloneNode(true); c.removeAttribute("id"); c.removeAttribute("data-nsx-hhide"); c.hidden = false; c.className = "nsx-isig"; ss.appendChild(c); });
         }
       }
       // Allgemeine Angaben
@@ -1841,6 +1939,7 @@
       });
       if (relBox.children.length <= 2) relBox.insertAdjacentHTML("beforeend", '<p class="nsx-hint">' + esc(labels.none || "") + "</p>");
       decorate(relBox);
+      histInspector(name);
     }
     function showRelations(name) {
       var r = rows[name];
@@ -1867,6 +1966,7 @@
     // ---- Detailansicht: kanonische Darstellung des ausgewählten Elements
     var moved = [], token = 0, pages = {};
     function restoreMoved() {
+      clearHistMarks();              // Markierungen der Historie nicht mit zurückgeben
       moved.forEach(function (m) { m.ph.parentNode.insertBefore(m.el, m.ph); m.ph.parentNode.removeChild(m.ph); });
       moved = [];
     }
@@ -2198,6 +2298,7 @@
       if (!detBody) return;
       var r = rows[name], my = ++token;
       detBody.style.minHeight = detBody.offsetHeight + "px";
+      clearHistMarks();              // geliehene Records ohne Markierungen zurückgeben
       restoreMoved();
       clearDetailAi();
       detBody.innerHTML = "";
@@ -2252,6 +2353,7 @@
         }
         linkOwnNames(detBody);
         detBody.style.minHeight = "";
+        histDetail(name);
       }
       function done() {
         if (my !== token) return;
@@ -2558,6 +2660,9 @@
     }
     updateEmpty();
     applyAllDocks();
+    // Beim Öffnen: der angedockte Guide ist ausgeklappt (Panel bis an den Rand der Gliederung),
+    // außer ein Anker wählt ein Element aus, dessen Detailansicht sonst verdeckt wäre
+    if (guideFold && guideFold.classList.contains("nsx-tdocked") && !hashParts().target) setPop(guideFold);
 
     // Klick auf eine leere Fläche löst die Auswahl; der Inspektor folgt dann wieder
     // dem Mauszeiger. Lesebereiche (Detailansicht, Guide-Text, Inspektor) und
@@ -2591,23 +2696,321 @@
       return m ? +m[1] * 100 + +m[2] : 0;
     }
     function latestRel() { return Object.keys(allRels).sort(function (a, b) { return relKey(a) - relKey(b); }).pop() || ""; }
-    function badge(rel, cls, tip) {
-      return '<span class="nsx-hb ' + cls + '" role="button" tabindex="0" data-rel="' + esc(rel) + '" title="' + esc(tip + " · " + (labels.hsel || "")) + '">' + esc(rel) + "</span>";
+    // ---- Historie (Gruppierung „Historie“), Wunsch des Admins vom 2026-10-13:
+    // - Gliederung: Tabelle Release × Element statt KI-Symbol und Release-Kästchen; eine Zelle
+    //   je Release, markiert, wenn das Element darin vorkommt (neu, geändert, unverändert, entfallen).
+    // - Inspektor: Unterschiede des ausgewählten Elements zwischen zwei Releases (gewähltes Release
+    //   und Vorgänger oder zwei Zellen der Tabelle), nach Angaben der Spezifikationstabelle zerlegt.
+    // - Mitte: die gewohnte Darstellung, nur die Unterschiede farbig markiert.
+    var HL = (document.documentElement.getAttribute("lang") || "de").slice(0, 2) === "de" ? {
+      add: "neu", chg: "geändert", pre: "unverändert", del: "entfallen", none: "nicht enthalten",
+      changes: "Änderungen", same: "Keine inhaltliche Änderung", first: "Erstmals in", gone: "Entfallen in",
+      nodata: "Keine Versionsdaten verfügbar.", loading: "Versionsdaten werden geladen …", text: "Text",
+      notext: "Wortlaut in diesem Release nicht erfasst", pick: "Zelle: mit dem Vorgänger vergleichen · Umschalt+Zelle: zweites Release",
+      from: "Von", to: "Bis", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut"
+    } : {
+      add: "added", chg: "changed", pre: "unchanged", del: "removed", none: "not included",
+      changes: "Changes", same: "No change in content", first: "First in", gone: "Removed in",
+      nodata: "No version data available.", loading: "Loading version data …", text: "Text",
+      notext: "Wording not captured for this release", pick: "Cell: compare with predecessor · Shift+cell: second release",
+      from: "From", to: "To", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording"
+    };
+    function histKey(r) {
+      var m = /^R(\d+)-(\d+)/.exec(r || "");
+      if (m) return +m[1] * 100 + +m[2];
+      m = /^(\d+)\.(\d+)/.exec(r || "");
+      return m ? +m[1] * 10 + +m[2] : 0;
     }
+    function bySort(a, b) { return histKey(a) - histKey(b) || (a < b ? -1 : a > b ? 1 : 0); }
+    function entryRels(r) {
+      var all = words(r, "data-releases").concat(words(r, "data-changes"), words(r, "data-dropped"));
+      return all.filter(function (x, i) { return all.indexOf(x) === i; }).sort(bySort);
+    }
+    // Zustand einer Zelle: add (erstes Auftreten), chg (geändert), pre (unverändert enthalten), del (entfallen), "" (nicht enthalten)
+    function cellState(r, rel) {
+      if (words(r, "data-dropped").indexOf(rel) >= 0) return "del";
+      var have = words(r, "data-releases").concat(words(r, "data-changes")).sort(bySort);
+      if (!have.length || have.indexOf(rel) < 0) return "";
+      if (rel === have[0]) return "add";
+      return words(r, "data-changes").indexOf(rel) >= 0 ? "chg" : "pre";
+    }
+    var histCols = [];
+    function histColumns() {
+      var seen = {};
+      Object.keys(rows).forEach(function (n) { entryRels(rows[n]).forEach(function (x) { seen[x] = 1; }); });
+      return Object.keys(seen).sort(bySort);
+    }
+    function shortRel(x) { return String(x).replace(/^R/, ""); }
     function renderHistory() {
-      var cur = currentRelease() || latestRel(), ck = relKey(cur);
+      var cur = currentRelease() || latestRel();
+      histCols = histColumns();
+      var ol = root.querySelector('.nsx-ol[data-by="since"]');
+      if (ol) {
+        var head = ol.querySelector(":scope > .nsx-hhead");
+        if (!head) {
+          head = document.createElement("div");
+          head.className = "nsx-hhead";
+          head.setAttribute("aria-hidden", "true");
+          ol.insertBefore(head, ol.firstChild);
+        }
+        head.innerHTML = '<span class="nsx-hhead-n">' + esc(HL.elem) + '</span><span class="nsx-hcells">' + histCols.map(function (c) {
+          return '<span class="nsx-hcol' + (c === cur ? " cur" : "") + '" data-rel="' + esc(c) + '" title="' + esc(c) + '">' + esc(shortRel(c)) + "</span>";
+        }).join("") + "</span>";
+        ol.style.setProperty("--nsx-hcols", histCols.length);
+      }
       root.querySelectorAll("a.nsx-oi-h").forEach(function (a) {
-        var ch = words(a, "data-changes").sort(function (x, y) { return relKey(x) - relKey(y); });
-        var prev = ch.filter(function (r) { return relKey(r) <= ck; }).pop();
-        var next = ch.filter(function (r) { return relKey(r) > ck; })[0];
-        a.querySelectorAll(".nsx-hb").forEach(function (x) { x.remove(); });
-        var n = a.querySelector(".nsx-oi-n");
-        if (prev) n.insertAdjacentHTML("beforebegin", badge(prev, "nsx-hb-prev", labels.hprev || ""));
-        if (next) n.insertAdjacentHTML("afterend", badge(next, "nsx-hb-next", labels.hnext || ""));
+        a.querySelectorAll(".nsx-hb, .nsx-hcells").forEach(function (x) { x.remove(); });
+        var r = rows[a.getAttribute("data-n")];
+        if (!r) return;
+        var html = histCols.map(function (c) {
+          var stt = cellState(r, c);
+          return '<span class="nsx-hc' + (stt ? " nsx-hc-" + stt : "") + (c === cur ? " cur" : "") + '" role="button" tabindex="-1" data-rel="' + esc(c) +
+            '" title="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '"></span>';
+        }).join("");
+        a.insertAdjacentHTML("beforeend", '<span class="nsx-hcells">' + html + "</span>");
       });
       root.querySelectorAll('.nsx-ol[data-by="since"] .nsx-og').forEach(function (g) {
         var t = g.textContent.trim();
         if (relKey(t)) { g.setAttribute("data-rel", t); g.classList.add("nsx-hg"); g.classList.toggle("cur", t === cur); }
+      });
+    }
+
+    // Vergleichspaar je Element: {name, from, to}; from fehlt beim ersten Auftreten
+    var histPair = null;
+    function predecessor(r, rel) {
+      var rs = entryRels(r).filter(function (x) { return cellState(r, x) && cellState(r, x) !== "del"; }), i = rs.indexOf(rel);
+      return i > 0 ? rs[i - 1] : (i < 0 ? rs.filter(function (x) { return histKey(x) < histKey(rel); }).pop() || null : null);
+    }
+    function defaultPair(name) {
+      var r = rows[name], cur = currentRelease(), rs = entryRels(r);
+      var to = cur && rs.indexOf(cur) >= 0 ? cur : (words(r, "data-changes").sort(bySort).pop() || rs[rs.length - 1] || null);
+      return { name: name, from: to ? predecessor(r, to) : null, to: to };
+    }
+    function pairFor(name) {
+      if (!histPair || histPair.name !== name) histPair = defaultPair(name);
+      return histPair;
+    }
+    function histModeChanged(on) {
+      root.classList.toggle("nsx-hist", !!on);
+      if (typeof placePop === "function") placePop();
+      if (!selected) return;
+      showRelations(selected);
+      histDetail(selected);
+    }
+    function histOn() { return root.classList.contains("nsx-hist"); }
+
+    // Versionsdaten (versions/data/<ID>.json) und Wortvergleich (static/text-diff.js), je einmal geladen
+    var histData = {}, tdLoad = null;
+    function versionsOf(id) {
+      if (!histData[id]) {
+        var stem = String(id).replace(/[^A-Za-z0-9_.\-]/g, "_");
+        histData[id] = fetch(SITE_ROOT + "versions/data/" + encodeURIComponent(stem) + ".json").then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        }).catch(function () { return null; });
+      }
+      return histData[id];
+    }
+    function textDiffLib() {
+      if (window.TextDiff) return Promise.resolve(window.TextDiff);
+      if (!tdLoad) tdLoad = new Promise(function (ok) {
+        var sc = document.createElement("script");
+        sc.src = SITE_ROOT + "static/text-diff.js";
+        sc.onload = function () { ok(window.TextDiff || null); };
+        sc.onerror = function () { ok(null); };
+        document.head.appendChild(sc);
+      });
+      return tdLoad;
+    }
+    // Wortgenauer Vergleich in einer Zeile: entfallene Wörter durchgestrichen, neue hinterlegt
+    // (Tokenisierung und Opcodes wie TextDiff.wordDiff)
+    function udiff(a, b) {
+      var td = window.TextDiff;
+      a = a || ""; b = b || "";
+      if (!td || !td.opcodes) return (a ? '<del class="ve-word-deleted">' + esc(a) + "</del> " : "") + (b ? '<ins class="ve-word-added">' + esc(b) + "</ins>" : "");
+      var re = /[<>\-]|[\wÀ-ɏ]+|[^\s\wÀ-ɏ<>\-]+|\s+/g, A = a.match(re) || [], B = b.match(re) || [], out = "";
+      td.opcodes(A, B).forEach(function (op) {
+        var sa = A.slice(op[1], op[2]).join(""), sb = B.slice(op[3], op[4]).join("");
+        if (op[0] === "equal") { out += esc(sb); return; }
+        if (op[0] !== "insert" && sa.trim()) out += '<del class="ve-word-deleted">' + esc(sa) + "</del>";
+        if (op[0] !== "delete") out += sb.trim() ? '<ins class="ve-word-added">' + esc(sb) + "</ins>" : esc(sb);
+      });
+      return out;
+    }
+    // Wortlaut eines Records in einem Release: letzte erfasste Fassung; null = nicht enthalten,
+    // false = enthalten, aber ohne erfassten Wortlaut
+    function textIn(d, rel) {
+      var vs = (d && d.versions || []).filter(function (v) { return v.release === rel; });
+      if (!vs.length) return null;
+      var withText = vs.filter(function (v) { return v.text_captured !== false && v.content; });
+      return withText.length ? withText[withText.length - 1].content : false;
+    }
+    // Spezifikationstabelle in Angaben zerlegen (Classic-Funktionen und -Typen); sonst ein Feld „Text“
+    var FIELD_SETS = [
+      ["Service Name", "Syntax", "Service ID [hex]", "Sync/Async", "Reentrancy", "Parameters (in)", "Parameters (inout)",
+       "Parameters (out)", "Return value", "Description", "Available via"],
+      ["Name", "Kind", "Type", "Derived from", "Elements", "Range", "Description", "Variation", "Available via"],
+      ["Kind", "Header file", "Forwarding header", "Scope", "Symbol", "Syntax", "Template param", "Parameters (in)",
+       "Parameters (out)", "Return value", "Exception Safety", "Thread Safety", "Errors", "Violations", "Description"]
+    ];
+    function parseFields(text) {
+      var t = String(text || "").replace(/\s+/g, " ").trim(), best = null;
+      FIELD_SETS.forEach(function (set) {
+        var hits = [], pos = 0;
+        set.forEach(function (lab) {
+          var i = pos;
+          while ((i = t.indexOf(lab, i)) >= 0) {
+            var before = i === 0 || t.charAt(i - 1) === " ", after = t.charAt(i + lab.length);
+            if (before && (after === " " || after === "")) break;
+            i += lab.length;
+          }
+          if (i >= 0) { hits.push({ label: lab, at: i }); pos = i + lab.length; }
+        });
+        if (hits.length >= 2 && (!best || hits.length > best.length)) best = hits;
+      });
+      if (!best) return [{ label: HL.text, value: t }];
+      var out = [];
+      if (best[0].at > 0) out.push({ label: HL.text, value: t.slice(0, best[0].at).trim() });
+      best.forEach(function (h, k) {
+        var end = k + 1 < best.length ? best[k + 1].at : t.length;
+        out.push({ label: h.label, value: t.slice(h.at + h.label.length, end).trim() });
+      });
+      return out;
+    }
+    // Vergleich zweier Fassungen: [{label, kind: same|chg|add|del, a, b, html}]
+    function fieldDiff(ta, tb) {
+      var fa = ta ? parseFields(ta) : [], fb = tb ? parseFields(tb) : [], ma = {}, mb = {}, order = [];
+      fa.forEach(function (f) { ma[f.label] = f.value; if (order.indexOf(f.label) < 0) order.push(f.label); });
+      fb.forEach(function (f) { mb[f.label] = f.value; if (order.indexOf(f.label) < 0) order.push(f.label); });
+      return order.map(function (l) {
+        var a = ma[l], b = mb[l], kind = a === undefined ? "add" : b === undefined ? "del" : a === b ? "same" : "chg";
+        return { label: l, kind: kind, a: a, b: b, html: kind === "chg" ? udiff(a, b) : esc(b !== undefined ? b : a) };
+      });
+    }
+    function histRecIds(name) {
+      var r = rows[name], ids = words(r, "data-recs").concat(words(r, "data-fns"));
+      if (!ids.length && isPageRow(r)) {
+        var main = pageCache[r.getAttribute("data-href")];
+        if (main) ids = Array.prototype.map.call(main.querySelectorAll("article.rec[id]"), function (a) { return a.id; }).slice(0, 60);
+      }
+      return ids;
+    }
+    // Ergebnis je Record für das aktuelle Paar: {id, state: same|chg|add|del|none|notext, fields}
+    function histCompare(name) {
+      var pr = pairFor(name), ids = histRecIds(name);
+      return Promise.all([textDiffLib()].concat(ids.map(versionsOf))).then(function (res) {
+        var ds = res.slice(1);
+        return ids.map(function (id, k) {
+          var d = ds[k];
+          if (!d) return { id: id, state: "none" };
+          var a = pr.from ? textIn(d, pr.from) : null, b = pr.to ? textIn(d, pr.to) : null;
+          if (a === false || b === false) return { id: id, state: "notext", a: a, b: b };
+          if (a === null && b === null) return { id: id, state: "none" };
+          var fields = fieldDiff(a, b);
+          var state = a === null ? "add" : b === null ? "del" : fields.some(function (f) { return f.kind !== "same"; }) ? "chg" : "same";
+          return { id: id, state: state, fields: fields };
+        });
+      });
+    }
+    function relOptions(r, sel) {
+      return entryRels(r).filter(function (x) { return cellState(r, x); }).map(function (x) {
+        return '<option value="' + esc(x) + '"' + (x === sel ? " selected" : "") + ">" + esc(x) + "</option>";
+      }).join("");
+    }
+    // Inspektor: Abschnitt „Änderungen“ oben (nur ausgewähltes Element, nur im Historie-Modus)
+    function histInspector(name) {
+      if (!histOn() || name !== selected || !relBox || relBox.getAttribute("data-owner") !== name) return;
+      var old = relBox.querySelector(":scope > .nsx-hist-is");
+      if (old) old.remove();
+      var r = rows[name], pr = pairFor(name);
+      var sec = document.createElement("section");
+      sec.className = "nsx-is nsx-hist-is";
+      sec.innerHTML = "<h4>" + esc(HL.changes) + '</h4><div class="nsx-hpair"><label>' + esc(HL.from) + ' <select data-h="from"><option value="">–</option>' +
+        relOptions(r, pr.from) + '</select></label> <span aria-hidden="true">→</span> <label>' + esc(HL.to) + ' <select data-h="to">' +
+        relOptions(r, pr.to) + '</select></label></div><p class="nsx-hnote">' + esc(HL.pick) + '</p><div class="nsx-hres"><p class="nsx-hint">' +
+        esc(HL.loading) + "</p></div>";
+      var k = relBox.querySelector(":scope > .k");
+      if (k) k.insertAdjacentElement("afterend", sec); else relBox.insertBefore(sec, relBox.firstChild);
+      histCompare(name).then(function (list) {
+        if (!sec.isConnected || histPair !== pr) return;
+        var box = sec.querySelector(".nsx-hres"), html = "";
+        if (!list.length || list.every(function (x) { return x.state === "none"; })) {
+          box.innerHTML = '<p class="nsx-hint">' + esc(HL.nodata) + "</p>";
+          return;
+        }
+        // Ohne Vorgänger: nur das erste Auftreten nennen, keine Felder als „neu“ aufzählen
+        if (!pr.from) {
+          var only = entryRels(r).filter(function (x) { return cellState(r, x); }).length <= 1;
+          box.innerHTML = '<p class="nsx-hstate nsx-hk-add">' + esc(HL.first + " " + (pr.to || "")) + "</p>" +
+            (only ? '<p class="nsx-hint">' + esc(HL.onlyone) + "</p>" : "");
+          return;
+        }
+        list.forEach(function (x) {
+          if (list.length > 1) html += '<h5 class="nsx-hrec">' + esc(x.id) + ' <span class="nsx-hk nsx-hk-' + esc(x.state) + '">' + esc(HL[x.state] || "") + "</span></h5>";
+          if (x.state === "none") return;
+          if (x.state === "notext") { html += '<p class="nsx-hint">' + esc(HL.notext) + "</p>"; return; }
+          if (x.state === "same") { html += '<p class="nsx-hint">' + esc(HL.same) + "</p>"; return; }
+          if (x.state === "add" && list.length === 1) html += '<p class="nsx-hstate nsx-hk-add">' + esc(HL.first + " " + pr.to) + "</p>";
+          if (x.state === "del" && list.length === 1) html += '<p class="nsx-hstate nsx-hk-del">' + esc(HL.gone + " " + pr.to) + "</p>";
+          var ch = x.fields.filter(function (f) { return f.kind !== "same"; });
+          if (x.state === "add" || x.state === "del") ch = ch.filter(function (f) { return f.label === "Syntax" || f.label === "Description"; });
+          html += '<dl class="nsx-hdl">' + ch.map(function (f) {
+            return '<dt>' + esc(f.label) + ' <span class="nsx-hk nsx-hk-' + f.kind + '">' + esc(HL[f.kind] || "") + "</span></dt>" +
+              '<dd class="nsx-hd-' + f.kind + '">' + (f.kind === "del" ? "<del>" + esc(f.a) + "</del>" : f.html) + "</dd>";
+          }).join("") + "</dl>";
+        });
+        box.innerHTML = html;
+      });
+    }
+    // Mitte: gewohnte Darstellung der Records, Unterschiede farbig (Signatur, Beschreibung, übrige Angaben)
+    function clearHistMarks() {
+      if (!detBody) return;
+      detBody.querySelectorAll(".nsx-hmark").forEach(function (x) { x.remove(); });
+      detBody.querySelectorAll("[data-nsx-hhide]").forEach(function (x) { x.hidden = false; x.removeAttribute("data-nsx-hhide"); });
+      detBody.querySelectorAll(".nsx-hl-add, .nsx-hl-del, .nsx-hl-chg, .nsx-hl-same").forEach(function (x) {
+        x.classList.remove("nsx-hl-add", "nsx-hl-del", "nsx-hl-chg", "nsx-hl-same");
+      });
+    }
+    function replaceShown(el, html, tag, cls) {
+      var n = document.createElement(tag);
+      n.className = cls + " nsx-hmark nsx-hl-chg";
+      n.innerHTML = html;
+      el.hidden = true;
+      el.setAttribute("data-nsx-hhide", "1");
+      el.insertAdjacentElement("afterend", n);
+    }
+    function histDetail(name) {
+      clearHistMarks();
+      if (!histOn() || name !== selected || !detBody) return;
+      var pr = pairFor(name), my = token;
+      histCompare(name).then(function (list) {
+        if (my !== token || histPair !== pr || !histOn()) return;
+        clearHistMarks();
+        if (!pr.from && entryRels(rows[name]).filter(function (x) { return cellState(rows[name], x); }).length <= 1) return;
+        list.forEach(function (x) {
+          var art = detBody.querySelector('article.rec[id="' + CSS.escape(x.id) + '"]');
+          if (!art || x.state === "none" || x.state === "notext") return;
+          art.classList.add("nsx-hl-" + x.state);
+          var tag = '<p class="nsx-hmark nsx-hrelnote"><span class="nsx-hk nsx-hk-' + x.state + '">' + esc(HL[x.state]) + "</span> " +
+            esc((pr.from ? pr.from + " → " : "") + (pr.to || "")) + "</p>";
+          var rn = art.querySelector(":scope > .recname");
+          if (rn) rn.insertAdjacentHTML("afterend", tag); else art.insertAdjacentHTML("afterbegin", tag);
+          if (x.state !== "chg") return;
+          var byL = {};
+          x.fields.forEach(function (f) { byL[f.label] = f; });
+          var syn = art.querySelector(":scope > pre.syntax"), desc = art.querySelector(":scope > .desc");
+          if (syn && byL.Syntax && byL.Syntax.kind === "chg") replaceShown(syn, byL.Syntax.html, "pre", "syntax");
+          if (desc && byL.Description && byL.Description.kind === "chg") replaceShown(desc, "<p>" + byL.Description.html + "</p>", "div", "desc");
+          // Übrige Angaben der Spezifikationstabelle als Tabelle, nur Unterschiede farbig
+          var rest = x.fields.filter(function (f) { return ["Syntax", "Description", "Service Name", "Name"].indexOf(f.label) < 0; });
+          if (rest.length && rest.some(function (f) { return f.kind !== "same"; })) {
+            var tb = '<table class="nsx-hmark nsx-hprops"><caption>' + esc(HL.props + " " + (pr.to || "")) + "</caption>" + rest.map(function (f) {
+              return '<tr class="' + (f.kind === "same" ? "" : "nsx-hl-" + f.kind) + '"><th>' + esc(f.label) + "</th><td>" +
+                (f.kind === "del" ? "<del>" + esc(f.a) + "</del>" : f.html) + "</td></tr>";
+            }).join("") + "</table>";
+            (desc || syn || art.lastElementChild).insertAdjacentHTML("afterend", tb);
+          }
+        });
       });
     }
     function relHighlight(rel) {
@@ -2620,11 +3023,38 @@
     }
     renderHistory();
     window.addEventListener("hashchange", renderHistory);
+    if (relBox) relBox.addEventListener("change", function (ev) {
+      var sel = ev.target.closest && ev.target.closest(".nsx-hist-is select");
+      if (!sel || !selected) return;
+      var pr = pairFor(selected), v = sel.value || null;
+      histPair = sel.getAttribute("data-h") === "from" ? { name: selected, from: v, to: pr.to } : { name: selected, from: pr.from, to: v };
+      if (histPair.from && histPair.to && bySort(histPair.from, histPair.to) > 0) histPair = { name: selected, from: histPair.to, to: histPair.from };
+      showRelations(selected);
+      histDetail(selected);
+    });
+    histModeChanged(!!outline && !!outline.querySelector('.nsx-by button[data-by="since"][aria-pressed="true"]'));
     root.addEventListener("mouseover", function (ev) {
       var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");
       relHighlight(h ? h.getAttribute("data-rel") : null);
     });
     root.addEventListener("click", function (ev) {
+      var hc = ev.target.closest && ev.target.closest(".nsx-hc");
+      if (hc) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var ha = hc.closest("a.nsx-oi"), hn = ha && ha.getAttribute("data-n"), hrel = hc.getAttribute("data-rel");
+        if (!hn || !rows[hn] || !cellState(rows[hn], hrel)) return;
+        var prev = histPair && histPair.name === hn ? histPair : null;
+        if (ev.shiftKey && prev && prev.to && prev.to !== hrel) {
+          var two = [prev.to, hrel].sort(bySort);
+          histPair = { name: hn, from: two[0], to: two[1] };
+        } else histPair = { name: hn, from: predecessor(rows[hn], hrel), to: hrel };
+        root.querySelectorAll(".nsx-hc.sel").forEach(function (x) { x.classList.remove("sel"); });
+        hc.classList.add("sel");
+        if (hn === selected) { showRelations(hn); histDetail(hn); }
+        else select(hn, { origin: "side", from: ha });
+        return;
+      }
       var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");
       if (!h || ev.target.closest(".nsx-chev")) return;
       ev.preventDefault();
@@ -2659,7 +3089,9 @@
   function boot() {
     var any = !!document.querySelector("section.nsx");    // vor init: Modulseiten entfernen sie im Komfortmodus
     document.querySelectorAll("section.nsx").forEach(init);
-    if (window.MutationObserver && any) {
+    // Ein Beobachter je Dokument: der Seamless Router (fold.js) ruft boot nach jedem Seitenwechsel erneut auf
+    if (window.MutationObserver && any && !boot.watching) {
+      boot.watching = true;
       var dens = document.documentElement.getAttribute("data-density");
       new MutationObserver(function () {
         if (document.documentElement.getAttribute("data-density") !== dens) location.reload();

@@ -672,6 +672,23 @@
 
   // Abbruch (AbortController, überholte Auswahl) ist kein Fehler; Netzfehler sind bei fetch ein TypeError
   // (Safari: „Load failed“, Chrome: „Failed to fetch“, Firefox: „NetworkError …“).
+  // Wurzel der Site aus der eigenen Skriptadresse (<wurzel>/static/versions-explorer.js), absolut.
+  // Hängt nicht am style.css-Link im Kopf, den ein Inhaltsaustausch aus einem anderen Verzeichnis
+  // stehen lassen kann (Wurzel dann ../../ statt ../ und alle Abrufe landen neben der Site).
+  function rootFromSrc(src) {
+    var m = /^(.*\/)static\/versions-explorer\.js(?:[?#].*)?$/.exec(String(src || ""));
+    return m ? m[1] : "";
+  }
+  // Die lokale API (_src/serve.py) liegt immer unter /api/ der Origin-Wurzel eines lokalen Rechners.
+  // Sie kann nur zur Site gehören, wenn die Site auf localhost selbst an der Wurzel liegt; unter
+  // GitHub Pages (https://…/autodocs/) gehört /api/ jemand anderem und wird nie abgefragt.
+  // root: absolute Wurzel der Site.
+  function localApiAllowed(root) {
+    var u;
+    try { u = new URL(String(root || "")); } catch (e) { return false; }
+    return /^https?:$/.test(u.protocol) && u.pathname === "/" &&
+      /^(localhost|127\.0\.0\.1|\[::1\])$/.test(u.hostname);
+  }
   function isAbortError(err) { return !!err && (err.name === "AbortError" || err.code === 20); }
   function isNetworkError(err) { return !!err && err.name === "TypeError" && !isAbortError(err); }
   function abortError() {
@@ -826,6 +843,7 @@
     decodeEntities: decodeEntities, decodeFully: decodeFully, citedIds: citedIds, linkifyIds: linkifyIds, resolveId: resolveId,
     UNIVERSES: UNIVERSES,
     isAbortError: isAbortError, isNetworkError: isNetworkError, loadJson: loadJson, renderMarkdown: renderMarkdown,
+    rootFromSrc: rootFromSrc, localApiAllowed: localApiAllowed,
     mdInline: mdInline, catalogCollapsedOnLoad: catalogCollapsedOnLoad
   };
 });
@@ -859,12 +877,16 @@
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
+  var SELF = document.currentScript;
   function getRootPrefix() {
+    var fromSrc = C.rootFromSrc(SELF && SELF.src);
+    if (fromSrc) return fromSrc;
     var link = document.querySelector('link[href*="style.css"]');
     if (link) return link.getAttribute("href").replace("style.css", "") || "../";
     return "../";
   }
   var ROOT = getRootPrefix();
+  var API = C.localApiAllowed(new URL(ROOT, window.location.href).href);
   var narrowMQ = window.matchMedia ? window.matchMedia("(max-width: 899px)") : { matches: false };
   var wideMQ = window.matchMedia ? window.matchMedia("(min-width: 1180px)") : { matches: true };
 
@@ -1278,6 +1300,8 @@
   window.addEventListener("pageshow", function (e) {
     pageHidden = false;
     if (!e.persisted) return;
+    // Index beim Verlassen abgebrochen (Liste leer, Zähler ohne Fehler): Bereich neu laden
+    if (!data[state.tab] || (state.tab !== "el" && !data.el)) { switchTab(state.tab, false); return; }
     ["el", "fig", "snip"].forEach(function (tab) {
       var key = selectedKey(tab);
       if (!key || (tab !== "el" && !data[tab])) return;
@@ -1306,7 +1330,10 @@
         .then(function (raw) { data.el = C.decodeElements(raw); })
         .catch(function () {
           return fetchJson(ROOT + "versions/catalog.json")
-            .catch(function () { return fetchJson("/api/versions?limit=50000"); })
+            .catch(function (err) {
+              if (!API) throw err;
+              return fetchJson("/api/versions?limit=50000");
+            })
             .then(function (cat) {
               data.el = C.decodeCatalog(cat.items || cat || []);
               showNotice("el", t("index_missing"));
@@ -1673,7 +1700,7 @@
       return fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
         .catch(function (err) {
           // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
-          if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
+          if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el || !API) throw err;
           return fetchJson("/api/versions?id=" + encodeURIComponent(id), signal);
         });
     }
@@ -2259,7 +2286,10 @@
             return null;
           });
       return pack.then(function (rec) {
-        if (rec && rec.series && !info.seriesPayload) info.seriesPayload = rec.series;
+        // Die Pack-Zeile beschreibt nur dieses eine Schaubild (eine Fassung, keine Übergänge). Gehört es zu einer
+        // Reihe mit eigener Reihen-Datei (versions/explorer/series/), gilt diese: Sonst zeigte z. B.
+        // FIG-0021fe4e24943bc3 neun Fassungen „ohne KI-Beschreibung“ und kein Delta.
+        if (rec && rec.series && !info.seriesPayload && !info.series_file) info.seriesPayload = rec.series;
         if (rec && rec.rv && !info.rv) { info.rv = rec.rv; info.rt = rec.rt; info.rk = rec.rk; }
         return info;
       });
